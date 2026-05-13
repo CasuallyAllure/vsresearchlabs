@@ -1,0 +1,283 @@
+[
+  {
+    "id": "rs-semaglutide-5mg",
+    "slug": "semaglutide-5mg",
+    "name": "Semaglutide — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "Research-grade GLP-1 receptor agonist peptide. Lyophilized, 5mg vial.",
+    "longDescription": "Research-grade Semaglutide peptide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Semaglutide+5mg",
+      "https://placehold.co/800x800/111/d4af37/png?text=Vial+Detail"
+    ],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-SEM-005",
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "glp-1", "research"],
+    "featured": true,
+    "createdAt": "2026-04-01T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z",
+    "description": "Research-grade GLP-1 receptor agonist peptide. Lyophilized, 5mg vial.",
+    "price_cents": 0,
+    "in_stock": true,
+    "created_at": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "rs-tirzepatide-10mg",
+    "slug": "tirzepatide-10mg",
+    "name": "Tirzepatide — 10mg",
+    "category": "research-supplies",
+    "shortDescription": "Dual GIP/GLP-1 receptor agonist peptide. Lyophilized, 10mg vial.",
+    "longDescription": "Tirzepatide supplied as a lyophilized powder in a single 10mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Tirzepatide+10mg"
+    ],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "10 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-TZP-010",
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "gip", "glp-1", "research"],
+    "featured": true,
+    "createdAt": "2026-04-02T00:00:00.000Z",
+    "updatedAt": "2026-04-02T00:00:00.000Z",
+    "description": "Dual GIP/GLP-1 receptor agonist peptide. Lyophilized, 10mg vial.",
+    "price_cents": 0,
+    "in_stock": true,
+    "created_at": "2026-04-02T00:00:00.000Z"
+  },
+  {
+    "id": "rs-retatrutide-5mg",
+    "slug": "retatrutide-5mg",
+    "name": "Retatrutide — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
+    "longDescription": "Retatrutide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Retatrutide+5mg"
+    ],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 98%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-RTT-005",
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "triple-agonist", "research"],
+    "featured": false,
+    "createdAt": "2026-04-03T00:00:00.000Z",
+    "updatedAt": "2026-04-03T00:00:00.000Z",
+    "description": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
+    "price_cents": 0,
+    "in_stock": true,
+    "created_at": "2026-04-03T00:00:00.000Z"
+  },
+  {
+    "id": "rs-bacteriostatic-water-30ml",
+    "slug": "bacteriostatic-water-30ml",
+    "name": "Bacteriostatic Water — 30 mL",
+    "category": "research-supplies",
+    "shortDescription": "0.9% benzyl alcohol in sterile water. 30mL multi-dose vial.",
+    "longDescription": "Sterile bacteriostatic water suitable for laboratory reconstitution of lyophilized peptides and other research compounds. Preserved with 0.9% benzyl alcohol for multi-dose use. Supplied in a 30mL sealed glass vial with rubber septum.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Bacteriostatic+Water"
+    ],
+    "specs": [
+      { "label": "Volume", "value": "30 mL" },
+      { "label": "Preservative", "value": "0.9% benzyl alcohol" },
+      { "label": "Container", "value": "Sealed glass, rubber septum" },
+      { "label": "Storage", "value": "Room temperature" }
+    ],
+    "sku": "VSR-RS-BAC-030",
+    "priceCents": 1200,
+    "stock": 200,
+    "tags": ["solvent", "reconstitution", "sterile"],
+    "featured": false,
+    "createdAt": "2026-04-04T00:00:00.000Z",
+    "updatedAt": "2026-04-04T00:00:00.000Z",
+    "description": "0.9% benzyl alcohol in sterile water. 30mL multi-dose vial.",
+    "price_cents": 1200,
+    "in_stock": true,
+    "created_at": "2026-04-04T00:00:00.000Z"
+  },
+  {
+    "id": "rs-insulin-syringes-1ml-100",
+    "slug": "insulin-syringes-1ml-100",
+    "name": "Research Syringes — 1mL, Box of 100",
+    "category": "research-supplies",
+    "shortDescription": "1mL U-100 research syringes with fixed 29G needle. Box of 100, sterile.",
+    "longDescription": "Individually packaged, sterile 1mL research syringes with a fixed 29G × 1/2″ needle. Graduated in U-100 units for precise laboratory dosing. Latex-free. One hundred syringes per box.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Research+Syringes"
+    ],
+    "specs": [
+      { "label": "Volume", "value": "1 mL / U-100" },
+      { "label": "Needle", "value": "29G × 1/2″ fixed" },
+      { "label": "Sterility", "value": "Individually sterile-packed" },
+      { "label": "Quantity", "value": "100 per box" }
+    ],
+    "sku": "VSR-RS-SYR-100",
+    "priceCents": 2400,
+    "stock": 80,
+    "tags": ["consumable", "syringe", "sterile"],
+    "featured": false,
+    "createdAt": "2026-04-05T00:00:00.000Z",
+    "updatedAt": "2026-04-05T00:00:00.000Z",
+    "description": "1mL U-100 research syringes with fixed 29G needle. Box of 100, sterile.",
+    "price_cents": 2400,
+    "in_stock": true,
+    "created_at": "2026-04-05T00:00:00.000Z"
+  },
+  {
+    "id": "le-analytical-balance-0-1mg",
+    "slug": "analytical-balance-0-1mg",
+    "name": "Analytical Balance — 0.1 mg Readability",
+    "category": "laboratory-equipment",
+    "shortDescription": "Benchtop analytical balance. 220g capacity, 0.1mg readability, internal calibration.",
+    "longDescription": "High-precision analytical balance for quantitative laboratory work. 220g capacity with 0.1mg readability, motorized internal calibration, and a draft shield for environmental stability. RS-232 and USB connectivity for data logging.\n\nCalibrated at the factory; recalibration certificate available on request.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Analytical+Balance"
+    ],
+    "specs": [
+      { "label": "Capacity", "value": "220 g" },
+      { "label": "Readability", "value": "0.1 mg" },
+      { "label": "Calibration", "value": "Motorized internal" },
+      { "label": "Connectivity", "value": "RS-232, USB" }
+    ],
+    "sku": "VSR-LE-BAL-220",
+    "priceCents": 245000,
+    "stock": 4,
+    "tags": ["balance", "precision", "benchtop"],
+    "featured": false,
+    "createdAt": "2026-04-06T00:00:00.000Z",
+    "updatedAt": "2026-04-06T00:00:00.000Z",
+    "description": "Benchtop analytical balance. 220g capacity, 0.1mg readability, internal calibration.",
+    "price_cents": 245000,
+    "in_stock": true,
+    "created_at": "2026-04-06T00:00:00.000Z"
+  },
+  {
+    "id": "le-vortex-mixer",
+    "slug": "vortex-mixer",
+    "name": "Vortex Mixer — Variable Speed",
+    "category": "laboratory-equipment",
+    "shortDescription": "Benchtop vortex mixer. 0–3000 rpm continuous and touch-activated modes.",
+    "longDescription": "Compact benchtop vortex mixer with variable-speed control from 0 to 3000 rpm. Two operating modes: continuous and touch-activated. Heavy-duty non-slip base and replaceable cup head. Suitable for mixing research samples in test tubes up to 30mm diameter.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Vortex+Mixer"
+    ],
+    "specs": [
+      { "label": "Speed Range", "value": "0–3000 rpm" },
+      { "label": "Modes", "value": "Continuous / Touch" },
+      { "label": "Orbit", "value": "4 mm" },
+      { "label": "Power", "value": "100–240 V" }
+    ],
+    "sku": "VSR-LE-VTX-001",
+    "priceCents": 32500,
+    "stock": 12,
+    "tags": ["mixer", "benchtop", "sample-prep"],
+    "featured": false,
+    "createdAt": "2026-04-07T00:00:00.000Z",
+    "updatedAt": "2026-04-07T00:00:00.000Z",
+    "description": "Benchtop vortex mixer. 0–3000 rpm continuous and touch-activated modes.",
+    "price_cents": 32500,
+    "in_stock": true,
+    "created_at": "2026-04-07T00:00:00.000Z"
+  },
+  {
+    "id": "le-microcentrifuge-24",
+    "slug": "microcentrifuge-24",
+    "name": "Microcentrifuge — 24-Place",
+    "category": "laboratory-equipment",
+    "shortDescription": "Benchtop refrigerated microcentrifuge. 24 × 1.5/2mL tubes, up to 15,000 rpm.",
+    "longDescription": "Benchtop refrigerated microcentrifuge with a 24-place fixed-angle rotor accepting 1.5mL and 2mL tubes. Maximum speed 15,000 rpm / 21,130 × g. Brushless motor, soft-touch lid lock, short-spin function, and programmable profiles.\n\nIdeal for DNA/RNA/protein sample preparation and routine benchwork.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Microcentrifuge"
+    ],
+    "specs": [
+      { "label": "Capacity", "value": "24 × 1.5 / 2 mL" },
+      { "label": "Max Speed", "value": "15,000 rpm" },
+      { "label": "Max RCF", "value": "21,130 × g" },
+      { "label": "Cooling", "value": "−10 °C to +40 °C" }
+    ],
+    "sku": "VSR-LE-CEN-024",
+    "priceCents": 489000,
+    "stock": 3,
+    "tags": ["centrifuge", "refrigerated", "benchtop"],
+    "featured": true,
+    "createdAt": "2026-04-08T00:00:00.000Z",
+    "updatedAt": "2026-04-08T00:00:00.000Z",
+    "description": "Benchtop refrigerated microcentrifuge. 24 × 1.5/2mL tubes, up to 15,000 rpm.",
+    "price_cents": 489000,
+    "in_stock": true,
+    "created_at": "2026-04-08T00:00:00.000Z"
+  },
+  {
+    "id": "le-ph-meter-benchtop",
+    "slug": "ph-meter-benchtop",
+    "name": "pH Meter — Benchtop",
+    "category": "laboratory-equipment",
+    "shortDescription": "Benchtop pH / mV / temperature meter with ATC probe and calibration standards.",
+    "longDescription": "Benchtop pH meter with simultaneous pH, mV, and temperature readout. Includes a glass-body combination electrode with automatic temperature compensation and a three-point calibration kit (pH 4.01 / 7.00 / 10.01). Stores up to 500 data points with timestamp.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=pH+Meter"
+    ],
+    "specs": [
+      { "label": "Range", "value": "−2.00 to 16.00 pH" },
+      { "label": "Resolution", "value": "0.01 pH" },
+      { "label": "Accuracy", "value": "± 0.01 pH" },
+      { "label": "Memory", "value": "500 readings" }
+    ],
+    "sku": "VSR-LE-PHM-001",
+    "priceCents": 58500,
+    "stock": 7,
+    "tags": ["ph", "meter", "electrode"],
+    "featured": false,
+    "createdAt": "2026-04-09T00:00:00.000Z",
+    "updatedAt": "2026-04-09T00:00:00.000Z",
+    "description": "Benchtop pH / mV / temperature meter with ATC probe and calibration standards.",
+    "price_cents": 58500,
+    "in_stock": true,
+    "created_at": "2026-04-09T00:00:00.000Z"
+  },
+  {
+    "id": "le-micropipette-set",
+    "slug": "micropipette-set",
+    "name": "Micropipette Set — 10 / 100 / 1000 μL",
+    "category": "laboratory-equipment",
+    "shortDescription": "Three-pipette variable-volume set. 0.5–10, 10–100, and 100–1000 μL ranges.",
+    "longDescription": "Three autoclavable single-channel variable-volume micropipettes covering 0.5–10 μL, 10–100 μL, and 100–1000 μL. Individually factory calibrated with traceable certificates. Ergonomic housing with ejector and stainless tip cone. Compatible with universal pipette tips.",
+    "images": [
+      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Micropipette+Set"
+    ],
+    "specs": [
+      { "label": "Channels", "value": "Single" },
+      { "label": "Volume Ranges", "value": "0.5–10 / 10–100 / 100–1000 μL" },
+      { "label": "Accuracy", "value": "± 0.8%" },
+      { "label": "Autoclavable", "value": "Yes, 121 °C" }
+    ],
+    "sku": "VSR-LE-PIP-SET",
+    "priceCents": 74500,
+    "stock": 10,
+    "tags": ["pipette", "liquid-handling", "set"],
+    "featured": false,
+    "createdAt": "2026-04-10T00:00:00.000Z",
+    "updatedAt": "2026-04-10T00:00:00.000Z",
+    "description": "Three-pipette variable-volume set. 0.5–10, 10–100, and 100–1000 μL ranges.",
+    "price_cents": 74500,
+    "in_stock": true,
+    "created_at": "2026-04-10T00:00:00.000Z"
+  }
+]

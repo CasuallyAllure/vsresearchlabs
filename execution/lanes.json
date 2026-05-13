@@ -1,0 +1,238 @@
+{
+  "_meta": {
+    "project": "velari-systems-research",
+    "version": "1.0.0",
+    "governance": "V3.1 STRICT",
+    "rule": "No two lanes may own the same directory. Each agent reads this file to verify file ownership before writing. If a target file is not in your lane, you cannot touch it."
+  },
+
+  "lanes": {
+
+    "CONTROL": {
+      "description": "Execution control layer. Maintained by the coordinating agent only. No feature agents write here.",
+      "phases": ["P0"],
+      "segments": ["P0-S1", "P0-S2", "P0-S3"],
+      "owned_directories": [
+        "execution/"
+      ],
+      "owned_files": [
+        "execution/registry.json",
+        "execution/lanes.json",
+        "execution/agents.md"
+      ],
+      "forbidden_to_all_other_lanes": true
+    },
+
+    "LANE_THEME": {
+      "description": "Design token system and runtime theme injection. Foundation layer — all other lanes depend on tokens being correct before styling anything.",
+      "phases": ["P1", "P2"],
+      "segments": ["P1-S1", "P1-S2", "P1-S3", "P2-S1", "P2-S2"],
+      "owned_directories": [
+        "src/theme/"
+      ],
+      "owned_files": [
+        "src/theme/theme.css",
+        "src/theme/ThemeProvider.tsx",
+        "src/theme/ThemeTuningProvider.tsx",
+        "src/theme/index.ts",
+        "src/index.css",
+        "src/main.tsx",
+        "tailwind.config.js"
+      ],
+      "shared_file_rules": {
+        "src/main.tsx": {
+          "note": "LANE_THEME owns main.tsx for P2-S2 (provider stack). LANE_AUTH requires a coordinated handoff for P4-S2 (AuthProvider insertion). Agents must not edit main.tsx simultaneously. The second agent to touch main.tsx must read the current file state before editing.",
+          "primary_owner": "LANE_THEME",
+          "secondary_access": ["LANE_AUTH", "LANE_STATE"]
+        }
+      }
+    },
+
+    "LANE_SHELL": {
+      "description": "App-shell layout architecture. Replaces the website-model Shell/Navbar/Footer with GlobalSurface/GlobalHeader/BottomNav/AnimatedPortalShell.",
+      "phases": ["P3"],
+      "segments": ["P3-S1", "P3-S2", "P3-S3", "P3-S4", "P3-S5"],
+      "owned_directories": [
+        "src/layout/"
+      ],
+      "owned_files": [
+        "src/layout/GlobalSurface.tsx",
+        "src/layout/GlobalHeader.tsx",
+        "src/layout/BottomNav.tsx",
+        "src/layout/AnimatedPortalShell.tsx",
+        "src/App.tsx",
+        "src/components/layout/Shell.tsx",
+        "src/components/layout/Navbar.tsx",
+        "src/components/layout/Footer.tsx"
+      ],
+      "shared_file_rules": {
+        "src/App.tsx": {
+          "note": "LANE_SHELL owns App.tsx for P3-S5 (route restructure). LANE_COMPONENTS requires access for P6-S4 (root overlay). LANE_ROUTING requires access for P7-S1, P7-S2, P7-S3. Access is sequential — each subsequent lane must read the current App.tsx before editing.",
+          "primary_owner": "LANE_SHELL",
+          "secondary_access": ["LANE_COMPONENTS", "LANE_ROUTING"]
+        }
+      }
+    },
+
+    "LANE_AUTH": {
+      "description": "Authentication and multi-role system. Introduces authStore, AuthProvider, ProtectedRoute, and role type definitions.",
+      "phases": ["P4"],
+      "segments": ["P4-S1", "P4-S2", "P4-S3"],
+      "owned_directories": [
+        "src/providers/",
+        "src/routes/",
+        "src/types/"
+      ],
+      "owned_files": [
+        "src/stores/authStore.ts",
+        "src/providers/AuthProvider.tsx",
+        "src/routes/ProtectedRoute.tsx",
+        "src/types/auth.ts"
+      ],
+      "shared_file_rules": {
+        "src/main.tsx": {
+          "note": "LANE_AUTH inserts AuthProvider into the provider stack during P4-S2. Must read current main.tsx state (written by LANE_THEME) before editing. Must not remove or reorder existing providers.",
+          "primary_owner": "LANE_THEME",
+          "secondary_access": ["LANE_AUTH"]
+        },
+        "src/stores/authStore.ts": {
+          "note": "Owned exclusively by LANE_AUTH. LANE_STATE must not write to this file. LANE_STATE reads authStore for uiStore integration only.",
+          "primary_owner": "LANE_AUTH",
+          "secondary_access": []
+        }
+      }
+    },
+
+    "LANE_STATE": {
+      "description": "Global state architecture. Adds React Query for server state, uiStore for global UI control, and cart store persistence.",
+      "phases": ["P5"],
+      "segments": ["P5-S1", "P5-S2", "P5-S3"],
+      "owned_directories": [
+        "src/lib/",
+        "src/hooks/"
+      ],
+      "owned_files": [
+        "src/lib/queryClient.ts",
+        "src/stores/uiStore.ts",
+        "src/stores/cartStore.ts",
+        "src/hooks/useCart.ts",
+        "src/hooks/useProducts.ts"
+      ],
+      "shared_file_rules": {
+        "src/main.tsx": {
+          "note": "LANE_STATE inserts QueryClientProvider into the provider stack during P5-S1. Must read current main.tsx state before editing. Must not remove AuthProvider or ThemeProvider.",
+          "primary_owner": "LANE_THEME",
+          "secondary_access": ["LANE_STATE"]
+        }
+      }
+    },
+
+    "LANE_COMPONENTS": {
+      "description": "UI component system. Replaces GlassCard with ModuleShell/VelariShell, migrates all components, moves overlay to root level.",
+      "phases": ["P6"],
+      "segments": ["P6-S1", "P6-S2", "P6-S3", "P6-S4"],
+      "owned_directories": [
+        "src/components/shells/",
+        "src/components/ui/",
+        "src/components/landing/",
+        "src/components/store/"
+      ],
+      "owned_files": [
+        "src/components/shells/ModuleShell.tsx",
+        "src/components/shells/VelariShell.tsx",
+        "src/components/ui/GlassCard.tsx",
+        "src/components/ui/Button.tsx",
+        "src/components/ui/Badge.tsx",
+        "src/components/ui/Chip.tsx",
+        "src/components/ui/Input.tsx",
+        "src/components/ui/Modal.tsx",
+        "src/components/ui/Spinner.tsx",
+        "src/components/landing/HeroSection.tsx",
+        "src/components/landing/ProductPreview.tsx",
+        "src/components/landing/HowItWorksSection.tsx",
+        "src/components/landing/TrustBar.tsx",
+        "src/components/landing/DisclaimerBanner.tsx",
+        "src/components/store/ProductCard.tsx",
+        "src/components/store/ProductGrid.tsx",
+        "src/components/store/ProductDetail.tsx",
+        "src/components/store/Cart.tsx",
+        "src/components/store/CartItem.tsx",
+        "src/components/store/FilterBar.tsx",
+        "src/components/store/OrderConfirmation.tsx"
+      ],
+      "shared_file_rules": {
+        "src/App.tsx": {
+          "note": "LANE_COMPONENTS writes to App.tsx only for P6-S4 (root-level Cart overlay). Must read current App.tsx state before editing. Must preserve all routing structure from LANE_SHELL's P3-S5 work.",
+          "primary_owner": "LANE_SHELL",
+          "secondary_access": ["LANE_COMPONENTS", "LANE_ROUTING"]
+        }
+      }
+    },
+
+    "LANE_ROUTING": {
+      "description": "Routing performance and resilience. Adds lazy loading, Suspense fallbacks, and error boundaries.",
+      "phases": ["P7"],
+      "segments": ["P7-S1", "P7-S2", "P7-S3"],
+      "owned_directories": [
+        "src/pages/"
+      ],
+      "owned_files": [
+        "src/pages/Landing.tsx",
+        "src/pages/Store.tsx",
+        "src/pages/ProductPage.tsx",
+        "src/pages/CartPage.tsx",
+        "src/pages/OrderPage.tsx",
+        "src/components/RouteLoadingFallback.tsx",
+        "src/components/ErrorBoundary.tsx"
+      ],
+      "shared_file_rules": {
+        "src/App.tsx": {
+          "note": "LANE_ROUTING writes to App.tsx for P7-S1 (lazy imports), P7-S2 (Suspense), P7-S3 (ErrorBoundary). Must read current App.tsx state. Must preserve routing structure, shell wrappers, and root overlay. This is the final agent to touch App.tsx.",
+          "primary_owner": "LANE_SHELL",
+          "secondary_access": ["LANE_ROUTING"]
+        }
+      }
+    }
+
+  },
+
+  "directory_ownership_matrix": {
+    "execution/":              "CONTROL",
+    "src/theme/":              "LANE_THEME",
+    "src/layout/":             "LANE_SHELL",
+    "src/providers/":          "LANE_AUTH",
+    "src/routes/":             "LANE_AUTH",
+    "src/types/":              "LANE_AUTH",
+    "src/lib/":                "LANE_STATE",
+    "src/hooks/":              "LANE_STATE",
+    "src/components/shells/":  "LANE_COMPONENTS",
+    "src/components/ui/":      "LANE_COMPONENTS",
+    "src/components/landing/": "LANE_COMPONENTS",
+    "src/components/store/":   "LANE_COMPONENTS",
+    "src/pages/":              "LANE_ROUTING",
+    "src/stores/": {
+      "note": "Shared directory. File-level ownership applies.",
+      "authStore.ts":  "LANE_AUTH",
+      "uiStore.ts":    "LANE_STATE",
+      "cartStore.ts":  "LANE_STATE"
+    }
+  },
+
+  "shared_files_summary": {
+    "src/main.tsx": {
+      "primary_owner": "LANE_THEME",
+      "touch_order": ["LANE_THEME (P2-S2)", "LANE_STATE (P5-S1)", "LANE_AUTH (P4-S2)"],
+      "rule": "Read before write. Never remove what a previous lane added."
+    },
+    "src/App.tsx": {
+      "primary_owner": "LANE_SHELL",
+      "touch_order": ["LANE_SHELL (P3-S5)", "LANE_COMPONENTS (P6-S4)", "LANE_ROUTING (P7-S1, P7-S2, P7-S3)"],
+      "rule": "Read before write. Never remove what a previous lane added."
+    }
+  },
+
+  "overlap_violations": {
+    "description": "Any agent writing to a directory or file not in its owned_files list is a lane violation. Lane violations invalidate the segment and require re-execution.",
+    "enforcement": "Before writing any file, agent must confirm file path exists in lanes.json owned_files for its lane. If not listed, agent must halt and flag to coordinator."
+  }
+}

@@ -1,0 +1,568 @@
+{
+  "_meta": {
+    "project": "velari-systems-research",
+    "target": "velari-conformance",
+    "version": "1.0.0",
+    "governance": "V3.1 STRICT",
+    "status_values": ["PENDING", "IN_PROGRESS", "PASS", "BLOCKED", "FAIL"],
+    "last_updated": "2026-04-25T12:00"
+  },
+
+  "phases": [
+
+    {
+      "phase": "P0",
+      "name": "Workspace Structure",
+      "goal": "Establish shared execution control layer. All agents read from this before any execution.",
+      "lane": "CONTROL",
+      "depends_on": [],
+      "segments": [
+        {
+          "id": "P0-S1",
+          "name": "Execution Registry",
+          "status": "PASS",
+          "assigned_agent": null,
+          "depends_on": [],
+          "file_scope": [
+            "execution/registry.json"
+          ],
+          "acceptance_criteria": [
+            "File exists at execution/registry.json",
+            "All phases and segments are listed",
+            "Each segment has: id, status, assigned_agent, depends_on, file_scope, acceptance_criteria"
+          ]
+        },
+        {
+          "id": "P0-S2",
+          "name": "Lane Definition Map",
+          "status": "PASS",
+          "assigned_agent": null,
+          "depends_on": ["P0-S1"],
+          "file_scope": [
+            "execution/lanes.json"
+          ],
+          "acceptance_criteria": [
+            "File exists at execution/lanes.json",
+            "All 6 lanes defined with directory mappings",
+            "No directory overlap exists between any two lanes",
+            "Every segment in registry maps to exactly one lane"
+          ]
+        },
+        {
+          "id": "P0-S3",
+          "name": "Agent Assignment Rules",
+          "status": "PASS",
+          "assigned_agent": null,
+          "depends_on": ["P0-S1", "P0-S2"],
+          "file_scope": [
+            "execution/agents.md"
+          ],
+          "acceptance_criteria": [
+            "File exists at execution/agents.md",
+            "Single-lane ownership rule is stated",
+            "Registry-check-before-execution rule is stated",
+            "Out-of-lane file modification is explicitly prohibited"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P1",
+      "name": "Token System",
+      "goal": "Establish canonical design tokens as the shared foundation. No styling work in any other lane is valid until this phase passes.",
+      "lane": "LANE_THEME",
+      "depends_on": ["P0"],
+      "segments": [
+        {
+          "id": "P1-S1",
+          "name": "Theme File Extraction",
+          "status": "PASS",
+          "assigned_agent": "LANE_THEME",
+          "depends_on": ["P0-S1", "P0-S2", "P0-S3"],
+          "file_scope": [
+            "src/theme/theme.css",
+            "src/index.css"
+          ],
+          "acceptance_criteria": [
+            "src/theme/theme.css created",
+            "src/index.css contains zero CSS custom property declarations (--*)",
+            "src/index.css imports src/theme/theme.css via @import",
+            "All existing tokens from index.css are present in theme.css without loss"
+          ]
+        },
+        {
+          "id": "P1-S2",
+          "name": "Token Completion",
+          "status": "PASS",
+          "assigned_agent": "LANE_THEME",
+          "depends_on": ["P1-S1"],
+          "file_scope": [
+            "src/theme/theme.css"
+          ],
+          "acceptance_criteria": [
+            "Spacing token scale present: --space-0 through --space-24 in 4px increments",
+            "Animation duration tokens present: --duration-fast (150ms), --duration-normal (250ms), --duration-slow (350ms)",
+            "Easing tokens present: --ease-enter, --ease-exit with cubic-bezier values",
+            "Role accent tokens present: --color-roleAccent-owner, promoter, dj, door, guest",
+            "Blur abstraction tokens present: --blur-sm, --blur-md, --blur-xl",
+            "Theme identity tokens present: --theme-id, --theme-mode",
+            "Olive color palette tokens present",
+            "Purple accent token present: --color-accent-purple (#A78BFA)"
+          ]
+        },
+        {
+          "id": "P1-S3",
+          "name": "Token Alignment",
+          "status": "PASS",
+          "assigned_agent": "LANE_THEME",
+          "depends_on": ["P1-S2"],
+          "file_scope": [
+            "src/theme/theme.css",
+            "tailwind.config.js"
+          ],
+          "acceptance_criteria": [
+            "Card border radius: --radius-card = 24px (outer), --radius-card-inner = 16px (inner)",
+            "Tailwind borderRadius.card = 24px, borderRadius.card-inner = 16px",
+            "Gold palette values identical to Velari: light #D4B896, DEFAULT #C4A35A, dark #8B7355, muted #6B5B4F",
+            "Olive palette added to Tailwind config: light #7A8B4A, DEFAULT #5D6B35, dark #3D4A2E, muted #2E3A22",
+            "Shadow token names match Velari: --shadow-glass, --shadow-glassHover",
+            "Glass tint value: rgba(255, 255, 255, 0.14)",
+            "Glass opacity: 15%",
+            "Role accent color values match Velari exactly"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P2",
+      "name": "Theme Runtime",
+      "goal": "Enable runtime token injection so the design system is dynamic, not static.",
+      "lane": "LANE_THEME",
+      "depends_on": ["P1"],
+      "segments": [
+        {
+          "id": "P2-S1",
+          "name": "Theme Provider",
+          "status": "PASS",
+          "assigned_agent": "LANE_THEME",
+          "depends_on": ["P1-S1", "P1-S2", "P1-S3"],
+          "file_scope": [
+            "src/theme/ThemeProvider.tsx",
+            "src/theme/ThemeTuningProvider.tsx",
+            "src/theme/index.ts"
+          ],
+          "acceptance_criteria": [
+            "ThemeProvider component exists and accepts initialTheme prop",
+            "ThemeProvider injects CSS variables onto document :root at runtime",
+            "ThemeTuningProvider exists and wraps ThemeProvider",
+            "src/theme/index.ts exports both providers",
+            "Default theme is classy-dark"
+          ]
+        },
+        {
+          "id": "P2-S2",
+          "name": "Root Integration",
+          "status": "PASS",
+          "assigned_agent": "LANE_THEME",
+          "depends_on": ["P2-S1"],
+          "file_scope": [
+            "src/main.tsx"
+          ],
+          "acceptance_criteria": [
+            "main.tsx imports ThemeProvider and ThemeTuningProvider from src/theme",
+            "Provider stack order: QueryClientProvider > ThemeProvider > ThemeTuningProvider > App",
+            "initialTheme prop set to classy-dark",
+            "App renders without console errors related to theme"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P3",
+      "name": "Shell Architecture",
+      "goal": "Replace traditional website layout with Velari app-shell model.",
+      "lane": "LANE_SHELL",
+      "depends_on": ["P2"],
+      "segments": [
+        {
+          "id": "P3-S1",
+          "name": "GlobalSurface",
+          "status": "PASS",
+          "assigned_agent": "LANE_SHELL",
+          "depends_on": ["P2-S1", "P2-S2"],
+          "file_scope": [
+            "src/layout/GlobalSurface.tsx"
+          ],
+          "acceptance_criteria": [
+            "Component exists at src/layout/GlobalSurface.tsx",
+            "Enforces max-w-[430px] on mobile",
+            "Enforces sm:max-w-[640px] on tablet",
+            "Enforces lg:max-w-[768px] on desktop",
+            "Container is centered with mx-auto",
+            "Background fills viewport edge-to-edge, content is constrained",
+            "Renders GlobalHeader and AnimatedPortalShell as children"
+          ]
+        },
+        {
+          "id": "P3-S2",
+          "name": "Header Replacement",
+          "status": "PASS",
+          "assigned_agent": "LANE_SHELL",
+          "depends_on": ["P3-S1"],
+          "file_scope": [
+            "src/layout/GlobalHeader.tsx",
+            "src/components/layout/Navbar.tsx"
+          ],
+          "acceptance_criteria": [
+            "GlobalHeader.tsx created at src/layout/GlobalHeader.tsx",
+            "GlobalHeader renders inside GlobalSurface, not independently",
+            "GlobalHeader accepts role context (placeholder if auth not yet wired)",
+            "Navbar.tsx is removed or marked deprecated — not rendered anywhere",
+            "No import of Navbar.tsx exists in App.tsx or Shell.tsx"
+          ]
+        },
+        {
+          "id": "P3-S3",
+          "name": "BottomNav",
+          "status": "PASS",
+          "assigned_agent": "LANE_SHELL",
+          "depends_on": ["P3-S2"],
+          "file_scope": [
+            "src/layout/BottomNav.tsx"
+          ],
+          "acceptance_criteria": [
+            "BottomNav.tsx exists at src/layout/BottomNav.tsx",
+            "Component is rendered in App.tsx outside of Routes — always visible",
+            "Uses fixed or sticky positioning at viewport bottom",
+            "Tabs are role-aware placeholders (can default to guest tabs until auth is wired)",
+            "Does not render inside any page component"
+          ]
+        },
+        {
+          "id": "P3-S4",
+          "name": "AnimatedPortalShell",
+          "status": "PASS",
+          "assigned_agent": "LANE_SHELL",
+          "depends_on": ["P3-S3"],
+          "file_scope": [
+            "src/layout/AnimatedPortalShell.tsx"
+          ],
+          "acceptance_criteria": [
+            "Component exists at src/layout/AnimatedPortalShell.tsx",
+            "Wraps page content with entrance animation using Framer Motion",
+            "Applies pt-2 pb-24 to clear GlobalHeader and BottomNav",
+            "Animation uses CSS variable tokens for duration and easing",
+            "All pages render inside AnimatedPortalShell — not directly in routes"
+          ]
+        },
+        {
+          "id": "P3-S5",
+          "name": "App Restructure",
+          "status": "PASS",
+          "assigned_agent": "LANE_SHELL",
+          "depends_on": ["P3-S4"],
+          "file_scope": [
+            "src/App.tsx",
+            "src/components/layout/Shell.tsx"
+          ],
+          "acceptance_criteria": [
+            "App.tsx imports and uses GlobalSurface, GlobalHeader, AnimatedPortalShell, BottomNav",
+            "Shell.tsx is removed or deprecated — no longer rendered",
+            "Footer.tsx is removed — replaced by BottomNav",
+            "Public routes render without GlobalSurface wrapper",
+            "Protected routes render inside ProtectedRoute > GlobalSurface",
+            "BottomNav is rendered at App root level, outside Routes",
+            "Route structure matches Velari public/protected split pattern"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P4",
+      "name": "Auth System",
+      "goal": "Introduce full multi-role authentication pipeline.",
+      "lane": "LANE_AUTH",
+      "depends_on": ["P3"],
+      "segments": [
+        {
+          "id": "P4-S1",
+          "name": "Auth Store",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P3-S1", "P3-S2", "P3-S3", "P3-S4", "P3-S5"],
+          "file_scope": [
+            "src/stores/authStore.ts",
+            "src/types/auth.ts"
+          ],
+          "acceptance_criteria": [
+            "authStore.ts exists at src/stores/authStore.ts",
+            "Store holds: user, profile, roles (array), activeRole, status, orgMemberships, activeOrgId, roleIntent",
+            "Status values: idle | loading | authenticated | unauthenticated | error",
+            "Role types defined: guest | owner | door | promoter | dj",
+            "Role priority ordering implemented",
+            "Computed values: isAuthenticated, isReady",
+            "Actions: login, logout, switchRole, switchOrg, setRoleIntent",
+            "Login action executes 7-step async pipeline matching Velari's order",
+            "Store uses Zustand persist middleware with localStorage",
+            "src/types/auth.ts defines RoleType, AuthState, Profile interfaces"
+          ]
+        },
+        {
+          "id": "P4-S2",
+          "name": "Auth Provider",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P4-S1"],
+          "file_scope": [
+            "src/providers/AuthProvider.tsx"
+          ],
+          "acceptance_criteria": [
+            "AuthProvider.tsx exists at src/providers/AuthProvider.tsx",
+            "Subscribes to Supabase onAuthStateChange",
+            "Handles: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT events",
+            "5-second fallback timeout if no auth event fires",
+            "Shows loading UI during initialization",
+            "Exports useAuth() hook",
+            "Guards against double-initialization (React Strict Mode safe)",
+            "AuthProvider added to provider stack in main.tsx (LANE_AUTH owns main.tsx for this segment only — coordinate with LANE_THEME agent)"
+          ]
+        },
+        {
+          "id": "P4-S3",
+          "name": "ProtectedRoute",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P4-S2"],
+          "file_scope": [
+            "src/routes/ProtectedRoute.tsx"
+          ],
+          "acceptance_criteria": [
+            "ProtectedRoute.tsx exists at src/routes/ProtectedRoute.tsx",
+            "Checks authStore.isReady — shows loading spinner if false",
+            "Checks authStore.isAuthenticated — redirects to /login if false",
+            "Renders children only when authenticated and ready",
+            "Used in App.tsx to wrap all protected routes"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P5",
+      "name": "State System",
+      "goal": "Establish global UI state and server state architecture.",
+      "lane": "LANE_STATE",
+      "depends_on": ["P4"],
+      "segments": [
+        {
+          "id": "P5-S1",
+          "name": "React Query Setup",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P4-S1", "P4-S2", "P4-S3"],
+          "file_scope": [
+            "src/lib/queryClient.ts"
+          ],
+          "acceptance_criteria": [
+            "queryClient.ts exists at src/lib/queryClient.ts",
+            "QueryClient configured with appropriate staleTime and retry settings",
+            "QueryClientProvider added to provider stack in main.tsx",
+            "useProducts hook migrated from useState/useEffect to React Query",
+            "No raw useState-based data fetching remains in hooks directory"
+          ]
+        },
+        {
+          "id": "P5-S2",
+          "name": "UI Store",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P5-S1"],
+          "file_scope": [
+            "src/stores/uiStore.ts"
+          ],
+          "acceptance_criteria": [
+            "uiStore.ts exists at src/stores/uiStore.ts",
+            "Store holds: selectedProduct, showCartOverlay, selectedVenueId",
+            "Actions: selectProduct, openCartOverlay, closeCartOverlay, clearSelection",
+            "Cart modal open/close state is owned exclusively by uiStore",
+            "No page-level component holds cart open/close state locally"
+          ]
+        },
+        {
+          "id": "P5-S3",
+          "name": "Cart Store Migration",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P5-S2"],
+          "file_scope": [
+            "src/stores/cartStore.ts",
+            "src/hooks/useCart.ts"
+          ],
+          "acceptance_criteria": [
+            "cartStore.ts created at src/stores/cartStore.ts (replaces useCart.ts hook)",
+            "Zustand persist middleware applied to cartStore",
+            "Cart state survives full page reload",
+            "useCart.ts updated to import from cartStore",
+            "All existing cart functionality preserved: add, remove, updateQuantity, clear, total, itemCount"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P6",
+      "name": "Component System",
+      "goal": "Replace flat GlassCard system with Velari's two-layer container hierarchy.",
+      "lane": "LANE_COMPONENTS",
+      "depends_on": ["P5"],
+      "segments": [
+        {
+          "id": "P6-S1",
+          "name": "ModuleShell",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P5-S1", "P5-S2", "P5-S3"],
+          "file_scope": [
+            "src/components/shells/ModuleShell.tsx"
+          ],
+          "acceptance_criteria": [
+            "ModuleShell.tsx exists at src/components/shells/ModuleShell.tsx",
+            "Supports surface prop: glass | solid | flat",
+            "Supports density prop: compact | comfortable | spacious",
+            "Density values map to CSS spacing tokens",
+            "Renders loading state when isLoading=true",
+            "Renders empty state when isEmpty=true",
+            "Renders error state when error is provided",
+            "Supports optional header, action, and footer slots",
+            "No hardcoded spacing values — all spacing via CSS variable tokens"
+          ]
+        },
+        {
+          "id": "P6-S2",
+          "name": "VelariShell",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P6-S1"],
+          "file_scope": [
+            "src/components/shells/VelariShell.tsx"
+          ],
+          "acceptance_criteria": [
+            "VelariShell.tsx exists at src/components/shells/VelariShell.tsx",
+            "Wraps ModuleShell with surface=flat",
+            "Applies glass-panel class",
+            "Supports variant prop: primary | secondary | compact | emphasized",
+            "Supports withAmbientGlow prop (applies velari-ambient-glow class)",
+            "Supports noPadding prop",
+            "Supports density prop (passed through to ModuleShell)",
+            "Visual output matches Velari reference system"
+          ]
+        },
+        {
+          "id": "P6-S3",
+          "name": "Component Migration",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P6-S2"],
+          "file_scope": [
+            "src/components/**"
+          ],
+          "acceptance_criteria": [
+            "Zero remaining imports of GlassCard.tsx across entire src/components directory",
+            "All locations previously using GlassCard now use VelariShell or ModuleShell with appropriate surface type",
+            "GlassCard.tsx either deleted or marked as @deprecated with no active usages",
+            "ProductCard uses VelariShell with appropriate variant",
+            "OrderConfirmation uses VelariShell",
+            "GSAP import removed from all component files — animations use Framer Motion only",
+            "No direct cubic-bezier or duration values in component files — all use CSS variable tokens"
+          ]
+        },
+        {
+          "id": "P6-S4",
+          "name": "Overlay System",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P6-S3"],
+          "file_scope": [
+            "src/App.tsx",
+            "src/components/store/Cart.tsx"
+          ],
+          "acceptance_criteria": [
+            "Cart.tsx is rendered in App.tsx at root level — not inside any page component",
+            "Cart visibility is controlled exclusively by uiStore.showCartOverlay",
+            "Cart open/close triggers are removed from all page and product components",
+            "Pages trigger overlay via uiStore.openCartOverlay() action only",
+            "Cart renders as root-level portal (createPortal or equivalent)",
+            "CartPage.tsx (/cart route) remains as full-page fallback view"
+          ]
+        }
+      ]
+    },
+
+    {
+      "phase": "P7",
+      "name": "Routing System",
+      "goal": "Align routing architecture with Velari: lazy loading, error boundaries, Suspense fallbacks.",
+      "lane": "LANE_ROUTING",
+      "depends_on": ["P6"],
+      "segments": [
+        {
+          "id": "P7-S1",
+          "name": "Lazy Loading",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P6-S1", "P6-S2", "P6-S3", "P6-S4"],
+          "file_scope": [
+            "src/pages/**",
+            "src/App.tsx"
+          ],
+          "acceptance_criteria": [
+            "All page-level components imported via React.lazy() in App.tsx",
+            "Zero direct (non-lazy) page imports remain in App.tsx",
+            "Each lazy import wrapped in React.Suspense with RouteLoadingFallback",
+            "Bundle inspection confirms code-splitting is active (separate chunks per page)"
+          ]
+        },
+        {
+          "id": "P7-S2",
+          "name": "Suspense + Fallback",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P7-S1"],
+          "file_scope": [
+            "src/App.tsx",
+            "src/components/RouteLoadingFallback.tsx"
+          ],
+          "acceptance_criteria": [
+            "RouteLoadingFallback.tsx exists at src/components/RouteLoadingFallback.tsx",
+            "Fallback UI is a centered spinner using Velari spinner pattern: border-2 border-white/20 border-t-white/80 rounded-full animate-spin",
+            "All Suspense boundaries in App.tsx use RouteLoadingFallback",
+            "Fallback renders correctly inside the constrained GlobalSurface viewport"
+          ]
+        },
+        {
+          "id": "P7-S3",
+          "name": "Error Boundaries",
+          "status": "PENDING",
+          "assigned_agent": null,
+          "depends_on": ["P7-S2"],
+          "file_scope": [
+            "src/components/ErrorBoundary.tsx",
+            "src/App.tsx"
+          ],
+          "acceptance_criteria": [
+            "ErrorBoundary.tsx exists as a React class component at src/components/ErrorBoundary.tsx",
+            "ErrorBoundary wraps the entire route tree in App.tsx",
+            "Error state renders a user-facing message inside GlobalSurface (not a blank screen)",
+            "ErrorBoundary resets on route navigation",
+            "No unhandled React rendering errors can escape to a blank screen"
+          ]
+        }
+      ]
+    }
+
+  ]
+}
