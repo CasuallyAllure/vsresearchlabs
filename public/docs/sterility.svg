@@ -1,0 +1,86 @@
+<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="420" height="560" fill="#0a0a0a"/>
+
+  <rect x="0" y="0" width="420" height="72" fill="rgba(255,255,255,0.025)"/>
+  <line x1="0" y1="72" x2="420" y2="72" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+
+  <text x="24" y="24" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="2">VS RESEARCH LABS</text>
+  <line x1="24" y1="30" x2="132" y2="30" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="24" y="50" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.88)" letter-spacing="1">STERILITY</text>
+  <text x="24" y="64" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.88)" letter-spacing="1">CERTIFICATE</text>
+  <text x="396" y="24" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1" text-anchor="end">STERILE</text>
+  <text x="396" y="36" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.22)" letter-spacing="1" text-anchor="end">FORM-QC-004</text>
+
+  <!-- Specimen block -->
+  <rect x="24" y="86" width="372" height="68" rx="2" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="36" y="104" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">SPECIMEN IDENTITY</text>
+  <line x1="36" y1="109" x2="384" y2="109" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="36" y="124" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Product</text>
+  <text x="180" y="124" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="1">Bacteriostatic Water</text>
+  <text x="36" y="138" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Batch No.</text>
+  <text x="180" y="138" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="1">BAC-2026-204</text>
+  <text x="36" y="152" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Method</text>
+  <text x="180" y="152" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="1">USP &lt;71&gt; Sterility Test</text>
+
+  <!-- Test method -->
+  <text x="24" y="178" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">TEST PROTOCOL</text>
+  <line x1="24" y1="184" x2="396" y2="184" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <text x="32" y="198" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Test standard</text>
+  <text x="200" y="198" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="0.5">USP &lt;71&gt; / EP 2.6.1</text>
+  <line x1="24" y1="204" x2="396" y2="204" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="218" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Inoculation media</text>
+  <text x="200" y="218" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="0.5">TSB + FTM</text>
+  <line x1="24" y1="224" x2="396" y2="224" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="238" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Incubation period</text>
+  <text x="200" y="238" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="0.5">14 days</text>
+  <line x1="24" y1="244" x2="396" y2="244" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="258" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Sample volume</text>
+  <text x="200" y="258" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="0.5">1.0 mL per container</text>
+  <line x1="24" y1="264" x2="396" y2="264" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="278" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Sample size</text>
+  <text x="200" y="278" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="0.5">10 containers</text>
+  <line x1="24" y1="284" x2="396" y2="284" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Result -->
+  <text x="24" y="308" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">TEST RESULT</text>
+  <line x1="24" y1="314" x2="396" y2="314" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <rect x="24" y="322" width="372" height="48" rx="2" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="36" y="342" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Aerobic bacteria</text>
+  <text x="300" y="342" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="0.5">NO GROWTH</text>
+  <line x1="36" y1="348" x2="384" y2="348" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="36" y="362" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.5">Anaerobic bacteria</text>
+  <text x="300" y="362" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="0.5">NO GROWTH</text>
+
+  <!-- Verdict block -->
+  <rect x="24" y="384" width="372" height="32" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="210" y="396" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.35)" letter-spacing="2" text-anchor="middle">OVERALL RESULT</text>
+  <text x="210" y="410" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.72)" letter-spacing="4" text-anchor="middle">STERILE</text>
+
+  <!-- Additional compliance note -->
+  <text x="32" y="434" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="0.5">Preservative: 0.9% benzyl alcohol inhibits bacterial growth</text>
+  <text x="32" y="448" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="0.5">in multi-dose configuration per standard laboratory protocol.</text>
+
+  <!-- Auth -->
+  <line x1="24" y1="464" x2="396" y2="464" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="24" y="472" width="160" height="28" rx="1" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="36" y="486" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">APPROVED BY</text>
+  <text x="36" y="498" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1">QC DIRECTOR · VSR</text>
+
+  <rect x="236" y="472" width="160" height="28" rx="1" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="248" y="486" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">DATE ISSUED</text>
+  <text x="248" y="498" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1">2026-04-05</text>
+
+  <line x1="0" y1="516" x2="420" y2="516" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="0" y="516" width="420" height="44" fill="rgba(255,255,255,0.01)"/>
+  <text x="24" y="533" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.22)" letter-spacing="1">VS RESEARCH LABS</text>
+  <text x="24" y="547" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.15)" letter-spacing="0.5">Research procurement instrument</text>
+  <text x="396" y="533" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1" text-anchor="end">REV. A</text>
+  <text x="396" y="547" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.12)" letter-spacing="1" text-anchor="end">STERILE / QC-004</text>
+</svg>

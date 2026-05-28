@@ -1,26 +1,33 @@
 /**
  * Contact
  * Phase 2 — Layout clarity, hierarchy, proportions.
+ * Reconciliation Pass D — Open-inquiry framing.
  *
- * Static contact page. No forms, no integrations. Inventory-only:
- * existing page rebuilt with no glass surfaces. Channel rows render
- * as a hairline-divided definition list, left-aligned and typeset.
+ * The open / non-itemized inquiry surface. Subordinate to /cart for
+ * itemized procurement requests; Contact handles documentation
+ * requests, procurement questions outside the catalog, and general
+ * operational contact.
+ *
+ * Static page — no forms here. Inquiry submission with line items
+ * is centralized in /cart. Channel rows render as a hairline-
+ * divided definition list, left-aligned and typeset.
  */
 
 export function Contact() {
   return (
     <section className="py-[var(--space-12)]">
       <header className="mb-[var(--space-12)] max-w-[60ch]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
-          Get in touch
+        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+          Open Inquiries
         </p>
         <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight mb-[var(--space-6)]">
           Contact
         </h1>
         <p className="text-sm sm:text-base text-white/60 leading-relaxed">
-          For research inquiries and product questions, please reach out using
-          the channels below. Our team typically responds within one business
-          day.
+          Procurement questions outside the catalog, documentation
+          requests, and general operational contact. Itemized
+          requests are submitted via the inquiry cart from any
+          product page.
         </p>
       </header>
 
@@ -32,7 +39,7 @@ export function Contact() {
           <dd>
             <a
               href="mailto:inquiries@vsresearchlabs.com"
-              className="text-base text-white hover:text-gold transition-colors"
+              className="text-base text-white underline underline-offset-4 decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
             >
               inquiries@vsresearchlabs.com
             </a>
@@ -46,7 +53,7 @@ export function Contact() {
           <dd>
             <a
               href="tel:+18005550100"
-              className="text-base text-white hover:text-gold transition-colors"
+              className="text-base text-white underline underline-offset-4 tabular-nums decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
             >
               +1 (800) 555-0100
             </a>

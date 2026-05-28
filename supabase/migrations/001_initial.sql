@@ -1,52 +1,58 @@
--- Products (managed manually or via Supabase dashboard)
+-- =============================================================================
+-- VS Research Labs — Initial Schema (Inquiry-Only)
+-- =============================================================================
+-- This file is the canonical Phase-1 schema. Stripe / orders / order_items
+-- have been removed; the storefront is inquiry-only and emails go through
+-- the `send-inquiry` Edge Function (Resend).
+--
+-- Supplier confidentiality
+-- ------------------------
+-- The supplier source (`aliexpress_url`) lives in a SEPARATE table that is
+-- never exposed to anon. The PostgREST API for `anon` cannot reach it.
+-- =============================================================================
+
+-- Public product catalog (safe to expose to anon)
 create table products (
-  id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  description text,
-  price_cents integer not null,
-  category    text,
-  images      text[],
-  aliexpress_url text,
-  in_stock    boolean default true,
-  created_at  timestamptz default now()
+  id                uuid primary key default gen_random_uuid(),
+  slug              text unique,
+  sku               text unique,
+  name              text not null,
+  short_description text,
+  long_description  text,
+  category          text,
+  images            text[],
+  specs             jsonb,
+  tags              text[],
+  price_cents       integer,
+  stock             integer,
+  featured          boolean default false,
+  created_at        timestamptz default now(),
+  updated_at        timestamptz default now()
 );
 
--- Orders
-create table orders (
-  id              uuid primary key default gen_random_uuid(),
-  stripe_session_id text unique,
-  customer_email  text not null,
-  customer_name   text,
-  shipping_address jsonb,
-  status          text default 'pending',
-  total_cents     integer,
-  created_at      timestamptz default now()
-);
-
--- Order items
-create table order_items (
-  id         uuid primary key default gen_random_uuid(),
-  order_id   uuid references orders(id),
-  product_id uuid references products(id),
-  quantity   integer not null,
-  price_cents integer not null
+-- Supplier source — service-role only. Never granted to anon/authenticated.
+create table product_supplier_links (
+  product_id     uuid primary key references products(id) on delete cascade,
+  aliexpress_url text not null,
+  notes          text,
+  updated_at     timestamptz default now()
 );
 
 -- Enable RLS
 alter table products enable row level security;
-alter table orders enable row level security;
-alter table order_items enable row level security;
+alter table product_supplier_links enable row level security;
 
--- Products are publicly readable (but aliexpress_url filtered at app level)
+-- Public catalog is readable by everyone (anon included).
 create policy "Products are viewable by everyone"
   on products for select
   using (true);
 
--- Orders and order_items are only accessible via service role (Edge Functions)
-create policy "Orders are managed by service role"
-  on orders for all
+-- Supplier links: deny all by default. Service role bypasses RLS, so Edge
+-- Functions / admin tooling using SUPABASE_SERVICE_ROLE_KEY still work.
+create policy "Supplier links are service-role only"
+  on product_supplier_links for all
   using (false);
 
-create policy "Order items are managed by service role"
-  on order_items for all
-  using (false);
+-- Belt-and-suspenders: explicitly revoke API access so `anon` cannot even
+-- attempt to query the table via PostgREST.
+revoke all on product_supplier_links from anon, authenticated;

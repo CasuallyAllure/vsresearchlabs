@@ -1,0 +1,97 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">BENCHTOP CENTRIFUGE · 24-PLACE</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-LE-003</text>
+
+  <!-- Microcentrifuge — top-down rotor view + front body schematic -->
+
+  <!-- Front body view: base + housing -->
+  <rect x="230" y="490" width="340" height="30" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+
+  <!-- Main body -->
+  <rect x="248" y="380" width="304" height="112" rx="5" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+
+  <!-- Display + controls -->
+  <rect x="264" y="395" width="100" height="42" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <text x="314" y="410" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1" text-anchor="middle">RPM</text>
+  <text x="314" y="426" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.45)" letter-spacing="2" text-anchor="middle">15000</text>
+
+  <!-- Buttons -->
+  <rect x="376" y="402" width="22" height="10" rx="1" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <rect x="402" y="402" width="22" height="10" rx="1" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <rect x="376" y="418" width="22" height="10" rx="1" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <rect x="402" y="418" width="22" height="10" rx="1" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+  <!-- Lid hinge line -->
+  <line x1="248" y1="382" x2="552" y2="382" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+
+  <!-- Lid open showing rotor — top section -->
+  <path d="M248 380 Q248 240 400 224 Q552 240 552 380" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+  <!-- Rotor — top-down view centered at 400,330 -->
+  <circle cx="400" cy="322" r="104" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+  <!-- Rotor center hub -->
+  <circle cx="400" cy="322" r="14" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+  <!-- 24 tube positions arranged in ring -->
+  <!-- Inner ring: 12 positions at radius 44 -->
+  <!-- Outer ring: 12 positions at radius 74 -->
+  <!-- Inner 12 at angles 0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330 -->
+  <circle cx="444" cy="322" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="438" cy="360" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="422" cy="370" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="400" cy="366" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="378" cy="370" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="362" cy="360" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="356" cy="322" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="362" cy="284" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="378" cy="274" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="400" cy="278" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="422" cy="274" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <circle cx="438" cy="284" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <!-- Outer 12 at radius 76 -->
+  <circle cx="476" cy="322" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="466" cy="366" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="438" cy="398" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="400" cy="398" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="362" cy="398" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="334" cy="366" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="324" cy="322" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="334" cy="278" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="362" cy="246" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="400" cy="246" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="438" cy="246" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <circle cx="466" cy="278" r="5" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+  <!-- Right callouts -->
+  <line x1="504" y1="322" x2="570" y2="290" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="504" cy="322" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="574" y="287" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">24-PLACE ROTOR</text>
+  <text x="574" y="299" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">FIXED-ANGLE</text>
+
+  <line x1="553" y1="430" x2="614" y2="430" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="553" cy="430" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="618" y="427" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">BRUSHLESS MOTOR</text>
+  <text x="618" y="439" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">SOFT-TOUCH LID LOCK</text>
+
+  <line x1="553" y1="492" x2="614" y2="492" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="553" cy="492" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="618" y="489" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">COOLING −10 TO</text>
+  <text x="618" y="501" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">+40°C RANGE</text>
+
+  <!-- Left callout -->
+  <line x1="248" y1="430" x2="186" y2="410" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="248" cy="430" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="407" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">PROGRAMMABLE</text>
+  <text x="60" y="419" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">PROFILES · SHORT-SPIN</text>
+
+  <text x="60" y="602" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">15,000 rpm · 21,130 × g · 24 × 1.5 / 2 mL</text>
+  <text x="400" y="602" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.75">VSR-LE-CEN-024</text>
+
+  <line x1="60" y1="618" x2="740" y2="618" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">FOR LABORATORY RESEARCH USE ONLY</text>
+  <text x="740" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

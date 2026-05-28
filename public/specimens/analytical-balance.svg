@@ -1,0 +1,100 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">PRECISION INSTRUMENT · BALANCE</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-LE-001</text>
+
+  <!-- Analytical balance front-view schematic -->
+  <!-- Base: x=240..560, y=560..590 -->
+  <rect x="240" y="558" width="320" height="24" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <!-- Feet -->
+  <rect x="254" y="580" width="18" height="8" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <rect x="526" y="580" width="18" height="8" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+
+  <!-- Main housing body: x=260..540, y=380..558 -->
+  <rect x="260" y="380" width="280" height="178" rx="4" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+
+  <!-- Display screen: x=274..440, y=396..446 -->
+  <rect x="274" y="396" width="166" height="50" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  <!-- Display readout lines -->
+  <line x1="284" y1="412" x2="430" y2="412" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="420" y="432" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.45)" letter-spacing="2" text-anchor="end">0.0000</text>
+  <text x="288" y="430" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">g</text>
+
+  <!-- Control panel buttons row -->
+  <rect x="274" y="456" width="24" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+  <rect x="304" y="456" width="24" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+  <rect x="334" y="456" width="24" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+  <rect x="364" y="456" width="24" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+  <rect x="394" y="456" width="24" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+
+  <!-- RS-232 / USB ports (small rectangles at housing bottom right) -->
+  <rect x="450" y="520" width="16" height="8" rx="1" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <rect x="470" y="520" width="12" height="8" rx="1" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+  <!-- Draft shield: enclosure above housing -->
+  <!-- Side walls of draft shield: x=244..556, y=192..384 -->
+  <line x1="244" y1="192" x2="244" y2="382" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+  <line x1="556" y1="192" x2="556" y2="382" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+  <!-- Top of draft shield -->
+  <line x1="244" y1="192" x2="556" y2="192" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+  <!-- Draft shield front panel (glass - dashed to indicate transparency) -->
+  <rect x="244" y="192" width="312" height="190" fill="rgba(255,255,255,0)" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Sliding door indicator -->
+  <line x1="244" y1="280" x2="400" y2="280" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="0"/>
+  <rect x="390" y="274" width="6" height="12" rx="1" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+
+  <!-- Weighing pan - centered above housing -->
+  <ellipse cx="400" cy="358" rx="72" ry="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+  <!-- Pan support column -->
+  <line x1="400" y1="370" x2="400" y2="382" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  <!-- Pan support base plate -->
+  <line x1="385" y1="382" x2="415" y2="382" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+  <!-- Level bubble indicator (top right of housing) -->
+  <circle cx="524" cy="400" r="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <circle cx="524" cy="400" r="2" fill="rgba(255,255,255,0)" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+
+  <!-- Right callouts -->
+  <line x1="557" y1="240" x2="622" y2="240" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="557" cy="240" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="626" y="237" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">DRAFT SHIELD</text>
+  <text x="626" y="249" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">SLIDING DOORS</text>
+
+  <line x1="472" y1="364" x2="572" y2="330" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="472" cy="364" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="576" y="327" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">WEIGHING PAN</text>
+  <text x="576" y="339" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">Ø 144 mm</text>
+
+  <line x1="541" y1="430" x2="622" y2="430" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="541" cy="430" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="626" y="427" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">DISPLAY · RS-232</text>
+  <text x="626" y="439" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">USB OUTPUT</text>
+
+  <line x1="541" y1="524" x2="622" y2="524" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="541" cy="524" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="626" y="521" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">MOTORIZED CAL.</text>
+  <text x="626" y="533" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">INTERNAL WEIGHT</text>
+
+  <!-- Left callouts -->
+  <line x1="244" y1="240" x2="178" y2="240" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="244" cy="240" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="237" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">GLASS PANELS</text>
+
+  <line x1="260" y1="470" x2="194" y2="470" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="260" cy="470" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="467" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">CONTROL KEYS</text>
+  <text x="60" y="479" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">AUTO-CAL FUNC.</text>
+
+  <!-- Spec block bottom -->
+  <text x="60" y="602" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">220 g CAPACITY · 0.1 mg READABILITY</text>
+  <text x="400" y="602" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.75">VSR-LE-BAL-220</text>
+  <text x="740" y="602" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">PRECISION INSTRUMENT</text>
+
+  <line x1="60" y1="618" x2="740" y2="618" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">CALIBRATED AT FACTORY · CERT. AVAILABLE ON REQUEST</text>
+  <text x="740" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

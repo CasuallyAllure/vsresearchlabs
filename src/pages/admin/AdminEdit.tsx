@@ -8,10 +8,7 @@
  * Mutations route through useProductAdmin only — never directly through
  * the productStore.
  *
- * Compat shim: this page writes the deprecated legacy aliases
- * (description, price_cents, in_stock, created_at) alongside canonical
- * fields so downstream consumers (CartPage, useCart.total, etc.) stay
- * functional until Phase 5 removes them in a single sweep.
+ * Mutations route through useProductAdmin only — canonical fields only.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -126,6 +123,27 @@ function productToForm(p: Product): FormState {
   };
 }
 
+/**
+ * Derive a procurement-style abbreviation from a SKU string.
+ * Convention: VSR-{CAT}-{ABBREV}-{NNN} → ABBREV.
+ * Falls back to the first three uppercase chars of the SKU if the
+ * convention isn't followed.
+ */
+function deriveAbbreviation(sku: string): string {
+  const parts = sku.split('-').filter((p) => p.length > 0);
+  if (parts.length >= 3) return parts[2].toUpperCase();
+  return sku.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase() || 'NEW';
+}
+
+/**
+ * Default family label used when admin creates a new product without
+ * an explicit family. Seed-curated products carry richer values
+ * ("GLP-1 Agonist", "Solvent", etc.); this is only a placeholder.
+ */
+function deriveFamilyDefault(category: ProductCategory): string {
+  return category === 'research-supplies' ? 'Research Supply' : 'Laboratory Equipment';
+}
+
 function generateId(): string {
   if (
     typeof crypto !== 'undefined' &&
@@ -209,6 +227,27 @@ export function AdminEdit() {
 
     const createdAt = isEdit && product ? product.createdAt : now;
 
+    const trimmedSku = form.sku.trim();
+
+    // Wave 7c — abbreviation/family/variants are required schema fields
+    // but the admin form does not yet expose them as inputs. Preserve any
+    // values already present on the edited product; otherwise derive
+    // sensible defaults so newly-created products are well-formed.
+    //
+    //   abbreviation → third segment of the SKU (existing convention,
+    //                  e.g. VSR-RS-SEM-005 → "SEM"); falls back to the
+    //                  first three uppercase chars of the SKU.
+    //   family       → category-derived placeholder. Editorial substance
+    //                  classes ("GLP-1 Agonist", "Solvent", etc.) come
+    //                  from the seed JSON or admin export/import.
+    //   variants     → empty array. Variants are dataset-curated; admin
+    //                  expansion is deferred to a later wave.
+    const abbreviation =
+      (isEdit && product?.abbreviation) || deriveAbbreviation(trimmedSku);
+    const family =
+      (isEdit && product?.family) || deriveFamilyDefault(form.category);
+    const variants = (isEdit && product?.variants) || [];
+
     const canonical = {
       id: productId,
       slug: form.slug.trim(),
@@ -218,7 +257,10 @@ export function AdminEdit() {
       longDescription: form.longDescription.trim(),
       images: parseImages(form.imagesText),
       specs: parseSpecs(form.specsText),
-      sku: form.sku.trim(),
+      sku: trimmedSku,
+      abbreviation,
+      family,
+      variants,
       priceCents,
       stock,
       tags: parseTags(form.tagsText),
@@ -227,16 +269,7 @@ export function AdminEdit() {
       updatedAt: now,
     };
 
-    // Compat shim — Phase 5 will remove these aliases once consumers
-    // migrate off the deprecated fields.
-    const legacy = {
-      description: canonical.shortDescription,
-      price_cents: priceCents ?? 0,
-      in_stock: stock === null ? true : stock > 0,
-      created_at: createdAt,
-    };
-
-    return { ...canonical, ...legacy };
+    return canonical;
   }
 
   function handleSubmit(e: React.FormEvent) {

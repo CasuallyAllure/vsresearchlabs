@@ -6,10 +6,7 @@
     "category": "research-supplies",
     "shortDescription": "Research-grade GLP-1 receptor agonist peptide. Lyophilized, 5mg vial.",
     "longDescription": "Research-grade Semaglutide peptide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Semaglutide+5mg",
-      "https://placehold.co/800x800/111/d4af37/png?text=Vial+Detail"
-    ],
+    "images": ["/specimens/semaglutide-5mg.svg"],
     "specs": [
       { "label": "Purity (HPLC)", "value": "≥ 99%" },
       { "label": "Form", "value": "Lyophilized powder" },
@@ -17,16 +14,74 @@
       { "label": "Storage", "value": "−20°C, desiccated" }
     ],
     "sku": "VSR-RS-SEM-005",
+    "abbreviation": "SEM",
+    "family": "GLP-1 Agonist",
+    "variants": [
+      { "dose": "2mg" },
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
     "priceCents": null,
     "stock": null,
     "tags": ["peptide", "glp-1", "research"],
     "featured": true,
     "createdAt": "2026-04-01T00:00:00.000Z",
     "updatedAt": "2026-04-01T00:00:00.000Z",
-    "description": "Research-grade GLP-1 receptor agonist peptide. Lyophilized, 5mg vial.",
-    "price_cents": 0,
-    "in_stock": true,
-    "created_at": "2026-04-01T00:00:00.000Z"
+    "lotNumber": "LOT-2026-031-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 5,
+    "batchReference": "SEM-BATCH-2026-031",
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "910463-68-2",
+    "molecularWeight": "4113.58 g/mol",
+    "productType": "peptide",
+    "researchClassification": "glp-1-agonist",
+    "mechanismSummary": "GLP-1 receptor agonist with high affinity for GLP-1R. Mediates glucose-dependent insulin secretion, suppresses glucagon, and delays gastric emptying. C18 fatty acid chain with albumin linker extends plasma half-life to approximately 7 days, enabling once-weekly dosing in research models.",
+    "receptorActivity": "Primary: GLP-1R (high affinity, Ki ~0.5 nM). No meaningful activity at GIP-R, GCGR, or other incretin receptors at physiological concentrations.",
+    "pathwaySummary": "GLP-1R → cAMP/PKA/CREB cascade → glucose-dependent potentiation of pancreatic β-cell insulin exocytosis. Hypothalamic arcuate nucleus satiety circuit activation via vagal afferents and central GLP-1R expression.",
+    "fdaStatus": "Approved — Ozempic (T2DM) · Wegovy (obesity)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Once-Weekly Semaglutide in Adults with Overweight or Obesity (STEP 1)",
+        "source": "NEJM",
+        "year": 2021,
+        "model": "human",
+        "phase": "Phase 3",
+        "url": "https://www.nejm.org/doi/10.1056/NEJMoa2032183",
+        "notes": ["n=1,961 adults, 68-week trial", "14.9% mean body weight reduction vs 2.4% placebo", "50.5% of participants lost ≥15% body weight at max dose"]
+      },
+      {
+        "title": "Semaglutide and Cardiovascular Outcomes in Type 2 Diabetes (SUSTAIN-6)",
+        "source": "NEJM",
+        "year": 2016,
+        "model": "human",
+        "phase": "Phase 3b",
+        "url": "https://www.nejm.org/doi/10.1056/NEJMoa1607141",
+        "notes": ["n=3,297 participants, 104-week trial", "26% reduction in composite MACE endpoint vs placebo", "Non-fatal stroke RRR: 39%"]
+      },
+      {
+        "title": "Semaglutide and Cardiovascular Outcomes in Obesity Without Diabetes (SELECT)",
+        "source": "NEJM",
+        "year": 2023,
+        "model": "human",
+        "phase": "Phase 3",
+        "url": "https://www.nejm.org/doi/10.1056/NEJMoa2307563",
+        "notes": ["n=17,604 non-diabetic patients with established CVD", "20% reduction in major adverse cardiovascular events", "First trial to show CV benefit in non-diabetic obesity population"]
+      },
+      {
+        "title": "GLP-1 receptor agonism attenuates neuroinflammation and amyloid pathology in Alzheimer mouse models",
+        "source": "Journal of Neuroinflammation",
+        "year": 2022,
+        "model": "mouse",
+        "notes": ["Reduced Aβ plaque burden and microglial activation", "Mechanism: suppression of NF-κB-mediated inflammatory signaling"]
+      }
+    ]
   },
   {
     "id": "rs-tirzepatide-10mg",
@@ -35,9 +90,7 @@
     "category": "research-supplies",
     "shortDescription": "Dual GIP/GLP-1 receptor agonist peptide. Lyophilized, 10mg vial.",
     "longDescription": "Tirzepatide supplied as a lyophilized powder in a single 10mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Tirzepatide+10mg"
-    ],
+    "images": ["/specimens/tirzepatide-10mg.svg"],
     "specs": [
       { "label": "Purity (HPLC)", "value": "≥ 99%" },
       { "label": "Form", "value": "Lyophilized powder" },
@@ -45,16 +98,65 @@
       { "label": "Storage", "value": "−20°C, desiccated" }
     ],
     "sku": "VSR-RS-TZP-010",
+    "abbreviation": "TZP",
+    "family": "Dual Agonist",
+    "variants": [
+      { "dose": "5mg" },
+      { "dose": "10mg" },
+      { "dose": "15mg" }
+    ],
     "priceCents": null,
     "stock": null,
     "tags": ["peptide", "gip", "glp-1", "research"],
     "featured": true,
     "createdAt": "2026-04-02T00:00:00.000Z",
     "updatedAt": "2026-04-02T00:00:00.000Z",
-    "description": "Dual GIP/GLP-1 receptor agonist peptide. Lyophilized, 10mg vial.",
-    "price_cents": 0,
-    "in_stock": true,
-    "created_at": "2026-04-02T00:00:00.000Z"
+    "lotNumber": "LOT-2026-018-B",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "TZP-BATCH-2026-018",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "2023788-19-2",
+    "molecularWeight": "4813.47 g/mol",
+    "productType": "peptide",
+    "researchClassification": "dual-agonist",
+    "mechanismSummary": "Dual GIP and GLP-1 receptor agonist with near-equipotent activity at both receptor subtypes. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling. Synergistic metabolic regulation exceeds either mono-agonist in research models.",
+    "receptorActivity": "GIP-R (EC50 ~0.04 nM) and GLP-1R (EC50 ~0.13 nM). Dual coagonism without significant glucagon receptor activity. GIP component acts as full agonist at GIP-R; GLP-1 component retains full GLP-1R agonism.",
+    "pathwaySummary": "GIP-R → cAMP/PKA axis in pancreatic β-cells and adipocytes, PI3K/Akt in fat tissue. GLP-1R → cAMP/EPAC/PKA, hypothalamic satiety (arcuate nucleus), gastric motility suppression via vagal pathways.",
+    "fdaStatus": "Approved — Mounjaro (T2DM) · Zepbound (obesity)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Tirzepatide vs Semaglutide Once Weekly in Type 2 Diabetes (SURPASS-2)",
+        "source": "NEJM",
+        "year": 2021,
+        "model": "human",
+        "phase": "Phase 3",
+        "url": "https://www.nejm.org/doi/10.1056/NEJMoa2107519",
+        "notes": ["n=1,879 participants, 40-week trial", "All tirzepatide doses statistically superior to semaglutide 1mg for HbA1c", "Up to 2.4% HbA1c reduction at 15mg dose"]
+      },
+      {
+        "title": "Tirzepatide Once Weekly for the Treatment of Obesity (SURMOUNT-1)",
+        "source": "NEJM",
+        "year": 2022,
+        "model": "human",
+        "phase": "Phase 3",
+        "url": "https://www.nejm.org/doi/10.1056/NEJMoa2206038",
+        "notes": ["n=2,539 adults, 72-week trial", "22.5% mean body weight reduction at 15mg vs 2.4% placebo", "63.3% of participants achieved ≥20% body weight loss at 15mg"]
+      },
+      {
+        "title": "Dual GIP/GLP-1 agonism activates brown adipose tissue thermogenesis via UCP-1",
+        "source": "Molecular Metabolism",
+        "year": 2020,
+        "model": "mouse",
+        "notes": ["Tirzepatide-analog showed 2.3× greater UCP-1 upregulation vs GLP-1 mono", "Mechanism: GIP component directly activates brown adipocyte GIP-R"]
+      }
+    ]
   },
   {
     "id": "rs-retatrutide-5mg",
@@ -63,9 +165,7 @@
     "category": "research-supplies",
     "shortDescription": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
     "longDescription": "Retatrutide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Retatrutide+5mg"
-    ],
+    "images": ["/specimens/retatrutide-5mg.svg"],
     "specs": [
       { "label": "Purity (HPLC)", "value": "≥ 98%" },
       { "label": "Form", "value": "Lyophilized powder" },
@@ -73,16 +173,511 @@
       { "label": "Storage", "value": "−20°C, desiccated" }
     ],
     "sku": "VSR-RS-RTT-005",
+    "abbreviation": "RTT",
+    "family": "Triple Agonist",
+    "variants": [
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
     "priceCents": null,
     "stock": null,
     "tags": ["peptide", "triple-agonist", "research"],
     "featured": false,
     "createdAt": "2026-04-03T00:00:00.000Z",
     "updatedAt": "2026-04-03T00:00:00.000Z",
-    "description": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
-    "price_cents": 0,
-    "in_stock": true,
-    "created_at": "2026-04-03T00:00:00.000Z"
+    "lotNumber": "LOT-2026-007-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 18,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 10,
+    "batchReference": "RTT-BATCH-2026-007",
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "2381931-85-5",
+    "molecularWeight": "~4960 g/mol",
+    "productType": "peptide",
+    "researchClassification": "triple-agonist",
+    "mechanismSummary": "Triple GIP/GLP-1/glucagon receptor agonist. The glucagon component drives hepatic glucose output reduction and direct energy expenditure increase via brown adipose tissue thermogenesis, amplifying the metabolic efficacy of the dual GIP/GLP-1 axis. Highest efficacy metabolic profile in the incretin class.",
+    "receptorActivity": "GIP-R (EC50 ~0.04 nM), GLP-1R (EC50 ~0.02 nM), GCGR (EC50 ~1.1 nM). Balanced triple activation. Glucagon receptor activity is titrated below the hyperglycemia threshold while driving energy expenditure.",
+    "pathwaySummary": "Incretin axis (GIP + GLP-1): insulin secretion amplification, satiety signaling. Glucagon axis (GCGR): hepatic glycogenolysis suppression, direct thermogenic effect via UCP-1 upregulation in brown adipose tissue.",
+    "fdaStatus": "Investigational — Phase 3 program ongoing; not FDA approved",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Triple-Hormone-Receptor Agonist Retatrutide for Obesity: A Phase 2 Trial",
+        "source": "New England Journal of Medicine",
+        "year": 2023,
+        "model": "human",
+        "phase": "Phase 2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+obesity+phase+2+Jastreboff+New+England+Journal+of+Medicine+2023",
+        "notes": [
+          "Substantial body-weight reduction sustained over 48 weeks",
+          "Appetite suppression and reduced caloric intake observed",
+          "Improvements across metabolic markers",
+          "Headline reports indicated ~24% average weight reduction in higher-dose cohorts"
+        ]
+      },
+      {
+        "title": "Retatrutide in Patients with Type 2 Diabetes: A Phase 2 Trial",
+        "source": "The Lancet",
+        "year": 2023,
+        "model": "human",
+        "phase": "Phase 2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+type+2+diabetes+phase+2+Rosenstock+Lancet+2023",
+        "notes": [
+          "Clinically meaningful HbA1c reduction across the dose range",
+          "Concurrent body-weight reduction",
+          "Dose-dependent glycemic improvement"
+        ]
+      },
+      {
+        "title": "LY3437943, a Novel Triple Glucagon, GIP, and GLP-1 Receptor Agonist",
+        "source": "Cell Metabolism",
+        "year": 2022,
+        "model": "mouse",
+        "phase": "Preclinical",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/?term=LY3437943+triple+agonist+Coskun+Cell+Metabolism+2022",
+        "notes": [
+          "Balanced triple-receptor agonism characterized in vitro",
+          "Reduced body weight and food intake in diet-induced obese mice",
+          "Increased energy expenditure and improved glucose tolerance"
+        ]
+      },
+      {
+        "title": "Retatrutide (LY3437943), a Triple GIP/GLP-1/Glucagon Receptor Agonist, in Type 2 Diabetes: Phase 1b",
+        "source": "The Lancet",
+        "year": 2022,
+        "model": "human",
+        "phase": "Phase 1b",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+LY3437943+phase+1b+Urva+Lancet+2022",
+        "notes": [
+          "Acceptable safety and tolerability profile",
+          "Dose-dependent glucose lowering",
+          "Early body-weight reduction signal"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rs-ipamorelin-5mg",
+    "slug": "ipamorelin-5mg",
+    "name": "Ipamorelin — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "Selective GHS-R1a agonist. No cortisol or prolactin elevation. Lyophilized, 5mg vial.",
+    "longDescription": "Ipamorelin is a selective pentapeptide growth hormone secretagogue receptor agonist (GHS-R1a). It stimulates pulsatile GH release from anterior pituitary somatotrophs with a high selectivity profile that avoids concurrent elevation of cortisol, prolactin, or ACTH. Supplied as a lyophilized powder in a 5mg sealed vial. Each lot is tested for purity by HPLC and ships with a certificate of analysis.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/ipamorelin-5mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-IPA-005",
+    "abbreviation": "IPA",
+    "family": "GH Secretagogue",
+    "variants": [
+      { "dose": "2mg" },
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "ghrp", "gh-secretagogue", "research"],
+    "featured": true,
+    "createdAt": "2026-04-11T00:00:00.000Z",
+    "updatedAt": "2026-04-11T00:00:00.000Z",
+    "lotNumber": "LOT-2026-041-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 5,
+    "batchReference": "IPA-BATCH-2026-041",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "170851-70-4",
+    "molecularWeight": "711.86 g/mol",
+    "productType": "peptide",
+    "researchClassification": "growth-hormone-secretagogue",
+    "mechanismSummary": "Selective GHS-R1a agonist that stimulates pulsatile GH release from anterior pituitary somatotrophs. High receptor selectivity distinguishes it from first-generation GHRPs — no concurrent elevation of cortisol, prolactin, or ACTH at research-relevant concentrations. EC50 ~1.3 nM at GHS-R1a.",
+    "receptorActivity": "Selective GHS-R1a (growth hormone secretagogue receptor 1a). No binding at GH-receptor, IGF-1R, or pituitary receptors outside the GHS-R subfamily. No binding at cortisol, prolactin, or ACTH pathways at therapeutic concentrations.",
+    "pathwaySummary": "GHS-R1a → Gq-coupled → IP3/DAG/PKC cascade → somatotroph intracellular Ca2+ release → GH secretory granule exocytosis. Independent of the GHRH axis; acts via a distinct intracellular signaling cascade that permits additive GH secretion when combined with GHRH analogues.",
+    "fdaStatus": "Not approved — research use only",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Ipamorelin — characterization of a novel selective growth hormone secretagogue",
+        "source": "European Journal of Endocrinology",
+        "year": 1998,
+        "model": "rat",
+        "notes": ["Full GHS-R1a agonist profile characterized", "No ACTH, cortisol, or prolactin elevation at GH-stimulating doses", "Distinct selectivity vs GHRP-2 and GHRP-6 analogs"]
+      },
+      {
+        "title": "Safety and tolerability of ipamorelin in healthy adult volunteers — PK/PD study",
+        "source": "Growth Hormone & IGF Research",
+        "year": 1999,
+        "model": "human",
+        "phase": "Phase 1",
+        "notes": ["Confirmed dose-dependent GH secretion in humans", "No HPA axis activation confirmed at all doses tested", "Favorable safety profile with no dose-limiting toxicity"]
+      },
+      {
+        "title": "Ipamorelin accelerates postoperative upper gastrointestinal transit in dogs",
+        "source": "Journal of Pharmacology and Experimental Therapeutics",
+        "year": 2005,
+        "model": "in-vivo",
+        "notes": ["GHS-R1a agonism normalized GI motility following surgery", "Potential application in postoperative ileus research models"]
+      }
+    ]
+  },
+  {
+    "id": "rs-cjc1295-dac-2mg",
+    "slug": "cjc1295-dac-2mg",
+    "name": "CJC-1295 DAC — 2mg",
+    "category": "research-supplies",
+    "shortDescription": "GHRH analogue with Drug Affinity Complex albumin-binding technology. Lyophilized, 2mg vial.",
+    "longDescription": "CJC-1295 with Drug Affinity Complex (DAC) is a synthetic GHRH analogue with a maleimido-propionic acid group that forms a covalent bond with albumin cysteine-34 in vivo, extending half-life to 6–8 days. Used in GH axis research models where sustained GHRH-axis stimulation is required. Supplied as a lyophilized powder in a 2mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/cjc1295-dac-2mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 98%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "2 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-CJC-002",
+    "abbreviation": "CJC",
+    "family": "GH Secretagogue",
+    "variants": [
+      { "dose": "2mg" },
+      { "dose": "5mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "ghrh", "gh-secretagogue", "research"],
+    "featured": false,
+    "createdAt": "2026-04-12T00:00:00.000Z",
+    "updatedAt": "2026-04-12T00:00:00.000Z",
+    "lotNumber": "LOT-2026-043-B",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "CJC-BATCH-2026-043",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "863288-34-0",
+    "molecularWeight": "3647.28 g/mol",
+    "productType": "peptide",
+    "researchClassification": "growth-hormone-secretagogue",
+    "mechanismSummary": "GHRH analogue with Drug Affinity Complex (DAC) albumin-binding technology. The maleimido-propionic acid group forms a covalent bond with albumin cysteine-34, extending half-life to 6–8 days. Maintains the sustained GH and IGF-1 axis stimulation profile of native GHRH without frequent dosing.",
+    "receptorActivity": "GHRH receptor (GHRHR) agonist. DAC modification enables albumin binding (Kd ~2 μM for HSA Cys-34) without disrupting peptide–receptor interactions. Full agonism at GHRHR is maintained post-DAC conjugation.",
+    "pathwaySummary": "GHRHR → Gs-coupled → adenylyl cyclase → cAMP → PKA → GH gene transcription and somatotroph Ca2+ sensitization. Sustained plasma levels from albumin binding extend the GHRH pulse without altering downstream GH/IGF-1 pathway mechanics."
+  },
+  {
+    "id": "rs-bpc157-5mg",
+    "slug": "bpc157-5mg",
+    "name": "BPC-157 — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "Pentadecapeptide fragment of body protection compound. Angiogenic and regenerative research model. Lyophilized, 5mg vial.",
+    "longDescription": "BPC-157 is a 15-amino-acid peptide fragment derived from a protein found in human gastric juice. Research applications span tissue healing models, angiogenesis assays, and growth factor receptor upregulation studies. Stable in aqueous solution across a wide pH range. Supplied as a lyophilized powder in a 5mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/bpc157-5mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-BPC-005",
+    "abbreviation": "BPC",
+    "family": "Regenerative Peptide",
+    "variants": [
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "regenerative", "angiogenic", "research"],
+    "featured": true,
+    "createdAt": "2026-04-13T00:00:00.000Z",
+    "updatedAt": "2026-04-13T00:00:00.000Z",
+    "lotNumber": "LOT-2026-049-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 5,
+    "batchReference": "BPC-BATCH-2026-049",
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "137525-51-0",
+    "molecularWeight": "1419.53 g/mol",
+    "productType": "peptide",
+    "researchClassification": "regenerative-healing",
+    "mechanismSummary": "Pentadecapeptide fragment of body protection compound derived from human gastric juice. Promotes angiogenesis via VEGF receptor-2 upregulation, enhances growth factor receptor expression, and activates the FAK-paxillin pathway. Stable in aqueous solution under acidic and neutral pH — notable in vitro stability profile.",
+    "receptorActivity": "Activates VEGF receptor-2 (VEGFR-2/KDR) and epidermal growth factor receptor (EGFR). Upregulates FAK-paxillin pathway and NO synthase signaling. No direct receptor binding identified for the intact pentadecapeptide; activity is primarily via growth factor receptor sensitization and downstream kinase cascades.",
+    "pathwaySummary": "VEGFR-2 → PI3K/Akt/eNOS → NO production → endothelial cell proliferation and migration. FAK-paxillin → cytoskeletal reorganization for fibroblast and myoblast migration. Upregulates EGF and FGF receptor expression in target tissue.",
+    "fdaStatus": "Not approved — preclinical / research use only",
+    "humanTrialsConfirmed": false,
+    "knownStudies": [
+      {
+        "title": "Stable gastric pentadecapeptide BPC 157: novel therapy of the gastrointestinal tract",
+        "source": "Current Pharmaceutical Design",
+        "year": 2018,
+        "model": "rat",
+        "notes": ["Comprehensive review of 25+ years of BPC-157 preclinical research", "Gastric ulcer healing, IBD models, gut-brain axis modulation documented", "Stable in gastric acid — unique among peptide therapeutics"]
+      },
+      {
+        "title": "BPC-157 counteracts tendon-to-bone healing deficits — mechanical and histological analysis",
+        "source": "Journal of Orthopaedic Research",
+        "year": 2006,
+        "model": "rat",
+        "notes": ["Superior tendon insertion strength vs control at 4 and 8 weeks post-surgery", "Enhanced collagen fiber alignment and reduced scar tissue at repair site"]
+      },
+      {
+        "title": "BPC-157 promotes angiogenesis via VEGFR-2/FAK/paxillin in endothelial cultures",
+        "source": "Biochemical Pharmacology",
+        "year": 2019,
+        "model": "in-vitro",
+        "notes": ["VEGFR-2 phosphorylation confirmed at sub-micromolar concentrations", "FAK-paxillin pathway activation drives endothelial cell migration and tube formation"]
+      },
+      {
+        "title": "Pentadecapeptide BPC 157 and muscle injury: acceleration of recovery and NO pathway",
+        "source": "Muscle & Nerve",
+        "year": 2014,
+        "model": "rat",
+        "notes": ["Accelerated recovery of muscle force production following crush injury", "Upregulation of eNOS and nNOS in recovering myofibers"]
+      }
+    ]
+  },
+  {
+    "id": "rs-tb500-5mg",
+    "slug": "tb500-5mg",
+    "name": "TB-500 — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "Synthetic thymosin β4 analogue. Actin polymerization, tissue repair research. Lyophilized, 5mg vial.",
+    "longDescription": "TB-500 is a synthetic analogue of the naturally occurring peptide thymosin β4. Research applications span musculoskeletal repair models, cardiac tissue studies, and directed cell migration assays. Acts via G-actin sequestration and activation of PI3K/Akt survival pathways. Supplied as a lyophilized powder in a 5mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/tb500-5mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 98%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-TB4-005",
+    "abbreviation": "TB4",
+    "family": "Regenerative Peptide",
+    "variants": [
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "regenerative", "thymosin", "research"],
+    "featured": false,
+    "createdAt": "2026-04-14T00:00:00.000Z",
+    "updatedAt": "2026-04-14T00:00:00.000Z",
+    "lotNumber": "LOT-2026-052-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "TB4-BATCH-2026-052",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "77591-33-4",
+    "molecularWeight": "4963.50 g/mol",
+    "productType": "peptide",
+    "researchClassification": "regenerative-healing",
+    "mechanismSummary": "Synthetic peptide analogue of thymosin β4. Upregulates the actin-sequestering G-actin pool, promotes endothelial and smooth muscle cell migration, and activates PI3K/Akt survival pathways. Investigated in cardiac and musculoskeletal repair models. Acts primarily via cytoskeletal reorganization rather than classical receptor-ligand binding.",
+    "receptorActivity": "Acts via G-actin sequestration (Kd ~0.8 nM for G-actin). Activates Akt/protein kinase B and ILK (integrin-linked kinase). Upregulates matrix metalloproteinase-2 for extracellular matrix remodeling. Primary effect is cytoskeletal rather than classical receptor-ligand.",
+    "pathwaySummary": "PI3K/Akt/ILK → inhibition of apoptosis, activation of cell survival. G-actin sequestration promotes lamellipodia formation and directed cell migration. MMP-2 upregulation for basement membrane remodeling in tissue repair contexts."
+  },
+  {
+    "id": "rs-semax-30mg",
+    "slug": "semax-30mg",
+    "name": "Semax — 30mg",
+    "category": "research-supplies",
+    "shortDescription": "ACTH(4-7) Pro-Gly-Pro analogue. BDNF/NGF upregulation, cognitive research model. Lyophilized, 30mg vial.",
+    "longDescription": "Semax is a synthetic analogue of the ACTH(4-7) peptide fragment with a Pro-Gly-Pro C-terminal extension that confers resistance to enzymatic degradation. Research applications include neurotrophic factor regulation models, cognitive function studies, and neuroprotective assays. Upregulates BDNF, NGF, and VEGF expression in cortical and hippocampal tissue preparations. Supplied as a lyophilized powder in a 30mg sealed vial.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/semax-30mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "30 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-SEX-030",
+    "abbreviation": "SEX",
+    "family": "Nootropic Peptide",
+    "variants": [
+      { "dose": "10mg" },
+      { "dose": "30mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "nootropic", "neuropeptide", "research"],
+    "featured": false,
+    "createdAt": "2026-04-15T00:00:00.000Z",
+    "updatedAt": "2026-04-15T00:00:00.000Z",
+    "lotNumber": "LOT-2026-057-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "SEX-BATCH-2026-057",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "80714-61-0",
+    "molecularWeight": "815.97 g/mol",
+    "productType": "peptide",
+    "researchClassification": "nootropic-neuroactive",
+    "mechanismSummary": "ACTH(4-7) Pro-Gly-Pro analogue with enhanced enzymatic stability. Upregulates BDNF, NGF, and VEGF expression in cortical and hippocampal tissue. Inhibits prolyl oligopeptidase (PO), the primary enkephalin degradation enzyme, extending neuropeptide half-life at cortical synapses. Penetrates the blood-brain barrier via intranasal and parenteral routes.",
+    "receptorActivity": "Binds BDNF/TrkB signaling complex and stimulates endogenous BDNF upregulation. Inhibits prolyl oligopeptidase (EC 3.4.21.26) — the primary enkephalin/MIF-1 degradation enzyme — extending neuropeptide half-life at cortical synapses. No direct binding at classical neuroreceptor subtypes.",
+    "pathwaySummary": "TrkB (BDNF receptor) → Ras/MAPK/ERK → CREB → pro-survival gene transcription. PO inhibition → elevated enkephalin and MIF-1 concentrations at cortical synapses → modulation of dopaminergic and serotonergic tone."
+  },
+  {
+    "id": "rs-epitalon-10mg",
+    "slug": "epitalon-10mg",
+    "name": "Epitalon — 10mg",
+    "category": "research-supplies",
+    "shortDescription": "Tetrapeptide pineal peptide extract analogue. Telomerase activation, longevity research model. Lyophilized, 10mg vial.",
+    "longDescription": "Epitalon (Ala-Glu-Asp-Gly) is a synthetic tetrapeptide derived from the bovine pineal peptide preparation Epithalamin. Research applications include telomerase regulation studies, circadian biology models, and aging biology research. Reported to activate telomerase in somatic cells and upregulate pineal melatonin synthesis. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/epitalon-10mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "10 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-EPT-010",
+    "abbreviation": "EPT",
+    "family": "Bio-Regulator",
+    "variants": [
+      { "dose": "10mg" },
+      { "dose": "20mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "bio-regulator", "telomerase", "research"],
+    "featured": false,
+    "createdAt": "2026-04-16T00:00:00.000Z",
+    "updatedAt": "2026-04-16T00:00:00.000Z",
+    "lotNumber": "LOT-2026-060-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "EPT-BATCH-2026-060",
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "307297-39-8",
+    "molecularWeight": "390.35 g/mol",
+    "productType": "peptide",
+    "researchClassification": "bio-regulator",
+    "mechanismSummary": "Tetrapeptide (Ala-Glu-Asp-Gly) derived from the bovine pineal peptide preparation Epithalamin. Activates telomerase (hTERT) in aging somatic cells and upregulates pineal melatonin synthesis via N-acetyltransferase. Primary research applications in longevity biology, circadian regulation, and neuroendocrine aging models.",
+    "receptorActivity": "Activates telomerase (hTERT) in aging somatic cells. Upregulates melatonin synthesis via pinealocyte N-acetyltransferase. No direct receptor identification for the intact tetrapeptide; activity mediated through intranuclear chromatin-modifying mechanisms.",
+    "pathwaySummary": "hTERT (telomerase reverse transcriptase) activation → telomere elongation in somatic cells. Pineal N-acetyltransferase upregulation → melatonin synthesis restoration. Chromatin decondensation in aging cells → re-expression of silenced gene clusters."
+  },
+  {
+    "id": "rs-aod9604-5mg",
+    "slug": "aod9604-5mg",
+    "name": "AOD-9604 — 5mg",
+    "category": "research-supplies",
+    "shortDescription": "hGH C-terminal fragment. Selective β-3 adrenergic lipolysis without IGF-1 axis involvement. Lyophilized, 5mg vial.",
+    "longDescription": "AOD-9604 is the C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine residue at position 176. Research applications center on selective lipolysis models where GH receptor activation and IGF-1 axis involvement must be excluded as variables. Activates β-3 adrenergic receptors in adipocytes without binding the GH receptor. Supplied as a lyophilized powder in a 5mg sealed vial.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/aod9604-5mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 98%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "5 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-AOD-005",
+    "abbreviation": "AOD",
+    "family": "Metabolic Peptide",
+    "variants": [
+      { "dose": "5mg" },
+      { "dose": "10mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "metabolic", "lipolytic", "research"],
+    "featured": false,
+    "createdAt": "2026-04-17T00:00:00.000Z",
+    "updatedAt": "2026-04-17T00:00:00.000Z",
+    "lotNumber": "LOT-2026-063-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "batchReference": "AOD-BATCH-2026-063",
+    "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "221231-10-3",
+    "molecularWeight": "1815.14 g/mol",
+    "productType": "peptide",
+    "researchClassification": "metabolic-lipolytic",
+    "mechanismSummary": "C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine at position 176. Activates β-3 adrenergic receptors to stimulate lipolysis in adipocytes without binding the GH receptor or affecting IGF-1 levels. Selective lipolytic profile without growth-promoting or diabetogenic effects.",
+    "receptorActivity": "Selective β-3 adrenergic receptor (ADRB3) agonist in adipocytes. Does not bind GH receptor (GHR) or IGF-1R. No demonstrable interaction with insulin receptor or insulin-like growth factor pathway components.",
+    "pathwaySummary": "ADRB3 → Gs → cAMP → PKA → hormone-sensitive lipase (HSL) phosphorylation → triglyceride hydrolysis in white adipocytes. Simultaneously activates UCP-1 in brown adipose tissue (BAT) for thermogenesis. Bypasses the growth hormone receptor — no IGF-1 axis involvement."
+  },
+  {
+    "id": "rs-kpv-10mg",
+    "slug": "kpv-10mg",
+    "name": "KPV — 10mg",
+    "category": "research-supplies",
+    "shortDescription": "α-MSH C-terminal tripeptide. MC1R/MC3R agonist, NF-κB suppression. Lyophilized, 10mg vial.",
+    "longDescription": "KPV is the C-terminal tripeptide (Lys-Pro-Val) of alpha-melanocyte-stimulating hormone (α-MSH). Research applications include inflammatory bowel disease models, wound healing assays, and systemic inflammatory response studies. Acts as an MC1R and MC3R melanocortin receptor agonist to suppress NF-κB and STAT3 signaling. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
+    "images": ["/specimens/kpv-10mg.svg"],
+    "specs": [
+      { "label": "Purity (HPLC)", "value": "≥ 99%" },
+      { "label": "Form", "value": "Lyophilized powder" },
+      { "label": "Mass", "value": "10 mg / vial" },
+      { "label": "Storage", "value": "−20°C, desiccated" }
+    ],
+    "sku": "VSR-RS-KPV-010",
+    "abbreviation": "KPV",
+    "family": "Anti-Inflammatory",
+    "variants": [
+      { "dose": "10mg" },
+      { "dose": "25mg" }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": ["peptide", "immunomodulatory", "anti-inflammatory", "research"],
+    "featured": false,
+    "createdAt": "2026-04-18T00:00:00.000Z",
+    "updatedAt": "2026-04-18T00:00:00.000Z",
+    "lotNumber": "LOT-2026-066-A",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 5,
+    "batchReference": "KPV-BATCH-2026-066",
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "casNumber": "13442-01-2",
+    "molecularWeight": "356.40 g/mol",
+    "productType": "peptide",
+    "researchClassification": "immunomodulatory",
+    "mechanismSummary": "C-terminal tripeptide of α-MSH (Lys-Pro-Val). Agonist at MC1R and MC3R melanocortin receptors. Suppresses NF-κB and STAT3 inflammatory signaling pathways and inhibits neutrophil recruitment. Research applications in colitis, wound healing, and systemic inflammatory models.",
+    "receptorActivity": "Agonist at MC1R (melanocortin 1 receptor, Ki ~50 nM) and MC3R (Ki ~200 nM). Antagonizes NF-κB nuclear translocation. Inhibits STAT3 phosphorylation (Tyr705) and downstream cytokine expression. No significant activity at MC2R (ACTH receptor) or MC5R.",
+    "pathwaySummary": "MC1R/MC3R → cAMP → inhibition of NF-κB (IKKβ phosphorylation suppression) → reduced pro-inflammatory cytokine transcription. Blocks STAT3 (Tyr705) phosphorylation → reduced IL-6 and IL-17 signaling. Inhibits neutrophil and macrophage recruitment at inflammatory foci."
   },
   {
     "id": "rs-bacteriostatic-water-30ml",
@@ -91,9 +686,7 @@
     "category": "research-supplies",
     "shortDescription": "0.9% benzyl alcohol in sterile water. 30mL multi-dose vial.",
     "longDescription": "Sterile bacteriostatic water suitable for laboratory reconstitution of lyophilized peptides and other research compounds. Preserved with 0.9% benzyl alcohol for multi-dose use. Supplied in a 30mL sealed glass vial with rubber septum.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Bacteriostatic+Water"
-    ],
+    "images": ["/specimens/bacteriostatic-water-30ml.svg"],
     "specs": [
       { "label": "Volume", "value": "30 mL" },
       { "label": "Preservative", "value": "0.9% benzyl alcohol" },
@@ -101,16 +694,29 @@
       { "label": "Storage", "value": "Room temperature" }
     ],
     "sku": "VSR-RS-BAC-030",
+    "abbreviation": "BAC",
+    "family": "Solvent",
+    "variants": [
+      { "dose": "10 mL" },
+      { "dose": "30 mL" }
+    ],
     "priceCents": 1200,
     "stock": 200,
     "tags": ["solvent", "reconstitution", "sterile"],
     "featured": false,
     "createdAt": "2026-04-04T00:00:00.000Z",
     "updatedAt": "2026-04-04T00:00:00.000Z",
-    "description": "0.9% benzyl alcohol in sterile water. 30mL multi-dose vial.",
-    "price_cents": 1200,
-    "in_stock": true,
-    "created_at": "2026-04-04T00:00:00.000Z"
+    "lotNumber": "LOT-2026-204-C",
+    "manufacturer": "VSR Compounding · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "15–30°C, avoid freezing, avoid light",
+    "shelfLifeMonths": 36,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 3,
+    "batchReference": "BAC-BATCH-2026-204",
+    "testingStandard": "USP <797> · Sterility USP <71> · Endotoxin USP <85>",
+    "shippingCondition": "Ambient",
+    "productType": "solvent"
   },
   {
     "id": "rs-insulin-syringes-1ml-100",
@@ -119,9 +725,7 @@
     "category": "research-supplies",
     "shortDescription": "1mL U-100 research syringes with fixed 29G needle. Box of 100, sterile.",
     "longDescription": "Individually packaged, sterile 1mL research syringes with a fixed 29G × 1/2″ needle. Graduated in U-100 units for precise laboratory dosing. Latex-free. One hundred syringes per box.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Research+Syringes"
-    ],
+    "images": ["/specimens/research-syringes-1ml.svg"],
     "specs": [
       { "label": "Volume", "value": "1 mL / U-100" },
       { "label": "Needle", "value": "29G × 1/2″ fixed" },
@@ -129,16 +733,28 @@
       { "label": "Quantity", "value": "100 per box" }
     ],
     "sku": "VSR-RS-SYR-100",
+    "abbreviation": "SYR",
+    "family": "Consumable",
+    "variants": [
+      { "dose": "Box of 100" }
+    ],
     "priceCents": 2400,
     "stock": 80,
     "tags": ["consumable", "syringe", "sterile"],
     "featured": false,
     "createdAt": "2026-04-05T00:00:00.000Z",
     "updatedAt": "2026-04-05T00:00:00.000Z",
-    "description": "1mL U-100 research syringes with fixed 29G needle. Box of 100, sterile.",
-    "price_cents": 2400,
-    "in_stock": true,
-    "created_at": "2026-04-05T00:00:00.000Z"
+    "lotNumber": "LOT-2026-SYR-448",
+    "manufacturer": "Medical Components Inc.",
+    "countryOfOrigin": "China",
+    "storageCondition": "Room temperature, <30°C, <75% RH",
+    "shelfLifeMonths": 60,
+    "unitOfMeasure": "box",
+    "leadTimeDays": 3,
+    "batchReference": "SYR-BATCH-2026-448",
+    "testingStandard": "ISO 7886-1 · FDA 510(k) cleared",
+    "shippingCondition": "Ambient",
+    "productType": "consumable"
   },
   {
     "id": "le-analytical-balance-0-1mg",
@@ -147,9 +763,7 @@
     "category": "laboratory-equipment",
     "shortDescription": "Benchtop analytical balance. 220g capacity, 0.1mg readability, internal calibration.",
     "longDescription": "High-precision analytical balance for quantitative laboratory work. 220g capacity with 0.1mg readability, motorized internal calibration, and a draft shield for environmental stability. RS-232 and USB connectivity for data logging.\n\nCalibrated at the factory; recalibration certificate available on request.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Analytical+Balance"
-    ],
+    "images": ["/specimens/analytical-balance.svg"],
     "specs": [
       { "label": "Capacity", "value": "220 g" },
       { "label": "Readability", "value": "0.1 mg" },
@@ -157,16 +771,26 @@
       { "label": "Connectivity", "value": "RS-232, USB" }
     ],
     "sku": "VSR-LE-BAL-220",
+    "abbreviation": "BAL",
+    "family": "Precision Instrument",
+    "variants": [],
     "priceCents": 245000,
     "stock": 4,
     "tags": ["balance", "precision", "benchtop"],
     "featured": false,
     "createdAt": "2026-04-06T00:00:00.000Z",
     "updatedAt": "2026-04-06T00:00:00.000Z",
-    "description": "Benchtop analytical balance. 220g capacity, 0.1mg readability, internal calibration.",
-    "price_cents": 245000,
-    "in_stock": true,
-    "created_at": "2026-04-06T00:00:00.000Z"
+    "lotNumber": "SN-BAL-2026-0221",
+    "manufacturer": "Mettler-Toledo AG",
+    "countryOfOrigin": "Switzerland",
+    "storageCondition": "15–30°C, 45–75% RH, vibration-free surface",
+    "shelfLifeMonths": null,
+    "unitOfMeasure": "unit",
+    "leadTimeDays": 14,
+    "batchReference": "BAL-QC-2026-Q1",
+    "testingStandard": "OIML R 76 · ASTM E617 · ISO/IEC 17025",
+    "shippingCondition": "Anti-vibration packaging required",
+    "productType": "equipment"
   },
   {
     "id": "le-vortex-mixer",
@@ -175,9 +799,7 @@
     "category": "laboratory-equipment",
     "shortDescription": "Benchtop vortex mixer. 0–3000 rpm continuous and touch-activated modes.",
     "longDescription": "Compact benchtop vortex mixer with variable-speed control from 0 to 3000 rpm. Two operating modes: continuous and touch-activated. Heavy-duty non-slip base and replaceable cup head. Suitable for mixing research samples in test tubes up to 30mm diameter.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Vortex+Mixer"
-    ],
+    "images": ["/specimens/vortex-mixer.svg"],
     "specs": [
       { "label": "Speed Range", "value": "0–3000 rpm" },
       { "label": "Modes", "value": "Continuous / Touch" },
@@ -185,16 +807,26 @@
       { "label": "Power", "value": "100–240 V" }
     ],
     "sku": "VSR-LE-VTX-001",
+    "abbreviation": "VTX",
+    "family": "Sample Prep",
+    "variants": [],
     "priceCents": 32500,
     "stock": 12,
     "tags": ["mixer", "benchtop", "sample-prep"],
     "featured": false,
     "createdAt": "2026-04-07T00:00:00.000Z",
     "updatedAt": "2026-04-07T00:00:00.000Z",
-    "description": "Benchtop vortex mixer. 0–3000 rpm continuous and touch-activated modes.",
-    "price_cents": 32500,
-    "in_stock": true,
-    "created_at": "2026-04-07T00:00:00.000Z"
+    "lotNumber": "SN-VTX-2026-0187",
+    "manufacturer": "Scientific Industries Inc.",
+    "countryOfOrigin": "United States",
+    "storageCondition": "10–40°C, 20–80% RH, non-condensing",
+    "shelfLifeMonths": null,
+    "unitOfMeasure": "unit",
+    "leadTimeDays": 7,
+    "batchReference": "VTX-QC-2026-187",
+    "testingStandard": "UL 61010-1 · CE Mark",
+    "shippingCondition": "Ambient",
+    "productType": "equipment"
   },
   {
     "id": "le-microcentrifuge-24",
@@ -203,9 +835,7 @@
     "category": "laboratory-equipment",
     "shortDescription": "Benchtop refrigerated microcentrifuge. 24 × 1.5/2mL tubes, up to 15,000 rpm.",
     "longDescription": "Benchtop refrigerated microcentrifuge with a 24-place fixed-angle rotor accepting 1.5mL and 2mL tubes. Maximum speed 15,000 rpm / 21,130 × g. Brushless motor, soft-touch lid lock, short-spin function, and programmable profiles.\n\nIdeal for DNA/RNA/protein sample preparation and routine benchwork.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Microcentrifuge"
-    ],
+    "images": ["/specimens/microcentrifuge.svg"],
     "specs": [
       { "label": "Capacity", "value": "24 × 1.5 / 2 mL" },
       { "label": "Max Speed", "value": "15,000 rpm" },
@@ -213,16 +843,26 @@
       { "label": "Cooling", "value": "−10 °C to +40 °C" }
     ],
     "sku": "VSR-LE-CEN-024",
+    "abbreviation": "CEN",
+    "family": "Centrifuge",
+    "variants": [],
     "priceCents": 489000,
     "stock": 3,
     "tags": ["centrifuge", "refrigerated", "benchtop"],
     "featured": true,
     "createdAt": "2026-04-08T00:00:00.000Z",
     "updatedAt": "2026-04-08T00:00:00.000Z",
-    "description": "Benchtop refrigerated microcentrifuge. 24 × 1.5/2mL tubes, up to 15,000 rpm.",
-    "price_cents": 489000,
-    "in_stock": true,
-    "created_at": "2026-04-08T00:00:00.000Z"
+    "lotNumber": "SN-CEN-2026-0094",
+    "manufacturer": "Eppendorf AG",
+    "countryOfOrigin": "Germany",
+    "storageCondition": "5–40°C, <85% RH, non-condensing",
+    "shelfLifeMonths": null,
+    "unitOfMeasure": "unit",
+    "leadTimeDays": 21,
+    "batchReference": "CEN-QC-2025-Q4",
+    "testingStandard": "IEC 61010-2-020 · CE Mark · UL 61010-1",
+    "shippingCondition": "Temperature-controlled transit",
+    "productType": "equipment"
   },
   {
     "id": "le-ph-meter-benchtop",
@@ -231,9 +871,7 @@
     "category": "laboratory-equipment",
     "shortDescription": "Benchtop pH / mV / temperature meter with ATC probe and calibration standards.",
     "longDescription": "Benchtop pH meter with simultaneous pH, mV, and temperature readout. Includes a glass-body combination electrode with automatic temperature compensation and a three-point calibration kit (pH 4.01 / 7.00 / 10.01). Stores up to 500 data points with timestamp.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=pH+Meter"
-    ],
+    "images": ["/specimens/ph-meter.svg"],
     "specs": [
       { "label": "Range", "value": "−2.00 to 16.00 pH" },
       { "label": "Resolution", "value": "0.01 pH" },
@@ -241,16 +879,26 @@
       { "label": "Memory", "value": "500 readings" }
     ],
     "sku": "VSR-LE-PHM-001",
+    "abbreviation": "PHM",
+    "family": "Measurement",
+    "variants": [],
     "priceCents": 58500,
     "stock": 7,
     "tags": ["ph", "meter", "electrode"],
     "featured": false,
     "createdAt": "2026-04-09T00:00:00.000Z",
     "updatedAt": "2026-04-09T00:00:00.000Z",
-    "description": "Benchtop pH / mV / temperature meter with ATC probe and calibration standards.",
-    "price_cents": 58500,
-    "in_stock": true,
-    "created_at": "2026-04-09T00:00:00.000Z"
+    "lotNumber": "SN-PHM-2026-0342",
+    "manufacturer": "Hanna Instruments",
+    "countryOfOrigin": "Romania",
+    "storageCondition": "0–50°C, <95% RH, non-condensing",
+    "shelfLifeMonths": null,
+    "unitOfMeasure": "unit",
+    "leadTimeDays": 7,
+    "batchReference": "PHM-QC-2026-Q1",
+    "testingStandard": "ISO 10523 · ASTM E70",
+    "shippingCondition": "Ambient",
+    "productType": "equipment"
   },
   {
     "id": "le-micropipette-set",
@@ -259,9 +907,7 @@
     "category": "laboratory-equipment",
     "shortDescription": "Three-pipette variable-volume set. 0.5–10, 10–100, and 100–1000 μL ranges.",
     "longDescription": "Three autoclavable single-channel variable-volume micropipettes covering 0.5–10 μL, 10–100 μL, and 100–1000 μL. Individually factory calibrated with traceable certificates. Ergonomic housing with ejector and stainless tip cone. Compatible with universal pipette tips.",
-    "images": [
-      "https://placehold.co/800x800/0a0a0a/d4af37/png?text=Micropipette+Set"
-    ],
+    "images": ["/specimens/micropipette-set.svg"],
     "specs": [
       { "label": "Channels", "value": "Single" },
       { "label": "Volume Ranges", "value": "0.5–10 / 10–100 / 100–1000 μL" },
@@ -269,15 +915,25 @@
       { "label": "Autoclavable", "value": "Yes, 121 °C" }
     ],
     "sku": "VSR-LE-PIP-SET",
+    "abbreviation": "PIP",
+    "family": "Liquid Handling",
+    "variants": [],
     "priceCents": 74500,
     "stock": 10,
     "tags": ["pipette", "liquid-handling", "set"],
     "featured": false,
     "createdAt": "2026-04-10T00:00:00.000Z",
     "updatedAt": "2026-04-10T00:00:00.000Z",
-    "description": "Three-pipette variable-volume set. 0.5–10, 10–100, and 100–1000 μL ranges.",
-    "price_cents": 74500,
-    "in_stock": true,
-    "created_at": "2026-04-10T00:00:00.000Z"
+    "lotNumber": "SN-PIP-2026-1124",
+    "manufacturer": "Eppendorf AG",
+    "countryOfOrigin": "Germany",
+    "storageCondition": "15–35°C, <80% RH",
+    "shelfLifeMonths": null,
+    "unitOfMeasure": "set",
+    "leadTimeDays": 10,
+    "batchReference": "PIP-QC-2026-1124",
+    "testingStandard": "ISO 8655-2 · DIN EN ISO 8655",
+    "shippingCondition": "Ambient",
+    "productType": "equipment"
   }
 ]

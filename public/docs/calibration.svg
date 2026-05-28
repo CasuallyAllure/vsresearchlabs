@@ -1,0 +1,107 @@
+<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="420" height="560" fill="#0a0a0a"/>
+
+  <rect x="0" y="0" width="420" height="72" fill="rgba(255,255,255,0.025)"/>
+  <line x1="0" y1="72" x2="420" y2="72" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+
+  <text x="24" y="24" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="2">VS RESEARCH LABS</text>
+  <line x1="24" y1="30" x2="132" y2="30" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="24" y="50" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.88)" letter-spacing="1">CALIBRATION</text>
+  <text x="24" y="64" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.88)" letter-spacing="1">CERTIFICATE</text>
+  <text x="396" y="24" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1" text-anchor="end">CAL</text>
+  <text x="396" y="36" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.22)" letter-spacing="1" text-anchor="end">FORM-QC-006</text>
+
+  <!-- Specimen / instrument block -->
+  <rect x="24" y="86" width="372" height="82" rx="2" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="36" y="104" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">INSTRUMENT IDENTITY</text>
+  <line x1="36" y1="109" x2="384" y2="109" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="36" y="124" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Instrument</text>
+  <text x="180" y="124" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="1">Analytical Balance</text>
+  <text x="36" y="138" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Serial No.</text>
+  <text x="180" y="138" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)" letter-spacing="1">BAL-2026-Q1</text>
+  <text x="36" y="152" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Cal. standard</text>
+  <text x="180" y="152" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="1">OIML E2 / ASTM Class 2</text>
+  <text x="36" y="166" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">Next due</text>
+  <text x="180" y="166" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="1">2027-02-14</text>
+
+  <!-- Calibration data -->
+  <text x="24" y="192" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">CALIBRATION DATA</text>
+  <line x1="24" y1="198" x2="396" y2="198" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <rect x="24" y="200" width="372" height="16" fill="rgba(255,255,255,0.03)"/>
+  <text x="32" y="212" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1">NOMINAL (g)</text>
+  <text x="148" y="212" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1">MEASURED (g)</text>
+  <text x="264" y="212" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1">ERROR (mg)</text>
+  <text x="348" y="212" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" letter-spacing="1">STATUS</text>
+  <line x1="24" y1="216" x2="396" y2="216" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <text x="32" y="230" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">0.0000</text>
+  <text x="148" y="230" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.0000</text>
+  <text x="264" y="230" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.0</text>
+  <text x="348" y="230" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)">PASS</text>
+  <line x1="24" y1="236" x2="396" y2="236" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="250" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">0.1000</text>
+  <text x="148" y="250" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.0999</text>
+  <text x="264" y="250" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.1</text>
+  <text x="348" y="250" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)">PASS</text>
+  <line x1="24" y1="256" x2="396" y2="256" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="270" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">1.0000</text>
+  <text x="148" y="270" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">1.0001</text>
+  <text x="264" y="270" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.1</text>
+  <text x="348" y="270" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)">PASS</text>
+  <line x1="24" y1="276" x2="396" y2="276" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="290" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">10.0000</text>
+  <text x="148" y="290" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">9.9999</text>
+  <text x="264" y="290" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.1</text>
+  <text x="348" y="290" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)">PASS</text>
+  <line x1="24" y1="296" x2="396" y2="296" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="310" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">100.0000</text>
+  <text x="148" y="310" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">100.0001</text>
+  <text x="264" y="310" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.1</text>
+  <text x="348" y="310" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.55)">PASS</text>
+  <line x1="24" y1="316" x2="396" y2="316" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <text x="32" y="330" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">220.0000</text>
+  <text x="148" y="330" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">220.0000</text>
+  <text x="264" y="330" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.45)">0.0</text>
+  <text x="348" y="330" font-family="monospace" font-size="8" fill="#C4A35A" opacity="0.85">PASS</text>
+  <line x1="24" y1="336" x2="396" y2="336" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Summary block -->
+  <text x="24" y="360" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.35)" letter-spacing="2">UNCERTAINTY STATEMENT</text>
+  <line x1="24" y1="366" x2="396" y2="366" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <text x="32" y="380" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)">Expanded uncertainty (k=2)</text>
+  <text x="280" y="380" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">U = 0.1 mg</text>
+  <line x1="24" y1="386" x2="396" y2="386" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="32" y="400" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)">Traceability</text>
+  <text x="280" y="400" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.5)">NIST / PTB</text>
+  <line x1="24" y1="406" x2="396" y2="406" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="32" y="420" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)">Overall determination</text>
+  <text x="280" y="420" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.65)" letter-spacing="1">CALIBRATED</text>
+  <line x1="24" y1="426" x2="396" y2="426" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Auth -->
+  <rect x="24" y="436" width="160" height="28" rx="1" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="36" y="450" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">CALIBRATION DATE</text>
+  <text x="36" y="462" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1">2026-02-14</text>
+
+  <rect x="236" y="436" width="160" height="28" rx="1" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="248" y="450" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)" letter-spacing="1">AUTHORIZED BY</text>
+  <text x="248" y="462" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1">METROLOGY · VSR</text>
+
+  <rect x="24" y="474" width="372" height="20" rx="1" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="210" y="488" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.28)" letter-spacing="1.5" text-anchor="middle">TRACEABLE TO NATIONAL STANDARDS</text>
+
+  <line x1="0" y1="516" x2="420" y2="516" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="0" y="516" width="420" height="44" fill="rgba(255,255,255,0.01)"/>
+  <text x="24" y="533" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.22)" letter-spacing="1">VS RESEARCH LABS</text>
+  <text x="24" y="547" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.15)" letter-spacing="0.5">Research procurement instrument</text>
+  <text x="396" y="533" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1" text-anchor="end">REV. A</text>
+  <text x="396" y="547" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.12)" letter-spacing="1" text-anchor="end">CAL / QC-006</text>
+</svg>

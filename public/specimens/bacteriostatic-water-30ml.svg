@@ -1,0 +1,99 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Liquid fill: horizontal lines at low opacity -->
+    <pattern id="liquidLines" width="8" height="8" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="4" x2="8" y2="4" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+    </pattern>
+    <clipPath id="vialLiquid">
+      <path d="M314 310 L314 567 Q314 590 400 590 Q486 590 486 567 L486 310 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">BACTERIOSTATIC SOLVENT</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-RS-004</text>
+
+  <!-- Wider vial for 30mL multi-dose -->
+
+  <!-- Crimp cap button -->
+  <rect x="348" y="148" width="104" height="18" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+
+  <!-- Crimp band -->
+  <rect x="312" y="166" width="176" height="26" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.38)" stroke-width="1"/>
+  <line x1="326" y1="166" x2="326" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="344" y1="166" x2="344" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="362" y1="166" x2="362" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="380" y1="166" x2="380" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="398" y1="166" x2="398" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="416" y1="166" x2="416" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="434" y1="166" x2="434" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="452" y1="166" x2="452" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="470" y1="166" x2="470" y2="192" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+  <!-- Rubber stopper -->
+  <rect x="318" y="192" width="164" height="22" rx="1" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+
+  <!-- Vial body — wider for 30mL -->
+  <path d="M314 214 L314 567 Q314 590 400 590 Q486 590 486 567 L486 214 Z" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.48)" stroke-width="1.5"/>
+  <line x1="328" y1="216" x2="328" y2="563" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="472" y1="216" x2="472" y2="563" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Liquid fill — nearly full (30mL) -->
+  <rect x="314" y="310" width="172" height="278" fill="url(#liquidLines)" clip-path="url(#vialLiquid)"/>
+  <line x1="314" y1="310" x2="486" y2="310" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+
+  <!-- Volume graduation marks on right edge of vial -->
+  <line x1="480" y1="330" x2="490" y2="330" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <text x="493" y="334" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.25)">30</text>
+  <line x1="480" y1="393" x2="490" y2="393" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+  <text x="493" y="397" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.2)">20</text>
+  <line x1="480" y1="456" x2="490" y2="456" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+  <text x="493" y="460" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.2)">10</text>
+  <line x1="480" y1="520" x2="490" y2="520" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+  <text x="493" y="524" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.2)">0</text>
+  <!-- Sub-ticks -->
+  <line x1="480" y1="361" x2="486" y2="361" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="480" y1="424" x2="486" y2="424" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="480" y1="487" x2="486" y2="487" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+  <!-- Label band -->
+  <rect x="314" y="290" width="172" height="2" fill="rgba(255,255,255,0)"/>
+  <line x1="314" y1="236" x2="486" y2="236" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+  <line x1="314" y1="306" x2="486" y2="306" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+  <rect x="314" y="236" width="172" height="70" fill="rgba(255,255,255,0.02)"/>
+
+  <text x="400" y="256" font-family="monospace" font-size="11" font-weight="500" fill="rgba(255,255,255,0.9)" letter-spacing="2" text-anchor="middle">BACTERIOSTATIC</text>
+  <text x="400" y="271" font-family="monospace" font-size="11" font-weight="500" fill="rgba(255,255,255,0.9)" letter-spacing="2" text-anchor="middle">WATER</text>
+  <line x1="350" y1="279" x2="450" y2="279" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="400" y="294" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.82">VSR-RS-BAC-030</text>
+
+  <!-- Spec block -->
+  <text x="318" y="556" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">30 mL</text>
+  <text x="318" y="568" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.2)" letter-spacing="1">0.9% BENZYL ALCOHOL</text>
+  <text x="318" y="580" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1">SEALED GLASS · RUBBER SEPTUM</text>
+
+  <!-- Right callouts -->
+  <line x1="504" y1="204" x2="560" y2="204" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="504" cy="204" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="564" y="201" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">RUBBER SEPTUM</text>
+  <text x="564" y="212" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">MULTI-DOSE</text>
+
+  <line x1="500" y1="312" x2="560" y2="312" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="500" cy="312" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="564" y="309" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">FILL LEVEL</text>
+  <text x="564" y="320" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">30 mL NOM.</text>
+
+  <!-- Left callout -->
+  <line x1="314" y1="400" x2="252" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="314" cy="400" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="397" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">BOROSILICATE</text>
+  <text x="60" y="409" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">GLASS VIAL</text>
+
+  <text x="60" y="620" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">PRESERVED · STERILE · ROOM TEMP</text>
+
+  <line x1="60" y1="638" x2="740" y2="638" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">FOR RESEARCH PURPOSES ONLY · NOT FOR HUMAN USE</text>
+  <text x="740" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

@@ -1,0 +1,108 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">LIQUID HANDLING · MICROPIPETTE SET</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-LE-005</text>
+
+  <!-- Three pipettes side by side: P10, P100, P1000 -->
+  <!-- P10 at x=210, P100 at x=370, P1000 at x=530 -->
+  <!-- Each pipette: plunger knob at top, barrel body, tip cone at bottom -->
+  <!-- Heights vary: P10 smallest, P1000 tallest -->
+
+  <!-- ── P10 (0.5–10 μL) at x=210 ── -->
+  <!-- Plunger button -->
+  <ellipse cx="210" cy="192" rx="14" ry="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <!-- Volume adjuster ring -->
+  <rect x="200" y="200" width="20" height="12" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <!-- Volume window -->
+  <rect x="203" y="203" width="14" height="6" rx="1" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="210" y="208" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.4)" text-anchor="middle">10.0</text>
+  <!-- Barrel body -->
+  <rect x="202" y="212" width="16" height="200" rx="3" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+  <!-- Barrel label zone -->
+  <rect x="201" y="240" width="18" height="64" fill="rgba(255,255,255,0.03)"/>
+  <line x1="201" y1="240" x2="219" y2="240" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <line x1="201" y1="304" x2="219" y2="304" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <text x="210" y="258" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">P10</text>
+  <text x="210" y="271" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">0.5–10</text>
+  <text x="210" y="282" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">μL</text>
+  <!-- Tip ejector button -->
+  <rect x="196" y="392" width="10" height="18" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <!-- Lower barrel / tip cone -->
+  <path d="M202 412 L198 456 L222 456 L218 412 Z" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <!-- Tip -->
+  <path d="M203 456 L208 480 L212 480 L217 456 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <!-- P10 tip (small) -->
+  <path d="M208 480 L209 494 L211 494 L212 480 Z" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+
+  <!-- ── P100 (10–100 μL) at x=380 ── -->
+  <ellipse cx="380" cy="180" rx="16" ry="9" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <rect x="368" y="189" width="24" height="14" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <rect x="372" y="192" width="16" height="8" rx="1" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="380" y="198" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.4)" text-anchor="middle">100.0</text>
+  <rect x="370" y="203" width="20" height="220" rx="3" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+  <rect x="369" y="236" width="22" height="72" fill="rgba(255,255,255,0.03)"/>
+  <line x1="369" y1="236" x2="391" y2="236" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <line x1="369" y1="308" x2="391" y2="308" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <text x="380" y="256" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">P100</text>
+  <text x="380" y="269" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">10–100</text>
+  <text x="380" y="280" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">μL</text>
+  <rect x="362" y="406" width="12" height="20" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <path d="M370 423 L364 476 L396 476 L390 423 Z" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <path d="M367 476 L373 502 L387 502 L393 476 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <path d="M374 502 L376 520 L384 520 L386 502 Z" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+
+  <!-- ── P1000 (100–1000 μL) at x=560 ── -->
+  <ellipse cx="560" cy="166" rx="18" ry="10" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <rect x="546" y="176" width="28" height="16" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <rect x="550" y="179" width="20" height="10" rx="1" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="560" y="186" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.4)" text-anchor="middle">1000</text>
+  <rect x="546" y="192" width="28" height="250" rx="4" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+  <rect x="545" y="228" width="30" height="82" fill="rgba(255,255,255,0.03)"/>
+  <line x1="545" y1="228" x2="575" y2="228" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <line x1="545" y1="310" x2="575" y2="310" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+  <text x="560" y="252" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.5)" text-anchor="middle">P1000</text>
+  <text x="560" y="267" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">100–1000</text>
+  <text x="560" y="278" font-family="monospace" font-size="5" fill="rgba(255,255,255,0.28)" text-anchor="middle">μL</text>
+  <rect x="536" y="422" width="14" height="22" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+  <path d="M546 442 L538 500 L582 500 L574 442 Z" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <path d="M541 500 L549 528 L571 528 L579 500 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+  <path d="M550 528 L554 552 L566 552 L570 528 Z" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+
+  <!-- Volume labels below each pipette -->
+  <text x="210" y="570" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="1">P10</text>
+  <text x="380" y="570" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="1">P100</text>
+  <text x="560" y="570" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="1">P1000</text>
+
+  <!-- Set label + SKU -->
+  <text x="400" y="598" font-family="monospace" font-size="10" font-weight="500" fill="rgba(255,255,255,0.75)" letter-spacing="2" text-anchor="middle">MICROPIPETTE SET · 3-PIECE</text>
+  <text x="400" y="612" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.82">VSR-LE-PIP-SET</text>
+
+  <!-- Right callouts -->
+  <line x1="578" y1="230" x2="640" y2="200" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="578" cy="230" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="644" y="197" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">INDIVIDUAL</text>
+  <text x="644" y="209" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">CAL. CERT.</text>
+
+  <line x1="574" y1="440" x2="640" y2="440" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="574" cy="440" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="644" y="437" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">TIP EJECTOR</text>
+  <text x="644" y="449" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">STAINLESS CONE</text>
+
+  <!-- Left callouts -->
+  <line x1="196" y1="200" x2="134" y2="180" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="196" cy="200" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="177" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">PLUNGER BUTTON</text>
+  <text x="60" y="189" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">AUTOCLAVABLE 121°C</text>
+
+  <line x1="200" y1="350" x2="134" y2="350" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="200" cy="350" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="347" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">ERGONOMIC</text>
+  <text x="60" y="359" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">HOUSING ± 0.8%</text>
+
+  <line x1="60" y1="638" x2="740" y2="638" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">SINGLE-CHANNEL · VARIABLE VOLUME · FACTORY CALIBRATED</text>
+  <text x="740" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

@@ -74,7 +74,12 @@ export const useProductStore = create<ProductStore>()(
       resetToSeed: () => set({ products: seed }),
     }),
     {
-      name: 'vsresearchlabs.products.v1',
+      // Wave 7c — bump from v1 to v2 to invalidate persisted catalogs
+      // that pre-date the abbreviation/family/variants schema extension.
+      // Old payloads are missing those required fields; rather than
+      // shipping a runtime migration we let the store re-hydrate from
+      // the current seed JSON (which carries the new fields).
+      name: 'vsresearchlabs.products.v2',
       storage: createJSONStorage(() => localStorage),
       // Only persist the products array; everything else is derived.
       partialize: (state) => ({ products: state.products }),

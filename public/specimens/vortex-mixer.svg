@@ -1,0 +1,104 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">SAMPLE PREP · VORTEX MIXER</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-LE-002</text>
+
+  <!-- Vortex mixer side-view schematic -->
+  <!-- Base: x=280..520, y=558..590 -->
+  <rect x="280" y="555" width="240" height="28" rx="3" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+  <!-- Non-slip base texture lines -->
+  <line x1="296" y1="560" x2="296" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="316" y1="560" x2="316" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="336" y1="560" x2="336" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="356" y1="560" x2="356" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="376" y1="560" x2="376" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="396" y1="560" x2="396" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="416" y1="560" x2="416" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="436" y1="560" x2="436" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="456" y1="560" x2="456" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="476" y1="560" x2="476" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="496" y1="560" x2="496" y2="580" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Main body housing: x=300..500, y=370..555 -->
+  <rect x="300" y="370" width="200" height="185" rx="4" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+
+  <!-- Speed control knob on front (right side of housing) -->
+  <circle cx="462" cy="490" r="20" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+  <!-- Knob indicator mark -->
+  <line x1="462" y1="472" x2="462" y2="480" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+  <!-- Knob scale arcs (MIN → MAX) -->
+  <path d="M445 506 A22 22 0 0 1 442 490 A22 22 0 0 1 445 474" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <path d="M479 474 A22 22 0 0 1 482 490 A22 22 0 0 1 479 506" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="436" y="517" font-family="monospace" font-size="6" fill="rgba(255,255,255,0.2)">MIN</text>
+  <text x="468" y="517" font-family="monospace" font-size="6" fill="rgba(255,255,255,0.2)">MAX</text>
+
+  <!-- Mode switch (ON/TOUCH) -->
+  <rect x="312" y="476" width="48" height="22" rx="2" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <line x1="336" y1="476" x2="336" y2="498" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="322" y="491" font-family="monospace" font-size="6" fill="rgba(255,255,255,0.3)">ON</text>
+  <text x="340" y="491" font-family="monospace" font-size="6" fill="rgba(255,255,255,0.3)">TCH</text>
+
+  <!-- Power LED indicator -->
+  <circle cx="336" cy="520" r="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+  <!-- Motor housing cap line -->
+  <line x1="300" y1="420" x2="500" y2="420" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Cup head (top of mixer) -->
+  <!-- Shaft connecting cup to motor -->
+  <line x1="400" y1="338" x2="400" y2="372" stroke="rgba(255,255,255,0.4)" stroke-width="3"/>
+
+  <!-- Cup head platform -->
+  <ellipse cx="400" cy="330" rx="60" ry="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.42)" stroke-width="1.5"/>
+
+  <!-- Orbit motion indicator (small arrows around cup head) -->
+  <path d="M350 310 Q360 296 374 300" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M374 300 L370 294 M374 300 L380 298" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+  <path d="M450 310 Q440 296 426 300" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M426 300 L428 294 M426 300 L420 298" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+
+  <!-- Orbit circle dashed -->
+  <ellipse cx="400" cy="330" rx="76" ry="20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Tube holder on cup (3 small circles indicating tube receptacles) -->
+  <circle cx="384" cy="328" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  <circle cx="400" cy="322" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  <circle cx="416" cy="328" r="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+
+  <!-- Right callouts -->
+  <line x1="476" y1="330" x2="556" y2="300" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="476" cy="330" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="560" y="297" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">CUP HEAD</text>
+  <text x="560" y="309" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">REPLACEABLE</text>
+
+  <line x1="501" y1="490" x2="570" y2="490" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="501" cy="490" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="574" y="487" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">VARIABLE SPEED</text>
+  <text x="574" y="499" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">0–3000 RPM</text>
+
+  <line x1="501" y1="560" x2="570" y2="560" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="501" cy="560" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="574" y="557" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">NON-SLIP BASE</text>
+
+  <!-- Left callouts -->
+  <line x1="300" y1="420" x2="230" y2="380" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="300" cy="420" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="377" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">MOTOR HOUSING</text>
+  <text x="60" y="389" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">100–240 V</text>
+
+  <line x1="340" y1="498" x2="230" y2="498" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="340" cy="498" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="495" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">MODE SWITCH</text>
+  <text x="60" y="507" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">CONT. / TOUCH</text>
+
+  <!-- Spec block -->
+  <text x="60" y="602" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">ORBIT 4 mm · TUBES UP TO Ø30 mm</text>
+  <text x="400" y="602" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.75">VSR-LE-VTX-001</text>
+
+  <line x1="60" y1="618" x2="740" y2="618" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">SUITABLE FOR RESEARCH SAMPLE MIXING ONLY</text>
+  <text x="740" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

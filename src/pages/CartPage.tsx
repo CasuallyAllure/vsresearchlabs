@@ -1,21 +1,38 @@
 /**
  * CartPage (Inquiry List)
  * Phase 3 — Inquiry flow polish.
+ * Wave 4 — Module composition (items + form columns).
+ * Reconciliation Pass D — Procurement intake alignment.
  *
- * Adds:
- *  • Per-item notes via toggle → textarea (persisted in useCart store)
- *  • Quantity edge cases: minus at qty=1 removes; plus capped at MAX_QTY
- *  • Inline field-level validation on Name + Contact (touched + empty)
- *  • Success state with both 'Back to Home' and 'Browse Catalog' actions
- *  • Tightened form/list visual hierarchy
+ * The itemized procurement intake surface. Reconciled into the same
+ * institutional register as /catalog and the documentation library:
+ * the form reads as a procurement intake document, not a contact
+ * form. Three procurement section headings group the inputs (Buyer
+ * Identification / Organization or Lab / Procurement Notes) and the
+ * items column is labeled Requested Inventory.
  *
- * Phase 2 invariants preserved: no glass surfaces, no blur, hairlines only.
+ * Surface posture: the form column is now a Level 1 solid surface
+ * (was Level 3 glass in Wave 4). Removing the glass aligns with the
+ * editorial restraint established by Passes A–C and reduces the
+ * page's only remaining glass surface to zero.
+ *
+ * Submission contract is unchanged: { name, contact, notes, items }.
+ * The optional Organization input merges into `notes` client-side
+ * before submit so the supabase send-inquiry function receives the
+ * exact same payload shape it has always received.
+ *
+ * Phase 2 invariants preserved: hairline grammar, no blur, validation
+ * behavior (touched + empty), accessibility (labels, aria-invalid,
+ * aria-describedby, aria-live).
  */
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
+import { SKUCode } from '../components/ui/identifiers';
+import { generateInquiryRecord } from '../lib/inquiry';
+import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 
 type SubmitState =
   | { kind: 'idle' }
@@ -34,8 +51,10 @@ export function CartPage() {
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
+  const [organization, setOrganization] = useState('');
   const [notes, setNotes] = useState('');
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
+  const [record, setRecord] = useState<InquiryRecord | null>(null);
 
   // Field-level validation tracking. We only show errors after a field
   // has been touched (blur) so users aren't yelled at on first paint.
@@ -84,15 +103,20 @@ export function CartPage() {
       return;
     }
 
+    const orgTrim   = organization.trim();
+    const notesTrim = notes.trim();
+
     const payload = {
-      name: name.trim(),
-      contact: contact.trim(),
-      notes: notes.trim(),
+      name:         name.trim(),
+      contact:      contact.trim(),
+      organization: orgTrim || undefined,
+      notes:        notesTrim || undefined,
       items: items.map((i) => ({
         product: {
-          id: i.product.id,
-          name: i.product.name,
+          id:       i.product.id,
+          name:     i.product.name,
           category: i.product.category,
+          sku:      i.product.sku,
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
@@ -114,42 +138,232 @@ export function CartPage() {
       return;
     }
 
+    // Validate server returned an authoritative reference ID.
+    const serverResp = data as {
+      success: true;
+      referenceId?: string;
+      submittedAt?: string;
+      intakeChannel?: string;
+      processingNode?: string;
+      classificationStatus?: string;
+    };
+
+    if (!serverResp.referenceId) {
+      setSubmit({
+        kind: 'error',
+        message: 'Inquiry submitted but reference was not returned. Contact us to confirm receipt.',
+      });
+      return;
+    }
+
+    const server: InquiryServerData = {
+      referenceId:          serverResp.referenceId,
+      submittedAt:          serverResp.submittedAt          ?? new Date().toISOString(),
+      intakeChannel:        serverResp.intakeChannel        ?? 'VSR-WEB-PORTAL',
+      processingNode:       serverResp.processingNode       ?? 'VSR-HQ-INTAKE',
+      classificationStatus: serverResp.classificationStatus ?? 'OPEN',
+    };
+
+    // Capture snapshot before clearing — items are gone after clear().
+    const generatedRecord = generateInquiryRecord(
+      {
+        name:         name.trim(),
+        contact:      contact.trim(),
+        organization: organization.trim(),
+        items:        [...items],
+      },
+      server,
+    );
     clear();
     setName('');
     setContact('');
+    setOrganization('');
     setNotes('');
+    setRecord(generatedRecord);
     setSubmit({ kind: 'success' });
   }
 
   // ---------------------------------------------------------------------
-  // Success state
+  // Intake record — filed procurement receipt
   // ---------------------------------------------------------------------
-  if (submit.kind === 'success') {
+  if (submit.kind === 'success' && record) {
+    const ts = record.submittedAt;
+    const tsDisplay = `${ts.slice(0, 10)} · ${ts.slice(11, 19)} UTC`;
+
     return (
-      <div className="py-[var(--space-20)] text-center">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-4)]">
-          Inquiry Sent
+      <div className="py-[var(--space-8)] pb-[var(--space-24)] lg:pb-[var(--space-8)]">
+
+        {/* Print-only classification header */}
+        <p className="hidden print:block text-[9px] font-mono uppercase tracking-[0.2em] text-black/35 border-b border-black/10 pb-[var(--space-3)] mb-[var(--space-6)]">
+          Uncontrolled Copy · For Buyer Reference Only · Do Not Redistribute
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight mb-[var(--space-4)]">
-          Thank you.
-        </h1>
-        <p className="text-sm text-white/55 mb-[var(--space-8)] max-w-[44ch] mx-auto leading-relaxed">
-          Inquiry sent. We will contact you shortly.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
-          <Link
-            to="/"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+
+        {/* Document header — identifier band */}
+        <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06] print:border-black/15">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-white/35 print:text-black/50 mb-[var(--space-4)]">
+            VS Research Labs · Procurement Intake
+          </p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 print:text-black/45 mb-[var(--space-2)]">
+            Reference
+          </p>
+          <code className="block text-2xl sm:text-3xl font-mono tabular-nums tracking-[0.04em] text-white print:text-black">
+            {record.referenceId}
+          </code>
+          <p className="mt-[var(--space-3)] text-[11px] font-mono tabular-nums text-white/35 print:text-black/50 uppercase tracking-[0.1em]">
+            {tsDisplay}
+            <span className="ml-[var(--space-4)] text-white/25 print:text-black/35">
+              · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
+            </span>
+          </p>
+        </header>
+
+        {/* Intake record surface */}
+        <div className="research-surface-solid p-[var(--space-6)] print:bg-white print:border-black/15 print:rounded-none">
+
+          {/* Buyer */}
+          <div className="mb-[var(--space-6)]">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+              Buyer
+            </p>
+            <dl className="border-t border-white/[0.06] print:border-black/15">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Name</dt>
+                <dd className="text-sm text-white/80 print:text-black text-right">{record.contactSummary.name}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Contact</dt>
+                <dd className="text-sm font-mono tabular-nums text-white/80 print:text-black text-right">{record.contactSummary.contact}</dd>
+              </div>
+              {record.contactSummary.organization && (
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                  <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Institution</dt>
+                  <dd className="text-sm text-white/80 print:text-black text-right">{record.contactSummary.organization}</dd>
+                </div>
+              )}
+            </dl>
+          </div>
+
+          {/* Requested inventory — tabular summary */}
+          <div className="mb-[var(--space-6)]">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+              Requested Inventory
+              <span className="ml-[var(--space-3)] text-white/20 print:text-black/30">
+                · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
+              </span>
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] border-collapse">
+                <thead>
+                  <tr className="border-t border-b border-white/[0.06] print:border-black/15">
+                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal">
+                      SKU
+                    </th>
+                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal pl-[var(--space-4)]">
+                      Item
+                    </th>
+                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal w-12">
+                      Qty
+                    </th>
+                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal w-20 pl-[var(--space-4)]">
+                      Notes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {record.procurementSummary.map((item) => (
+                    <tr
+                      key={item.sku}
+                      className="border-b border-white/[0.06] print:border-black/10"
+                    >
+                      <td className="py-[var(--space-3)] align-baseline">
+                        <SKUCode value={item.sku} className="text-white/60 print:text-black/60" />
+                      </td>
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] align-baseline text-sm text-white/75 print:text-black">
+                        {item.name}
+                      </td>
+                      <td className="py-[var(--space-3)] text-right align-baseline text-sm font-mono tabular-nums text-white/70 print:text-black">
+                        {item.quantity}
+                      </td>
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] text-right align-baseline text-[10px] font-mono uppercase tracking-[0.1em] text-white/35 print:text-black/40 print:text-left">
+                        <span className="print:hidden">{item.note ? 'Attached' : '—'}</span>
+                        <span className="hidden print:inline text-[9px] font-sans font-normal normal-case tracking-normal text-black/55 leading-relaxed">
+                          {item.note || '—'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Operational status */}
+          <div className="pt-[var(--space-4)] border-t border-white/[0.06] print:border-black/15">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+              Operational Status
+            </p>
+            <dl className="border-t border-white/[0.06] print:border-black/15 mb-[var(--space-4)]">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Status</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/60 print:text-black/70 text-right">{record.classificationStatus}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Response Window</dt>
+                <dd className="text-[11px] font-mono tabular-nums text-white/60 print:text-black/70 text-right">{record.estimatedResponseWindow}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Channel</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/40 print:text-black/55 text-right">{record.intakeChannel}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Processing Node</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/40 print:text-black/55 text-right">{record.processingNode}</dd>
+              </div>
+            </dl>
+            <p className="text-[11px] text-white/40 print:text-black/50 leading-relaxed max-w-[72ch]">
+              Reference{' '}
+              <span className="font-mono tabular-nums">{record.referenceId}</span>{' '}
+              has been filed. Retain for procurement tracking. Documentation
+              requests or specifications outside the active catalog may extend
+              response time.
+            </p>
+          </div>
+
+        </div>
+
+        {/* Print-only record footer */}
+        <div className="hidden print:block mt-[var(--space-8)] pt-[var(--space-4)] border-t border-black/15">
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-black/35">
+            VS Research Labs · Procurement Intake Record · {record.referenceId}
+          </p>
+          <p className="mt-[var(--space-2)] text-[9px] font-mono uppercase tracking-[0.2em] text-black/25">
+            For buyer reference only. Does not constitute a confirmed commitment or binding agreement.
+          </p>
+        </div>
+
+        {/* Actions — suppressed in print */}
+        <div className="mt-[var(--space-8)] flex flex-col sm:flex-row gap-[var(--space-3)] print:hidden">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
           >
-            Back to Home
+            Print Record
+          </button>
+          <Link
+            to="/documentation"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+          >
+            Documentation Archive
           </Link>
           <Link
             to="/research-supplies"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
           >
-            Browse Catalog
+            Research Supplies
           </Link>
         </div>
+
       </div>
     );
   }
@@ -161,8 +375,8 @@ export function CartPage() {
     return (
       <div className="py-[var(--space-12)]">
         <header className="mb-[var(--space-10)]">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
-            Send Inquiry
+          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+            Inquiry Intake
           </p>
           <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
             Inquiry List
@@ -171,18 +385,18 @@ export function CartPage() {
 
         <div className="py-[var(--space-12)] border-y border-white/[0.06] text-center">
           <p className="text-white/55 text-sm mb-[var(--space-8)]">
-            Your inquiry list is empty.
+            No items on the inquiry list. Add inventory from any product page.
           </p>
           <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
             <Link
               to="/research-supplies"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
             >
               Research Supplies
             </Link>
             <Link
               to="/laboratory-equipment"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
             >
               Laboratory Equipment
             </Link>
@@ -198,16 +412,34 @@ export function CartPage() {
   return (
     <div className="py-[var(--space-8)]">
       <header className="mb-[var(--space-10)]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
-          Send Inquiry
+        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+          Inquiry Intake
         </p>
         <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
           Inquiry List
         </h1>
       </header>
 
-      {/* Items — hairline-divided list, no enclosing card */}
-      <ul className="border-t border-white/[0.06] mb-[var(--space-16)]">
+      {/*
+        Wave 4 — Module composition
+        Mobile: stacked (items module above form module).
+        Desktop (lg+): 12-col grid; items col-span-8, form col-span-4.
+        Items module = Level 1 solid surface. Form module = Level 3 glass
+        (the single glass surface on this page). Both modules host markup
+        that is structurally unchanged from the pre-Wave-4 implementation;
+        only the surrounding containers were added.
+      */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--space-6)]">
+        {/* Items column — Level 1 solid surface module.
+            Pass D: a section eyebrow above the surface labels the
+            column as "Requested Inventory," propagating the
+            procurement-grouping vocabulary into this region. */}
+        <div className="lg:col-span-8">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-4)]">
+            Requested Inventory
+          </p>
+          <div className="research-surface-solid overflow-hidden">
+            <ul>
         {items.map((item) => {
           const imageUrl = item.product.images?.[0] ?? null;
           const noteValue = item.note ?? '';
@@ -219,7 +451,7 @@ export function CartPage() {
               className="py-[var(--space-5)] border-b border-white/[0.06]"
             >
               <div className="flex items-center gap-[var(--space-4)]">
-                <div className="w-16 h-16 shrink-0 overflow-hidden bg-base-800 border border-white/[0.06]">
+                <div className="w-16 h-16 shrink-0 overflow-hidden bg-[#050505] border border-white/[0.09]">
                   {imageUrl ? (
                     <img
                       src={imageUrl}
@@ -237,11 +469,15 @@ export function CartPage() {
                   <p className="text-sm text-white truncate">
                     {item.product.name}
                   </p>
-                  {item.product.category && (
-                    <p className="text-xs text-white/40 mt-0.5">
-                      {item.product.category.replace(/-/g, ' ')}
-                    </p>
-                  )}
+                  <p className="mt-0.5 text-[11px] text-white/40 truncate">
+                    <SKUCode value={item.product.sku} className="text-white/40" />
+                    {item.product.category && (
+                      <>
+                        <span className="mx-1.5 text-white/20" aria-hidden="true">·</span>
+                        {item.product.category.replace(/-/g, ' ')}
+                      </>
+                    )}
+                  </p>
                 </div>
 
                 {/* Quantity controls */}
@@ -250,7 +486,7 @@ export function CartPage() {
                     type="button"
                     onClick={() => handleDecrement(item.product.id, item.quantity)}
                     aria-label="Decrease quantity"
-                    className="w-7 h-7 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors"
+                    className="w-7 h-7 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
                   >
                     −
                   </button>
@@ -275,7 +511,7 @@ export function CartPage() {
                   type="button"
                   onClick={() => remove(item.product.id)}
                   aria-label="Remove item"
-                  className="ml-[var(--space-2)] text-white/40 hover:text-white text-xs uppercase tracking-widest"
+                  className="ml-[var(--space-2)] text-white/40 hover:text-white text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                 >
                   Remove
                 </button>
@@ -287,7 +523,7 @@ export function CartPage() {
                   <button
                     type="button"
                     onClick={() => toggleNote(item.product.id)}
-                    className="text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-gold transition-colors"
+                    className="text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                   >
                     + Add note
                   </button>
@@ -307,13 +543,13 @@ export function CartPage() {
                       }
                       rows={2}
                       placeholder="Quantity, concentration, lot preferences, etc."
-                      className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black/40 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-gold/50 transition-colors resize-y"
+                      className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-y"
                     />
                     {noteValue.length === 0 && (
                       <button
                         type="button"
                         onClick={() => toggleNote(item.product.id)}
-                        className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors"
+                        className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                       >
                         Cancel
                       </button>
@@ -324,12 +560,21 @@ export function CartPage() {
             </li>
           );
         })}
-      </ul>
+            </ul>
+          </div>
+        </div>
 
-      {/* Inquiry form — flat, no panel */}
-      <form onSubmit={handleSubmit} noValidate>
+        {/* Inquiry form column — Level 1 solid surface module.
+            Pass D: was Level 3 glass; flattened to solid because
+            chrome and editorial surfaces no longer carry glass and
+            the form's glass register read as decorative softness
+            rather than as institutional intake. */}
+        <div className="lg:col-span-4">
+          <div className="research-surface-solid lg:sticky lg:top-[calc(56px+var(--space-4))] p-[var(--space-6)]">
+            <form onSubmit={handleSubmit} noValidate>
+        {/* Section 1 — Buyer Identification (required) */}
         <h2 className="text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
-          Your Information
+          Buyer Identification
         </h2>
 
         <div className="space-y-[var(--space-5)]">
@@ -338,7 +583,7 @@ export function CartPage() {
               htmlFor="inquiry-name"
               className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
             >
-              Name <span className="text-gold">*</span>
+              Name <span className="text-white/55">*</span>
             </label>
             <input
               id="inquiry-name"
@@ -351,12 +596,12 @@ export function CartPage() {
               required
               autoComplete="name"
               className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black/40 border rounded-lg text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
+                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border rounded-sm text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
                 showNameError
                   ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-white/10 focus:border-gold/50',
+                  : 'border-white/10 focus:border-white/40',
               ].join(' ')}
-              placeholder="Your full name"
+              placeholder="Full name"
             />
             {showNameError && (
               <p
@@ -373,7 +618,7 @@ export function CartPage() {
               htmlFor="inquiry-contact"
               className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
             >
-              Email or Phone <span className="text-gold">*</span>
+              Email or Phone <span className="text-white/55">*</span>
             </label>
             <input
               id="inquiry-contact"
@@ -388,10 +633,10 @@ export function CartPage() {
               required
               autoComplete="email"
               className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black/40 border rounded-lg text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
+                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border rounded-sm text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
                 showContactError
                   ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-white/10 focus:border-gold/50',
+                  : 'border-white/10 focus:border-white/40',
               ].join(' ')}
               placeholder="you@example.com or +1 555 000 0000"
             />
@@ -404,7 +649,41 @@ export function CartPage() {
               </p>
             )}
           </div>
+        </div>
 
+        {/* Section 2 — Organization or Lab (optional).
+            Merges into `notes` on submit; supabase payload shape
+            is unchanged. */}
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
+          Organization or Lab
+        </h2>
+
+        <div className="space-y-[var(--space-5)]">
+          <div>
+            <label
+              htmlFor="inquiry-organization"
+              className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+            >
+              Institution (optional)
+            </label>
+            <input
+              id="inquiry-organization"
+              type="text"
+              value={organization}
+              onChange={(e) => setOrganization(e.target.value)}
+              autoComplete="organization"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+              placeholder="Lab, university, or operational entity"
+            />
+          </div>
+        </div>
+
+        {/* Section 3 — Procurement Notes (optional) */}
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
+          Procurement Notes
+        </h2>
+
+        <div className="space-y-[var(--space-5)]">
           <div>
             <label
               htmlFor="inquiry-notes"
@@ -417,8 +696,8 @@ export function CartPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black/40 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-gold/50 transition-colors resize-y"
-              placeholder="Anything else we should know?"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-y"
+              placeholder="Lot preferences, batch requirements, delivery constraints, etc."
             />
           </div>
         </div>
@@ -436,11 +715,14 @@ export function CartPage() {
           type="submit"
           onClick={() => setTouched({ name: true, contact: true })}
           disabled={formInvalid || submit.kind === 'submitting'}
-          className="mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-all duration-200 hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed"
+          className="mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
         >
           {submit.kind === 'submitting' ? 'Sending…' : 'Send Inquiry'}
         </button>
-      </form>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -18,15 +18,6 @@
   --theme-mode: "dark";
   --theme-family: "classy";
 
-  /* Glass Composite Tokens */
-  --glass-blur: var(--blur-xl);
-  --glass-blur-primary: var(--blur-2xl);
-  --glass-blur-compact: var(--blur-lg);
-  --glass-opacity: 15%;
-  --glass-tint: rgba(255, 255, 255, 0.14);
-  --glass-shadow: var(--shadow-glass);
-  --glass-shadow-hover: var(--shadow-glassHover);
-
   /* Module / Panel Spacing */
   --module-padding: var(--space-4);
   --module-padding-compact: var(--space-3);
@@ -34,9 +25,6 @@
   --panel-padding-compact: var(--space-4);
   --accent-opacity: 0.45;
   --card-radius: var(--radius-3xl);
-  --shell-gradient-from: #0a0a0a;
-  --shell-gradient-via: #121212;
-  --shell-gradient-to: #1a1a1a;
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Surfaces
@@ -83,34 +71,12 @@
   --color-status-infoMuted: rgba(59, 130, 246, 0.15);
 
   /* ─────────────────────────────────────────────────────────────────────────
-     COLORS — Role Accents
-     ───────────────────────────────────────────────────────────────────────── */
-  --color-roleAccent-owner: #EAB308;
-  --color-roleAccent-promoter: #F97316;
-  --color-roleAccent-dj: #A855F7;
-  --color-roleAccent-door: #F59E0B;
-  --color-roleAccent-guest: #6366F1;
-
-  /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Accent Palette (Gold)
      ───────────────────────────────────────────────────────────────────────── */
   --color-accent-gold-light: #D4B896;
   --color-accent-gold: #C4A35A;
   --color-accent-gold-dark: #8B7355;
   --color-accent-gold-muted: #6B5B4F;
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     COLORS — Accent Palette (Olive)
-     ───────────────────────────────────────────────────────────────────────── */
-  --color-accent-olive-light: #7A8B4A;
-  --color-accent-olive: #5D6B35;
-  --color-accent-olive-dark: #3D4A2E;
-  --color-accent-olive-muted: #2E3A22;
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     COLORS — Accent Palette (Purple)
-     ───────────────────────────────────────────────────────────────────────── */
-  --color-accent-purple: #A78BFA;
 
   /* ─────────────────────────────────────────────────────────────────────────
      BACKWARD-COMPATIBLE ALIASES
@@ -164,6 +130,7 @@
   --radius-full: 9999px;
   --radius-card: 24px;
   --radius-card-inner: 16px;
+  --radius-procurement: 4px;
 
   /* ─────────────────────────────────────────────────────────────────────────
      SHADOWS
@@ -182,18 +149,11 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glassHover: 0 16px 48px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 24px rgba(196, 163, 90, 0.3);
 
   /* ─────────────────────────────────────────────────────────────────────────
      BLUR
      ───────────────────────────────────────────────────────────────────────── */
   --blur-none: 0;
-  --blur-sm: 4px;
-  --blur-md: 8px;
-  --blur-lg: 12px;
-  --blur-xl: 16px;
-  --blur-2xl: 24px;
-  --blur-3xl: 40px;
 
   /* ─────────────────────────────────────────────────────────────────────────
      TYPOGRAPHY — Font Families
@@ -285,13 +245,6 @@
   --ease-enter: cubic-bezier(0.12, 0, 0.39, 0);
   --ease-micro: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     MOTION — Interactive Scale
-     ───────────────────────────────────────────────────────────────────────── */
-  --scale-press: 0.98;
-  --scale-press-sm: 0.97;
-  --scale-hover: 1.02;
-  --scale-bg-sheet: 0.92;
 }
 
 /* ============================================================================
@@ -317,3 +270,203 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================================
+   WAVE 1 — Infrastructure Patch
+   Per docs/EXECUTION_MAP.md §Wave 1 and docs/COMPOSITION_SYSTEM_BLUEPRINT.md §3.
+   Purely additive. No existing rule above this comment is modified.
+   Surface values are research-calibrated:
+     - opacity cap on glass: 0.05 bg / 0.15 border / 0.08 max anywhere
+     - blur cap: 8px (--blur-precision)
+   Do NOT raise these toward VelariNights atmospheric values.
+   ============================================================================ */
+
+/* ─── Research surface tokens ─── */
+:root {
+  /* E2 — Surface depth restoration. Previous values collapsed all three
+     levels into a ~14-unit luminance band, making hierarchy imperceptible.
+     New values produce a clearly stratified three-level stack:
+       Page (L0): #000000  →  Level 1: #0d0d0d  →  Level 2: #181818
+     Each level is visually distinct without decorative treatment. */
+  --surface-product: #0d0d0d;
+  --surface-product-hover: #131313;
+  --surface-elevated-research: #181818;
+  --surface-cta: rgba(255, 255, 255, 0.05);
+  --border-product: rgba(255, 255, 255, 0.10);
+  --border-product-hover: rgba(255, 255, 255, 0.18);
+  --border-cta: rgba(255, 255, 255, 0.15);
+  --blur-precision: 8px;
+  /* E1 — Specimen bay. Image containers are set darker than the L1 surface
+     so specimen SVGs (fill="#0a0a0a") appear as placed objects on a recessed
+     bay — lifting them from the surface rather than blending into it. */
+  --surface-specimen-bay: #050505;
+}
+
+/* ─── Research surface utility classes ───
+   Wrapped in @layer utilities (Wave 5 prerequisite) so Tailwind generates
+   responsive variants (e.g. lg:research-surface-solid) when those class
+   names are detected in JSX content. The base `:hover` rules remain
+   attached to the unprefixed selector and only fire on elements that
+   carry the literal `research-surface-*` class (e.g. ProductCard).
+   Elements that use a responsive variant (e.g. ProductPage info column
+   at lg+) do NOT receive hover lift, which is the intended behavior for
+   non-interactive content modules. */
+@layer utilities {
+  .research-surface-solid {
+    background-color: var(--surface-product);
+    border: 1px solid var(--border-product);
+    border-radius: var(--radius-procurement);
+    /* Inset top highlight — creates a physical panel feel, as if the surface
+       has a lit top edge. Constant; does not transition. */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+      background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .research-surface-solid:hover {
+    background-color: var(--surface-product-hover);
+    border-color: var(--border-product-hover);
+  }
+  .research-surface-elevated {
+    background-color: var(--surface-elevated-research);
+    border: 1px solid var(--border-product-hover);
+    border-radius: var(--radius-procurement);
+    /* Stronger inset highlight on elevated panels — L2 surfaces read as
+       a layer above L1. */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ─── VN-origin utility classes (required by transplanted primitives) ─── */
+.bg-surface-base      { background-color: var(--color-surface-base); }
+.bg-surface-elevated  { background-color: var(--color-surface-elevated); }
+.bg-surface-overlay   { background-color: var(--color-surface-overlay); }
+.text-content-primary   { color: var(--color-content-primary); }
+.text-content-secondary { color: var(--color-content-secondary); }
+.text-content-tertiary  { color: var(--color-content-tertiary); }
+.border-default { border-color: var(--color-border-default); }
+.border-subtle  { border-color: var(--color-border-subtle); }
+.border-strong  { border-color: var(--color-border-strong); }
+
+/* ─── Procurement typography tokens (R1) ─── */
+:root {
+  /* Monospace identifier scale — used by SKUCode, BatchCode, LotCode, DateStamp */
+  --type-identifier-xs:  10px;
+  --type-identifier-sm:  11px;
+  --type-identifier-md:  13px;
+  /* Metadata caption scale — sans-serif, quietest register */
+  --type-metadata-xs:    10px;
+  --type-metadata-sm:    11px;
+  /* Table cell content — monospace, fixed-width numeral register */
+  --type-table-xs:       11px;
+  /* Monospace label — overline/eyebrow weight variant */
+  --type-mono-label-xs:  10px;
+}
+
+/* ─── Print base (R5) ───────────────────────────────────────────────────────
+   Removes the dark body background when the intake record is printed.
+   All element-level overrides are applied via Tailwind `print:` variants
+   directly on the intake record surface in CartPage.tsx.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000;
+  }
+}
+
+/* ============================================================================
+   LANDING — Operational motion system (E4)
+   Additive only. All motion is gated behind
+   `prefers-reduced-motion: no-preference` so the static composition IS the
+   accessible default — nothing depends on JS or animation support to be
+   readable. Curves are ease-out (expo/quint). No bounce, no glow pulses,
+   no layout-property animation. Procedural-instrument register only.
+   ============================================================================ */
+
+/* Default (and reduced-motion) state: everything resolved, fully visible.
+   The intro choreography only attaches under no-preference below. */
+.op-reveal { opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Staggered intro: a single orchestrated page-load. Content rises a
+     few pixels into place; the bay draws itself in. Drive the cascade
+     with --op-delay set inline per element. */
+  @keyframes op-rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .op-reveal {
+    opacity: 0;
+    animation: op-rise 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--op-delay, 0ms);
+  }
+
+  /* Instrument bay — molecular line-structure self-draws once on load.
+     Paths carry pathLength="1" so dashoffset is geometry-independent.
+     Stroke only; never animates layout. */
+  @keyframes op-draw {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+  }
+
+  .op-draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: op-draw 1900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--op-delay, 0ms);
+  }
+
+  /* Continuous scanning sweep — a single hairline traversing the bay.
+     Slow, linear, restrained. Opacity-and-transform only. */
+  @keyframes op-sweep {
+    0%   { transform: translateX(-6%); opacity: 0; }
+    12%  { opacity: 0.55; }
+    88%  { opacity: 0.55; }
+    100% { transform: translateX(106%); opacity: 0; }
+  }
+
+  .op-sweep {
+    animation: op-sweep 7200ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  /* Telemetry tick — the live readout dot. Quiet breathing, not a pulse. */
+  @keyframes op-tick {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 0.9; }
+  }
+
+  .op-tick {
+    animation: op-tick 2600ms ease-in-out infinite;
+  }
+
+  /* Bay grid — an almost-imperceptible vertical drift so the field reads
+     as a live instrument surface rather than a static texture. */
+  @keyframes op-drift {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-24px); }
+  }
+
+  .op-drift {
+    animation: op-drift 14s linear infinite alternate;
+  }
+}
+
+/* ============================================================================
+   COMPOUND INTELLIGENCE HERO — carousel track
+   The terminal's slide track is a native scroll-snap surface (free,
+   momentum-aware swipe; no JS animation loop). The scrollbar is hidden
+   because the footer indicators and tabs are the affordance. Smooth
+   scroll-to is requested in JS only under no-preference; the global
+   reduced-motion block already forces `scroll-behavior: auto`, so a
+   tab/arrow jump is instant for reduced-motion users.
+   ============================================================================ */
+.cih-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cih-track::-webkit-scrollbar {
+  display: none;
+}
+

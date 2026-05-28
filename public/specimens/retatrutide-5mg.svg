@@ -1,0 +1,86 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="lyoDots" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.9" fill="rgba(255,255,255,0.2)"/>
+    </pattern>
+    <clipPath id="vialFill">
+      <path d="M333 446 L333 557 Q333 576 400 576 Q467 576 467 557 L467 446 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="800" fill="#0a0a0a"/>
+
+  <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">TRIPLE GIP / GLP-1 / GCG AGONIST</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-RS-003</text>
+
+  <!-- Crimp cap button -->
+  <rect x="350" y="156" width="100" height="16" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.32)" stroke-width="1"/>
+
+  <!-- Crimp band -->
+  <rect x="320" y="172" width="160" height="26" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.38)" stroke-width="1"/>
+  <line x1="332" y1="172" x2="332" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="348" y1="172" x2="348" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="364" y1="172" x2="364" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="380" y1="172" x2="380" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="396" y1="172" x2="396" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="412" y1="172" x2="412" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="428" y1="172" x2="428" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="444" y1="172" x2="444" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="460" y1="172" x2="460" y2="198" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+  <!-- Rubber stopper -->
+  <rect x="334" y="198" width="132" height="20" rx="1" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+
+  <!-- Vial body -->
+  <path d="M334 218 L334 557 Q334 577 400 577 Q466 577 466 557 L466 218 Z" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.48)" stroke-width="1.5"/>
+  <line x1="346" y1="220" x2="346" y2="554" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="454" y1="220" x2="454" y2="554" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- Lyophilized fill -->
+  <line x1="334" y1="446" x2="466" y2="446" stroke="rgba(255,255,255,0.16)" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="334" y="447" width="132" height="128" fill="url(#lyoDots)" clip-path="url(#vialFill)"/>
+
+  <!-- Label band -->
+  <rect x="334" y="284" width="132" height="144" fill="rgba(255,255,255,0.02)"/>
+  <line x1="334" y1="284" x2="466" y2="284" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+  <line x1="334" y1="428" x2="466" y2="428" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+
+  <text x="400" y="306" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.9)" letter-spacing="2" text-anchor="middle">RETATRUTIDE</text>
+  <line x1="350" y1="315" x2="450" y2="315" stroke="rgba(255,255,255,0.09)" stroke-width="1"/>
+  <text x="400" y="332" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.58)" letter-spacing="1" text-anchor="middle">5 mg / vial</text>
+  <text x="400" y="349" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.36)" letter-spacing="1" text-anchor="middle">LYOPHILIZED POWDER</text>
+  <line x1="350" y1="359" x2="450" y2="359" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="400" y="374" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.82">VSR-RS-RTT-005</text>
+  <text x="400" y="390" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" letter-spacing="1" text-anchor="middle">PURITY ≥ 98% HPLC</text>
+  <text x="400" y="406" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1" text-anchor="middle">STORE −20°C · DESICCATED</text>
+  <text x="400" y="421" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1" text-anchor="middle">CAS 2381931-85-5</text>
+
+  <!-- Right callouts -->
+  <line x1="481" y1="185" x2="548" y2="185" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="481" cy="185" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="552" y="182" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">ALUMINIUM CRIMP</text>
+  <text x="552" y="193" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">FLIP-OFF CAP</text>
+
+  <line x1="467" y1="208" x2="548" y2="208" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="467" cy="208" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="552" y="212" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">RUBBER STOPPER</text>
+
+  <line x1="467" y1="492" x2="548" y2="492" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="467" cy="492" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="552" y="489" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">LYOPHILIZED</text>
+  <text x="552" y="501" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">CAKE</text>
+
+  <!-- Left callouts -->
+  <line x1="334" y1="350" x2="256" y2="350" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <circle cx="334" cy="350" r="2" fill="rgba(255,255,255,0.3)"/>
+  <text x="60" y="347" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">BOROSILICATE</text>
+  <text x="60" y="359" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">GLASS · 5 mL</text>
+
+  <text x="60" y="608" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">MW ~4960 g/mol</text>
+  <text x="60" y="621" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.14)" letter-spacing="1">TRIPLE GIP/GLP-1/GCG AGONIST</text>
+
+  <line x1="60" y1="638" x2="740" y2="638" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="60" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">FOR RESEARCH PURPOSES ONLY · NOT FOR HUMAN USE</text>
+  <text x="740" y="656" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
+</svg>

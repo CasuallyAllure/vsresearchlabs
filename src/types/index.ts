@@ -1,5 +1,18 @@
 // ─── Product ───
-export type { Product, ProductCategory, ProductSpec } from './product';
+export type {
+  Product,
+  ProductCategory,
+  ProductType,
+  ResearchClassification,
+  ProductSpec,
+  ProductVariant,
+  ProductStudy,
+  StudyModel,
+} from './product';
+export { deriveProductDose } from './product';
+
+// ─── Document (Wave 9 — Documentation Library Foundation) ───
+export type { Document, DocumentTypeLabel } from './document';
 
 import type { Product } from './product';
 
@@ -9,25 +22,4 @@ export interface CartItem {
   quantity: number;
   /** Optional per-item note submitted alongside the inquiry. */
   note?: string;
-}
-
-// ─── Order ───
-export interface Order {
-  id: string;
-  stripe_session_id: string | null;
-  customer_email: string;
-  customer_name: string | null;
-  shipping_address: Record<string, unknown> | null;
-  status: 'pending' | 'paid' | 'fulfilled' | 'shipped' | 'delivered';
-  total_cents: number | null;
-  created_at: string;
-}
-
-// ─── Order Item ───
-export interface OrderItem {
-  id: string;
-  order_id: string;
-  product_id: string;
-  quantity: number;
-  price_cents: number;
 }

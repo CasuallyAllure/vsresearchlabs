@@ -1,24 +1,25 @@
 /**
  * GlobalHeader
  * Phase 3 — VS Research Labs App Shell
+ * Reconciliation Pass B — Chrome neutralization.
  *
  * Header rendered inside <GlobalSurface />. Replaces the legacy Navbar.
  *
  * Layout: [Hamburger LEFT] [Logo CENTER] [Cart RIGHT]
  *
- * The hamburger trigger is a placeholder button — no drawer logic yet.
- * `onMenuClick` is exposed as an optional callback so a future drawer
- * (likely owned by LANE_COMPONENTS) can wire in without touching this
- * file again.
+ * Surface posture: frosted black with a single hairline bottom border.
+ * backdrop-blur-sm for scroll float; bg-black/80 maintains legibility.
+ * No glass — chrome is institutional, not atmospheric. The cart count
+ * badge is the header's only color accent and reads as a state chip.
  *
- * Accepts a `role` prop as a placeholder until LANE_AUTH (P4) wires the
- * authStore. Defaults to 'guest'.
+ * The hamburger trigger is a placeholder button — no drawer logic
+ * yet. `onMenuClick` is an optional callback for future wiring.
  */
 
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 
-export type HeaderRole = 'guest' | 'owner' | 'door' | 'promoter' | 'dj';
+export type HeaderRole = 'guest' | 'owner';
 
 interface GlobalHeaderProps {
   role?: HeaderRole;
@@ -30,7 +31,7 @@ export function GlobalHeader({ role = 'guest', onMenuClick }: GlobalHeaderProps)
 
   return (
     <header
-      className="sticky top-0 z-40 bg-black border-b border-white/[0.06]"
+      className="sticky top-0 z-40 bg-black/80 backdrop-blur-sm border-b border-white/[0.06]"
       data-role={role}
     >
       <div className="relative h-14 px-[var(--space-6)] grid grid-cols-3 items-center">
@@ -40,12 +41,12 @@ export function GlobalHeader({ role = 'guest', onMenuClick }: GlobalHeaderProps)
             type="button"
             onClick={onMenuClick}
             aria-label="Open menu"
-            className="p-2 -ml-2 text-white/70 hover:text-white transition-colors"
+            className="p-2 -ml-2 text-white/70 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="22"
-              height="22"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -65,7 +66,7 @@ export function GlobalHeader({ role = 'guest', onMenuClick }: GlobalHeaderProps)
         <div className="flex items-center justify-center">
           <Link
             to="/"
-            className="tracking-widest text-sm font-light text-white uppercase whitespace-nowrap"
+            className="tracking-[0.28em] text-sm font-normal text-white uppercase whitespace-nowrap"
           >
             VS Research Labs
           </Link>
@@ -75,8 +76,8 @@ export function GlobalHeader({ role = 'guest', onMenuClick }: GlobalHeaderProps)
         <div className="flex items-center justify-end">
           <Link
             to="/cart"
-            className="relative p-2 -mr-2 text-white/60 hover:text-white transition-colors"
-            aria-label="Cart"
+            className="relative p-2 -mr-2 text-white/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            aria-label="Inquiry list"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +96,10 @@ export function GlobalHeader({ role = 'guest', onMenuClick }: GlobalHeaderProps)
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold rounded-full text-[10px] font-bold text-black flex items-center justify-center">
+              <span
+                aria-label={`${itemCount} item${itemCount === 1 ? '' : 's'} in inquiry`}
+                className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-gold rounded-sm text-[10px] font-medium text-black flex items-center justify-center tabular-nums"
+              >
                 {itemCount}
               </span>
             )}
