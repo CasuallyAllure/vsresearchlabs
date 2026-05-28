@@ -24,7 +24,6 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import productsData from '../../data/products.json';
 import type { Product, ProductStudy, StudyModel } from '../../types';
