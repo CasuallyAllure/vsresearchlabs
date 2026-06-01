@@ -30,7 +30,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { AbbreviationChip } from './AbbreviationChip';
-import { DoseTierStrip } from './DoseTierStrip';
+import { TierStrip } from './intelligence/TierStrip';
 
 interface ProductCardProps {
   product: Product;
@@ -94,7 +94,7 @@ export function ProductCard({ product, onInspect }: ProductCardProps) {
             )}
           </p>
           {product.variants && product.variants.length > 0 && (
-            <DoseTierStrip
+            <TierStrip
               variants={product.variants}
               activeDose={activeDose}
               className="pt-0.5"

@@ -9,6 +9,7 @@ import { ResearchSupplies } from './pages/ResearchSupplies';
 import { LaboratoryEquipment } from './pages/LaboratoryEquipment';
 import { ProductPage } from './pages/ProductPage';
 import { Catalog } from './pages/Catalog';
+import { Research } from './pages/Research';
 import { CartPage } from './pages/CartPage';
 import { Contact } from './pages/Contact';
 import { Documentation } from './pages/Documentation';
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/research-supplies" element={<ResearchSupplies />} />
             <Route path="/laboratory-equipment" element={<LaboratoryEquipment />} />
             <Route path="/catalog" element={<Catalog />} />
+            <Route path="/research" element={<Research />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/contact" element={<Contact />} />

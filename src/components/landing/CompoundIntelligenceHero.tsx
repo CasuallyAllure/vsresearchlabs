@@ -32,6 +32,7 @@ import {
   getCompoundIntelligence,
   type CompoundIntelligence,
 } from '../../lib/compoundIntelligence';
+import { RegulatoryChipCluster } from '../catalog/intelligence/RegulatoryChipCluster';
 
 const products = productsData as unknown as Product[];
 const FEATURED_SLUG = 'retatrutide-5mg';
@@ -171,9 +172,9 @@ function SlidePanel({
 }) {
   const add = useCart((s) => s.add);
   return (
-    <div className="grid h-full grid-cols-1 lg:grid-cols-2">
-      {/* Specimen plate */}
-      <div className="relative min-h-[260px] border-b border-white/[0.06] bg-[var(--surface-specimen-bay)] lg:border-b-0 lg:border-r">
+    <div className="grid h-full grid-cols-1 md:grid-cols-5">
+      {/* Specimen plate — anchors the visual, does not dominate */}
+      <div className="relative min-h-[260px] min-w-0 border-b border-white/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
         {ci.specimenImage ? (
           <img
             src={ci.specimenImage}
@@ -188,30 +189,40 @@ function SlidePanel({
         </span>
       </div>
 
-      {/* Intelligence */}
-      <div className="flex flex-col overflow-y-auto p-5 sm:p-6">
+      {/* Intelligence — the product. Image supports it. */}
+      <div className="flex min-w-0 flex-col overflow-y-auto p-5 sm:p-6 md:col-span-3">
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden
-            className="op-tick h-1.5 w-1.5 rounded-full bg-gold"
+            className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold"
           />
           <Eyebrow>{ci.classificationLabel}</Eyebrow>
         </div>
-        <h3 className="mt-3 text-[clamp(1.5rem,3vw,2.1rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
+        <h3 className="mt-3 break-words text-[clamp(1.5rem,3vw,2.1rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
           {ci.substance}
         </h3>
         <p className="mt-2 font-mono text-[11px] tracking-[0.06em] text-white/40">
           {ci.family} · {ci.abbreviation}
         </p>
 
-        <div className="mt-5">
+        {/* Regulatory posture — visible without swiping */}
+        {(ci.humanTrials !== undefined || ci.fdaStatus) && (
+          <div className="mt-4">
+            <RegulatoryChipCluster
+              humanTrials={ci.humanTrials}
+              fdaStatus={ci.fdaStatus}
+            />
+          </div>
+        )}
+
+        <div className="mt-5 min-w-0">
           <Eyebrow>Receptor activation</Eyebrow>
-          <div className="mt-2 min-h-[180px] flex-1">
+          <div className="mt-2 min-h-[180px] w-full min-w-0">
             <ReceptorMap ci={ci} />
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 min-w-0">
           {ci.casNumber && <IdentityRow label="CAS" value={ci.casNumber} />}
           {ci.molecularWeight && (
             <IdentityRow label="Mol. weight" value={ci.molecularWeight} />
@@ -254,23 +265,23 @@ function ModuleBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-t border-white/[0.06] py-5 first:border-t-0 first:pt-0">
-      <div className="flex items-baseline gap-3">
+    <div className="min-w-0 border-t border-white/[0.06] py-5">
+      <div className="flex min-w-0 items-baseline gap-3">
         <span className="font-mono text-[10px] tabular-nums text-gold/70">
           {index}
         </span>
-        <span className="text-[10.5px] uppercase tracking-[0.22em] text-white/50">
+        <span className="min-w-0 break-words text-[10.5px] uppercase tracking-[0.22em] text-white/50">
           {title}
         </span>
       </div>
-      <div className="mt-3">{children}</div>
+      <div className="mt-3 min-w-0">{children}</div>
     </div>
   );
 }
 
 function Prose({ children }: { children: string }) {
   return (
-    <p className="max-w-[62ch] text-[13px] leading-[1.65] text-white/60">
+    <p className="break-words text-[13px] leading-[1.65] text-white/60">
       {children}
     </p>
   );
@@ -341,10 +352,10 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
           {ci.analytical.map((r) => (
             <div
               key={r.label}
-              className="flex items-baseline justify-between gap-4"
+              className="flex min-w-0 items-baseline justify-between gap-4"
             >
-              <dt className="text-[11px] text-white/40">{r.label}</dt>
-              <dd className="text-right font-mono text-[11px] tabular-nums text-white/65">
+              <dt className="shrink-0 text-[11px] text-white/40">{r.label}</dt>
+              <dd className="min-w-0 break-words text-right font-mono text-[11px] tabular-nums text-white/65">
                 {r.value}
               </dd>
             </div>
@@ -371,13 +382,16 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
     });
 
   return (
-    <div className="h-full overflow-y-auto p-5 sm:p-7">
+    <div className="h-full min-w-0 overflow-y-auto p-5 sm:p-7">
       <Eyebrow>Compound intelligence dossier</Eyebrow>
-      <p className="mt-2 text-[13px] text-white/45">
+      <p className="mt-2 break-words text-[13px] text-white/45">
         Shared intelligence record. Identical source to the compound
         overlay and future compound pages.
       </p>
-      <div className="mt-5 columns-1 gap-x-10 lg:columns-2 [&>*]:mb-0 [&>*]:break-inside-avoid">
+      {/* Grid replaces CSS multi-column for explicit width control. Each
+          column carries `min-w-0` via ModuleBlock so internal flex/grid
+          rows can shrink and wrap inside the column boundary. */}
+      <div className="mt-5 grid grid-cols-1 gap-x-10 gap-y-0 md:grid-cols-2">
         {blocks.map((b, i) => (
           <ModuleBlock
             key={b.key}
@@ -397,11 +411,11 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
 function StudyEntry({ study }: { study: ProductStudy }) {
   return (
     <li className="border-t border-white/[0.06] py-5 first:border-t-0">
-      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
-        <h4 className="max-w-[52ch] text-[15px] font-light leading-snug tracking-[-0.01em] text-white">
+      <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-6 gap-y-2">
+        <h4 className="min-w-0 flex-1 break-words text-[15px] font-light leading-snug tracking-[-0.01em] text-white">
           {study.title}
         </h4>
-        <span className="rounded-[2px] border border-white/12 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/55">
+        <span className="shrink-0 rounded-[2px] border border-white/12 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/55">
           {study.phase ?? MODEL_LABEL[study.model]}
         </span>
       </div>
@@ -410,7 +424,7 @@ function StudyEntry({ study }: { study: ProductStudy }) {
         <span className="text-white/55">{MODEL_LABEL[study.model]} study</span>
       </p>
       {study.notes && study.notes.length > 0 && (
-        <div className="mt-3">
+        <div className="mt-3 min-w-0">
           <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">
             Observed
           </p>
@@ -418,10 +432,10 @@ function StudyEntry({ study }: { study: ProductStudy }) {
             {study.notes.map((n) => (
               <li
                 key={n}
-                className="flex gap-2.5 text-[12.5px] leading-relaxed text-white/60"
+                className="flex min-w-0 gap-2.5 text-[12.5px] leading-relaxed text-white/60"
               >
                 <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/55" />
-                <span>{n}</span>
+                <span className="min-w-0 flex-1 break-words">{n}</span>
               </li>
             ))}
           </ul>
@@ -444,7 +458,7 @@ function StudyEntry({ study }: { study: ProductStudy }) {
 
 function SlideStudies({ ci }: { ci: CompoundIntelligence }) {
   return (
-    <div className="h-full overflow-y-auto p-5 sm:p-7">
+    <div className="h-full min-w-0 overflow-y-auto p-5 sm:p-7">
       <Eyebrow>Research media &amp; known studies</Eyebrow>
 
       {/* Regulatory band */}
@@ -617,7 +631,7 @@ export function CompoundIntelligenceHero() {
                 <span
                   aria-hidden
                   className={`absolute inset-x-0 bottom-0 h-px transition-colors ${
-                    on ? 'bg-gold' : 'bg-transparent'
+                    on ? 'bg-holo shadow-[0_0_10px_rgba(100,200,255,0.55)]' : 'bg-transparent'
                   }`}
                 />
               </button>
@@ -632,19 +646,19 @@ export function CompoundIntelligenceHero() {
         >
           <section
             aria-label="Slide 1: Visual Compound Panel"
-            className="min-w-full shrink-0 snap-start snap-always"
+            className="min-w-full max-w-full shrink-0 snap-start snap-always"
           >
             <SlidePanel ci={ci} product={product} />
           </section>
           <section
             aria-label="Slide 2: Intelligence Dossier"
-            className="min-w-full shrink-0 snap-start snap-always"
+            className="min-w-full max-w-full shrink-0 snap-start snap-always"
           >
             <SlideDossier ci={ci} />
           </section>
           <section
             aria-label="Slide 3: Research and Known Studies"
-            className="min-w-full shrink-0 snap-start snap-always"
+            className="min-w-full max-w-full shrink-0 snap-start snap-always"
           >
             <SlideStudies ci={ci} />
           </section>
@@ -662,7 +676,7 @@ export function CompoundIntelligenceHero() {
                 <span
                   key={s.key}
                   className={`h-px w-6 transition-colors duration-200 ${
-                    i === active ? 'bg-gold' : 'bg-white/15'
+                    i === active ? 'bg-holo shadow-[0_0_8px_rgba(100,200,255,0.5)]' : 'bg-white/15'
                   }`}
                 />
               ))}

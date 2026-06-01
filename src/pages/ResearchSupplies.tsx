@@ -3,23 +3,9 @@ import { ProductGrid } from '../components/ProductGrid';
 import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { useProducts } from '../hooks/useProducts';
-import type { ResearchClassification } from '../types';
+import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 
 const ALL_TAB = '__all__';
-
-const CLASSIFICATION_LABELS: Partial<Record<ResearchClassification, string>> = {
-  'glp-1-agonist': 'GLP-1 Agonist',
-  'dual-agonist': 'Dual Agonist',
-  'triple-agonist': 'Triple Agonist',
-  'growth-hormone-secretagogue': 'GH Secretagogue',
-  'growth-factor': 'Growth Factor',
-  'metabolic-lipolytic': 'Metabolic',
-  'nootropic-neuroactive': 'Nootropic',
-  'regenerative-healing': 'Regenerative',
-  'immunomodulatory': 'Immunomodulatory',
-  'bio-regulator': 'Bio-Regulator',
-  'experimental': 'Experimental',
-};
 
 export function ResearchSupplies() {
   const { products, loading, error } = useProducts('research-supplies');

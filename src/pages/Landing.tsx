@@ -88,13 +88,17 @@ interface ModuleProps {
   children: ReactNode;
   /** aria-label for the section landmark. */
   aria: string;
+  /** Optional element id — used by hero "Begin Inquiry" smooth-scroll. */
+  id?: string;
 }
 
-function Module({ index, label, meta, children, aria }: ModuleProps) {
+function Module({ index, label, meta, children, aria, id }: ModuleProps) {
   return (
     <section
+      id={id}
       className="-mx-[var(--space-6)] border-b border-white/[0.06]"
       aria-label={aria}
+      style={id ? { scrollMarginTop: '4rem' } : undefined}
     >
       <div className="mx-auto grid w-full max-w-[1100px] grid-cols-1 gap-[var(--space-8)] px-[var(--space-6)] py-[var(--space-16)] sm:py-[var(--space-20)] lg:grid-cols-12 lg:gap-[var(--space-10)]">
         <ModuleRail index={index} label={label} meta={meta} />
@@ -226,75 +230,279 @@ export function Landing() {
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
         className="-mx-[var(--space-6)] border-b border-white/[0.06]"
-        aria-label="VS Research Labs — compound intelligence"
+        aria-label="Compound intelligence"
       >
-        <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-16)] sm:py-[var(--space-20)]">
-          {/* Heading band — platform framing. Compact and left-aligned;
-              the terminal below is the dominant element. */}
-          <div
-            className="op-reveal flex items-center gap-[var(--space-3)]"
-            style={{ ['--op-delay' as string]: '0ms' }}
-          >
-            <span
-              aria-hidden="true"
-              className="op-tick h-1.5 w-1.5 rounded-full bg-gold"
-            />
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/55">
-              VS Research Labs
-            </span>
-            <span className="h-px w-6 bg-white/15" aria-hidden="true" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/35">
-              Compound Intelligence
-            </span>
-          </div>
+        <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-12)] sm:pt-[var(--space-8)] sm:pb-[var(--space-16)]">
+          {/* Two-column layout: text left, reserved media slot right.
+              Slot is structural — built so future animated media drops in
+              without redesigning the hero. */}
+          <div className="grid grid-cols-1 gap-[var(--space-8)] md:grid-cols-12 md:items-center">
 
-          <h1
-            className="op-reveal mt-[var(--space-6)] text-[clamp(1.85rem,4.2vw,2.8rem)] leading-[1.06] tracking-[-0.022em] text-white"
-            style={{ ['--op-delay' as string]: '90ms' }}
-          >
-            <span className="font-light text-white/85">
-              Deep compound intelligence,
-            </span>
-            <br />
-            <span className="font-medium text-white">on the record.</span>
-          </h1>
-
-          <p
-            className="op-reveal mt-[var(--space-5)] max-w-[56ch] text-[15px] leading-relaxed text-white/55"
-            style={{ ['--op-delay' as string]: '170ms' }}
-          >
-            Every featured compound carries documented mechanism, receptor
-            pharmacology, signaling, and the published study record. The
-            same intelligence powers the catalog overlay and full compound
-            records.
-          </p>
-
-          <div
-            className="op-reveal mt-[var(--space-7)] flex flex-wrap items-center gap-[var(--space-3)]"
-            style={{ ['--op-delay' as string]: '240ms' }}
-          >
-            <Link
-              to="/contact"
-              className="inline-flex items-center justify-center rounded-full bg-gold px-[var(--space-6)] py-[var(--space-3)] text-[11px] font-medium uppercase tracking-[0.22em] text-black transition-colors duration-150 hover:bg-gold-light focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
-            >
-              Begin inquiry
-            </Link>
-            <Link
-              to="/documentation"
-              className="group inline-flex items-center gap-[var(--space-2)] rounded-full border border-white/15 px-[var(--space-6)] py-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-white/70 transition-colors duration-150 hover:border-white/30 hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
-            >
-              <span>View documentation</span>
-              <span
-                aria-hidden="true"
-                className="text-white/35 transition-colors duration-150 group-hover:text-white/70"
+            {/* ── TEXT COLUMN ─────────────────────────────────────────── */}
+            <div className="md:col-span-6">
+              <div
+                className="op-reveal flex items-center gap-[var(--space-3)]"
+                style={{ ['--op-delay' as string]: '0ms' }}
               >
-                →
-              </span>
-            </Link>
+                <span
+                  aria-hidden="true"
+                  className="op-tick h-1.5 w-1.5 rounded-full bg-gold"
+                />
+                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/55">
+                  Compound Intelligence
+                </span>
+              </div>
+
+              <h1
+                className="op-reveal mt-[var(--space-4)] text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-white"
+                style={{ ['--op-delay' as string]: '90ms' }}
+              >
+                <span className="font-light text-white/85">
+                  Deep compound intelligence,
+                </span>
+                <br />
+                <span className="font-medium text-white">on the record.</span>
+              </h1>
+
+              <p
+                className="op-reveal mt-[var(--space-3)] max-w-[48ch] text-[13px] leading-relaxed text-white/50"
+                style={{ ['--op-delay' as string]: '170ms' }}
+              >
+                Every featured compound carries documented mechanism,
+                receptor pharmacology, signaling, and the published study
+                record. The same intelligence powers the catalog overlay
+                and full compound records.
+              </p>
+
+              <div
+                className="op-reveal mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-3)]"
+                style={{ ['--op-delay' as string]: '240ms' }}
+              >
+                <a
+                  href="#inventory"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById('inventory');
+                    if (el) {
+                      el.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      });
+                      // Update hash without jumping (the smooth scroll already moved us)
+                      if (history.replaceState) {
+                        history.replaceState(null, '', '#inventory');
+                      }
+                    }
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-gold px-[var(--space-5)] py-[var(--space-2-5)] text-[10.5px] font-medium uppercase tracking-[0.2em] text-black transition-colors duration-150 hover:bg-gold-light focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+                >
+                  Begin Inquiry
+                </a>
+                <Link
+                  to="/research"
+                  className="group inline-flex items-center gap-[var(--space-2)] rounded-full border border-holo/25 px-[var(--space-5)] py-[var(--space-2-5)] text-[10.5px] uppercase tracking-[0.2em] text-white/65 transition-[color,border-color,box-shadow,background-color] duration-200 hover:border-holo/55 hover:text-holo-light hover:bg-holo/[0.04] hover:shadow-[0_0_18px_rgba(100,200,255,0.22)] focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+                >
+                  <span>View Research</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-holo/45 transition-colors duration-200 group-hover:text-holo-light"
+                  >
+                    →
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            {/* ── RESERVED MEDIA SLOT ─────────────────────────────────── */}
+            {/* Structural placeholder for future compound visualization —
+                animated molecular structures, motion graphics, research
+                media. Captioned scientific panel, not construction sign. */}
+            <div
+              className="op-reveal md:col-span-6"
+              style={{ ['--op-delay' as string]: '210ms' }}
+            >
+              <div
+                className="relative aspect-[5/4] w-full overflow-hidden"
+                style={{
+                  backgroundColor: '#070707',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                }}
+                aria-label="Compound visualization placeholder"
+              >
+                {/* Corner registration marks — scientific panel cue */}
+                <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 h-2.5 w-2.5 border-l border-t border-white/20" />
+                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-2 h-2.5 w-2.5 border-r border-t border-white/20" />
+                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-white/20" />
+                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-white/20" />
+
+                {/* Top-left caption — micrographic data block */}
+                <div className="absolute left-4 top-4 z-10 flex flex-col gap-1">
+                  <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-white/30">
+                    Compound Visualization
+                  </span>
+                  <span className="font-mono text-[8.5px] tabular-nums tracking-[0.18em] text-white/22">
+                    FIG-01
+                  </span>
+                  <span className="mt-1 font-mono text-[8.5px] uppercase tracking-[0.2em] text-cyan-300/55">
+                    Compound of the Month: Retatrutide
+                  </span>
+                </div>
+
+                {/* Subtle grid backdrop — instrumentation feel */}
+                <svg
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full"
+                  viewBox="0 0 200 160"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <pattern id="hero-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(120,200,255,0.05)" strokeWidth="0.4" />
+                    </pattern>
+                    <radialGradient id="hero-glow" cx="50%" cy="55%" r="55%">
+                      <stop offset="0%" stopColor="rgba(100,200,255,0.12)" />
+                      <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="200" height="160" fill="url(#hero-grid)" />
+                  <rect width="200" height="160" fill="url(#hero-glow)" />
+                </svg>
+
+                {/* Holographic compound visualization — slow Y-axis spin + flicker.
+                    Stylized peptide cluster (CA backbone + ring substituents).
+                    Cyan register, drop-shadow glow, scanline overlay. */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ perspective: '700px' }}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="hero-holo-spin hero-holo-flicker"
+                    style={{
+                      width: '62%',
+                      height: '62%',
+                      transformStyle: 'preserve-3d',
+                      filter: 'drop-shadow(0 0 6px rgba(100,200,255,0.55)) drop-shadow(0 0 14px rgba(100,200,255,0.25))',
+                    }}
+                  >
+                    <svg viewBox="-100 -100 200 200" className="h-full w-full">
+                      <defs>
+                        <radialGradient id="holo-node" cx="50%" cy="50%" r="50%">
+                          <stop offset="0%" stopColor="rgba(180,235,255,0.95)" />
+                          <stop offset="60%" stopColor="rgba(100,200,255,0.55)" />
+                          <stop offset="100%" stopColor="rgba(100,200,255,0)" />
+                        </radialGradient>
+                      </defs>
+
+                      {/* Outer hexagonal ring — 6 atoms */}
+                      {Array.from({ length: 6 }).map((_, i) => {
+                        const a = (i / 6) * Math.PI * 2;
+                        const x = Math.cos(a) * 70;
+                        const y = Math.sin(a) * 70;
+                        const nx = Math.cos(((i + 1) / 6) * Math.PI * 2) * 70;
+                        const ny = Math.sin(((i + 1) / 6) * Math.PI * 2) * 70;
+                        return (
+                          <g key={`outer-${i}`}>
+                            <line x1={x} y1={y} x2={nx} y2={ny} stroke="rgba(140,220,255,0.7)" strokeWidth="0.8" />
+                            <circle cx={x} cy={y} r="4" fill="url(#holo-node)" />
+                          </g>
+                        );
+                      })}
+
+                      {/* Middle triangular cluster — 3 atoms */}
+                      {Array.from({ length: 3 }).map((_, i) => {
+                        const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+                        const x = Math.cos(a) * 36;
+                        const y = Math.sin(a) * 36;
+                        return (
+                          <g key={`mid-${i}`}>
+                            <line x1="0" y1="0" x2={x} y2={y} stroke="rgba(140,220,255,0.55)" strokeWidth="0.6" />
+                            <circle cx={x} cy={y} r="3.2" fill="url(#holo-node)" />
+                          </g>
+                        );
+                      })}
+
+                      {/* Spokes from center to outer ring */}
+                      {Array.from({ length: 6 }).map((_, i) => {
+                        const a = (i / 6) * Math.PI * 2;
+                        const x = Math.cos(a) * 70;
+                        const y = Math.sin(a) * 70;
+                        return (
+                          <line
+                            key={`spoke-${i}`}
+                            x1="0" y1="0" x2={x} y2={y}
+                            stroke="rgba(140,220,255,0.25)" strokeWidth="0.4" strokeDasharray="2 3"
+                          />
+                        );
+                      })}
+
+                      {/* Central nucleus */}
+                      <circle cx="0" cy="0" r="5" fill="url(#holo-node)" />
+                      <circle cx="0" cy="0" r="2.2" fill="rgba(220,245,255,0.95)" />
+
+                      {/* Outer orbit ring (ellipse for depth feel) */}
+                      <ellipse cx="0" cy="0" rx="86" ry="22" fill="none" stroke="rgba(140,220,255,0.32)" strokeWidth="0.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Scanline overlay — period 90s holo cue */}
+                <div
+                  aria-hidden="true"
+                  className="hero-holo-scan pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      'repeating-linear-gradient(to bottom, transparent 0px, rgba(120,200,255,0.05) 1px, transparent 2px, transparent 3px)',
+                    mixBlendMode: 'screen',
+                  }}
+                />
+
+                {/* Bottom-right registration */}
+                <span className="absolute bottom-3 right-4 z-10 font-mono text-[8px] uppercase tracking-[0.2em] text-white/22">
+                  REV. A
+                </span>
+
+                {/* Holographic animation styles — scoped to this frame */}
+                <style>{`
+                  @keyframes hero-holo-spin {
+                    from { transform: rotateY(0deg); }
+                    to   { transform: rotateY(360deg); }
+                  }
+                  @keyframes hero-holo-flicker {
+                    0%, 100% { opacity: 0.92; }
+                    8%       { opacity: 0.55; }
+                    9%       { opacity: 0.95; }
+                    42%      { opacity: 0.78; }
+                    43%      { opacity: 0.95; }
+                    71%      { opacity: 0.6; }
+                    72%      { opacity: 0.92; }
+                  }
+                  @keyframes hero-holo-scan {
+                    from { transform: translateY(-100%); }
+                    to   { transform: translateY(100%); }
+                  }
+                  .hero-holo-spin {
+                    animation: hero-holo-spin 14s linear infinite;
+                  }
+                  .hero-holo-flicker {
+                    animation: hero-holo-spin 14s linear infinite,
+                               hero-holo-flicker 3.4s steps(1, end) infinite;
+                  }
+                  @media (prefers-reduced-motion: reduce) {
+                    .hero-holo-spin, .hero-holo-flicker, .hero-holo-scan {
+                      animation: none !important;
+                      opacity: 0.9;
+                    }
+                  }
+                `}</style>
+              </div>
+            </div>
           </div>
 
-          {/* Featured compound intelligence terminal */}
-          <div className="mt-[var(--space-10)] sm:mt-[var(--space-12)]">
+          {/* Featured compound intelligence terminal — visible breathing
+              room restored to compensate for the tightened hero text. */}
+          <div className="mt-[var(--space-6)] sm:mt-[var(--space-8)]">
             <CompoundIntelligenceHero />
           </div>
         </div>
@@ -302,6 +510,7 @@ export function Landing() {
 
       {/* ── 01 · RESEARCH PROCUREMENT ────────────────────────────────────── */}
       <Module
+        id="inventory"
         index="01"
         label="Procurement"
         aria="Research procurement"

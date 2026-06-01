@@ -1,74 +1,162 @@
 /**
- * ProductPage
- * Phase 3 — Product Detail polish.
- * Wave 5 — Surface containment for info column + specs.
- * Wave 7c — AbbreviationChip + family + DoseTierStrip integration.
- * Reconciliation Pass C — Specimen-sheet alignment.
+ * ProductPage — E3 Persistent Operational Intelligence Surface
  *
- * The page is reconciled toward a procurement reference document:
- * the operational identifier band (abbreviation + family + SKU)
- * leads the info column ABOVE the descriptive name. The image
- * gallery is preserved but its column-share is reduced (7/5 → 6/6)
- * so metadata carries equal visual weight. The Related strip now
- * delegates to <ProductCard /> rather than duplicating its markup,
- * so the inventory-register propagates automatically.
+ * Canonical inherited surface. The Overlay is the reference interaction
+ * model; ProductPage is its persistent equivalent. Same primitives, same
+ * intelligence selector, same module grammar — different layout shell:
  *
- * Gold-accent discipline: the only gold accent on the page is the
- * primary inquiry CTA pill. The category eyebrow, the Related
- * eyebrow, and the active gallery thumbnail border have all been
- * pulled into the white/40 register established by Passes A–B.
+ *   - Sticky left intelligence/reference column: compound visual zone
+ *     (molecular + vial, stacked variant), identifier band, regulatory
+ *     chip cluster, interactive tier strip, quantity + Add to Inquiry,
+ *     compact procurement strip. Image gallery on mobile only.
  *
- * Phase 2 invariants preserved: no glass, no blur, hairline borders
- * only, type-led hierarchy. Wave 5 surface containment (Level 1 info
- * column wrap + Level 2 specs panel on lg+) is preserved exactly.
+ *   - Scrollable right module stack: Summary, Mechanism, Receptor
+ *     Activity, Signaling Pathway, Known Studies, Procurement,
+ *     Documentation. Each rendered via IntelModule.
+ *
+ * URL contracts:
+ *   - `?tier=<dose>`  → drives initial selected tier on mount and is
+ *     updated on user selection (replace, no history pollution).
+ *   - `#<module-key>` → opens the matching module on mount and smooth-
+ *     scrolls it into view. Valid keys: summary, mechanism, receptor,
+ *     pathway, studies, procurement, documentation.
+ *
+ * No intelligence-data field is accessed directly off `product`. All
+ * compound knowledge routes through `getCompoundIntelligence(product)`.
+ * Procurement field reads are encapsulated by `ProcurementSheet`.
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useProduct, useProducts } from '../hooks/useProducts';
+import type { ReactNode } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
-import type { Product } from '../types';
-import { deriveProductDose } from '../types';
-import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
-import { DoseTierStrip } from '../components/catalog/DoseTierStrip';
-import { ProductCard } from '../components/catalog/ProductCard';
-import { SKUCode, LotCode, ProcurementValue } from '../components/ui/identifiers';
 import { useDocumentsByProduct } from '../hooks/useDocuments';
-import { DocumentCard } from '../components/documents/DocumentCard';
+import { getCompoundIntelligence } from '../lib/compoundIntelligence';
+import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
+import { CompoundVisualZone } from '../components/catalog/specimen/CompoundVisualZone';
+import {
+  IntelModule,
+  IntelModuleStyles,
+  ModuleBody,
+  ModuleText,
+} from '../components/catalog/intelligence/IntelModule';
+import { StudyCard } from '../components/catalog/intelligence/StudyCard';
+import { RegulatoryChipCluster } from '../components/catalog/intelligence/RegulatoryChipCluster';
+import { TierStrip } from '../components/catalog/intelligence/TierStrip';
+import {
+  ProcurementSheet,
+  selectProcurementRows,
+} from '../components/catalog/intelligence/ProcurementSheet';
+import { QuantityStepper } from '../components/catalog/intelligence/QuantityStepper';
+import { SKUCode, ProcurementValue } from '../components/ui/identifiers';
+import { DocumentSlot } from '../components/documents/DocumentSlot';
 import { ErrorState } from '../components/system/ErrorState';
+
+// ─── Module key contract ──────────────────────────────────────────────────
+
+const MODULE_KEYS = [
+  'summary',
+  'mechanism',
+  'receptor',
+  'pathway',
+  'studies',
+  'procurement',
+  'documentation',
+] as const;
+type ModuleKey = (typeof MODULE_KEYS)[number];
+
+function isValidModuleKey(s: string): s is ModuleKey {
+  return (MODULE_KEYS as readonly string[]).includes(s);
+}
+
+interface ModuleDef {
+  key: ModuleKey;
+  title: string;
+  defaultOpen?: boolean;
+  render: () => ReactNode;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────
 
 export function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const addToInquiry = useCart((s) => s.add);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { product, error } = useProduct(id);
+  const addToInquiry = useCart((s) => s.add);
+  const updateQuantity = useCart((s) => s.updateQuantity);
+
+  const productDocs = useDocumentsByProduct(product?.abbreviation);
+
+  // Single read of Product → normalized view-model.
+  const ci = useMemo(() => (product ? getCompoundIntelligence(product) : null), [product]);
+
+  // Hash → initial open module. Captured once at mount; later toggles
+  // are uncontrolled and do not write back to the URL.
+  const [initialHash] = useState<ModuleKey | ''>(() => {
+    if (typeof window === 'undefined') return '';
+    const raw = window.location.hash.replace('#', '');
+    return isValidModuleKey(raw) ? raw : '';
+  });
+
+  // Tier param → initial selected tier index.
+  const initialTierIndex = useMemo(() => {
+    if (!ci || ci.tiers.length === 0) return 0;
+    const tierParam = searchParams.get('tier');
+    if (tierParam) {
+      const idx = ci.tiers.findIndex((v) => v.dose === tierParam);
+      if (idx >= 0) return idx;
+    }
+    const idx = ci.tiers.findIndex((v) => v.dose === ci.activeDose);
+    return idx >= 0 ? idx : 0;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- captured at mount only
+  }, [ci]);
+
+  const [selectedTierIndex, setSelectedTierIndex] = useState(initialTierIndex);
+  const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Reset gallery selection whenever the product (route) changes.
+  // Reset gallery selection when route changes.
+  useEffect(() => { setActiveImageIndex(0); }, [product?.id]);
+
+  // Smooth-scroll the hash-targeted module into view after first paint.
   useEffect(() => {
-    setActiveImageIndex(0);
-  }, [product?.id]);
+    if (!initialHash || !product) return;
+    const t = window.setTimeout(() => {
+      const el = document.getElementById(`module-${initialHash}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 180);
+    return () => window.clearTimeout(t);
+  }, [initialHash, product]);
 
-  // Pull category siblings; filter out the current product.
-  const sameCategory = useProducts(product?.category).products;
-  const relatedProducts: Product[] = useMemo(() => {
-    if (!product) return [];
-    return sameCategory.filter((p) => p.id !== product.id).slice(0, 3);
-  }, [product, sameCategory]);
-
-  // Associated documentation — by abbreviation, deep-links to detail routes.
-  const productDocs = useDocumentsByProduct(product?.abbreviation);
+  function handleTierSelect(idx: number) {
+    setSelectedTierIndex(idx);
+    if (!ci) return;
+    const dose = ci.tiers[idx]?.dose;
+    if (!dose) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('tier', dose);
+    setSearchParams(next, { replace: true });
+  }
 
   function handleAddToInquiry() {
     if (!product) return;
-    addToInquiry(product);
+    const items = useCart.getState().items;
+    const existing = items.find((i) => i.product.id === product.id);
+    if (existing) {
+      updateQuantity(product.id, existing.quantity + quantity);
+    } else {
+      addToInquiry(product);
+      if (quantity > 1) updateQuantity(product.id, quantity);
+    }
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);
   }
 
-  if (error || !product) {
+  if (error || !product || !ci) {
     return (
       <ErrorState
         message={error ?? 'Inventory record could not be resolved.'}
@@ -85,22 +173,109 @@ export function ProductPage() {
     );
   }
 
+  // ─── Derived ──────────────────────────────────────────────────────────────
+
+  const activeTier = ci.tiers[selectedTierIndex] ?? null;
+  const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
+
   const images = product.images ?? [];
-  const safeIndex =
-    images.length > 0
-      ? Math.min(activeImageIndex, images.length - 1)
-      : 0;
+  const safeIndex = images.length > 0 ? Math.min(activeImageIndex, images.length - 1) : 0;
   const activeImageUrl = images[safeIndex] ?? null;
   const hasGallery = images.length > 1;
 
   const categoryLabel = product.category.replace(/-/g, ' ');
   const categoryHref = `/${product.category}`;
   const outOfStock = product.stock === 0;
+  const procurementRowCount = selectProcurementRows(product).length;
+
+  // ─── Module definitions ───────────────────────────────────────────────────
+
+  const modules: ModuleDef[] = [];
+
+  modules.push({
+    key: 'summary',
+    title: 'Summary',
+    defaultOpen: true,
+    render: () => (
+      <ModuleBody>
+        {product.shortDescription && (
+          <p className="text-white/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
+            {product.shortDescription}
+          </p>
+        )}
+        {product.longDescription && (
+          <p className="text-white/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>
+            {product.longDescription}
+          </p>
+        )}
+      </ModuleBody>
+    ),
+  });
+
+  if (ci.mechanismSummary) {
+    modules.push({
+      key: 'mechanism',
+      title: 'Mechanism of Action',
+      render: () => (<ModuleBody><ModuleText>{ci.mechanismSummary!}</ModuleText></ModuleBody>),
+    });
+  }
+  if (ci.receptorActivity) {
+    modules.push({
+      key: 'receptor',
+      title: 'Receptor / Target Activity',
+      render: () => (<ModuleBody><ModuleText>{ci.receptorActivity!}</ModuleText></ModuleBody>),
+    });
+  }
+  if (ci.pathwaySummary) {
+    modules.push({
+      key: 'pathway',
+      title: 'Signaling Pathway',
+      render: () => (<ModuleBody><ModuleText>{ci.pathwaySummary!}</ModuleText></ModuleBody>),
+    });
+  }
+  if (ci.hasStudies) {
+    modules.push({
+      key: 'studies',
+      title: 'Known Studies',
+      render: () => (
+        <ModuleBody>
+          <RegulatoryChipCluster humanTrials={ci.humanTrials} fdaStatus={ci.fdaStatus} />
+          {ci.studies.map((s, i) => <StudyCard key={`${s.source}-${s.year}-${i}`} study={s} index={i} />)}
+        </ModuleBody>
+      ),
+    });
+  }
+  if (procurementRowCount > 0) {
+    modules.push({
+      key: 'procurement',
+      title: 'Procurement',
+      render: () => (
+        <div className="px-[var(--space-4)] py-[var(--space-4)]">
+          <ProcurementSheet product={product} variant="full" />
+        </div>
+      ),
+    });
+  }
+  // Documentation module — always renders. The four slot rows (COA,
+  // HPLC, Mass Spec, Sterility) are shown regardless of whether files
+  // exist yet. Empty slots read as "Awaiting Upload" — the documentation
+  // architecture is visible before files exist.
+  modules.push({
+    key: 'documentation',
+    title: 'Documentation',
+    render: () => (
+      <div className="px-[var(--space-4)] py-[var(--space-4)]">
+        <DocumentSlot documents={productDocs} />
+      </div>
+    ),
+  });
+
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <article className="py-[var(--space-8)] pb-[var(--space-24)] lg:pb-[var(--space-8)]">
+    <article className="pb-[var(--space-24)] lg:pb-[var(--space-8)]">
       {/* Breadcrumb */}
-      <nav className="mb-[var(--space-6)] text-xs uppercase tracking-widest text-white/40">
+      <nav className="mb-[var(--space-5)] text-xs uppercase tracking-widest text-white/40">
         <Link to="/" className="hover:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30">
           Home
         </Link>
@@ -109,292 +284,221 @@ export function ProductPage() {
           {categoryLabel}
         </Link>
         <span className="mx-[var(--space-2)] text-white/20">/</span>
-        <span className="text-white/60">{product.name}</span>
+        <span className="text-white/60 normal-case tracking-normal">{ci.substance}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--space-10)] gap-y-[var(--space-8)]">
-        {/* Image gallery — supporting reference. Equal-share column
-            (lg:col-span-6) so the metadata column carries equal
-            weight. Flat surfaces only — no glass, no atmospheric. */}
-        <div className="lg:col-span-6">
-          <div className="aspect-square w-full overflow-hidden bg-[#050505] border border-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            {activeImageUrl ? (
-              <img
-                src={activeImageUrl}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-white/20 text-xs uppercase tracking-widest">
-                No image
-              </div>
-            )}
-          </div>
+      <div className="flex flex-col lg:flex-row lg:gap-x-[var(--space-8)] lg:items-start">
 
-          {hasGallery && (
-            <div
-              className="mt-[var(--space-3)] flex gap-[var(--space-3)] overflow-x-auto"
-              role="tablist"
-              aria-label="Product images"
-            >
-              {images.map((url, idx) => {
-                const isActive = idx === safeIndex;
-                return (
-                  <button
-                    key={url + idx}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-label={`View image ${idx + 1} of ${images.length}`}
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={[
-                      'shrink-0 w-16 h-16 sm:w-20 sm:h-20 overflow-hidden bg-[#050505] border transition-colors',
-                      'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
-                    isActive
-                        ? 'border-white'
-                        : 'border-white/[0.06] hover:border-white/20',
-                    ].join(' ')}
-                  >
-                    <img
-                      src={url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  </button>
-                );
-              })}
+        {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
+        <aside
+          className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-14 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
+          style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}
+          aria-label="Compound reference and inquiry"
+        >
+          {/* Desktop visual identity zone */}
+          <CompoundVisualZone
+            substance={ci.substance}
+            abbreviation={ci.abbreviation}
+            sku={ci.sku}
+            activeDoseLabel={activeDoseLabel}
+            variant="stacked"
+          />
+
+          {/* Mobile image gallery — replaces the visual zone at < lg */}
+          {activeImageUrl && (
+            <div className="lg:hidden" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-[#050505]">
+                <img src={activeImageUrl} alt={product.name} className="h-full w-full object-cover" />
+              </div>
+              {hasGallery && (
+                <div
+                  className="flex gap-[var(--space-2)] overflow-x-auto px-[var(--space-3)] py-[var(--space-3)]"
+                  role="tablist"
+                  aria-label="Product images"
+                >
+                  {images.map((url, idx) => {
+                    const isActive = idx === safeIndex;
+                    return (
+                      <button
+                        key={url + idx}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-label={`View image ${idx + 1} of ${images.length}`}
+                        onClick={() => setActiveImageIndex(idx)}
+                        className={[
+                          'shrink-0 w-14 h-14 overflow-hidden bg-[#050505] border transition-colors',
+                          'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
+                          isActive ? 'border-white' : 'border-white/[0.06] hover:border-white/20',
+                        ].join(' ')}
+                      >
+                        <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Info — typeset on mobile, Level 1 solid surface module on lg+ (Wave 5).
-            Reconciliation Pass C: the operational identifier band
-            (abbreviation + family + SKU) leads ABOVE the descriptive
-            name, so the column reads as a specimen sheet rather than
-            a product detail page. The category eyebrow that previously
-            sat at the top is removed — the breadcrumb already covers
-            that information and the gold accent contradicted the
-            page's gold-accent discipline. */}
-        <div className="lg:col-span-6 flex flex-col lg:research-surface-solid lg:p-[var(--space-6)]">
-          {/* Identifier band — leads the info column. Three operational
-              tokens: abbreviation chip, family, SKU. Tabular numerals
-              on the SKU keep the identifier visually fixed-width. */}
-          <div className="flex items-center flex-wrap gap-x-[var(--space-3)] gap-y-[var(--space-2)] mb-[var(--space-4)]">
-            <AbbreviationChip value={product.abbreviation} />
-            <span className="text-[11px] uppercase tracking-[0.25em] text-white/55">
-              {product.family}
-            </span>
-            <span className="text-white/15" aria-hidden="true">·</span>
-            <span className="text-[11px] uppercase tracking-[0.25em] text-white/35">
-              SKU — <SKUCode value={product.sku} className="text-white/35" />
-            </span>
-            {product.casNumber && (
-              <>
-                <span className="text-white/15" aria-hidden="true">·</span>
-                <span className="text-[11px] uppercase tracking-[0.25em] text-white/35">
-                  CAS — <span className="font-mono tabular-nums text-white/50">{product.casNumber}</span>
-                </span>
-              </>
-            )}
+          {/* Identifier band */}
+          <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-2 mb-[var(--space-2)] flex-wrap">
+              <AbbreviationChip value={ci.abbreviation} />
+              <span className="text-[10px] uppercase tracking-[0.25em] text-white/45">{ci.family}</span>
+            </div>
+            <h1 className="text-white font-medium leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
+              {ci.substance}
+            </h1>
+            <p className="text-white/60" style={{ fontSize: '11.5px' }}>
+              {product.name}
+            </p>
+            <div className="mt-[var(--space-3)] flex flex-wrap gap-x-[var(--space-3)] gap-y-1 items-center">
+              <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                SKU <SKUCode value={ci.sku} className="text-white/55" />
+              </span>
+              {ci.casNumber && (
+                <>
+                  <span className="text-white/15" aria-hidden="true">·</span>
+                  <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                    CAS <span className="text-white/55">{ci.casNumber}</span>
+                  </span>
+                </>
+              )}
+              {ci.molecularWeight && (
+                <>
+                  <span className="text-white/15" aria-hidden="true">·</span>
+                  <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                    MW <span className="text-white/55">{ci.molecularWeight}</span>
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight leading-tight mb-[var(--space-4)]">
-            {product.name}
-          </h1>
+          {/* Regulatory chip cluster */}
+          {(ci.humanTrials !== undefined || ci.fdaStatus) && (
+            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <RegulatoryChipCluster humanTrials={ci.humanTrials} fdaStatus={ci.fdaStatus} />
+            </div>
+          )}
 
-          <p className="mb-[var(--space-6)]">
-            <ProcurementValue cents={product.priceCents} className="text-base" />
-          </p>
-
-          <p className="text-sm text-white/65 leading-relaxed max-w-[52ch] mb-[var(--space-6)]">
-            {product.shortDescription}
-          </p>
-
-          {/* Wave 7c — dose-tier strip. Renders only when variants[] is non-empty.
-              The strip appears between the short description and the specs so
-              it reads as compact metadata, not a control. */}
-          {product.variants && product.variants.length > 0 && (
-            <div className="mb-[var(--space-8)]">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-white/35 mb-[var(--space-2)]">
+          {/* Tier strip (interactive) */}
+          {ci.tiers.length > 0 && (
+            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-white/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
                 Available Tiers
               </p>
-              <DoseTierStrip
-                variants={product.variants}
-                activeDose={deriveProductDose(product)}
+              <TierStrip
+                mode="select"
+                variants={ci.tiers}
+                selectedIndex={selectedTierIndex}
+                onSelect={handleTierSelect}
               />
             </div>
           )}
 
-          {/* Specs — hairline rows on mobile; Level 2 elevated sub-panel on lg+ (Wave 5) */}
-          {product.specs.length > 0 && (
-            <div className="lg:research-surface-elevated lg:overflow-hidden mb-[var(--space-8)] lg:mb-[var(--space-6)]">
-              <dl className="border-t border-white/[0.06]">
-                {product.specs.map((spec) => (
-                  <div
-                    key={spec.label}
-                    className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]"
-                  >
-                    <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40">
-                      {spec.label}
-                    </dt>
-                    <dd className="text-sm text-white/80 text-right">
-                      {spec.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+          {/* Quantity + Add to Inquiry — desktop and tablet only */}
+          <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-2)]">
+              <QuantityStepper quantity={quantity} onChange={setQuantity} />
+              <button
+                type="button"
+                onClick={handleAddToInquiry}
+                disabled={outOfStock}
+                className="flex-1 h-8 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '0.04em',
+                  backgroundColor: 'rgba(255,255,255,0.09)',
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out',
+                }}
+                onMouseEnter={(e) => { if (!outOfStock) { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.14)'; el.style.borderColor = 'rgba(255,255,255,0.24)'; } }}
+                onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.09)'; el.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+              >
+                {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
+              </button>
             </div>
-          )}
-
-          {/* Procurement details — operational metadata block */}
-          {(product.lotNumber || product.manufacturer || product.countryOfOrigin ||
-            product.testingStandard || product.shippingCondition ||
-            product.leadTimeDays !== undefined || product.shelfLifeMonths != null) && (
-            <div className="mb-[var(--space-8)] lg:mb-[var(--space-6)]">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-[var(--space-2)]">
-                Procurement Details
+            {(activeTier || quantity > 1) && (
+              <p className="text-white/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
+                {[
+                  activeTier?.dose,
+                  activeTier?.sku ? `SKU ${activeTier.sku}` : null,
+                  `${quantity} ${quantity === 1 ? 'unit' : 'units'}`,
+                ].filter(Boolean).join(' · ')}
               </p>
-              <div className="lg:research-surface-elevated lg:overflow-hidden">
-                <dl className="border-t border-white/[0.06]">
-                  {product.lotNumber && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Lot No.</dt>
-                      <dd className="text-right"><LotCode value={product.lotNumber} className="text-white/70" /></dd>
-                    </div>
-                  )}
-                  {product.manufacturer && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Manufacturer</dt>
-                      <dd className="text-sm text-white/70 text-right">{product.manufacturer}</dd>
-                    </div>
-                  )}
-                  {product.countryOfOrigin && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Origin</dt>
-                      <dd className="text-sm text-white/70 text-right">{product.countryOfOrigin}</dd>
-                    </div>
-                  )}
-                  {product.testingStandard && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Testing Std.</dt>
-                      <dd className="text-sm text-white/70 text-right font-mono tabular-nums">{product.testingStandard}</dd>
-                    </div>
-                  )}
-                  {product.shippingCondition && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Shipping</dt>
-                      <dd className="text-sm text-white/70 text-right">{product.shippingCondition}</dd>
-                    </div>
-                  )}
-                  {product.leadTimeDays !== undefined && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Lead Time</dt>
-                      <dd className="text-sm text-white/70 text-right font-mono tabular-nums">{product.leadTimeDays} business days</dd>
-                    </div>
-                  )}
-                  {product.shelfLifeMonths != null && (
-                    <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06]">
-                      <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">Shelf Life</dt>
-                      <dd className="text-sm text-white/70 text-right font-mono tabular-nums">{product.shelfLifeMonths} months</dd>
-                    </div>
-                  )}
-                </dl>
-              </div>
-            </div>
-          )}
-
-          {/* Long description */}
-          <p className="text-sm text-white/55 leading-relaxed max-w-[60ch] mb-[var(--space-10)] whitespace-pre-line">
-            {product.longDescription}
-          </p>
-
-          <div className="mt-auto">
-            <button
-              type="button"
-              onClick={handleAddToInquiry}
-              disabled={outOfStock}
-              className="w-full sm:w-auto px-[var(--space-8)] py-[var(--space-4)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
-            >
-              {added ? 'Added to Inquiry' : 'Add to Inquiry'}
-            </button>
-            {outOfStock && (
-              <p className="mt-[var(--space-3)] text-xs text-white/40">
-                Currently unavailable.
+            )}
+            {product.priceCents != null && (
+              <p className="mt-[var(--space-2)]">
+                <ProcurementValue cents={product.priceCents} className="text-sm text-white/70" />
               </p>
             )}
           </div>
-        </div>
+
+          {/* Compact procurement strip — top 4 fields */}
+          {procurementRowCount > 0 && (
+            <div className="px-[var(--space-4)] py-[var(--space-4)]">
+              <p className="text-white/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
+                Procurement
+              </p>
+              <ProcurementSheet product={product} variant="passport" maxRows={4} />
+              {procurementRowCount > 4 && (
+                <a
+                  href="#procurement"
+                  className="mt-[var(--space-3)] inline-flex items-center gap-1 text-white/30 hover:text-white/70 transition-colors"
+                  style={{ fontSize: '10px', letterSpacing: '0.05em' }}
+                >
+                  {procurementRowCount - 4} more in Procurement →
+                </a>
+              )}
+            </div>
+          )}
+        </aside>
+
+        {/* ─── SCROLLABLE RIGHT — Module stack ───────────────────────────── */}
+        <main className="flex-1 min-w-0 lg:overflow-visible">
+          <div
+            className="overflow-hidden"
+            style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            {modules.map((mod, i) => (
+              <div key={mod.key} id={`module-${mod.key}`}>
+                <IntelModule
+                  index={i + 1}
+                  title={mod.title}
+                  defaultOpen={mod.key === initialHash || mod.defaultOpen}
+                >
+                  {mod.render()}
+                </IntelModule>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
 
-      {/* Related inventory — same family, exclude self, max 3.
-          Reconciliation Pass C: the inline duplicate of the old
-          ProductCard markup has been removed. The strip now delegates
-          to <ProductCard />, so the inventory register propagates
-          automatically (no image scale-on-hover, no consumer-shop
-          recommendation posture, family eyebrow + SKU caption).
-          The eyebrow is `Related` in white/40 — not the old gold. */}
-      {relatedProducts.length > 0 && (
-        <section
-          className="mt-[var(--space-16)] pt-[var(--space-10)] border-t border-white/[0.06]"
-          aria-label="Related inventory"
-        >
-          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-6)]">
-            Related
-          </p>
-          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]">
-            {relatedProducts.map((p) => (
-              <li key={p.id}>
-                <ProductCard product={p} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Associated documentation — deep-links to detail routes, not archive index. */}
-      {productDocs.length > 0 && (
-        <section
-          className="mt-[var(--space-12)] pt-[var(--space-8)] border-t border-white/[0.06]"
-          aria-label="Associated documentation"
-        >
-          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-6)]">
-            Documentation
-          </p>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-3)] sm:gap-[var(--space-4)]">
-            {productDocs.map((doc) => (
-              <li key={doc.id}>
-                <DocumentCard document={doc} href={`/documentation/${doc.id}`} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Mobile sticky add-to-inquiry — sits above the fixed BottomNav.
-          Reconciliation Pass C: bottom offset is `bottom-14` to clear
-          the Pass-B-reduced BottomNav (h-14, was h-16). The region is
-          mobile-only because BottomNav itself is mobile-only at lg+. */}
+      {/* Mobile sticky action bar — clears the BottomNav (h-14) */}
       <div
-        className="lg:hidden fixed left-0 right-0 bottom-14 z-40 bg-black border-t border-white/[0.06]"
+        className="lg:hidden fixed left-0 right-0 bottom-14 z-40"
+        style={{ backgroundColor: '#000', borderTop: '1px solid rgba(255,255,255,0.07)' }}
         role="region"
         aria-label="Add to inquiry"
       >
-        <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-3)]">
+        <div className="mx-auto w-full max-w-[1100px] px-[var(--space-4)] py-[var(--space-3)] flex items-center gap-[var(--space-2)]">
+          <QuantityStepper quantity={quantity} onChange={setQuantity} />
           <button
             type="button"
             onClick={handleAddToInquiry}
             disabled={outOfStock}
-            className="w-full px-[var(--space-8)] py-[var(--space-3)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+            className="flex-1 h-9 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.16)' }}
           >
-            {outOfStock
-              ? 'Currently unavailable'
-              : added
-              ? 'Added to Inquiry'
-              : 'Add to Inquiry'}
+            {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
           </button>
         </div>
       </div>
+
+      <IntelModuleStyles />
     </article>
   );
 }
