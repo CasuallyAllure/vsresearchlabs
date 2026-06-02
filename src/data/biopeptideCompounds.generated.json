@@ -1,0 +1,3506 @@
+[
+  {
+    "id": "rs-10-amino-1mq",
+    "slug": "10-amino-1mq",
+    "name": "10-Amino-1MQ",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research. Lyophilized, research grade.",
+    "laymanSummary": "NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research.",
+    "longDescription": "10-Amino-1MQ — NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/10-amino-1mq.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-10MQ",
+    "abbreviation": "10MQ",
+    "family": "NNMT Inhibitor",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "mechanismSummary": "Described as an analogue of 5-amino-1MQ intended to inhibit nicotinamide N-methyltransferase (NNMT), the SAM-dependent enzyme that methylates nicotinamide. The proposed effect — preserved NAD+ salvage and reduced adipocyte lipogenesis — is extrapolated from the 5-amino parent and not yet substantiated for this specific analogue.",
+    "receptorActivity": "Purported NNMT enzyme inhibitor by analogy to 5-amino-1MQ; no verified selectivity or potency data exist for this specific compound.",
+    "pathwaySummary": "Presumed inhibition of the NNMT / nicotinamide–NAD+ methylation pathway, by analogy only.",
+    "fdaStatus": "Research-chemical only — no authoritative characterisation",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-5-amino-1mq",
+    "slug": "5-amino-1mq",
+    "name": "5-Amino-1MQ",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism. Lyophilized, research grade.",
+    "laymanSummary": "5-Amino-1MQ is a small-molecule **NNMT inhibitor** studied in *fat-metabolism* research — blocking NNMT is thought to ~raise cellular NAD+~ and ~shrink fat cells~.",
+    "longDescription": "5-Amino-1MQ — Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/5-amino-1mq.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-5AMQ",
+    "abbreviation": "5AMQ",
+    "family": "NNMT Inhibitor",
+    "variants": [
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "casNumber": "42464-96-0",
+    "molecularWeight": "286.11 g/mol",
+    "mechanismSummary": "A small-molecule, substrate-site-directed inhibitor of nicotinamide N-methyltransferase (NNMT). By blocking NNMT-mediated methylation of nicotinamide (which consumes S-adenosylmethionine), it is proposed to raise cellular NAD+ salvage and SAM levels and reduce adipocyte lipogenesis.",
+    "receptorActivity": "Selective enzyme inhibitor of NNMT (reported IC50 ~1.2 µM); an enzyme inhibitor, not a receptor ligand.",
+    "pathwaySummary": "Inhibition of NNMT perturbs nicotinamide/NAD+ salvage and SAM-dependent methylation balance, influencing adipocyte energy metabolism.",
+    "fdaStatus": "Preclinical / research only",
+    "humanTrialsConfirmed": false,
+    "knownStudies": [
+      {
+        "title": "A Small-Molecule Inhibitor of NNMT for the Treatment of Metabolic Disorders",
+        "source": "Scientific Reports",
+        "year": 2018,
+        "model": "in-vivo",
+        "phase": "Preclinical"
+      }
+    ]
+  },
+  {
+    "id": "rs-adipotide",
+    "slug": "adipotide",
+    "name": "Adipotide",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Pro-apoptotic peptidomimetic (FTPP) targeting the adipose vasculature in research models. Lyophilized, research grade.",
+    "laymanSummary": "Adipotide is an experimental **fat-targeting** peptide that homes to the blood supply of fat tissue and ~triggers it to recede~. A pre-clinical *obesity-research* tool with a distinct vascular mechanism.",
+    "longDescription": "Adipotide — Pro-apoptotic peptidomimetic (FTPP) targeting the adipose vasculature in research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/adipotide.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-ADP",
+    "abbreviation": "ADP",
+    "family": "Pro-Apoptotic Peptide",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "productType": "peptide",
+    "mechanismSummary": "A chimeric peptidomimetic (FTPP) linking a prohibitin-binding homing sequence (CKGGRAKDC) to a pro-apoptotic D-peptide, D(KLAKLAK)2. The homing domain targets prohibitin on white-adipose-tissue vascular endothelium; on internalisation the KLAKLAK moiety disrupts mitochondrial membranes, pruning the fat-tissue blood supply.",
+    "receptorActivity": "Targets prohibitin on adipose-tissue endothelium; the effector moiety is a membrane-disrupting pro-apoptotic peptide rather than a receptor agonist.",
+    "pathwaySummary": "Induces mitochondrial membrane disruption and the intrinsic apoptotic pathway selectively in adipose vascular endothelium.",
+    "fdaStatus": "Not approved — Phase 1 oncology trial terminated; development discontinued",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Reversal of Obesity by Targeted Ablation of Blood Supply to Fat",
+        "source": "Nature Medicine",
+        "year": 2004,
+        "model": "in-vivo",
+        "phase": "Preclinical"
+      }
+    ]
+  },
+  {
+    "id": "rs-aicar",
+    "slug": "aicar",
+    "name": "AICAR",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "AMP-activated protein kinase activator (acadesine) used in cellular energy-sensing research. Lyophilized, research grade.",
+    "laymanSummary": "AICAR is an **AMPK activator** — it flips the cell into 'energy-burning' mode as if it had just exercised. Famous as an *exercise-mimetic*, it's studied for ~endurance~ and ~glucose metabolism~.",
+    "longDescription": "AICAR — AMP-activated protein kinase activator (acadesine) used in cellular energy-sensing research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/aicar.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "50 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-AICR",
+    "abbreviation": "AICR",
+    "family": "AMPK Activator",
+    "variants": [
+      {
+        "dose": "50mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "casNumber": "2627-69-2",
+    "molecularWeight": "258.23 g/mol",
+    "mechanismSummary": "A cell-permeable adenosine analogue (acadesine) phosphorylated intracellularly to ZMP, an AMP-mimetic. ZMP allosterically activates AMP-activated protein kinase (AMPK), increasing glucose uptake and fatty-acid oxidation while suppressing hepatic gluconeogenesis, lipogenesis, and mTORC1 signalling.",
+    "receptorActivity": "Acts as an AMPK activator via its phosphorylated metabolite ZMP; also functions as an adenosine-regulating agent. Not a selective receptor ligand.",
+    "pathwaySummary": "Activates the AMPK energy-sensing pathway, shifting cells toward catabolic ATP generation and inhibiting mTORC1-driven anabolism.",
+    "fdaStatus": "Not approved — acadesine reached Phase 3 (cardioprotection); WADA-prohibited",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Acadesine and Morbidity/Mortality in CABG: The RED-CABG Randomized Controlled Trial",
+        "source": "JAMA",
+        "year": 2012,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-ara-290",
+    "slug": "ara-290",
+    "name": "ARA-290",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Erythropoietin-derived peptide (cibinetide) targeting the innate repair receptor in inflammation research. Lyophilized, research grade.",
+    "laymanSummary": "ARA-290 (cibinetide) is an **EPO-derived** peptide that hits the *innate repair receptor* without affecting red blood cells. It's studied for ~calming nerve inflammation~ and *neuropathic pain*.",
+    "longDescription": "ARA-290 — Erythropoietin-derived peptide (cibinetide) targeting the innate repair receptor in inflammation research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ara-290.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-A290",
+    "abbreviation": "A290",
+    "family": "Tissue-Protective Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "immunomodulatory",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "immunomodulatory",
+    "productType": "peptide",
+    "casNumber": "1208243-50-8",
+    "molecularWeight": "1258.40 g/mol",
+    "mechanismSummary": "An 11-amino-acid peptide (cibinetide) derived from the helix-B surface of erythropoietin. It mimics EPO’s tissue-protective, non-erythropoietic signalling to reduce inflammation and promote nerve and tissue repair without stimulating red-cell production.",
+    "receptorActivity": "Selective agonist of the innate repair receptor — a heteromer of the EPO receptor and the β-common receptor (CD131); it does not bind the classical homodimeric EPO receptor.",
+    "pathwaySummary": "Engages anti-apoptotic and anti-inflammatory cascades (JAK2/STAT, PI3K/Akt) to suppress pro-inflammatory cytokines and support small-nerve-fibre regeneration.",
+    "fdaStatus": "Investigational — Orphan Drug & Fast Track (sarcoidosis-associated neuropathic pain)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy",
+        "source": "ClinicalTrials.gov · NCT02039687",
+        "year": 2017,
+        "model": "human",
+        "phase": "Phase 2b"
+      },
+      {
+        "title": "Cibinetide Improves Corneal Nerve Fibre Abundance in Sarcoidosis Neuropathy",
+        "source": "Invest. Ophthalmol. Vis. Sci.",
+        "year": 2017,
+        "model": "human",
+        "phase": "Phase 2"
+      }
+    ]
+  },
+  {
+    "id": "rs-bpc-tb-blend",
+    "slug": "bpc-tb-blend",
+    "name": "BPC-157 + TB-500 Blend",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Combination of the regenerative peptides BPC-157 and TB-500 for tissue-repair research. Lyophilized, research grade.",
+    "laymanSummary": "A combined **BPC-157 + TB-500** stack — the two flagship *regeneration* peptides together, studied for ~broad tissue repair~ spanning gut, tendon, muscle, and blood vessels.",
+    "longDescription": "BPC-157 + TB-500 Blend — Combination of the regenerative peptides BPC-157 and TB-500 for tissue-repair research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/bpc-tb-blend.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "10 – 20 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-BPTB",
+    "abbreviation": "BPTB",
+    "family": "Regenerative Blend",
+    "variants": [
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "20mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "regenerative",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "regenerative",
+    "mechanismSummary": "A blend of two synthetic peptides: BPC-157 (a stable gastric pentadecapeptide) and TB-500 (a thymosin-β4-related fragment). The combination is studied for synergistic tissue repair and angiogenesis; it has no single defined chemical identity.",
+    "receptorActivity": "No single receptor: BPC-157 modulates the nitric-oxide system and upregulates VEGFR2/growth-factor signalling; TB-500 acts mainly through G-actin sequestration.",
+    "pathwaySummary": "Proposed angiogenic and cytoprotective effects via VEGFR2–NO signalling (BPC-157) and actin-regulation/cell-migration pathways (TB-500); evidence is preclinical.",
+    "fdaStatus": "Not approved — neither component is FDA-approved for human use",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-cagrilintide",
+    "slug": "cagrilintide",
+    "name": "Cagrilintide",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Long-acting amylin receptor agonist investigated in appetite-regulation research models. Lyophilized, research grade.",
+    "laymanSummary": "Cagrilintide is a long-acting **amylin** analogue — a satiety hormone that works *alongside* GLP-1. On its own it ~curbs appetite~, and paired with semaglutide (CagriSema) it's one of the most promising *next-generation weight-research* combinations.",
+    "longDescription": "Cagrilintide — Long-acting amylin receptor agonist investigated in appetite-regulation research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/cagrilintide.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-CGL",
+    "abbreviation": "CGL",
+    "family": "Amylin Analogue",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "glp1-appetite",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "glp1-appetite",
+    "productType": "peptide",
+    "casNumber": "1415456-99-3",
+    "molecularWeight": "4409.01 g/mol",
+    "mechanismSummary": "Long-acting acylated analogue of the pancreatic hormone amylin. A C20 fatty-diacid chain enables albumin binding for once-weekly dosing. It signals in hypothalamic and hindbrain satiety centres to suppress food intake, slow gastric emptying, and promote satiety.",
+    "receptorActivity": "Non-selective agonist at the amylin receptors (AMY1–3, calcitonin-receptor core complexed with RAMPs) and the calcitonin receptor; not selective among the AMY subtypes.",
+    "pathwaySummary": "Agonism of these Gs-coupled GPCRs raises intracellular cAMP in CNS appetite-regulating neurons, reducing energy intake.",
+    "fdaStatus": "Investigational — Phase 3 (standalone and as the amylin arm of CagriSema)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Development of Cagrilintide, a Long-Acting Amylin Analogue",
+        "source": "J. Med. Chem. (ACS)",
+        "year": 2021,
+        "model": "in-vitro",
+        "phase": "Preclinical"
+      },
+      {
+        "title": "REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity",
+        "source": "NEJM",
+        "year": 2025,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-cagrisema",
+    "slug": "cagrisema",
+    "name": "Cagrilintide + Semaglutide",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide. Lyophilized, research grade.",
+    "laymanSummary": "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — hitting *two appetite pathways at once*. It's one of the most-watched next-generation ~weight-research~ combinations.",
+    "longDescription": "Cagrilintide + Semaglutide — Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/cagrisema.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-CGS",
+    "abbreviation": "CGS",
+    "family": "Amylin / GLP-1 Blend",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "glp1-appetite",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "glp1-appetite",
+    "mechanismSummary": "Fixed combination of two molecules: cagrilintide (amylin/calcitonin agonist) and semaglutide (GLP-1 agonist). The two act on complementary appetite pathways — amylin and incretin signalling — for additive reductions in food intake and body weight.",
+    "receptorActivity": "Combined activity at the amylin/calcitonin receptors (cagrilintide) and the GLP-1 receptor (semaglutide).",
+    "pathwaySummary": "Dual GPCR agonism: cAMP signalling via amylin/calcitonin receptors plus GLP-1R-mediated cAMP/PKA signalling in hypothalamic and hindbrain satiety circuits.",
+    "fdaStatus": "Investigational — Phase 3 (regulatory filing submitted; not yet approved)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity",
+        "source": "NEJM",
+        "year": 2025,
+        "model": "human",
+        "phase": "Phase 3"
+      },
+      {
+        "title": "REDEFINE 2: Cagrilintide–Semaglutide in Overweight or Obesity and Type 2 Diabetes",
+        "source": "NEJM",
+        "year": 2025,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-cjc-1295-no-dac",
+    "slug": "cjc-1295-no-dac",
+    "name": "CJC-1295 (No DAC)",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "GHRH(1-29) analogue (Modified GRF 1-29) without the Drug Affinity Complex, for short-acting GH-axis research. Lyophilized, research grade.",
+    "laymanSummary": "CJC-1295 without DAC (Mod GRF 1-29) is the **short-acting GHRH** peptide — it sparks a clean, *natural-style* growth-hormone pulse that clears within hours. It's the classic partner for a GHRP like ipamorelin, the two *amplifying each other*.",
+    "longDescription": "CJC-1295 (No DAC) — GHRH(1-29) analogue (Modified GRF 1-29) without the Drug Affinity Complex, for short-acting GH-axis research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/cjc-1295-no-dac.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-CJCN",
+    "abbreviation": "CJCN",
+    "family": "GHRH Analogue",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "molecularWeight": "3367.90 g/mol",
+    "mechanismSummary": "A synthetic 29-amino-acid analogue of GHRH (Modified GRF 1-29) bearing substitutions (D-Ala2, Gln8, Ala15, Leu27) that resist enzymatic degradation. It binds pituitary GHRH receptors to stimulate pulsatile GH release. Lacking the Drug Affinity Complex, it has a short (~30-min) half-life and does not bind serum albumin.",
+    "receptorActivity": "Agonist at the GHRH receptor (GHRHR), a class-B GPCR on anterior-pituitary somatotrophs; selective for GHRHR, with no activity at the ghrelin/GHS receptor.",
+    "pathwaySummary": "GHRHR activation couples to Gs, raising cAMP and activating PKA to promote GH synthesis and pulsatile release; downstream GH elevates hepatic IGF-1.",
+    "fdaStatus": "Not approved — research chemical only",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-cjc-ipamorelin-blend",
+    "slug": "cjc-ipamorelin-blend",
+    "name": "CJC-1295 (No DAC) + Ipamorelin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Combination of the GHRH analogue CJC-1295 (No DAC) with the GHS-R agonist ipamorelin. Lyophilized, research grade.",
+    "laymanSummary": "The classic **CJC-1295 (No DAC) + Ipamorelin** stack — a GHRH paired with a GHRP. Together they ~produce a larger, cleaner growth-hormone pulse~ than either peptide alone.",
+    "longDescription": "CJC-1295 (No DAC) + Ipamorelin — Combination of the GHRH analogue CJC-1295 (No DAC) with the GHS-R agonist ipamorelin.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/cjc-ipamorelin-blend.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-CJIP",
+    "abbreviation": "CJIP",
+    "family": "GH Secretagogue Blend",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "mechanismSummary": "A two-component preparation combining CJC-1295 (No DAC), a GHRH-receptor agonist, with ipamorelin, a selective ghrelin/GHS-receptor agonist. The two act on complementary pituitary pathways to produce a synergistic, pulsatile increase in GH release; it is a physical mixture, not a single entity.",
+    "receptorActivity": "CJC-1295 No DAC targets the GHRH receptor; ipamorelin selectively targets the GHS-R1a (ghrelin) receptor with minimal effect on ACTH/cortisol or prolactin.",
+    "pathwaySummary": "GHRHR signals via Gs/cAMP/PKA while GHS-R1a signals via Gq/PLC/IP3-calcium; combined activation amplifies somatotroph GH secretion.",
+    "fdaStatus": "Not approved — research chemical only",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-dermorphin",
+    "slug": "dermorphin",
+    "name": "Dermorphin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Naturally-occurring heptapeptide with high-affinity mu-opioid receptor activity, for analgesia research. Lyophilized, research grade.",
+    "laymanSummary": "Dermorphin is a naturally occurring peptide with extraordinarily strong **mu-opioid** activity — many times that of morphine in models. A *pain-research* tool for potent peptide-based analgesia.",
+    "longDescription": "Dermorphin — Naturally-occurring heptapeptide with high-affinity mu-opioid receptor activity, for analgesia research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/dermorphin.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-DRM",
+    "abbreviation": "DRM",
+    "family": "Opioid Peptide",
+    "variants": [
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "nootropic-neuroactive",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "nootropic-neuroactive",
+    "productType": "peptide",
+    "casNumber": "77614-16-5",
+    "molecularWeight": "803.92 g/mol",
+    "mechanismSummary": "A naturally occurring opioid heptapeptide originally isolated from the skin of South American Phyllomedusa frogs, notable for a D-alanine residue. It is an extremely potent and selective agonist of the µ-opioid receptor, with analgesic potency far exceeding morphine on a molar basis.",
+    "receptorActivity": "High-potency, high-selectivity agonist at the µ-opioid receptor (MOR).",
+    "pathwaySummary": "Activates µ-opioid-receptor Gi/Go signalling, inhibiting adenylate cyclase and modulating neuronal excitability to produce analgesia.",
+    "fdaStatus": "Not approved — no human therapeutic use",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-dsip",
+    "slug": "dsip",
+    "name": "DSIP",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Delta sleep-inducing peptide — a nonapeptide investigated in sleep-architecture and stress research. Lyophilized, research grade.",
+    "laymanSummary": "DSIP (Delta Sleep-Inducing Peptide) is a natural brain peptide tied to **deep sleep** rhythms. It's studied for ~promoting restful sleep~ and *stress resilience*.",
+    "longDescription": "DSIP — Delta sleep-inducing peptide — a nonapeptide investigated in sleep-architecture and stress research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/dsip.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-DSIP",
+    "abbreviation": "DSIP",
+    "family": "Neuropeptide",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "nootropic-neuroactive",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "nootropic-neuroactive",
+    "productType": "peptide",
+    "casNumber": "62568-57-4",
+    "molecularWeight": "848.81 g/mol",
+    "mechanismSummary": "A naturally occurring nonapeptide first isolated from rabbit cerebral venous blood. Its mechanism is poorly defined; it is associated with sleep modulation, stress/neuroendocrine effects, and antioxidant activity, but no single validated receptor target is established.",
+    "receptorActivity": "No well-characterised receptor has been identified; proposed actions are diffuse and not attributable to a defined high-affinity receptor.",
+    "pathwaySummary": "Proposed involvement in sleep regulation and hypothalamic-pituitary stress-hormone modulation, but pathways remain speculative.",
+    "fdaStatus": "Not approved — no approved therapeutic indication",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-foxo4-dri",
+    "slug": "foxo4-dri",
+    "name": "FOXO4-DRI",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "FOXO4 D-retro-inverso peptide that disrupts the FOXO4–p53 interaction in senescence research. Lyophilized, research grade.",
+    "laymanSummary": "FOXO4-DRI is a **senolytic** research peptide — designed to ~clear 'zombie' senescent cells~ that build up with age, by breaking the FOXO4–p53 partnership that keeps them alive. A headline *longevity* tool.",
+    "longDescription": "FOXO4-DRI — FOXO4 D-retro-inverso peptide that disrupts the FOXO4–p53 interaction in senescence research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/foxo4-dri.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-FOXO",
+    "abbreviation": "FOXO",
+    "family": "Senolytic Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "bioregulator",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "bioregulator",
+    "productType": "peptide",
+    "casNumber": "2460055-10-9",
+    "molecularWeight": "2957.2 g/mol",
+    "mechanismSummary": "A synthetic D-retro-inverso (all-D, reversed-sequence) peptide based on the FOXO4 region that binds p53. As a senolytic, it disrupts the FOXO4–p53 interaction in senescent cells, releasing p53 to the mitochondria and triggering targeted apoptosis of senescent (\"zombie\") cells.",
+    "receptorActivity": "Not a receptor ligand; an intracellular protein–protein-interaction inhibitor that competitively blocks FOXO4 binding to p53.",
+    "pathwaySummary": "By freeing p53 from FOXO4 sequestration, it activates p53-dependent mitochondrial (intrinsic) apoptosis selectively in senescent cells.",
+    "fdaStatus": "Not approved — preclinical only",
+    "humanTrialsConfirmed": false,
+    "knownStudies": [
+      {
+        "title": "Targeted Apoptosis of Senescent Cells Restores Tissue Homeostasis in Response to Chemotoxicity and Aging",
+        "source": "Cell",
+        "year": 2017,
+        "model": "in-vivo",
+        "phase": "Preclinical"
+      },
+      {
+        "title": "Senolytic Peptide FOXO4-DRI Selectively Removes Senescent Cells from Expanded Human Chondrocytes",
+        "source": "Front. Bioeng. Biotechnol.",
+        "year": 2021,
+        "model": "in-vitro",
+        "phase": "Preclinical"
+      }
+    ]
+  },
+  {
+    "id": "rs-ghk-cu",
+    "slug": "ghk-cu",
+    "name": "GHK-Cu",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Copper-binding tripeptide (GHK-Cu) studied for skin remodeling, angiogenesis, and antioxidant research. Lyophilized, research grade.",
+    "laymanSummary": "GHK-Cu is the famous **copper peptide** of skin science. It ~signals collagen and elastin repair~, ~drives new blood vessels~, and acts as an antioxidant — the backbone of *skin-remodeling, hair, and wound-healing* research.",
+    "longDescription": "GHK-Cu — Copper-binding tripeptide (GHK-Cu) studied for skin remodeling, angiogenesis, and antioxidant research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ghk-cu.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "50 – 100 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GHK",
+    "abbreviation": "GHK",
+    "family": "Copper Peptide",
+    "variants": [
+      {
+        "dose": "50mg"
+      },
+      {
+        "dose": "100mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "productType": "peptide",
+    "casNumber": "49557-75-7",
+    "molecularWeight": "340.91 g/mol",
+    "mechanismSummary": "The copper(II) complex of the tripeptide glycyl-L-histidyl-L-lysine, a sequence naturally present in human plasma that declines with age. It acts as a copper carrier and signalling molecule that promotes wound healing, modulates extracellular-matrix remodelling, and stimulates collagen/glycosaminoglycan synthesis.",
+    "receptorActivity": "Not a defined single-receptor ligand; functions chiefly via copper delivery and modulation of growth-factor and matrix-related signalling.",
+    "pathwaySummary": "Implicated in TGF-β and metalloproteinase/matrix-remodelling pathways, angiogenesis, and antioxidant gene expression in skin and connective tissue.",
+    "fdaStatus": "Not an approved drug; widely used as a cosmetic ingredient (Copper Tripeptide-1)",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-ghrp-2-acetate",
+    "slug": "ghrp-2-acetate",
+    "name": "GHRP-2 Acetate",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Growth hormone-releasing peptide-2 — a synthetic GHS-R agonist driving pulsatile GH release. Lyophilized, research grade.",
+    "laymanSummary": "GHRP-2 is a potent **growth-hormone-releasing peptide** that triggers a strong, clean ~GH pulse~ with only mild appetite stimulation. Often stacked with a GHRH like CJC-1295 so the two *amplify each other*.",
+    "longDescription": "GHRP-2 Acetate — Growth hormone-releasing peptide-2 — a synthetic GHS-R agonist driving pulsatile GH release.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ghrp-2-acetate.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GRP2",
+    "abbreviation": "GRP2",
+    "family": "GH Secretagogue",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "casNumber": "158861-67-7",
+    "molecularWeight": "817.97 g/mol",
+    "mechanismSummary": "A synthetic hexapeptide GH secretagogue (pralmorelin) that mimics endogenous ghrelin. It binds the ghrelin/GHS receptor in the pituitary and hypothalamus to stimulate and amplify pulsatile GH release.",
+    "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor; mildly stimulates ACTH/cortisol and prolactin at higher doses.",
+    "pathwaySummary": "GHS-R1a coupling to Gq–PLC–IP3-calcium signalling in somatotrophs drives GH secretion.",
+    "fdaStatus": "Not FDA-approved; approved in Japan as a GH-deficiency diagnostic",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-ghrp-6-acetate",
+    "slug": "ghrp-6-acetate",
+    "name": "GHRP-6 Acetate",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Growth hormone-releasing peptide-6 — a hexapeptide GHS-R agonist studied for GH and appetite signaling. Lyophilized, research grade.",
+    "laymanSummary": "GHRP-6 is the original **growth-hormone-releasing peptide** and a strong ~appetite stimulant~ — it powerfully activates the *ghrelin* (hunger) receptor while driving GH release.",
+    "longDescription": "GHRP-6 Acetate — Growth hormone-releasing peptide-6 — a hexapeptide GHS-R agonist studied for GH and appetite signaling.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ghrp-6-acetate.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GRP6",
+    "abbreviation": "GRP6",
+    "family": "GH Secretagogue",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "casNumber": "87616-84-0",
+    "molecularWeight": "873.01 g/mol",
+    "mechanismSummary": "One of the first-described GH-releasing peptides — a synthetic hexapeptide that binds the ghrelin/GHS receptor to stimulate pulsatile GH release and strongly stimulates appetite via central ghrelin-receptor signalling.",
+    "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor in the pituitary and hypothalamus.",
+    "pathwaySummary": "GHS-R1a activates Gq–PLC–IP3-calcium signalling to trigger GH secretion from somatotrophs.",
+    "fdaStatus": "Not approved — research / investigational only",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-glow-blend-cu",
+    "slug": "glow-blend-cu",
+    "name": "GLOW Blend (BPC-157 · GHK-Cu · TB-500)",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Blend of BPC-157, GHK-Cu and TB-500 for combined regenerative and dermal research applications. Lyophilized, research grade.",
+    "laymanSummary": "Blend of BPC-157, GHK-Cu and TB-500 for combined regenerative and dermal research applications.",
+    "longDescription": "GLOW Blend (BPC-157 · GHK-Cu · TB-500) — Blend of BPC-157, GHK-Cu and TB-500 for combined regenerative and dermal research applications.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/glow-blend-cu.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "70 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GLWC",
+    "abbreviation": "GLWC",
+    "family": "Regenerative Blend",
+    "variants": [
+      {
+        "dose": "70mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "mechanismSummary": "A blend of three peptides — BPC-157, GHK-Cu (the copper-bound tripeptide), and TB-500 — for skin regeneration and wound/tissue repair. It has no single combined chemical identity.",
+    "receptorActivity": "No single receptor across the mixture: GHK-Cu delivers copper and modulates gene expression and matrix enzymes; BPC-157 modulates NO/VEGFR2 signalling; TB-500 sequesters G-actin.",
+    "pathwaySummary": "Combined proposed effects on angiogenesis, collagen/glycosaminoglycan synthesis, antioxidant/copper-dependent enzymes, and cell migration; evidence is preclinical.",
+    "fdaStatus": "Not approved — no component approved for systemic human use",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-glow-blend-ghk",
+    "slug": "glow-blend-ghk",
+    "name": "GLOW Blend (TB-500 · BPC-157 · GHK)",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Blend of TB-500, BPC-157 and GHK for combined regenerative and dermal research applications. Lyophilized, research grade.",
+    "laymanSummary": "Blend of TB-500, BPC-157 and GHK for combined regenerative and dermal research applications.",
+    "longDescription": "GLOW Blend (TB-500 · BPC-157 · GHK) — Blend of TB-500, BPC-157 and GHK for combined regenerative and dermal research applications.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/glow-blend-ghk.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "70 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GLOW",
+    "abbreviation": "GLOW",
+    "family": "Regenerative Blend",
+    "variants": [
+      {
+        "dose": "70mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "mechanismSummary": "A blend of three peptides — TB-500 (thymosin-β4 fragment), BPC-157 (gastric pentadecapeptide), and GHK (copper tripeptide-1) — studied for skin/connective-tissue repair and aesthetic \"glow\" effects. It has no single combined chemical identity.",
+    "receptorActivity": "No single receptor across the mixture: TB-500 sequesters G-actin; BPC-157 modulates NO/VEGFR2 signalling; GHK acts largely through copper delivery and gene-expression modulation.",
+    "pathwaySummary": "Proposed combined angiogenic, matrix-remodelling, and tissue-repair effects (collagen/elastin via GHK, actin-mediated migration via TB-500, VEGFR2–NO via BPC-157); evidence is preclinical.",
+    "fdaStatus": "Not approved — no component approved for systemic human use",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-glutathione",
+    "slug": "glutathione",
+    "name": "Glutathione",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification. Lyophilized, research grade.",
+    "laymanSummary": "Glutathione is the body's **master antioxidant** — a tripeptide that neutralizes free radicals and powers *detoxification* in every cell. Studied for ~oxidative-stress defense~, liver support, and skin-brightening.",
+    "longDescription": "Glutathione — Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/glutathione.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "600 – 1500 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GSH",
+    "abbreviation": "GSH",
+    "family": "Antioxidant Tripeptide",
+    "variants": [
+      {
+        "dose": "600mg"
+      },
+      {
+        "dose": "1500mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "casNumber": "70-18-8",
+    "molecularWeight": "307.32 g/mol",
+    "mechanismSummary": "An endogenous tripeptide (γ-Glu-Cys-Gly) and the body’s principal intracellular antioxidant. It neutralises reactive oxygen species and serves as a cofactor for detoxification and redox enzymes.",
+    "receptorActivity": "Not a receptor ligand; an enzyme substrate/cofactor (glutathione peroxidases, S-transferases) and a direct reducing agent.",
+    "pathwaySummary": "Central to cellular redox homeostasis, the glutathione/glutathione-disulfide cycle, and phase-II detoxification pathways.",
+    "fdaStatus": "OTC supplement / compounded injectable — skin-lightening use not FDA-approved",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-gonadorelin",
+    "slug": "gonadorelin",
+    "name": "Gonadorelin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Synthetic gonadotropin-releasing hormone (GnRH) decapeptide that stimulates pituitary LH/FSH release. Lyophilized, research grade.",
+    "laymanSummary": "Gonadorelin is **GnRH** — the master hormone that tells the pituitary to release LH and FSH. Used in *reproductive-axis* research to ~stimulate the body's own hormone production~ in natural pulses.",
+    "longDescription": "Gonadorelin — Synthetic gonadotropin-releasing hormone (GnRH) decapeptide that stimulates pituitary LH/FSH release.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/gonadorelin.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GNRH",
+    "abbreviation": "GnRH",
+    "family": "GnRH Analogue",
+    "variants": [
+      {
+        "dose": "2mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "reproductive-hormonal",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "reproductive-hormonal",
+    "productType": "peptide",
+    "casNumber": "33515-09-2",
+    "molecularWeight": "1182.31 g/mol",
+    "mechanismSummary": "Synthetic gonadotropin-releasing hormone (GnRH) — a decapeptide identical to the endogenous hypothalamic hormone. Pulsatile administration stimulates pituitary release of LH and FSH; continuous exposure paradoxically downregulates the axis.",
+    "receptorActivity": "Agonist at the pituitary GnRH receptor.",
+    "pathwaySummary": "Activates GnRH-receptor signalling in the anterior pituitary, driving secretion of LH and FSH.",
+    "fdaStatus": "Approved historically as a GnRH diagnostic/therapeutic agent (availability varies)",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-hcg",
+    "slug": "hcg",
+    "name": "HCG",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Human chorionic gonadotropin glycoprotein hormone with LH-like activity, dosed in international units. Lyophilized, research grade.",
+    "laymanSummary": "HCG is a **gonadotropin** that mimics LH, signaling the gonads to make sex hormones. In research it's used to ~stimulate natural testosterone or progesterone production~, dosed in international units.",
+    "longDescription": "HCG — Human chorionic gonadotropin glycoprotein hormone with LH-like activity, dosed in international units.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/hcg.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "1000 – 10000iu"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-HCG",
+    "abbreviation": "HCG",
+    "family": "Gonadotropin",
+    "variants": [
+      {
+        "dose": "5000iu"
+      },
+      {
+        "dose": "10000iu"
+      },
+      {
+        "dose": "1000iu"
+      },
+      {
+        "dose": "2000iu"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "reproductive-hormonal",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "reproductive-hormonal",
+    "productType": "peptide",
+    "casNumber": "9002-61-3",
+    "mechanismSummary": "Human chorionic gonadotropin — a placental heterodimeric glycoprotein hormone (shared α subunit, unique β subunit). It mimics LH activity, supporting the corpus luteum in pregnancy and stimulating gonadal steroidogenesis; used clinically for ovulation induction and hypogonadism.",
+    "receptorActivity": "Agonist at the LH/hCG receptor (LHCGR), a Gs-coupled GPCR on ovarian and testicular cells.",
+    "pathwaySummary": "Activates LHCGR–Gs–cAMP signalling, driving steroidogenesis (progesterone/testosterone) and, in females, ovulation and luteal support.",
+    "fdaStatus": "Approved — urinary hCG and recombinant choriogonadotropin alfa (Ovidrel) for ART",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-hexarelin-acetate",
+    "slug": "hexarelin-acetate",
+    "name": "Hexarelin Acetate",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Synthetic hexapeptide GHS-R agonist (growth hormone-releasing peptide) studied for potent GH secretion. Lyophilized, research grade.",
+    "laymanSummary": "Hexarelin is one of the **strongest growth-hormone-releasing peptides**. Beyond a big ~GH pulse~, it's studied for *cardioprotective* effects through the CD36 receptor — unusual among the GHRPs.",
+    "longDescription": "Hexarelin Acetate — Synthetic hexapeptide GHS-R agonist (growth hormone-releasing peptide) studied for potent GH secretion.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/hexarelin-acetate.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-HEX",
+    "abbreviation": "HEX",
+    "family": "GH Secretagogue",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "casNumber": "140703-51-1",
+    "molecularWeight": "887.04 g/mol",
+    "mechanismSummary": "A synthetic hexapeptide GH secretagogue (examorelin), a GHRP-6 analogue with a D-2-methyl-Trp substitution conferring enhanced stability and potency. It binds the ghrelin/GHS receptor to drive potent pulsatile GH release and also engages the CD36 scavenger receptor in cardiovascular tissue.",
+    "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor; also binds CD36 in cardiac and vascular tissue. Among GHRPs it produces the most potent acute GH release in humans.",
+    "pathwaySummary": "GHS-R1a activation signals through Gq–PLC–IP3, raising intracellular calcium in somatotrophs to drive GH secretion.",
+    "fdaStatus": "Not approved — investigational / research only",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-hgh",
+    "slug": "hgh",
+    "name": "HGH",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Recombinant 191-amino-acid human growth hormone (somatropin) for growth-factor research. Lyophilized, research grade.",
+    "laymanSummary": "HGH (somatropin) is **recombinant human growth hormone** itself — the full 191-amino-acid hormone. It's the reference compound for *growth, recovery, and body-composition* research that the secretagogue peptides aim to stimulate indirectly.",
+    "longDescription": "HGH — Recombinant 191-amino-acid human growth hormone (somatropin) for growth-factor research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/hgh.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 – 36 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-HGH",
+    "abbreviation": "HGH",
+    "family": "Growth Hormone",
+    "variants": [
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "12mg"
+      },
+      {
+        "dose": "15mg"
+      },
+      {
+        "dose": "24mg"
+      },
+      {
+        "dose": "36mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "growth-factor-anabolic",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "growth-factor-anabolic",
+    "productType": "peptide",
+    "casNumber": "12629-01-5",
+    "molecularWeight": "~22125 g/mol",
+    "mechanismSummary": "Recombinant human growth hormone (somatropin) — a 191-amino-acid single-chain polypeptide identical to pituitary GH. It binds the growth-hormone receptor to promote growth, protein anabolism, and lipolysis, with many anabolic effects mediated indirectly through hepatic IGF-1.",
+    "receptorActivity": "Agonist of the growth-hormone receptor (GHR), a class-I cytokine receptor; receptor dimerisation activates the JAK2–STAT5 cascade.",
+    "pathwaySummary": "GHR–JAK2–STAT5 signalling drives transcription of GH-responsive genes including IGF-1, with additional MAPK and PI3K activation.",
+    "fdaStatus": "Approved — many brands (Genotropin, Norditropin, etc.) for GH deficiency and growth disorders",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-hmg",
+    "slug": "hmg",
+    "name": "HMG",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Human menopausal gonadotropin (menotropin) preparation with combined FSH and LH activity. Lyophilized, research grade.",
+    "laymanSummary": "HMG (menotropin) is a **gonadotropin** preparation carrying both FSH and LH activity, used in *fertility and reproductive-axis* research to ~stimulate gonadal function~.",
+    "longDescription": "HMG — Human menopausal gonadotropin (menotropin) preparation with combined FSH and LH activity.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/hmg.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "75 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-HMG",
+    "abbreviation": "HMG",
+    "family": "Gonadotropin",
+    "variants": [
+      {
+        "dose": "75mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "reproductive-hormonal",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "reproductive-hormonal",
+    "productType": "peptide",
+    "mechanismSummary": "Human menopausal gonadotropin (menotropin) — a purified preparation from the urine of postmenopausal women containing both FSH and LH activity (typically ~1:1), often with residual hCG. It stimulates follicular development and ovulation in assisted reproduction.",
+    "receptorActivity": "Acts via the FSH receptor and the LH/hCG receptor on gonadal cells through its FSH and LH components, respectively.",
+    "pathwaySummary": "Stimulates gonadotropin-receptor signalling driving folliculogenesis and steroidogenesis in the gonads.",
+    "fdaStatus": "Approved — menotropins (e.g. Menopur) for ovulation induction and ART",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-igf-1-lr3",
+    "slug": "igf-1-lr3",
+    "name": "IGF-1 LR3",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Long R3 insulin-like growth factor-1 analogue with reduced IGFBP binding, for anabolic-signaling research. Lyophilized, research grade.",
+    "laymanSummary": "IGF-1 LR3 is a long-acting version of **insulin-like growth factor-1**, the hormone that carries out many of growth hormone's *muscle-building* effects. The 'LR3' tweak makes it last far longer — a potent *anabolic-signaling* tool.",
+    "longDescription": "IGF-1 LR3 — Long R3 insulin-like growth factor-1 analogue with reduced IGFBP binding, for anabolic-signaling research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/igf-1-lr3.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "0.1 – 1 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-IGF",
+    "abbreviation": "IGF",
+    "family": "Growth Factor",
+    "variants": [
+      {
+        "dose": "0.1mg"
+      },
+      {
+        "dose": "1mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "growth-factor-anabolic",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "growth-factor-anabolic",
+    "productType": "peptide",
+    "casNumber": "946870-92-4",
+    "molecularWeight": "9117.65 g/mol",
+    "mechanismSummary": "A synthetic 83-amino-acid analogue of human IGF-1 with a 13-residue N-terminal extension and an Arg-for-Glu substitution at position 3. These changes markedly reduce IGF-binding-protein binding, increasing free bioactivity and half-life. It activates the IGF-1 receptor to drive proliferation, protein synthesis, and anti-apoptotic signalling.",
+    "receptorActivity": "Agonist of the type-1 IGF receptor (IGF-1R), a receptor tyrosine kinase; very low IGFBP affinity increases its free active fraction; cross-reacts with the insulin receptor at high concentrations.",
+    "pathwaySummary": "IGF-1R autophosphorylation activates PI3K–Akt–mTOR and Ras–MAPK pathways, promoting growth, survival, and protein synthesis.",
+    "fdaStatus": "Not approved — research / cell-culture reagent only",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-kisspeptin-10",
+    "slug": "kisspeptin-10",
+    "name": "Kisspeptin-10",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "KISS1-derived decapeptide that activates GPR54 to drive GnRH release in reproductive-axis research. Lyophilized, research grade.",
+    "laymanSummary": "Kisspeptin-10 sits at the **top of the reproductive cascade**, switching on the GnRH neurons that drive the whole hormone axis. A key tool for ~jump-starting natural LH/FSH release~ and fertility research.",
+    "longDescription": "Kisspeptin-10 — KISS1-derived decapeptide that activates GPR54 to drive GnRH release in reproductive-axis research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/kisspeptin-10.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-KISS",
+    "abbreviation": "KISS",
+    "family": "Reproductive Peptide",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "reproductive-hormonal",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "reproductive-hormonal",
+    "productType": "peptide",
+    "casNumber": "374675-21-5",
+    "molecularWeight": "1302.50 g/mol",
+    "mechanismSummary": "The C-terminal decapeptide fragment of kisspeptin (encoded by KISS1), the shortest bioactive kisspeptin and a key upstream regulator of reproductive endocrine function. It stimulates hypothalamic GnRH release, in turn driving LH/FSH secretion.",
+    "receptorActivity": "Agonist at the kisspeptin receptor KISS1R (GPR54), a GPCR on GnRH neurons.",
+    "pathwaySummary": "Activates KISS1R–Gq/PLC signalling on GnRH neurons, stimulating the hypothalamic-pituitary-gonadal axis.",
+    "fdaStatus": "Not FDA-approved — investigational (research and clinical trials)",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-klow-blend",
+    "slug": "klow-blend",
+    "name": "KLOW Blend (GHK-Cu · TB-500 · BPC-157 · KPV)",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Multi-peptide blend of GHK-Cu, TB-500, BPC-157 and KPV for dermal and regenerative research. Lyophilized, research grade.",
+    "laymanSummary": "Multi-peptide blend of GHK-Cu, TB-500, BPC-157 and KPV for dermal and regenerative research.",
+    "longDescription": "KLOW Blend (GHK-Cu · TB-500 · BPC-157 · KPV) — Multi-peptide blend of GHK-Cu, TB-500, BPC-157 and KPV for dermal and regenerative research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/klow-blend.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Lyophilized blend"
+      },
+      {
+        "label": "Mass",
+        "value": "80 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-KLOW",
+    "abbreviation": "KLOW",
+    "family": "Regenerative Blend",
+    "variants": [
+      {
+        "dose": "80mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "mechanismSummary": "A blend of four peptides — GHK-Cu, TB-500, BPC-157, and KPV (the α-MSH-derived anti-inflammatory tripeptide Lys-Pro-Val) — studied for combined regenerative and anti-inflammatory/gut-repair effects. It has no single combined chemical identity.",
+    "receptorActivity": "No single receptor across the mixture: KPV exerts intracellular anti-inflammatory action (NF-κB inhibition, partly via PepT1) and melanocortin-related signalling; GHK-Cu delivers copper; BPC-157 modulates NO/VEGFR2; TB-500 sequesters G-actin.",
+    "pathwaySummary": "Proposed combined anti-inflammatory (NF-κB suppression by KPV), angiogenic, matrix-remodelling, and tissue-repair effects; evidence is preclinical.",
+    "fdaStatus": "Not approved — no component approved for systemic human use",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-l-carnitine",
+    "slug": "l-carnitine",
+    "name": "L-Carnitine",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Quaternary ammonium compound that shuttles long-chain fatty acids into mitochondria for β-oxidation. Supplied as a sterile solution.",
+    "laymanSummary": "L-Carnitine is the **shuttle** that carries fat into the mitochondria to be burned for energy. A staple of *fat-metabolism and endurance* research, studied for ~better fat utilization~ and ~exercise recovery~.",
+    "longDescription": "L-Carnitine — Quaternary ammonium compound that shuttles long-chain fatty acids into mitochondria for β-oxidation.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/l-carnitine.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Sterile solution"
+      },
+      {
+        "label": "Volume",
+        "value": "600 – 1200 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "2–8°C, protect from light"
+      }
+    ],
+    "sku": "VSR-RS-LCAR",
+    "abbreviation": "LCAR",
+    "family": "Metabolic Cofactor",
+    "variants": [
+      {
+        "dose": "600mg / 10ml"
+      },
+      {
+        "dose": "1200mg / 10ml"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "2–8°C, protect from light",
+    "shelfLifeMonths": 18,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Cold-chain, 2–8°C",
+    "researchClassification": "metabolic-cofactor",
+    "casNumber": "541-15-1",
+    "molecularWeight": "161.20 g/mol",
+    "mechanismSummary": "An endogenous quaternary amine essential for transporting long-chain fatty acids across the inner mitochondrial membrane for β-oxidation. It is the obligatory acyl-group carrier in the carnitine shuttle (CPT1 → CACT → CPT2), enabling fatty-acid-derived ATP production.",
+    "receptorActivity": "Not a receptor ligand; the substrate/cofactor of the carnitine acyltransferases (CPT1, CPT2) and carnitine-acylcarnitine translocase.",
+    "pathwaySummary": "Central to mitochondrial fatty-acid β-oxidation (the carnitine shuttle) supplying acetyl-CoA to the TCA cycle.",
+    "fdaStatus": "Approved — levocarnitine (Carnitor) for carnitine deficiency; also a supplement",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-lemon-bottle",
+    "slug": "lemon-bottle",
+    "name": "Lemon Bottle",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Lipolytic solution blend combining riboflavin and lipotropic cofactors, supplied as a sterile liquid. Supplied as a sterile solution.",
+    "laymanSummary": "Lipolytic solution blend combining riboflavin and lipotropic cofactors, supplied as a sterile liquid.",
+    "longDescription": "Lemon Bottle — Lipolytic solution blend combining riboflavin and lipotropic cofactors, supplied as a sterile liquid.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/lemon-bottle.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Sterile solution"
+      },
+      {
+        "label": "Volume",
+        "value": "10ml"
+      },
+      {
+        "label": "Storage",
+        "value": "2–8°C, protect from light"
+      }
+    ],
+    "sku": "VSR-RS-LMB",
+    "abbreviation": "LMB",
+    "family": "Lipolytic Solution",
+    "variants": [
+      {
+        "dose": "10ml"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "2–8°C, protect from light",
+    "shelfLifeMonths": 18,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Cold-chain, 2–8°C",
+    "researchClassification": "antioxidant-beauty",
+    "mechanismSummary": "A proprietary multi-ingredient injectable lipolytic (\"fat-dissolving\") solution whose stated actives include riboflavin (vitamin B2), lecithin, and bromelain plus botanical extracts. The marketing claim is enzymatic/emulsifying breakdown of adipocyte membranes and accelerated fat metabolism.",
+    "receptorActivity": "Not applicable — a formulation rather than a single receptor-active molecule; no defined receptor target.",
+    "pathwaySummary": "Marketed as acting via lipolysis/adipocyte-membrane disruption and fat metabolism; no rigorously established mechanism or pathway.",
+    "fdaStatus": "Not approved — unapproved injectable formulation",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-lipo-c",
+    "slug": "lipo-c",
+    "name": "Lipo-C",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Lipotropic solution combining methionine, inositol, choline and related cofactors. Supplied as a sterile solution.",
+    "laymanSummary": "Lipotropic solution combining methionine, inositol, choline and related cofactors.",
+    "longDescription": "Lipo-C — Lipotropic solution combining methionine, inositol, choline and related cofactors.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/lipo-c.svg"
+    ],
+    "specs": [
+      {
+        "label": "Form",
+        "value": "Sterile solution"
+      },
+      {
+        "label": "Volume",
+        "value": "10ml"
+      },
+      {
+        "label": "Storage",
+        "value": "2–8°C, protect from light"
+      }
+    ],
+    "sku": "VSR-RS-LIPC",
+    "abbreviation": "LIPC",
+    "family": "Lipotropic Blend",
+    "variants": [
+      {
+        "dose": "10ml"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "blend",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "2–8°C, protect from light",
+    "shelfLifeMonths": 18,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Cold-chain, 2–8°C",
+    "researchClassification": "metabolic-cofactor",
+    "mechanismSummary": "A compounded lipotropic (\"MIC\") injection typically containing methionine, inositol, choline, and B-vitamins. The lipotropic components are proposed to support hepatic lipid metabolism and fat mobilisation — methionine as a methyl donor, choline for phospholipid/VLDL export, inositol in lipid signalling.",
+    "receptorActivity": "No single receptor or enzyme target — activity derives from the separate metabolic roles of its constituent nutrients.",
+    "pathwaySummary": "Constituents feed into hepatic one-carbon/methylation metabolism and lipid-transport pathways; no unified receptor-mediated pathway.",
+    "fdaStatus": "Not approved — compounded nutritional injection",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-ll-37",
+    "slug": "ll-37",
+    "name": "LL-37",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Human cathelicidin-derived 37-residue antimicrobial host-defence peptide. Lyophilized, research grade.",
+    "laymanSummary": "LL-37 is the body's own **antimicrobial peptide** — a frontline host-defense molecule that disrupts microbes and ~supports wound healing~. A core tool in *innate-immunity and infection* research.",
+    "longDescription": "LL-37 — Human cathelicidin-derived 37-residue antimicrobial host-defence peptide.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ll-37.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-LL37",
+    "abbreviation": "LL37",
+    "family": "Antimicrobial Peptide",
+    "variants": [
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "immunomodulatory",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "immunomodulatory",
+    "productType": "peptide",
+    "casNumber": "154947-66-7",
+    "molecularWeight": "4493.33 g/mol",
+    "mechanismSummary": "The sole human cathelicidin antimicrobial peptide — a 37-residue cationic amphipathic peptide cleaved from the hCAP-18 precursor. It directly disrupts microbial membranes and exerts broad immunomodulatory and wound-healing effects.",
+    "receptorActivity": "Signals through receptors including FPR2 and P2X7 and modulates Toll-like receptor responses; also directly permeabilises microbial membranes independent of a receptor.",
+    "pathwaySummary": "Promotes chemotaxis, angiogenesis, and re-epithelialisation while modulating inflammatory signalling (FPR2–MAPK, TLR pathways), supporting innate immunity and tissue repair.",
+    "fdaStatus": "Not FDA-approved — investigational",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "LL-37 Enhances Healing of Hard-to-Heal Venous Leg Ulcers: A Randomized, Placebo-Controlled Trial",
+        "source": "Wound Repair and Regeneration",
+        "year": 2014,
+        "model": "human",
+        "phase": "Phase 1/2a"
+      },
+      {
+        "title": "Intratumoral LL-37 in Patients with Melanoma (first-in-human)",
+        "source": "ClinicalTrials.gov · NCT02225366",
+        "year": 2015,
+        "model": "human",
+        "phase": "Phase 1"
+      }
+    ]
+  },
+  {
+    "id": "rs-mazdutide",
+    "slug": "mazdutide",
+    "name": "Mazdutide",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Dual GLP-1 and glucagon receptor agonist studied in metabolic research models. Lyophilized, research grade.",
+    "laymanSummary": "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon arm adds an ~energy-burning~ boost on top of GLP-1's appetite control — studied for *weight and metabolic* outcomes.",
+    "longDescription": "Mazdutide — Dual GLP-1 and glucagon receptor agonist studied in metabolic research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/mazdutide.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MZD",
+    "abbreviation": "MZD",
+    "family": "GLP-1 / Glucagon Agonist",
+    "variants": [
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "glp1-appetite",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "glp1-appetite",
+    "productType": "peptide",
+    "casNumber": "2259884-03-0",
+    "molecularWeight": "4563.14 g/mol",
+    "mechanismSummary": "Synthetic long-acting oxyntomodulin analogue acting as a dual GLP-1 and glucagon receptor agonist. GLP-1R agonism enhances glucose-dependent insulin secretion and suppresses appetite, while glucagon-receptor agonism raises energy expenditure and lipolysis.",
+    "receptorActivity": "Balanced co-agonist at GLP-1R and the glucagon receptor (GCGR); a dual incretin–glucagon agonist rather than a single-receptor agent.",
+    "pathwaySummary": "Both receptors are Gs-coupled GPCRs; agonism raises cAMP/PKA signalling in pancreatic β-cells, hepatocytes, adipocytes, and hypothalamic neurons.",
+    "fdaStatus": "Approved in China (2025); investigational elsewhere — not FDA-approved",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Once-Weekly Mazdutide in Chinese Adults with Obesity or Overweight (GLORY-1)",
+        "source": "NEJM",
+        "year": 2025,
+        "model": "human",
+        "phase": "Phase 3"
+      },
+      {
+        "title": "GLP-1/Glucagon Dual Agonist Mazdutide (IBI362) in Chinese Adults with Overweight or Obesity",
+        "source": "eClinicalMedicine (Lancet)",
+        "year": 2022,
+        "model": "human",
+        "phase": "Phase 1b"
+      }
+    ]
+  },
+  {
+    "id": "rs-melanotan-1",
+    "slug": "melanotan-1",
+    "name": "Melanotan I",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Linear α-MSH analogue (afamelanotide) studied for melanogenesis and photoprotection research. Lyophilized, research grade.",
+    "laymanSummary": "Melanotan I is an **α-MSH** analogue that ~stimulates the skin's own pigment~ for *photoprotection* research — more targeted than Melanotan II, acting mainly on tanning pathways.",
+    "longDescription": "Melanotan I — Linear α-MSH analogue (afamelanotide) studied for melanogenesis and photoprotection research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/melanotan-1.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MT1",
+    "abbreviation": "MT1",
+    "family": "Melanocortin Agonist",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "productType": "peptide",
+    "casNumber": "75921-69-6",
+    "molecularWeight": "1646.85 g/mol",
+    "mechanismSummary": "A synthetic 13-amino-acid analogue of α-MSH (afamelanotide). It stimulates eumelanin production in the skin independent of UV exposure, providing photoprotection.",
+    "receptorActivity": "Potent agonist of the melanocortin-1 receptor (MC1R) on melanocytes, driving melanogenesis.",
+    "pathwaySummary": "Activates MC1R–cAMP signalling, upregulating tyrosinase and eumelanin synthesis.",
+    "fdaStatus": "Approved — Scenesse (2019), erythropoietic protoporphyria",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Afamelanotide for Erythropoietic Protoporphyria",
+        "source": "NEJM",
+        "year": 2015,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-melanotan-2",
+    "slug": "melanotan-2",
+    "name": "Melanotan II",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Cyclic α-MSH analogue studied for melanogenesis and broad melanocortin-receptor research. Lyophilized, research grade.",
+    "laymanSummary": "Melanotan II is a broad **melanocortin** agonist studied for ~skin tanning~ and, through brain receptors, *libido* — more potent and less selective than Melanotan I.",
+    "longDescription": "Melanotan II — Cyclic α-MSH analogue studied for melanogenesis and broad melanocortin-receptor research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/melanotan-2.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MT2",
+    "abbreviation": "MT2",
+    "family": "Melanocortin Agonist",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "productType": "peptide",
+    "casNumber": "121062-08-6",
+    "molecularWeight": "1024.18 g/mol",
+    "mechanismSummary": "A synthetic cyclic analogue of α-MSH that stimulates melanogenesis (tanning) and has effects on libido and appetite. It is a non-selective melanocortin-receptor agonist.",
+    "receptorActivity": "Non-selective agonist across melanocortin receptors (MC1R, MC3R, MC4R, MC5R); MC1R activity drives pigmentation and MC4R activity underlies sexual/appetite effects.",
+    "pathwaySummary": "Activates melanocortin-receptor cAMP signalling, driving both peripheral melanogenesis (MC1R) and central MC4R-mediated effects.",
+    "fdaStatus": "Not approved — regulatory warnings issued against unapproved use",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-mgf",
+    "slug": "mgf",
+    "name": "MGF",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Mechano growth factor — an IGF-1 splice variant (IGF-1Ec) studied in muscle-repair research. Lyophilized, research grade.",
+    "laymanSummary": "MGF (Mechano Growth Factor) is a **muscle-repair** splice variant of IGF-1 released when muscle is stressed. Studied for ~activating muscle stem cells~ and local regeneration.",
+    "longDescription": "MGF — Mechano growth factor — an IGF-1 splice variant (IGF-1Ec) studied in muscle-repair research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/mgf.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MGF",
+    "abbreviation": "MGF",
+    "family": "Growth Factor",
+    "variants": [
+      {
+        "dose": "2mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "growth-factor-anabolic",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "growth-factor-anabolic",
+    "productType": "peptide",
+    "mechanismSummary": "A splice variant of the IGF-1 gene (IGF-1Ec) expressed in response to mechanical loading and tissue damage; the common research peptide is the ~24-residue C-terminal E-domain fragment. It is thought to act locally to activate satellite (muscle stem) cells and promote proliferation and tissue repair.",
+    "receptorActivity": "The mature IGF-1 portion of the full splice variant binds IGF-1R; the distinct C-terminal E-domain (MGF) peptide appears to act through a separate, incompletely characterised mechanism.",
+    "pathwaySummary": "Full IGF-1Ec signals via IGF-1R–PI3K/Akt and MAPK; the E-domain MGF peptide is implicated in satellite-cell activation through a partly IGF-1R-independent pathway.",
+    "fdaStatus": "Not approved — research / preclinical only",
+    "humanTrialsConfirmed": false,
+    "knownStudies": [
+      {
+        "title": "IGF-1Ec / Mechano Growth Factor — a Splice Variant of IGF-1 within the Growth Plate",
+        "source": "PLOS ONE",
+        "year": 2013,
+        "model": "in-vitro",
+        "phase": "Preclinical"
+      },
+      {
+        "title": "Mechano Growth Factor Promotes Neurogenesis in the Aging Mouse Brain",
+        "source": "Molecular Brain",
+        "year": 2017,
+        "model": "in-vivo",
+        "phase": "Preclinical"
+      }
+    ]
+  },
+  {
+    "id": "rs-mk-677",
+    "slug": "mk-677",
+    "name": "MK-677",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Orally-active non-peptide ghrelin-mimetic (ibutamoren) GHS-R agonist studied for sustained GH/IGF-1 elevation. Lyophilized, research grade.",
+    "laymanSummary": "MK-677 (ibutamoren) is an **oral, non-peptide** ghrelin-mimetic that raises growth hormone and IGF-1 for a *full 24 hours* per dose. Its convenience makes it one of the most-studied GH secretagogues for ~sustained GH/IGF-1 elevation~.",
+    "longDescription": "MK-677 — Orally-active non-peptide ghrelin-mimetic (ibutamoren) GHS-R agonist studied for sustained GH/IGF-1 elevation.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/mk-677.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MK",
+    "abbreviation": "MK",
+    "family": "GH Secretagogue",
+    "variants": [
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "casNumber": "159752-10-0",
+    "molecularWeight": "528.66 g/mol",
+    "mechanismSummary": "A non-peptide, orally active, long-acting ghrelin-receptor agonist (ibutamoren) built on a spiro-indoline-piperidine scaffold. It mimics ghrelin at the GHS receptor to produce sustained increases in GH and IGF-1 without raising cortisol, owing to oral bioavailability and a long half-life.",
+    "receptorActivity": "Selective non-peptide agonist of the GHS-R1a (ghrelin) receptor; does not appreciably activate cortisol pathways.",
+    "pathwaySummary": "GHS-R1a engages Gq–PLC–IP3-calcium signalling in pituitary somatotrophs, stimulating GH release and downstream hepatic IGF-1.",
+    "fdaStatus": "Not approved — investigational (discontinued); WADA-prohibited",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Oral Ghrelin Mimetic (MK-677) on Body Composition in Healthy Older Adults: A Randomized Trial",
+        "source": "Annals of Internal Medicine",
+        "year": 2008,
+        "model": "human",
+        "phase": "Phase 2"
+      }
+    ]
+  },
+  {
+    "id": "rs-mots-c",
+    "slug": "mots-c",
+    "name": "MOTS-c",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Mitochondrial-derived peptide investigated in metabolic homeostasis and AMPK-pathway research. Lyophilized, research grade.",
+    "laymanSummary": "MOTS-c is a rare **mitochondrial-derived peptide** — encoded by the mitochondria themselves. It switches on **AMPK**, the body's metabolic master-sensor, and is studied as an *exercise-mimetic* that ~improves insulin sensitivity~.",
+    "longDescription": "MOTS-c — Mitochondrial-derived peptide investigated in metabolic homeostasis and AMPK-pathway research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/mots-c.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 – 40 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-MOTS",
+    "abbreviation": "MOTS",
+    "family": "Mitochondrial Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "20mg"
+      },
+      {
+        "dose": "40mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "productType": "peptide",
+    "casNumber": "1627580-64-7",
+    "molecularWeight": "2174.62 g/mol",
+    "mechanismSummary": "A 16-amino-acid mitochondrial-derived peptide encoded within the mitochondrial 12S rRNA region. It inhibits the folate–methionine cycle and de novo purine biosynthesis, raising the AMP:ATP ratio and activating AMPK; it can also translocate to the nucleus to regulate stress-responsive gene expression.",
+    "receptorActivity": "Not a defined receptor agonist; acts intracellularly with AMPK as the principal downstream effector and modulation of folate one-carbon metabolism.",
+    "pathwaySummary": "Activates the AMPK energy-sensing pathway, enhancing glucose uptake, fatty-acid oxidation, and metabolic stress resistance.",
+    "fdaStatus": "Preclinical / research only",
+    "humanTrialsConfirmed": false,
+    "knownStudies": [
+      {
+        "title": "The Mitochondrial-Derived Peptide MOTS-c Promotes Metabolic Homeostasis and Reduces Obesity and Insulin Resistance",
+        "source": "Cell Metabolism",
+        "year": 2015,
+        "model": "in-vivo",
+        "phase": "Preclinical"
+      }
+    ]
+  },
+  {
+    "id": "rs-nad-plus",
+    "slug": "nad-plus",
+    "name": "NAD+",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Nicotinamide adenine dinucleotide — a central redox cofactor in cellular energy metabolism. Lyophilized, research grade.",
+    "laymanSummary": "NAD+ is the cell's master **energy and repair** coenzyme — it powers the mitochondria and fuels the *sirtuin* longevity enzymes. Levels ~fall with age~, which is why it anchors so much *anti-aging and metabolic* research aimed at ~restoring cellular energy~.",
+    "longDescription": "NAD+ — Nicotinamide adenine dinucleotide — a central redox cofactor in cellular energy metabolism.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/nad-plus.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "100 – 1000 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-NAD",
+    "abbreviation": "NAD",
+    "family": "Metabolic Cofactor",
+    "variants": [
+      {
+        "dose": "100mg"
+      },
+      {
+        "dose": "500mg"
+      },
+      {
+        "dose": "1000mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "casNumber": "53-84-9",
+    "molecularWeight": "663.43 g/mol",
+    "mechanismSummary": "A fundamental coenzyme that carries electrons in redox reactions, cycling between NAD+ and NADH across glycolysis, the TCA cycle, and oxidative phosphorylation. Beyond redox, it is a consumed substrate for sirtuins, PARPs, and CD38 — linking it to gene regulation, DNA repair, and calcium signalling.",
+    "receptorActivity": "Not a receptor ligand; an enzyme cofactor/substrate for oxidoreductases, sirtuins (SIRT1–7), PARP enzymes, and CD38/CD157.",
+    "pathwaySummary": "Central to cellular energy metabolism and to sirtuin- and PARP-dependent signalling governing metabolism, stress response, and DNA repair.",
+    "fdaStatus": "Not an approved drug — endogenous coenzyme / research compound",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-oxytocin-acetate",
+    "slug": "oxytocin-acetate",
+    "name": "Oxytocin Acetate",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Cyclic nonapeptide hormone studied for social-behaviour, parturition and lactation research. Lyophilized, research grade.",
+    "laymanSummary": "Oxytocin is the **'bonding' hormone** — a nine-amino-acid peptide central to *social connection, trust, and lactation*. Widely studied for ~social behavior~ and neuropsychiatric research.",
+    "longDescription": "Oxytocin Acetate — Cyclic nonapeptide hormone studied for social-behaviour, parturition and lactation research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/oxytocin-acetate.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 5 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-OXT",
+    "abbreviation": "OXT",
+    "family": "Neurohypophysial Peptide",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "reproductive-hormonal",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "reproductive-hormonal",
+    "productType": "peptide",
+    "casNumber": "50-56-6",
+    "molecularWeight": "1007.19 g/mol",
+    "mechanismSummary": "An endogenous cyclic nonapeptide hormone synthesised in the hypothalamus and released from the posterior pituitary. It stimulates uterine smooth-muscle contraction during labour and milk ejection during lactation, and has central roles in social/bonding behaviour.",
+    "receptorActivity": "Agonist at the oxytocin receptor (OXTR), a Gq-coupled GPCR; also has weak activity at vasopressin receptors.",
+    "pathwaySummary": "Activates OXTR–Gq/PLC signalling, raising intracellular calcium to drive smooth-muscle contraction.",
+    "fdaStatus": "Approved — Pitocin (labour induction/augmentation, postpartum bleeding)",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-peg-mgf",
+    "slug": "peg-mgf",
+    "name": "PEG-MGF",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "PEGylated mechano growth factor with extended stability, for muscle-repair research. Lyophilized, research grade.",
+    "laymanSummary": "PEG-MGF is **MGF** with a PEG coating that makes the fragile muscle-repair peptide last far longer in circulation — studied for ~muscle recovery and growth~ signaling.",
+    "longDescription": "PEG-MGF — PEGylated mechano growth factor with extended stability, for muscle-repair research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/peg-mgf.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-PMGF",
+    "abbreviation": "PMGF",
+    "family": "Growth Factor",
+    "variants": [
+      {
+        "dose": "2mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "growth-factor-anabolic",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "growth-factor-anabolic",
+    "productType": "peptide",
+    "mechanismSummary": "The synthetic MGF C-terminal peptide covalently conjugated to polyethylene glycol (pegylation), which extends plasma half-life from minutes to potentially days versus unmodified MGF. The biological rationale mirrors MGF — local satellite-cell activation and tissue repair — with PEG added only to improve pharmacokinetic stability.",
+    "receptorActivity": "Putatively the same target profile as MGF: the C-terminal E-domain peptide acts via a partly IGF-1R-independent, incompletely characterised mechanism; pegylation alters pharmacokinetics, not the target.",
+    "pathwaySummary": "Presumed to share MGF’s satellite-cell activation pathway; the conjugated PEG does not itself signal.",
+    "fdaStatus": "Not approved — research only",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-pt-141",
+    "slug": "pt-141",
+    "name": "PT-141",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Melanocortin receptor agonist (bremelanotide) investigated for sexual-function and CNS research. Lyophilized, research grade.",
+    "laymanSummary": "PT-141 (bremelanotide) is a **melanocortin** peptide studied for *sexual function* — uniquely, it works through the **brain** rather than the vascular system.",
+    "longDescription": "PT-141 — Melanocortin receptor agonist (bremelanotide) investigated for sexual-function and CNS research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/pt-141.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-PT41",
+    "abbreviation": "PT41",
+    "family": "Melanocortin Agonist",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "productType": "peptide",
+    "casNumber": "189691-06-3",
+    "molecularWeight": "1025.16 g/mol",
+    "mechanismSummary": "A synthetic cyclic heptapeptide analogue of α-MSH (bremelanotide), derived from a metabolite of melanotan II. It treats hypoactive sexual desire disorder by activating central melanocortin receptors involved in sexual-arousal pathways.",
+    "receptorActivity": "Non-selective melanocortin-receptor agonist active at MC1R and MC3R–MC4R; the hypothalamic MC4 receptor is considered central to its effect on sexual desire.",
+    "pathwaySummary": "Activates hypothalamic melanocortin (MC4R) signalling rather than the vascular pathways targeted by PDE5 inhibitors.",
+    "fdaStatus": "Approved — Vyleesi (2019), hypoactive sexual desire disorder in premenopausal women",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Bremelanotide for Hypoactive Sexual Desire Disorder: Two Randomized Phase 3 Trials (RECONNECT)",
+        "source": "Obstetrics & Gynecology",
+        "year": 2019,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-selank",
+    "slug": "selank",
+    "name": "Selank",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Synthetic tuftsin-derived heptapeptide studied for anxiolytic and cognitive-modulation research. Lyophilized, research grade.",
+    "laymanSummary": "Selank is a Russian **anti-anxiety nootropic** peptide derived from the immune molecule tuftsin. It's studied for ~calm without sedation~ and ~steadier focus~ via the brain's BDNF and GABA systems — a research cousin of *Semax*.",
+    "longDescription": "Selank — Synthetic tuftsin-derived heptapeptide studied for anxiolytic and cognitive-modulation research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/selank.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-SLK",
+    "abbreviation": "SLK",
+    "family": "Nootropic Peptide",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "nootropic-neuroactive",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "nootropic-neuroactive",
+    "productType": "peptide",
+    "casNumber": "129954-34-3",
+    "molecularWeight": "751.91 g/mol",
+    "mechanismSummary": "A synthetic heptapeptide derived from the endogenous immunomodulatory peptide tuftsin, developed in Russia. It is studied as an anxiolytic/nootropic acting via modulation of monoamine and GABAergic signalling and of brain-derived neurotrophic factor (BDNF) expression.",
+    "receptorActivity": "Not a classic single-receptor ligand; reported effects include modulation of GABAergic transmission and influence on serotonin/dopamine metabolism rather than direct high-affinity agonism.",
+    "pathwaySummary": "Implicated in enkephalin-degrading-enzyme inhibition, monoamine metabolism, and BDNF/neurotrophic and immune (interleukin) signalling.",
+    "fdaStatus": "Not FDA-approved; registered as a pharmaceutical in Russia",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-sermorelin",
+    "slug": "sermorelin",
+    "name": "Sermorelin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "GHRH(1-29) analogue that stimulates endogenous pulsatile growth-hormone release. Lyophilized, research grade.",
+    "laymanSummary": "Sermorelin is the classic **GHRH** peptide — the first 29 amino acids of the natural releasing hormone. It gently prompts the pituitary to ~release its own growth hormone~ in a *natural rhythm*.",
+    "longDescription": "Sermorelin — GHRH(1-29) analogue that stimulates endogenous pulsatile growth-hormone release.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/sermorelin.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-SMO",
+    "abbreviation": "SMO",
+    "family": "GHRH Analogue",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "casNumber": "86168-78-7",
+    "molecularWeight": "3357.93 g/mol",
+    "mechanismSummary": "A synthetic 29-amino-acid peptide corresponding to the active N-terminal fragment of human GHRH (GHRH 1-29 NH2), the shortest fully functional GHRH fragment. It binds pituitary GHRH receptors to stimulate synthesis and pulsatile secretion of endogenous growth hormone.",
+    "receptorActivity": "Agonist at the GHRH receptor (GHRHR) on anterior-pituitary somatotrophs; selective for GHRHR.",
+    "pathwaySummary": "Activates the GHRHR–Gs–cAMP–PKA pathway to trigger GH release, raising circulating IGF-1.",
+    "fdaStatus": "Formerly approved — Geref (withdrawn from US market 2002)",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-snap-8",
+    "slug": "snap-8",
+    "name": "SNAP-8",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research. Lyophilized, research grade.",
+    "laymanSummary": "SNAP-8 is a topical **expression-line peptide** (acetyl octapeptide-3). It's studied for ~softening expression wrinkles~ by gently dampening the nerve-muscle signal that creates them.",
+    "longDescription": "SNAP-8 — Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/snap-8.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-SNP8",
+    "abbreviation": "SNP8",
+    "family": "Cosmetic Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "productType": "peptide",
+    "casNumber": "868844-74-0",
+    "molecularWeight": "1075.25 g/mol",
+    "mechanismSummary": "A synthetic octapeptide (acetyl octapeptide-3), an elongated derivative of acetyl hexapeptide-3 (Argireline). It is a cosmetic \"anti-wrinkle\" peptide designed to reduce muscle contraction by interfering with the SNARE complex involved in neurotransmitter release.",
+    "receptorActivity": "Not a receptor agonist; competes with SNAP-25 in the SNARE complex to reduce vesicle docking and neurotransmitter release at the neuromuscular junction (proposed mechanism).",
+    "pathwaySummary": "Proposed inhibition of SNARE-complex-mediated neurotransmitter exocytosis, reducing facial-muscle contraction.",
+    "fdaStatus": "Not an approved drug — topical cosmetic ingredient",
+    "humanTrialsConfirmed": false
+  },
+  {
+    "id": "rs-ss-31",
+    "slug": "ss-31",
+    "name": "SS-31",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Mitochondria-targeting tetrapeptide (elamipretide) that associates with cardiolipin on the inner mitochondrial membrane. Lyophilized, research grade.",
+    "laymanSummary": "SS-31 is a **mitochondria-targeting** peptide that homes in on *cardiolipin*, a lipid inside the cell's power plants. By ~stabilizing failing mitochondria~ and ~cutting oxidative stress~ it's studied for heart, muscle, and *age-related energy* decline.",
+    "longDescription": "SS-31 — Mitochondria-targeting tetrapeptide (elamipretide) that associates with cardiolipin on the inner mitochondrial membrane.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/ss-31.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 – 50 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-SS31",
+    "abbreviation": "SS31",
+    "family": "Mitochondrial Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "50mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "metabolic-cofactor",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "metabolic-cofactor",
+    "productType": "peptide",
+    "casNumber": "736992-21-5",
+    "molecularWeight": "639.79 g/mol",
+    "mechanismSummary": "A cell-permeable, mitochondria-targeting tetrapeptide (elamipretide) that concentrates on the inner mitochondrial membrane by binding cardiolipin. By stabilising cardiolipin–cytochrome-c interactions it preserves cristae structure and electron-transport efficiency, improving ATP output and lowering mitochondrial ROS.",
+    "receptorActivity": "Not a classic receptor ligand; its molecular target is the phospholipid cardiolipin on the inner mitochondrial membrane.",
+    "pathwaySummary": "Acts on the electron-transport chain by stabilising cardiolipin, enhancing oxidative phosphorylation and limiting ROS-mediated damage.",
+    "fdaStatus": "Approved — Forzinity (elamipretide HCl), FDA accelerated approval 2025 for Barth syndrome",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Phase 2/3 Trial of Elamipretide in Barth Syndrome (with open-label extension)",
+        "source": "Genetics in Medicine",
+        "year": 2021,
+        "model": "human",
+        "phase": "Phase 2/3"
+      }
+    ]
+  },
+  {
+    "id": "rs-survodutide",
+    "slug": "survodutide",
+    "name": "Survodutide",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research. Lyophilized, research grade.",
+    "laymanSummary": "Survodutide is a **glucagon + GLP-1** dual agonist drawing attention in *liver (MASH) and obesity* research — the glucagon component is thought to ~directly reduce liver fat~ alongside weight loss.",
+    "longDescription": "Survodutide — Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/survodutide.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-SVD",
+    "abbreviation": "SVD",
+    "family": "GLP-1 / Glucagon Agonist",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "glp1-appetite",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "glp1-appetite",
+    "productType": "peptide",
+    "casNumber": "2805997-46-8",
+    "molecularWeight": "4231.69 g/mol",
+    "mechanismSummary": "Synthetic acylated peptide acting as a dual glucagon and GLP-1 receptor agonist. GLP-1R activation enhances glucose-dependent insulin secretion and reduces appetite, while glucagon-receptor activation raises hepatic energy expenditure and lipid oxidation — reducing body weight and liver fat.",
+    "receptorActivity": "Potent dual GCGR/GLP-1R agonist engineered for balanced dual-receptor activity rather than single-receptor selectivity.",
+    "pathwaySummary": "Both GCGR and GLP-1R are Gs-coupled GPCRs; agonism elevates cAMP/PKA signalling in liver, pancreas, and CNS appetite centres.",
+    "fdaStatus": "Investigational — Phase 3 (FDA Breakthrough Therapy designation for MASH)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Survodutide (BI 456906) in Adults with NASH and Fibrosis (F1–F3)",
+        "source": "ClinicalTrials.gov · NCT04771273",
+        "year": 2021,
+        "model": "human",
+        "phase": "Phase 2"
+      },
+      {
+        "title": "SYNCHRONIZE-1 — Phase 3 obesity trial of survodutide",
+        "source": "ClinicalTrials.gov · NCT06066515",
+        "year": 2023,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-tesamorelin",
+    "slug": "tesamorelin",
+    "name": "Tesamorelin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Stabilized GHRH(1-44) analogue investigated for GH-axis and visceral-adipose research. Lyophilized, research grade.",
+    "laymanSummary": "Tesamorelin is a stabilized **GHRH** analogue best known in research for ~reducing deep visceral belly fat~. It raises the body's own GH and IGF-1, and is the GHRH peptide with the most *human-trial* backing.",
+    "longDescription": "Tesamorelin — Stabilized GHRH(1-44) analogue investigated for GH-axis and visceral-adipose research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/tesamorelin.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "2 – 20 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-TSM",
+    "abbreviation": "TSM",
+    "family": "GHRH Analogue",
+    "variants": [
+      {
+        "dose": "2mg"
+      },
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      },
+      {
+        "dose": "20mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "gh-secretagogue",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "gh-secretagogue",
+    "productType": "peptide",
+    "casNumber": "218949-48-5",
+    "molecularWeight": "5135.86 g/mol",
+    "mechanismSummary": "A synthetic 44-amino-acid GHRH(1-44) analogue stabilised by an N-terminal trans-3-hexenoyl group that resists DPP-IV degradation. It stimulates pituitary GHRH receptors to increase endogenous pulsatile GH secretion and IGF-1, reducing visceral adipose tissue in HIV-associated lipodystrophy.",
+    "receptorActivity": "Selective agonist of the GHRH receptor (GHRHR) on pituitary somatotrophs; no direct action at the ghrelin/GHS receptor.",
+    "pathwaySummary": "GHRHR engagement activates the Gs–cAMP–PKA cascade driving GH release, elevating hepatic IGF-1 and IGFBP-3.",
+    "fdaStatus": "Approved — Egrifta / Egrifta SV (excess abdominal fat in HIV lipodystrophy)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Effects of Tesamorelin (TH9507) in HIV-Infected Patients with Excess Abdominal Fat",
+        "source": "J. Clin. Endocrinol. Metab.",
+        "year": 2010,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-thymalin",
+    "slug": "thymalin",
+    "name": "Thymalin",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Thymic polypeptide preparation investigated for immune-regulatory bioregulator activity. Lyophilized, research grade.",
+    "laymanSummary": "Thymic polypeptide preparation investigated for immune-regulatory bioregulator activity.",
+    "longDescription": "Thymalin — Thymic polypeptide preparation investigated for immune-regulatory bioregulator activity.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/thymalin.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-TYM",
+    "abbreviation": "TYM",
+    "family": "Thymic Peptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "immunomodulatory",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "immunomodulatory",
+    "productType": "peptide",
+    "mechanismSummary": "A polypeptide complex purified from calf/bovine thymus — a thymic peptide fraction rather than a single molecule. It is used as an immune bioregulator believed to restore T-cell-mediated immunity and normalise immune balance.",
+    "receptorActivity": "No defined single-receptor activity; as a heterogeneous peptide mixture it exerts pleiotropic effects on thymocyte/T-cell differentiation.",
+    "pathwaySummary": "Reported to modulate T-lymphocyte differentiation, cytokine balance, and neuroendocrine-immune regulation; molecular pathways are not characterised for the mixture as a whole.",
+    "fdaStatus": "Not FDA-approved; used clinically in Russia / Eastern Europe",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-thymosin-alpha-1",
+    "slug": "thymosin-alpha-1",
+    "name": "Thymosin α-1",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Thymus-derived 28-amino-acid peptide (thymalfasin) studied in immune-modulation research. Lyophilized, research grade.",
+    "laymanSummary": "Thymosin α-1 is a thymus-derived **immune-tuning** peptide. It ~sharpens T-cell responses~ and helps balance the immune system — studied in *infection, vaccine, and immune-recovery* research.",
+    "longDescription": "Thymosin α-1 — Thymus-derived 28-amino-acid peptide (thymalfasin) studied in immune-modulation research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/thymosin-alpha-1.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "5 – 10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-TA1",
+    "abbreviation": "TA1",
+    "family": "Immunomodulatory Peptide",
+    "variants": [
+      {
+        "dose": "5mg"
+      },
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "immunomodulatory",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "immunomodulatory",
+    "productType": "peptide",
+    "casNumber": "62304-98-7",
+    "molecularWeight": "3108.30 g/mol",
+    "mechanismSummary": "A 28-amino-acid acetylated peptide (thymalfasin) originally isolated from thymic tissue. It is an immunomodulator that augments T-cell maturation and function and enhances both innate and adaptive immune responses.",
+    "receptorActivity": "Acts in part through Toll-like receptor signalling (notably TLR9/TLR2) on dendritic and other immune cells; it has no single high-affinity receptor and works pleiotropically.",
+    "pathwaySummary": "Stimulates Th1 cytokine production (IL-2, IFN-γ), promotes dendritic-cell and T-cell maturation, and increases NK-cell activity via TLR-mediated and NF-κB pathways.",
+    "fdaStatus": "Not FDA-approved; approved abroad as Zadaxin (chronic hepatitis B/C)",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Thymosin α-1 plus Interferon-α for Chronic Hepatitis B (meta-analysis)",
+        "source": "Antiviral Therapy",
+        "year": 2009,
+        "model": "human",
+        "phase": "Phase 3"
+      }
+    ]
+  },
+  {
+    "id": "rs-vip",
+    "slug": "vip",
+    "name": "VIP",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Vasoactive intestinal peptide — a 28-residue neuropeptide studied in immune and vascular research. Lyophilized, research grade.",
+    "laymanSummary": "VIP (Vasoactive Intestinal Peptide) is a signaling peptide with broad **anti-inflammatory** and vessel-relaxing roles. It's studied for *immune balance, gut, and chronic-inflammatory* research.",
+    "longDescription": "VIP — Vasoactive intestinal peptide — a 28-residue neuropeptide studied in immune and vascular research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/vip.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
+      },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "10 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-VIP",
+    "abbreviation": "VIP",
+    "family": "Neuropeptide",
+    "variants": [
+      {
+        "dose": "10mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "immunomodulatory",
+      "peptide",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "VSR Synthesis · In-house",
+    "countryOfOrigin": "United States",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "immunomodulatory",
+    "productType": "peptide",
+    "casNumber": "37221-79-7",
+    "molecularWeight": "3326.80 g/mol",
+    "mechanismSummary": "A 28-amino-acid neuropeptide of the secretin/glucagon superfamily that acts as a neurotransmitter/neuromodulator, producing smooth-muscle relaxation, vasodilation, bronchodilation, and broad anti-inflammatory and immunoregulatory effects.",
+    "receptorActivity": "Agonist at the class-B GPCRs VPAC1 and VPAC2 (and, with lower affinity, PAC1), which are Gs-coupled.",
+    "pathwaySummary": "Receptor activation raises cAMP via adenylate cyclase/PKA, driving smooth-muscle relaxation and downregulation of pro-inflammatory cytokines with expansion of regulatory T cells.",
+    "fdaStatus": "Native VIP not approved; analogue aviptadil holds Orphan Drug designation",
+    "humanTrialsConfirmed": true,
+    "knownStudies": [
+      {
+        "title": "Inhaled Vasoactive Intestinal Peptide Exerts Immunoregulatory Effects in Sarcoidosis",
+        "source": "Am. J. Respir. Crit. Care Med.",
+        "year": 2010,
+        "model": "human",
+        "phase": "Phase 2"
+      }
+    ]
+  }
+]

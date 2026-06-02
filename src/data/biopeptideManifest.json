@@ -1,0 +1,1150 @@
+[
+  {
+    "serial": 1,
+    "abbreviation": "TR5",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "5mg"
+  },
+  {
+    "serial": 2,
+    "abbreviation": "TR10",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 3,
+    "abbreviation": "TR15",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "15mg"
+  },
+  {
+    "serial": 4,
+    "abbreviation": "TR20",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "20mg"
+  },
+  {
+    "serial": 5,
+    "abbreviation": "TR30",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "30mg"
+  },
+  {
+    "serial": 6,
+    "abbreviation": "TR40",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "40mg"
+  },
+  {
+    "serial": 7,
+    "abbreviation": "TR50",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "50mg"
+  },
+  {
+    "serial": 8,
+    "abbreviation": "TR60",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "60mg"
+  },
+  {
+    "serial": 9,
+    "abbreviation": "TR100",
+    "model": "Tirzepatide",
+    "group": "glp1-appetite",
+    "specification": "100mg"
+  },
+  {
+    "serial": 10,
+    "abbreviation": "RT5",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "5mg"
+  },
+  {
+    "serial": 11,
+    "abbreviation": "RT10",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 12,
+    "abbreviation": "RT15",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "15mg"
+  },
+  {
+    "serial": 13,
+    "abbreviation": "RT20",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "20mg"
+  },
+  {
+    "serial": 14,
+    "abbreviation": "RT30",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "30mg"
+  },
+  {
+    "serial": 15,
+    "abbreviation": "RT40",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "40mg"
+  },
+  {
+    "serial": 16,
+    "abbreviation": "RT50",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "50mg"
+  },
+  {
+    "serial": 17,
+    "abbreviation": "RT60",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "60mg"
+  },
+  {
+    "serial": 18,
+    "abbreviation": "RT100",
+    "model": "Retatrutide",
+    "group": "glp1-appetite",
+    "specification": "100mg"
+  },
+  {
+    "serial": 19,
+    "abbreviation": "NJ100",
+    "model": "NAD+",
+    "group": "metabolic-cofactor",
+    "specification": "100mg"
+  },
+  {
+    "serial": 20,
+    "abbreviation": "NJ500",
+    "model": "NAD+",
+    "group": "metabolic-cofactor",
+    "specification": "500mg"
+  },
+  {
+    "serial": 21,
+    "abbreviation": "NJ1000",
+    "model": "NAD+",
+    "group": "metabolic-cofactor",
+    "specification": "1000mg"
+  },
+  {
+    "serial": 22,
+    "abbreviation": "BT2",
+    "model": "TB500 (Thymosin β4 Acetate)",
+    "group": "regenerative",
+    "specification": "2mg"
+  },
+  {
+    "serial": 23,
+    "abbreviation": "BT5",
+    "model": "TB500 (Thymosin β4 Acetate)",
+    "group": "regenerative",
+    "specification": "5mg"
+  },
+  {
+    "serial": 24,
+    "abbreviation": "BT10",
+    "model": "TB500 (Thymosin β4 Acetate)",
+    "group": "regenerative",
+    "specification": "10mg"
+  },
+  {
+    "serial": 25,
+    "abbreviation": "BP5",
+    "model": "BPC 157",
+    "group": "regenerative",
+    "specification": "5mg"
+  },
+  {
+    "serial": 26,
+    "abbreviation": "BP10",
+    "model": "BPC 157",
+    "group": "regenerative",
+    "specification": "10mg"
+  },
+  {
+    "serial": 27,
+    "abbreviation": "KPV5",
+    "model": "Lysine-Proline-Valine",
+    "group": "immunomodulatory",
+    "specification": "5mg"
+  },
+  {
+    "serial": 28,
+    "abbreviation": "KPV10",
+    "model": "Lysine-Proline-Valine",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 29,
+    "abbreviation": "IP2",
+    "model": "Ipamorelin",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 30,
+    "abbreviation": "IP5",
+    "model": "Ipamorelin",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 31,
+    "abbreviation": "IP10",
+    "model": "Ipamorelin",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 32,
+    "abbreviation": "SK5",
+    "model": "Selank",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 33,
+    "abbreviation": "SK10",
+    "model": "Selank",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 34,
+    "abbreviation": "SX5 / XA5",
+    "model": "Semax",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 35,
+    "abbreviation": "SX10 / XA10",
+    "model": "Semax",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 36,
+    "abbreviation": "CP10",
+    "model": "CJC-1295 no DAC 5mg + IPA 5mg",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 37,
+    "abbreviation": "CD5",
+    "model": "CJC-1295 with DAC",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 38,
+    "abbreviation": "CD10",
+    "model": "CJC-1295 with DAC",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 39,
+    "abbreviation": "CND2",
+    "model": "CJC-1295 no DAC",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 40,
+    "abbreviation": "CND5",
+    "model": "CJC-1295 no DAC",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 41,
+    "abbreviation": "CND10",
+    "model": "CJC-1295 no DAC",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 43,
+    "abbreviation": "KLW80",
+    "model": "Blend: CU 50mg + TB 10mg + BC 10mg + KPV 1mg",
+    "group": "antioxidant-beauty",
+    "specification": "80mg"
+  },
+  {
+    "serial": 44,
+    "abbreviation": "2S10",
+    "model": "SS-31",
+    "group": "metabolic-cofactor",
+    "specification": "10mg"
+  },
+  {
+    "serial": 45,
+    "abbreviation": "2S50",
+    "model": "SS-31",
+    "group": "metabolic-cofactor",
+    "specification": "50mg"
+  },
+  {
+    "serial": 46,
+    "abbreviation": "TSM2",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 47,
+    "abbreviation": "TSM5",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 48,
+    "abbreviation": "TSM10",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 49,
+    "abbreviation": "TSM20",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "20mg"
+  },
+  {
+    "serial": 50,
+    "abbreviation": "BB10",
+    "model": "Blend: BPC 5mg + TB 5mg",
+    "group": "regenerative",
+    "specification": "10mg"
+  },
+  {
+    "serial": 51,
+    "abbreviation": "BB20",
+    "model": "Blend: BPC + TB",
+    "group": "regenerative",
+    "specification": "20mg"
+  },
+  {
+    "serial": 52,
+    "abbreviation": "MS10",
+    "model": "MOTS-C",
+    "group": "metabolic-cofactor",
+    "specification": "10mg"
+  },
+  {
+    "serial": 53,
+    "abbreviation": "MS20",
+    "model": "MOTS-C",
+    "group": "metabolic-cofactor",
+    "specification": "20mg"
+  },
+  {
+    "serial": 54,
+    "abbreviation": "MS40",
+    "model": "MOTS-C",
+    "group": "metabolic-cofactor",
+    "specification": "40mg"
+  },
+  {
+    "serial": 55,
+    "abbreviation": "DS2",
+    "model": "DSIP",
+    "group": "nootropic-neuroactive",
+    "specification": "2mg"
+  },
+  {
+    "serial": 56,
+    "abbreviation": "DS5",
+    "model": "DSIP",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 57,
+    "abbreviation": "DS10",
+    "model": "DSIP",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 58,
+    "abbreviation": "LC216",
+    "model": "Lipo-C",
+    "group": "metabolic-cofactor",
+    "specification": "10ml"
+  },
+  {
+    "serial": 59,
+    "abbreviation": "BBG70",
+    "model": "Glow Blend: TB 10mg + BPC-157 10mg + GHK 50mg",
+    "group": "antioxidant-beauty",
+    "specification": "70mg"
+  },
+  {
+    "serial": 60,
+    "abbreviation": "BC2",
+    "model": "BPC 157 Acetate",
+    "group": "regenerative",
+    "specification": "2mg"
+  },
+  {
+    "serial": 61,
+    "abbreviation": "BC5",
+    "model": "BPC 157",
+    "group": "regenerative",
+    "specification": "5mg"
+  },
+  {
+    "serial": 62,
+    "abbreviation": "BC10",
+    "model": "BPC 157",
+    "group": "regenerative",
+    "specification": "10mg"
+  },
+  {
+    "serial": 63,
+    "abbreviation": "P41",
+    "model": "PT-141",
+    "group": "antioxidant-beauty",
+    "specification": "10mg"
+  },
+  {
+    "serial": 64,
+    "abbreviation": "2AD",
+    "model": "AOD-9604",
+    "group": "metabolic-cofactor",
+    "specification": "2mg"
+  },
+  {
+    "serial": 65,
+    "abbreviation": "5AD",
+    "model": "AOD-9604",
+    "group": "metabolic-cofactor",
+    "specification": "5mg"
+  },
+  {
+    "serial": 66,
+    "abbreviation": "10AD",
+    "model": "AOD-9604",
+    "group": "metabolic-cofactor",
+    "specification": "10mg"
+  },
+  {
+    "serial": 67,
+    "abbreviation": "H10",
+    "model": "HGH",
+    "group": "growth-factor-anabolic",
+    "specification": "10mg"
+  },
+  {
+    "serial": 68,
+    "abbreviation": "H12",
+    "model": "HGH",
+    "group": "growth-factor-anabolic",
+    "specification": "12mg"
+  },
+  {
+    "serial": 69,
+    "abbreviation": "H15",
+    "model": "HGH",
+    "group": "growth-factor-anabolic",
+    "specification": "15mg"
+  },
+  {
+    "serial": 70,
+    "abbreviation": "H24",
+    "model": "HGH",
+    "group": "growth-factor-anabolic",
+    "specification": "24mg"
+  },
+  {
+    "serial": 71,
+    "abbreviation": "H36",
+    "model": "HGH",
+    "group": "growth-factor-anabolic",
+    "specification": "36mg"
+  },
+  {
+    "serial": 72,
+    "abbreviation": "2S10",
+    "model": "SS-31",
+    "group": "metabolic-cofactor",
+    "specification": "10mg"
+  },
+  {
+    "serial": 73,
+    "abbreviation": "2S50",
+    "model": "SS-31",
+    "group": "metabolic-cofactor",
+    "specification": "50mg"
+  },
+  {
+    "serial": 74,
+    "abbreviation": "CGL5",
+    "model": "Cagrilintide",
+    "group": "glp1-appetite",
+    "specification": "5mg"
+  },
+  {
+    "serial": 75,
+    "abbreviation": "CGL10",
+    "model": "Cagrilintide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 76,
+    "abbreviation": "CU50",
+    "model": "GHK-Cu",
+    "group": "antioxidant-beauty",
+    "specification": "50mg"
+  },
+  {
+    "serial": 77,
+    "abbreviation": "CU100",
+    "model": "GHK-Cu",
+    "group": "antioxidant-beauty",
+    "specification": "100mg"
+  },
+  {
+    "serial": 78,
+    "abbreviation": "CS5",
+    "model": "Cagrilintide 5mg + Semaglutide 5mg",
+    "group": "glp1-appetite",
+    "specification": "5mg"
+  },
+  {
+    "serial": 79,
+    "abbreviation": "CS10",
+    "model": "Cagrilintide + Semaglutide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 80,
+    "abbreviation": "CND2",
+    "model": "CJC-1295 without DAC",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 81,
+    "abbreviation": "CND5",
+    "model": "CJC-1295 without DAC",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 82,
+    "abbreviation": "CND10",
+    "model": "CJC-1295 without DAC",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 83,
+    "abbreviation": "CD2",
+    "model": "CJC-1295 with DAC",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 84,
+    "abbreviation": "CD5",
+    "model": "CJC-1295 with DAC",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 85,
+    "abbreviation": "CD10",
+    "model": "CJC-1295 with DAC",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 86,
+    "abbreviation": "MT1",
+    "model": "Melanotan I",
+    "group": "antioxidant-beauty",
+    "specification": "10mg"
+  },
+  {
+    "serial": 87,
+    "abbreviation": "MT-2 / ML10",
+    "model": "Melanotan II",
+    "group": "antioxidant-beauty",
+    "specification": "10mg"
+  },
+  {
+    "serial": 88,
+    "abbreviation": "KP10",
+    "model": "KPV",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 89,
+    "abbreviation": "WA3",
+    "model": "Bacteriostatic Water",
+    "group": "supply",
+    "specification": "3ml"
+  },
+  {
+    "serial": 90,
+    "abbreviation": "WA10",
+    "model": "Bacteriostatic Water",
+    "group": "supply",
+    "specification": "10ml"
+  },
+  {
+    "serial": 91,
+    "abbreviation": "SMO5",
+    "model": "Sermorelin",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 92,
+    "abbreviation": "SMO10",
+    "model": "Sermorelin",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 93,
+    "abbreviation": "TSM2",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 94,
+    "abbreviation": "TSM5",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 95,
+    "abbreviation": "TSM10",
+    "model": "Tesamorelin",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 96,
+    "abbreviation": "IG01",
+    "model": "IGF-1 LR3",
+    "group": "growth-factor-anabolic",
+    "specification": "0.1mg"
+  },
+  {
+    "serial": 97,
+    "abbreviation": "IG1",
+    "model": "IGF-1 LR3",
+    "group": "growth-factor-anabolic",
+    "specification": "1mg"
+  },
+  {
+    "serial": 98,
+    "abbreviation": "LB",
+    "model": "Lemon Bottle",
+    "group": "antioxidant-beauty",
+    "specification": "10ml"
+  },
+  {
+    "serial": 99,
+    "abbreviation": "LC600",
+    "model": "L-Carnitine",
+    "group": "metabolic-cofactor",
+    "specification": "600mg / 10ml"
+  },
+  {
+    "serial": 100,
+    "abbreviation": "LC1200",
+    "model": "L-Carnitine",
+    "group": "metabolic-cofactor",
+    "specification": "1200mg / 10ml"
+  },
+  {
+    "serial": 101,
+    "abbreviation": "ET10",
+    "model": "Epitalon",
+    "group": "bioregulator",
+    "specification": "10mg"
+  },
+  {
+    "serial": 102,
+    "abbreviation": "ET50",
+    "model": "Epitalon",
+    "group": "bioregulator",
+    "specification": "50mg"
+  },
+  {
+    "serial": 103,
+    "abbreviation": "G75",
+    "model": "HMG",
+    "group": "reproductive-hormonal",
+    "specification": "75mg"
+  },
+  {
+    "serial": 104,
+    "abbreviation": "MDT10",
+    "model": "Mazdutide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 105,
+    "abbreviation": "AP2",
+    "model": "Adipotide",
+    "group": "metabolic-cofactor",
+    "specification": "2mg"
+  },
+  {
+    "serial": 106,
+    "abbreviation": "AP5",
+    "model": "Adipotide",
+    "group": "metabolic-cofactor",
+    "specification": "5mg"
+  },
+  {
+    "serial": 107,
+    "abbreviation": "XA5",
+    "model": "Semax",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 108,
+    "abbreviation": "XA10",
+    "model": "Semax",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 109,
+    "abbreviation": "RA10",
+    "model": "ARA 290",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 110,
+    "abbreviation": "DS5",
+    "model": "DSIP",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 111,
+    "abbreviation": "DS10",
+    "model": "DSIP",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 112,
+    "abbreviation": "GND2",
+    "model": "Gonadorelin",
+    "group": "reproductive-hormonal",
+    "specification": "2mg"
+  },
+  {
+    "serial": 113,
+    "abbreviation": "HX2",
+    "model": "Hexarelin Acetate",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 114,
+    "abbreviation": "HX5",
+    "model": "Hexarelin Acetate",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 115,
+    "abbreviation": "KS5",
+    "model": "Kisspeptin-10",
+    "group": "reproductive-hormonal",
+    "specification": "5mg"
+  },
+  {
+    "serial": 116,
+    "abbreviation": "KS10",
+    "model": "Kisspeptin-10",
+    "group": "reproductive-hormonal",
+    "specification": "10mg"
+  },
+  {
+    "serial": 117,
+    "abbreviation": "OT2",
+    "model": "Oxytocin Acetate",
+    "group": "reproductive-hormonal",
+    "specification": "2mg"
+  },
+  {
+    "serial": 118,
+    "abbreviation": "OT5",
+    "model": "Oxytocin Acetate",
+    "group": "reproductive-hormonal",
+    "specification": "5mg"
+  },
+  {
+    "serial": 119,
+    "abbreviation": "SK5",
+    "model": "Selank",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 120,
+    "abbreviation": "SK10",
+    "model": "Selank",
+    "group": "nootropic-neuroactive",
+    "specification": "10mg"
+  },
+  {
+    "serial": 121,
+    "abbreviation": "TA5",
+    "model": "Thymosin α-1",
+    "group": "immunomodulatory",
+    "specification": "5mg"
+  },
+  {
+    "serial": 122,
+    "abbreviation": "TA10",
+    "model": "Thymosin α-1",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 123,
+    "abbreviation": "TY10",
+    "model": "Thymalin",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 124,
+    "abbreviation": "GND2",
+    "model": "Gonadorelin Acetate",
+    "group": "reproductive-hormonal",
+    "specification": "2mg"
+  },
+  {
+    "serial": 125,
+    "abbreviation": "AR50",
+    "model": "AICAR",
+    "group": "metabolic-cofactor",
+    "specification": "50mg"
+  },
+  {
+    "serial": 126,
+    "abbreviation": "G25",
+    "model": "GHRP-2 Acetate",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 127,
+    "abbreviation": "G210",
+    "model": "GHRP-2 Acetate",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 128,
+    "abbreviation": "G65",
+    "model": "GHRP-6 Acetate",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 129,
+    "abbreviation": "G610",
+    "model": "GHRP-6 Acetate",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 130,
+    "abbreviation": "DR5",
+    "model": "Dermorphin",
+    "group": "nootropic-neuroactive",
+    "specification": "5mg"
+  },
+  {
+    "serial": 131,
+    "abbreviation": "GTT600",
+    "model": "Glutathione",
+    "group": "antioxidant-beauty",
+    "specification": "600mg"
+  },
+  {
+    "serial": 132,
+    "abbreviation": "GTT1500",
+    "model": "Glutathione",
+    "group": "antioxidant-beauty",
+    "specification": "1500mg"
+  },
+  {
+    "serial": 133,
+    "abbreviation": "375",
+    "model": "LL-37",
+    "group": "immunomodulatory",
+    "specification": "5mg"
+  },
+  {
+    "serial": 134,
+    "abbreviation": "VP10",
+    "model": "VIP",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 135,
+    "abbreviation": "F410",
+    "model": "FOXO4-DRI",
+    "group": "bioregulator",
+    "specification": "10mg"
+  },
+  {
+    "serial": 136,
+    "abbreviation": "FM2",
+    "model": "MGF",
+    "group": "growth-factor-anabolic",
+    "specification": "2mg"
+  },
+  {
+    "serial": 137,
+    "abbreviation": "FMP2",
+    "model": "PEG-MGF",
+    "group": "growth-factor-anabolic",
+    "specification": "2mg"
+  },
+  {
+    "serial": 138,
+    "abbreviation": "MK75",
+    "model": "MK-677",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 139,
+    "abbreviation": "G5K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "5000iu"
+  },
+  {
+    "serial": 140,
+    "abbreviation": "G10K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "10000iu"
+  },
+  {
+    "serial": 141,
+    "abbreviation": "KLOW80",
+    "model": "Blend: 10mg + BPC-157 10mg + GHK 50mg + K",
+    "group": "antioxidant-beauty",
+    "specification": "80mg"
+  },
+  {
+    "serial": 142,
+    "abbreviation": "GLOW70",
+    "model": "Blend: BPC-157 10mg + GHK-Cu 50mg + TB-500 10mg",
+    "group": "antioxidant-beauty",
+    "specification": "70mg"
+  },
+  {
+    "serial": 143,
+    "abbreviation": "CND2",
+    "model": "CJC-1295 (without DAC)",
+    "group": "gh-secretagogue",
+    "specification": "2mg"
+  },
+  {
+    "serial": 144,
+    "abbreviation": "CND5",
+    "model": "CJC-1295 (without DAC)",
+    "group": "gh-secretagogue",
+    "specification": "5mg"
+  },
+  {
+    "serial": 145,
+    "abbreviation": "CND10",
+    "model": "CJC-1295 (without DAC)",
+    "group": "gh-secretagogue",
+    "specification": "10mg"
+  },
+  {
+    "serial": 146,
+    "abbreviation": "HCG1000",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "1000iu"
+  },
+  {
+    "serial": 147,
+    "abbreviation": "HCG2000",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "2000iu"
+  },
+  {
+    "serial": 148,
+    "abbreviation": "HCG5000",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "5000iu"
+  },
+  {
+    "serial": 149,
+    "abbreviation": "HCG10000",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "10000iu"
+  },
+  {
+    "serial": 150,
+    "abbreviation": "LB",
+    "model": "Lemon Bottle",
+    "group": "antioxidant-beauty",
+    "specification": "10ml"
+  },
+  {
+    "serial": 151,
+    "abbreviation": "HCG / G1K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "1000iu"
+  },
+  {
+    "serial": 152,
+    "abbreviation": "HCG / G2K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "2000iu"
+  },
+  {
+    "serial": 153,
+    "abbreviation": "HCG / G5K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "5000iu"
+  },
+  {
+    "serial": 154,
+    "abbreviation": "HCG / G10K",
+    "model": "HCG",
+    "group": "reproductive-hormonal",
+    "specification": "10000iu"
+  },
+  {
+    "serial": 155,
+    "abbreviation": "5AM",
+    "model": "5-Amino-1mq",
+    "group": "metabolic-cofactor",
+    "specification": "5mg"
+  },
+  {
+    "serial": 156,
+    "abbreviation": "10AM",
+    "model": "10-Amino-1mq",
+    "group": "metabolic-cofactor",
+    "specification": "10mg"
+  },
+  {
+    "serial": 157,
+    "abbreviation": "MZ5",
+    "model": "Mazdutide",
+    "group": "glp1-appetite",
+    "specification": "5mg"
+  },
+  {
+    "serial": 158,
+    "abbreviation": "MZ10",
+    "model": "Mazdutide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 159,
+    "abbreviation": "SUR10",
+    "model": "Survodutide",
+    "group": "glp1-appetite",
+    "specification": "10mg"
+  },
+  {
+    "serial": 160,
+    "abbreviation": "NP810",
+    "model": "Snap-8",
+    "group": "antioxidant-beauty",
+    "specification": "10mg"
+  },
+  {
+    "serial": 161,
+    "abbreviation": "THY-1",
+    "model": "Thymosin α-1",
+    "group": "immunomodulatory",
+    "specification": "5mg"
+  },
+  {
+    "serial": 162,
+    "abbreviation": "THY-1",
+    "model": "Thymosin α-1",
+    "group": "immunomodulatory",
+    "specification": "10mg"
+  },
+  {
+    "serial": 163,
+    "abbreviation": "EPi10 (ET)",
+    "model": "Epithalon",
+    "group": "bioregulator",
+    "specification": "10mg"
+  },
+  {
+    "serial": 164,
+    "abbreviation": "EPi50 (ET)",
+    "model": "Epithalon",
+    "group": "bioregulator",
+    "specification": "50mg"
+  },
+  {
+    "serial": 165,
+    "abbreviation": "AICAR",
+    "model": "AICAR",
+    "group": "metabolic-cofactor",
+    "specification": "50mg"
+  }
+]

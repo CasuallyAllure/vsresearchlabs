@@ -1,6 +1,82 @@
-<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+/**
+ * specimenTemplate — parametric specimen-plate SVG renderer.
+ *
+ * Micrographic line-art of a lyophilized vial on an 800×800 #0a0a0a ground,
+ * monospace type, gold SKU accent. This revision adds DEPTH while keeping
+ * the micrographic register:
+ *   - a Tron perspective floor grid the vial sits on (recedes to a horizon),
+ *   - a soft backlit halo behind the vial + a glowing contact pool beneath,
+ *   - glass-cylinder shading + a specular highlight for body,
+ *   - a faint reflection streak on the floor.
+ * Brand cyan (#5EDDF6) is used at low opacity for the glow/grid so the
+ * plate gains luxury without leaving the monochrome micrographic lane.
+ *
+ * Graceful drops: when `cas` or `mw` is absent the line is omitted.
+ * `liquid: true` swaps the lyophilized dot fill for liquid fill rules.
+ */
+
+const GOLD = '#C4A35A';
+const HOLO = '#5EDDF6';
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Perspective floor the vial stands on — a centred trapezoid grid.
+function tronPad() {
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const VPy = 586, frontY = 694;
+  const backL = 332, backR = 468, frontL = 246, frontR = 554;
+  let s = '<g class="pad">';
+  // horizon glow
+  s += `<line x1="${backL}" y1="${VPy}" x2="${backR}" y2="${VPy}" stroke="${HOLO}" stroke-opacity="0.22" stroke-width="1"/>`;
+  // longitudinal (depth) lines
+  const cols = 6;
+  for (let i = 0; i <= cols; i++) {
+    const f = i / cols;
+    const bx = lerp(backL, backR, f).toFixed(1);
+    const fx = lerp(frontL, frontR, f).toFixed(1);
+    s += `<line x1="${bx}" y1="${VPy}" x2="${fx}" y2="${frontY}" stroke="${HOLO}" stroke-opacity="0.10" stroke-width="1"/>`;
+  }
+  // latitudinal (row) lines — closer rows brighter
+  for (const t of [0.16, 0.36, 0.6, 0.86, 1]) {
+    const y = lerp(VPy, frontY, Math.pow(t, 1.35)).toFixed(1);
+    const lx = lerp(backL, frontL, t).toFixed(1);
+    const rx = lerp(backR, frontR, t).toFixed(1);
+    const op = (0.05 + 0.13 * t).toFixed(3);
+    s += `<line x1="${lx}" y1="${y}" x2="${rx}" y2="${y}" stroke="${HOLO}" stroke-opacity="${op}" stroke-width="1"/>`;
+  }
+  return s + '</g>';
+}
+
+export function renderSpecimen(p) {
+  const purity = p.purity || '≥ 98%';
+  const formLine = p.formLine || (p.liquid ? 'STERILE SOLUTION' : 'LYOPHILIZED POWDER');
+  const storageLine = p.storageLine || (p.liquid ? 'STORE 2–8°C · PROTECT LIGHT' : 'STORE −20°C · DESICCATED');
+  const classLine = p.classLine || `${p.eyebrow} · PEPTIDE`;
+
+  const fillDef = p.liquid
+    ? `<pattern id="liqLines" width="8" height="6" patternUnits="userSpaceOnUse"><line x1="0" y1="3" x2="8" y2="3" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/></pattern>`
+    : `<pattern id="lyoDots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="0.9" fill="rgba(255,255,255,0.2)"/></pattern>`;
+
+  const fill = p.liquid
+    ? `<rect x="334" y="447" width="132" height="128" fill="url(#liqLines)" clip-path="url(#vialFill)"/>`
+    : `<rect x="334" y="447" width="132" height="128" fill="url(#lyoDots)" clip-path="url(#vialFill)"/>`;
+
+  const casLine = p.cas
+    ? `<text x="400" y="421" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.18)" letter-spacing="1" text-anchor="middle">CAS ${esc(p.cas)}</text>`
+    : '';
+  const mwY = 716;
+  const classY = p.mw ? 729 : 716;
+  const mwLine = p.mw
+    ? `<text x="60" y="${mwY}" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">MW ${esc(p.mw)}</text>`
+    : '';
+
+  const vialPath = 'M334 218 L334 557 Q334 577 400 577 Q466 577 466 557 L466 218 Z';
+
+  return `<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <pattern id="liqLines" width="8" height="6" patternUnits="userSpaceOnUse"><line x1="0" y1="3" x2="8" y2="3" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/></pattern>
+    ${fillDef}
     <clipPath id="vialFill"><path d="M333 446 L333 557 Q333 576 400 576 Q467 576 467 557 L467 446 Z"/></clipPath>
     <radialGradient id="bgDepth" cx="0.5" cy="0.46" r="0.62">
       <stop offset="0" stop-color="#0e2a38" stop-opacity="0.55"/>
@@ -9,8 +85,8 @@
     </radialGradient>
     <radialGradient id="floorPool" cx="0.5" cy="0.5" r="0.5">
       <stop offset="0" stop-color="#bfeffd" stop-opacity="0.5"/>
-      <stop offset="0.45" stop-color="#5EDDF6" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#5EDDF6" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="${HOLO}" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="${HOLO}" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="glassBody" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.02"/>
@@ -38,12 +114,12 @@
 
   <!-- Header rule + identifiers -->
   <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">SOLVENT</text>
-  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · VS-RS-BAC</text>
+  <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">${esc(p.eyebrow)}</text>
+  <text x="740" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.18)" letter-spacing="2" text-anchor="end">SPECIMEN PLATE · ${esc(p.specimenId)}</text>
 
   <!-- Depth: perspective floor, backlit halo, contact pool, reflection -->
-  <g class="pad"><line x1="332" y1="586" x2="468" y2="586" stroke="#5EDDF6" stroke-opacity="0.22" stroke-width="1"/><line x1="332.0" y1="586" x2="246.0" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="354.7" y1="586" x2="297.3" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="377.3" y1="586" x2="348.7" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="400.0" y1="586" x2="400.0" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="422.7" y1="586" x2="451.3" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="445.3" y1="586" x2="502.7" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="468.0" y1="586" x2="554.0" y2="694" stroke="#5EDDF6" stroke-opacity="0.10" stroke-width="1"/><line x1="318.2" y1="595.1" x2="481.8" y2="595.1" stroke="#5EDDF6" stroke-opacity="0.071" stroke-width="1"/><line x1="301.0" y1="613.2" x2="499.0" y2="613.2" stroke="#5EDDF6" stroke-opacity="0.097" stroke-width="1"/><line x1="280.4" y1="640.2" x2="519.6" y2="640.2" stroke="#5EDDF6" stroke-opacity="0.128" stroke-width="1"/><line x1="258.0" y1="674.1" x2="542.0" y2="674.1" stroke="#5EDDF6" stroke-opacity="0.162" stroke-width="1"/><line x1="246.0" y1="694.0" x2="554.0" y2="694.0" stroke="#5EDDF6" stroke-opacity="0.180" stroke-width="1"/></g>
-  <path d="M334 218 L334 557 Q334 577 400 577 Q466 577 466 557 L466 218 Z" fill="#5EDDF6" opacity="0.12" filter="url(#vglow)"/>
+  ${tronPad()}
+  <path d="${vialPath}" fill="${HOLO}" opacity="0.12" filter="url(#vglow)"/>
   <ellipse cx="400" cy="585" rx="92" ry="16" fill="url(#floorPool)"/>
   <rect x="366" y="560" width="68" height="92" fill="url(#reflFade)"/>
 
@@ -66,7 +142,7 @@
   <rect x="334" y="198" width="132" height="20" rx="1" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
 
   <!-- Vial body — glass-shaded -->
-  <path d="M334 218 L334 557 Q334 577 400 577 Q466 577 466 557 L466 218 Z" fill="url(#glassBody)" stroke="rgba(255,255,255,0.52)" stroke-width="1.5"/>
+  <path d="${vialPath}" fill="url(#glassBody)" stroke="rgba(255,255,255,0.52)" stroke-width="1.5"/>
   <!-- Specular highlight on the near glass wall -->
   <rect x="345" y="236" width="11" height="300" rx="5.5" fill="url(#spec)" opacity="0.6"/>
   <!-- Inner glass walls -->
@@ -75,7 +151,7 @@
 
   <!-- Fill line + cake -->
   <line x1="334" y1="446" x2="466" y2="446" stroke="rgba(255,255,255,0.16)" stroke-width="1" stroke-dasharray="4,4"/>
-  <rect x="334" y="447" width="132" height="128" fill="url(#liqLines)" clip-path="url(#vialFill)"/>
+  ${fill}
 
   <!-- Label band -->
   <rect x="334" y="284" width="132" height="144" fill="rgba(255,255,255,0.025)"/>
@@ -83,15 +159,15 @@
   <line x1="334" y1="428" x2="466" y2="428" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
 
   <!-- Label text -->
-  <text x="400" y="306" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.92)" letter-spacing="2" text-anchor="middle">BACTERIOSTATIC WATER</text>
+  <text x="400" y="306" font-family="monospace" font-size="12" font-weight="500" fill="rgba(255,255,255,0.92)" letter-spacing="2" text-anchor="middle">${esc(p.compoundName)}</text>
   <line x1="350" y1="315" x2="450" y2="315" stroke="rgba(255,255,255,0.09)" stroke-width="1"/>
-  <text x="400" y="332" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.58)" letter-spacing="1" text-anchor="middle">30 mL / vial</text>
-  <text x="400" y="349" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.36)" letter-spacing="1" text-anchor="middle">STERILE SOLUTION</text>
+  <text x="400" y="332" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.58)" letter-spacing="1" text-anchor="middle">${esc(p.doseLabel)}</text>
+  <text x="400" y="349" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.36)" letter-spacing="1" text-anchor="middle">${esc(formLine)}</text>
   <line x1="350" y1="359" x2="450" y2="359" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-  <text x="400" y="374" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.85">VSR-RS-BAC-030</text>
-  <text x="400" y="390" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" letter-spacing="1" text-anchor="middle">PURITY ≥ 98% HPLC</text>
-  <text x="400" y="406" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1" text-anchor="middle">STORE 2–8°C · PROTECT LIGHT</text>
-  
+  <text x="400" y="374" font-family="monospace" font-size="9" fill="${GOLD}" letter-spacing="1.5" text-anchor="middle" opacity="0.85">${esc(p.sku)}</text>
+  <text x="400" y="390" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.3)" letter-spacing="1" text-anchor="middle">PURITY ${esc(purity)} HPLC</text>
+  <text x="400" y="406" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1" text-anchor="middle">${esc(storageLine)}</text>
+  ${casLine}
 
   <!-- Right callouts -->
   <line x1="481" y1="185" x2="548" y2="185" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
@@ -105,8 +181,8 @@
 
   <line x1="467" y1="492" x2="548" y2="492" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
   <circle cx="467" cy="492" r="2" fill="rgba(255,255,255,0.3)"/>
-  <text x="552" y="489" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">STERILE</text>
-  <text x="552" y="501" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">DILUENT</text>
+  <text x="552" y="489" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">${p.liquid ? 'STERILE' : 'LYOPHILIZED'}</text>
+  <text x="552" y="501" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.28)" letter-spacing="1">${p.liquid ? 'DILUENT' : 'CAKE'}</text>
 
   <!-- Left callouts -->
   <line x1="334" y1="350" x2="256" y2="350" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
@@ -115,11 +191,13 @@
   <text x="60" y="359" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.26)" letter-spacing="1">GLASS VIAL</text>
 
   <!-- MW / class block -->
-  
-  <text x="60" y="716" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.14)" letter-spacing="1">SOLVENT</text>
+  ${mwLine}
+  <text x="60" y="${classY}" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.14)" letter-spacing="1">${esc(classLine)}</text>
 
   <!-- Footer -->
   <line x1="60" y1="752" x2="740" y2="752" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
   <text x="60" y="770" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">FOR RESEARCH PURPOSES ONLY · NOT FOR HUMAN USE</text>
   <text x="740" y="770" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1" text-anchor="end">VS RESEARCH LABS</text>
 </svg>
+`;
+}
