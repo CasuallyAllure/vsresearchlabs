@@ -15,12 +15,15 @@ interface AdminLayoutProps {
 }
 
 const TABS: Array<{ to: string; label: string; match?: (p: string) => boolean }> = [
-  { to: '/admin',              label: 'Dashboard',    match: (p) => p === '/admin' || p === '/admin/' },
-  { to: '/admin/inventory',    label: 'Inventory',    match: (p) => p.startsWith('/admin/inventory') },
-  { to: '/admin/inquiries',    label: 'Inquiries',    match: (p) => p.startsWith('/admin/inquiries') },
-  { to: '/admin/orders',       label: 'Orders',       match: (p) => p.startsWith('/admin/orders') },
-  { to: '/admin/stock-history', label: 'Stock History', match: (p) => p.startsWith('/admin/stock-history') },
-  { to: '/admin/products',     label: 'Catalog',      match: (p) => p === '/admin/products' || /^\/admin\/[^/]+\/(edit|new)$/.test(p) || p === '/admin/new' },
+  { to: '/admin',               label: 'Dashboard',    match: (p) => p === '/admin' || p === '/admin/' },
+  { to: '/admin/inquiries',     label: 'Inquiries',    match: (p) => p.startsWith('/admin/inquiries') },
+  { to: '/admin/orders',        label: 'Orders',       match: (p) => p.startsWith('/admin/orders') },
+  { to: '/admin/customers',     label: 'Customers',    match: (p) => p.startsWith('/admin/customers') },
+  { to: '/admin/inventory',     label: 'Inventory',    match: (p) => p.startsWith('/admin/inventory') },
+  { to: '/admin/stock-history', label: 'Stock log',    match: (p) => p.startsWith('/admin/stock-history') },
+  { to: '/admin/audit-log',     label: 'Audit log',    match: (p) => p.startsWith('/admin/audit-log') },
+  { to: '/admin/system-health', label: 'Health',       match: (p) => p.startsWith('/admin/system-health') },
+  { to: '/admin/products',      label: 'Catalog',      match: (p) => p === '/admin/products' || /^\/admin\/[^/]+\/(edit|new)$/.test(p) || p === '/admin/new' },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
