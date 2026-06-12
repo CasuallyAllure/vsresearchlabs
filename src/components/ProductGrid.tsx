@@ -22,6 +22,10 @@ interface ProductGridProps {
   error: string | null;
   emptyLabel?: string;
   onInspect?: (id: string) => void;
+  /** When true, each card renders a tiny in-stock / out-of-stock pip. */
+  showStock?: boolean;
+  /** When true, each card carries an interactive tier picker, live price, and Add button. */
+  showPurchase?: boolean;
 }
 
 const SKELETON_COUNT = 6;
@@ -32,6 +36,8 @@ export function ProductGrid({
   error,
   emptyLabel = 'No products available.',
   onInspect,
+  showStock,
+  showPurchase,
 }: ProductGridProps) {
   if (loading) {
     return (
@@ -61,7 +67,7 @@ export function ProductGrid({
     <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]">
       {products.map((product) => (
         <li key={product.id}>
-          <ProductCard product={product} onInspect={onInspect} />
+          <ProductCard product={product} onInspect={onInspect} showStock={showStock} showPurchase={showPurchase} />
         </li>
       ))}
     </ul>

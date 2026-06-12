@@ -17,7 +17,9 @@ import { useProduct, useProductAdmin } from '../../hooks/useProducts';
 import type { Product, ProductCategory, ProductSpec } from '../../types/product';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
-  { value: 'research-supplies', label: 'Research Supplies' },
+  { value: 'biopeptide-research-supplies', label: 'Biopeptide Research Supplies' },
+  { value: 'nootropics-research-supplies', label: 'Nootropics Research Supplies' },
+  { value: 'skincare-research-supplies', label: 'Skincare Research Supplies' },
   { value: 'laboratory-equipment', label: 'Laboratory Equipment' },
 ];
 
@@ -50,7 +52,7 @@ const EMPTY_FORM: FormState = {
   sku: '',
   name: '',
   slug: '',
-  category: 'research-supplies',
+  category: 'biopeptide-research-supplies',
   shortDescription: '',
   longDescription: '',
   imagesText: '',
@@ -141,7 +143,7 @@ function deriveAbbreviation(sku: string): string {
  * ("GLP-1 Agonist", "Solvent", etc.); this is only a placeholder.
  */
 function deriveFamilyDefault(category: ProductCategory): string {
-  return category === 'research-supplies' ? 'Research Supply' : 'Laboratory Equipment';
+  return category === 'laboratory-equipment' ? 'Laboratory Equipment' : 'Research Supply';
 }
 
 function generateId(): string {

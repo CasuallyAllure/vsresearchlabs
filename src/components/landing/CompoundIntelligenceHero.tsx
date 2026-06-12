@@ -33,6 +33,7 @@ import {
   type CompoundIntelligence,
 } from '../../lib/compoundIntelligence';
 import { RegulatoryChipCluster } from '../catalog/intelligence/RegulatoryChipCluster';
+import { SummaryText } from '../catalog/intelligence/SummaryText';
 
 const products = productsData as unknown as Product[];
 const FEATURED_SLUG = 'retatrutide-5mg';
@@ -198,12 +199,20 @@ function SlidePanel({
           />
           <Eyebrow>{ci.classificationLabel}</Eyebrow>
         </div>
-        <h3 className="mt-3 break-words text-[clamp(1.5rem,3vw,2.1rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
+        <h3 className="holo-text-display mt-3 break-words text-[clamp(1.35rem,2.6vw,1.85rem)] font-light leading-[1.1] tracking-[-0.02em]">
           {ci.substance}
         </h3>
-        <p className="mt-2 font-mono text-[11px] tracking-[0.06em] text-white/40">
+        <p className="holo-text-citation mt-2 font-mono text-[11px] tracking-[0.06em]">
           {ci.family} · {ci.abbreviation}
         </p>
+
+        {/* Plain-English summary — the friendly read, right under the name. */}
+        {ci.summary && (
+          <SummaryText
+            text={ci.summary}
+            className="mt-4 text-[12.5px] leading-relaxed text-white/70"
+          />
+        )}
 
         {/* Regulatory posture — visible without swiping */}
         {(ci.humanTrials !== undefined || ci.fdaStatus) && (
@@ -215,9 +224,9 @@ function SlidePanel({
           </div>
         )}
 
-        <div className="mt-5 min-w-0">
+        <div className="mt-3 min-w-0">
           <Eyebrow>Receptor activation</Eyebrow>
-          <div className="mt-2 min-h-[180px] w-full min-w-0">
+          <div className="mt-1.5 h-[104px] w-full min-w-0">
             <ReceptorMap ci={ci} />
           </div>
         </div>
@@ -236,16 +245,17 @@ function SlidePanel({
           <button
             type="button"
             onClick={() => add(product)}
-            className="inline-flex items-center justify-center rounded-[var(--radius-procurement)] border border-white/15 bg-white/[0.06] px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] text-white/80 transition-colors duration-150 hover:border-white/30 hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.2em] text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
-            Add to inquiry
+            <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
+            <span className="relative">Add to inquiry</span>
           </button>
           <Link
             to={`/product/${product.id}`}
-            className="group inline-flex items-center gap-1.5 px-1 text-[11px] uppercase tracking-[0.18em] text-white/45 transition-colors hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+            className="group inline-flex items-center gap-1.5 px-1 text-[10.5px] uppercase tracking-[0.2em] text-holo/65 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span>Full record</span>
-            <span aria-hidden className="text-white/30 transition-colors group-hover:text-gold">↗</span>
+            <span aria-hidden className="text-holo/45 transition-colors group-hover:text-holo-light">↗</span>
           </Link>
         </div>
       </div>
@@ -281,7 +291,7 @@ function ModuleBlock({
 
 function Prose({ children }: { children: string }) {
   return (
-    <p className="break-words text-[13px] leading-[1.65] text-white/60">
+    <p className="holo-text-body break-words text-[12.5px] leading-[1.65]">
       {children}
     </p>
   );
@@ -412,29 +422,29 @@ function StudyEntry({ study }: { study: ProductStudy }) {
   return (
     <li className="border-t border-white/[0.06] py-5 first:border-t-0">
       <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-6 gap-y-2">
-        <h4 className="min-w-0 flex-1 break-words text-[15px] font-light leading-snug tracking-[-0.01em] text-white">
+        <h4 className="holo-text-display min-w-0 flex-1 break-words text-[13px] font-light leading-snug tracking-[-0.01em]">
           {study.title}
         </h4>
         <span className="shrink-0 rounded-[2px] border border-white/12 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/55">
           {study.phase ?? MODEL_LABEL[study.model]}
         </span>
       </div>
-      <p className="mt-2 font-mono text-[10.5px] tracking-[0.08em] text-white/40">
+      <p className="holo-text-citation mt-2 font-mono text-[10.5px] tracking-[0.08em]">
         {study.year} · {study.source} ·{' '}
-        <span className="text-white/55">{MODEL_LABEL[study.model]} study</span>
+        <span className="holo-text-caption">{MODEL_LABEL[study.model]} study</span>
       </p>
       {study.notes && study.notes.length > 0 && (
         <div className="mt-3 min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.2em]">
             Observed
           </p>
           <ul className="mt-2 space-y-1.5">
             {study.notes.map((n) => (
               <li
                 key={n}
-                className="flex min-w-0 gap-2.5 text-[12.5px] leading-relaxed text-white/60"
+                className="holo-text-body flex min-w-0 gap-2.5 text-[12px] leading-relaxed"
               >
-                <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/55" />
+                <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-holo/70" style={{ boxShadow: '0 0 4px rgba(100,200,255,0.6)' }} />
                 <span className="min-w-0 flex-1 break-words">{n}</span>
               </li>
             ))}
@@ -446,10 +456,10 @@ function StudyEntry({ study }: { study: ProductStudy }) {
           href={study.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group mt-3 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-white/45 transition-colors hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+          className="group mt-3 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-holo/65 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
         >
           <span>View publication</span>
-          <span aria-hidden className="text-white/30 transition-colors group-hover:text-gold">↗</span>
+          <span aria-hidden className="text-holo/45 transition-colors group-hover:text-holo-light">↗</span>
         </a>
       )}
     </li>
@@ -462,24 +472,24 @@ function SlideStudies({ ci }: { ci: CompoundIntelligence }) {
       <Eyebrow>Research media &amp; known studies</Eyebrow>
 
       {/* Regulatory band */}
-      <div className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-procurement)] border border-white/[0.08] sm:grid-cols-2">
-        <div className="bg-white/[0.02] px-4 py-3">
-          <p className="text-[9.5px] uppercase tracking-[0.24em] text-white/30">
+      <div className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-procurement)] border border-holo/15 sm:grid-cols-2">
+        <div className="bg-holo/[0.025] px-4 py-3">
+          <p className="holo-text-caption text-[9.5px] uppercase tracking-[0.24em]">
             FDA status
           </p>
-          <p className="mt-1 font-mono text-[11.5px] text-white/70">
+          <p className="holo-text-body mt-1 font-mono text-[11px]">
             {ci.fdaStatus ?? 'Research use only — not FDA approved'}
           </p>
         </div>
-        <div className="bg-white/[0.02] px-4 py-3">
-          <p className="text-[9.5px] uppercase tracking-[0.24em] text-white/30">
+        <div className="bg-holo/[0.025] px-4 py-3">
+          <p className="holo-text-caption text-[9.5px] uppercase tracking-[0.24em]">
             Known human trials
           </p>
-          <p className="mt-1 font-mono text-[11.5px]">
-            <span className={ci.humanTrials ? 'text-gold' : 'text-white/55'}>
+          <p className="mt-1 font-mono text-[11px]">
+            <span className={ci.humanTrials ? 'holo-text-display font-semibold' : 'holo-text-citation'}>
               {ci.humanTrials ? 'YES' : 'NO'}
             </span>
-            <span className="ml-2 text-white/35">
+            <span className="holo-text-citation ml-2">
               · {ci.studies.length} publications on record
             </span>
           </p>
@@ -575,7 +585,7 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="flex h-[600px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-white/[0.10] bg-[#070707] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_30px_80px_rgba(0,0,0,0.6)] sm:h-[640px] lg:h-[700px]"
+        className="module-aura flex h-[600px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-white/[0.10] bg-[#070707] sm:h-[640px] lg:h-[700px]"
       >
         {/* Header bar */}
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-white/[0.08] px-4 py-3 sm:px-5">

@@ -47,7 +47,9 @@ interface InventoryTableProps {
 const ADDED_MS = 1400;
 
 const CATEGORY_LABEL: Record<ProductCategory, string> = {
-  'research-supplies': 'Research',
+  'biopeptide-research-supplies': 'Biopeptide',
+  'nootropics-research-supplies': 'Nootropics',
+  'skincare-research-supplies': 'Skincare',
   'laboratory-equipment': 'Equipment',
 };
 

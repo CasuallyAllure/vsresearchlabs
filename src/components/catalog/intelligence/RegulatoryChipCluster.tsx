@@ -23,8 +23,24 @@ interface RegulatoryChipClusterProps {
   fdaStatus: string | undefined;
 }
 
+function isNegativeFdaStatus(status: string): boolean {
+  const s = status.toLowerCase();
+  // "Approved — …" and similar affirmative leads are NOT warnings.
+  // Anything reading "not approved", "not fda approved", "investigational",
+  // "preclinical", or "research use only" is a warning register.
+  if (s.startsWith('approved')) return false;
+  return (
+    s.includes('not approved') ||
+    s.includes('not fda') ||
+    s.includes('investigational') ||
+    s.includes('preclinical') ||
+    s.includes('research use only')
+  );
+}
+
 export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChipClusterProps) {
   if (humanTrials === undefined && !fdaStatus) return null;
+  const fdaIsWarning = fdaStatus ? isNegativeFdaStatus(fdaStatus) : false;
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-1.5 pb-3 mb-1"
       style={{ borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
@@ -45,7 +61,12 @@ export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChip
       {fdaStatus && (
         <div className="flex items-center gap-2">
           <span className="text-white/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>FDA Status</span>
-          <span className="text-white/48" style={{ fontSize: '9px' }}>{fdaStatus}</span>
+          <span
+            className={fdaIsWarning ? 'holo-text-warning font-semibold' : 'text-white/48'}
+            style={{ fontSize: '9px' }}
+          >
+            {fdaStatus}
+          </span>
         </div>
       )}
     </div>

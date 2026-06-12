@@ -24,18 +24,35 @@ import { deriveProductDose } from '../types';
 /** Canonical classification labels. The authoritative copy lives here;
  *  other surfaces should import this rather than re-declaring it. */
 export const CLASSIFICATION_LABELS: Record<ResearchClassification, string> = {
-  'glp-1-agonist': 'GLP-1 Agonist',
-  'dual-agonist': 'Dual GIP/GLP-1 Agonist',
-  'triple-agonist': 'Triple GIP/GLP-1/GCG Agonist',
-  'growth-hormone-secretagogue': 'GH Secretagogue',
-  'growth-factor': 'Growth Factor',
-  'metabolic-lipolytic': 'Metabolic / Lipolytic',
+  'glp1-appetite': 'GLP-1 & Appetite',
+  'gh-secretagogue': 'GH Secretagogues',
+  'growth-factor-anabolic': 'Growth Factors / Anabolic',
+  'metabolic-cofactor': 'Metabolic Cofactors',
+  'regenerative': 'Regenerative',
   'nootropic-neuroactive': 'Nootropic / Neuroactive',
-  'regenerative-healing': 'Regenerative / Healing',
+  'bioregulator': 'Bioregulators',
   'immunomodulatory': 'Immunomodulatory',
-  'bio-regulator': 'Bio-Regulator',
+  'reproductive-hormonal': 'Reproductive / Hormonal',
+  'antioxidant-beauty': 'Antioxidant / Beauty',
   'experimental': 'Experimental',
 };
+
+/** Canonical display order for the categories above. Used by filter
+ *  surfaces so tabs/sections appear in a consistent, intentional order
+ *  rather than data-insertion order. */
+export const CLASSIFICATION_ORDER: ResearchClassification[] = [
+  'glp1-appetite',
+  'gh-secretagogue',
+  'growth-factor-anabolic',
+  'metabolic-cofactor',
+  'regenerative',
+  'nootropic-neuroactive',
+  'bioregulator',
+  'immunomodulatory',
+  'reproductive-hormonal',
+  'antioxidant-beauty',
+  'experimental',
+];
 
 export interface ReceptorTargetView {
   receptor: string;
@@ -59,6 +76,9 @@ export interface CompoundIntelligence {
   casNumber?: string;
   molecularWeight?: string;
   specimenImage?: string;
+
+  /** Plain-English summary (with highlight markup) for general readers. */
+  summary?: string;
 
   /** Discrete receptor potency rows parsed from `receptorActivity`. */
   receptorTargets: ReceptorTargetView[];
@@ -84,6 +104,20 @@ export interface CompoundIntelligence {
 
 const DASH_SPLIT = [' — ', ' – ', ' - '];
 
+/**
+ * Fallback plain-English summary for products without a curated
+ * `laymanSummary`. Uses the first paragraph of the long description
+ * (the substantive explanation, before the research-use disclaimer),
+ * falling back to the short description. Ensures EVERY product shows a
+ * Summary block above the technical modules.
+ */
+function descriptionSummary(product: Product): string | undefined {
+  const lead = product.longDescription?.split(/\n\s*\n/)[0]?.trim();
+  if (lead) return lead;
+  const short = product.shortDescription?.trim();
+  return short || undefined;
+}
+
 export function substanceName(name: string): string {
   for (const sep of DASH_SPLIT) {
     const idx = name.indexOf(sep);
@@ -104,7 +138,7 @@ export function parseReceptorTargets(
 ): ReceptorTargetView[] {
   if (!receptorActivity) return [];
   const out: ReceptorTargetView[] = [];
-  const re = /([A-Za-z0-9][A-Za-z0-9/\-]*R)\s*\(\s*EC50\s*([^)]+?)\s*\)/g;
+  const re = /([A-Za-z0-9][A-Za-z0-9/-]*R)\s*\(\s*EC50\s*([^)]+?)\s*\)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(receptorActivity)) !== null) {
     out.push({ receptor: m[1].trim(), ec50: m[2].trim() });
@@ -150,7 +184,7 @@ function derivePhysiologicalOutcome(studies: ProductStudy[]): string[] {
         .slice(0, 28);
       if (!key || seen.has(key)) continue;
       seen.add(key);
-      out.push(note.replace(/^\s*[•\-]\s*/, '').trim());
+      out.push(note.replace(/^\s*[•-]\s*/, '').trim());
       if (out.length >= 5) return out;
     }
   }
@@ -183,6 +217,8 @@ export function getCompoundIntelligence(
     casNumber: product.casNumber,
     molecularWeight: product.molecularWeight,
     specimenImage: product.images?.[0],
+
+    summary: product.laymanSummary ?? descriptionSummary(product),
 
     receptorTargets: parseReceptorTargets(product.receptorActivity),
 

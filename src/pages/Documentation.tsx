@@ -62,19 +62,20 @@ export function Documentation() {
     <section className="py-[var(--space-8)]">
       {/* Header */}
       <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Documentation
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
-          Archive
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
+          <span className="font-light text-white/85">Batch </span>
+          <span className="font-medium text-white">archive.</span>
         </h1>
-        <p className="mt-[var(--space-3)] text-sm text-white/55 max-w-[60ch] leading-relaxed">
+        <p className="holo-text-body mt-[var(--space-3)] max-w-[60ch] text-[13px] leading-relaxed">
           Batch-tracked certificates and reports across the active
           catalog. Filed against the same procurement abbreviations and
           batch identifiers used in inventory. Reference, not promotion.
         </p>
         <p
-          className="mt-[var(--space-3)] text-[11px] uppercase tracking-[0.2em] text-white/40"
+          className="holo-text-caption mt-[var(--space-3)] text-[10px] uppercase tracking-[0.2em]"
           aria-live="polite"
           aria-atomic="true"
         >

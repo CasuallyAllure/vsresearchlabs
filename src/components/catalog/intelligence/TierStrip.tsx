@@ -32,6 +32,8 @@ type TierStripProps =
       variants: ProductVariant[];
       selectedIndex: number;
       onSelect: (i: number) => void;
+      /** 'sm' is a daintier control for dense surfaces like grid cards. */
+      size?: 'sm' | 'md';
       className?: string;
     };
 
@@ -40,8 +42,9 @@ export function TierStrip(props: TierStripProps) {
 
   if (props.mode === 'select') {
     const { variants, selectedIndex, onSelect, className } = props;
+    const sm = props.size === 'sm';
     return (
-      <div className={['flex flex-wrap gap-1.5', className ?? ''].filter(Boolean).join(' ')}>
+      <div className={['flex flex-wrap', sm ? 'gap-1' : 'gap-1.5', className ?? ''].filter(Boolean).join(' ')}>
         {variants.map((v, i) => {
           const active = i === selectedIndex;
           return (
@@ -49,10 +52,10 @@ export function TierStrip(props: TierStripProps) {
               key={v.dose}
               type="button"
               onClick={() => onSelect(i)}
-              className="rounded-[2px] font-mono tabular-nums focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-[0.95]"
+              className="rounded-[2px] font-mono tabular-nums leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-[0.95]"
               style={{
-                padding: '4px 10px',
-                fontSize: '11px',
+                padding: sm ? '3px 7px' : '4px 10px',
+                fontSize: sm ? '9.5px' : '11px',
                 backgroundColor: active ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.025)',
                 border: active ? '1px solid rgba(255,255,255,0.24)' : '1px solid rgba(255,255,255,0.07)',
                 color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.45)',

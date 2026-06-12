@@ -29,6 +29,30 @@ body {
   min-height: 100vh;
 }
 
+/* ─── Color themes (root-level filter, non-destructive) ───────────────────
+   Applied as data-theme on <html>. Filtering the ROOT element recolors the
+   whole site without creating a containing block for fixed descendants, so
+   the sticky header / bottom nav / drawers / modals keep working. All
+   imagery here is SVG line-art (specimen vials, molecules, document
+   plates), so images recolor WITH the theme to stay part of the scene.
+   Real photos / video are counter-filtered so they don't look wrong —
+   tag any future raster photo with `data-keep-color` to protect it. */
+html[data-theme='negative'] {
+  filter: invert(1) hue-rotate(180deg);
+}
+html[data-theme='negative'] video,
+html[data-theme='negative'] [data-keep-color] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+html[data-theme='gray'] {
+  filter: invert(1) grayscale(1) contrast(0.96);
+}
+html[data-theme='gray'] video,
+html[data-theme='gray'] [data-keep-color] {
+  filter: invert(1) grayscale(1);
+}
+
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
   width: 6px;

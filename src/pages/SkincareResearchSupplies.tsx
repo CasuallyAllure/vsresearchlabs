@@ -7,12 +7,11 @@ import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 
 const ALL_TAB = '__all__';
 
-export function ResearchSupplies() {
-  const { products, loading, error } = useProducts('research-supplies');
+export function SkincareResearchSupplies() {
+  const { products, loading, error } = useProducts('skincare-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
 
-  // Build classification tabs from peptides in the dataset
   const classificationTabs = useMemo<PillTab[]>(() => {
     const seen = new Set<string>();
     const tabs: PillTab[] = [{ id: ALL_TAB, label: 'All' }];
@@ -41,19 +40,19 @@ export function ResearchSupplies() {
   return (
     <section className="py-[var(--space-8)]">
       <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
-          Catalog
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+          Research Supplies · Skincare
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
-          Research Supplies
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
+          <span className="font-light text-white/85">Skincare </span>
+          <span className="font-medium text-white">research supplies.</span>
         </h1>
-        <p className="mt-[var(--space-3)] text-sm text-white/55 max-w-[52ch]">
-          Peptides, solvents, and injection accessories sourced for research-grade
-          consistency. Click any compound to open compound intelligence.
+        <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
+          Topical and dermatological research compounds for barrier,
+          repair, and pigmentation models. Catalog expanding.
         </p>
       </header>
 
-      {/* Classification filter — only shows when classifications are present */}
       {classificationTabs.length > 1 && (
         <div className="mb-[var(--space-6)]">
           <PillTabs
@@ -69,7 +68,7 @@ export function ResearchSupplies() {
         products={filtered}
         loading={loading}
         error={error}
-        emptyLabel="No research supplies match the active filter."
+        emptyLabel="No skincare research supplies in the active catalog. Cataloging in progress."
         onInspect={setInspectedId}
       />
 

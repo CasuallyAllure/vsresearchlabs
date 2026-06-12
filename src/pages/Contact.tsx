@@ -17,13 +17,14 @@ export function Contact() {
   return (
     <section className="py-[var(--space-12)]">
       <header className="mb-[var(--space-12)] max-w-[60ch]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Open Inquiries
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight mb-[var(--space-6)]">
-          Contact
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-6)]">
+          <span className="font-light text-white/85">Open </span>
+          <span className="font-medium text-white">channels.</span>
         </h1>
-        <p className="text-sm sm:text-base text-white/60 leading-relaxed">
+        <p className="holo-text-body text-[13px] leading-relaxed">
           Procurement questions outside the catalog, documentation
           requests, and general operational contact. Itemized
           requests are submitted via the inquiry cart from any
@@ -74,7 +75,7 @@ export function Contact() {
         </div>
       </dl>
 
-      <p className="mt-[var(--space-12)] text-[11px] uppercase tracking-[0.25em] text-white/35">
+      <p className="holo-text-caption mt-[var(--space-12)] text-[10px] uppercase tracking-[0.25em]">
         For Research Purposes Only — Not for Human Use
       </p>
     </section>

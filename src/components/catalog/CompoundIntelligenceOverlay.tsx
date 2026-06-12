@@ -32,8 +32,10 @@ import {
   StatChip,
 } from './intelligence/IntelModule';
 import { StudyCard } from './intelligence/StudyCard';
+import { SummaryText } from './intelligence/SummaryText';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
+import { tierPriceCents, formatPrice } from '../../lib/pricing';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
 
@@ -126,6 +128,7 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
   const activeTier = ci.tiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
+  const priceCents = tierPriceCents(product, activeDoseLabel);
 
   const passportStats = useMemo(() => {
     const s: Array<{ label: string; value: string; highlight?: boolean }> = [];
@@ -133,10 +136,9 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
     if (purity) s.push({ label: 'Purity', value: purity.value });
     const form = ci.analytical.find((x) => x.label === 'Form');
     if (form) s.push({ label: 'Form', value: form.value });
-    if (activeDoseLabel) s.push({ label: 'Tier', value: activeDoseLabel, highlight: true });
     if (ci.molecularWeight) s.push({ label: 'MW', value: ci.molecularWeight });
     return s.slice(0, 4);
-  }, [ci, activeDoseLabel]);
+  }, [ci]);
 
   const allSpecs = useMemo(
     () => product.specs.map((s) => ({ label: s.label, value: s.value })),
@@ -156,7 +158,6 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
     if (ci.mechanismSummary) defs.push({ key: 'mech', title: 'Mechanism of Action', defaultOpen: true, kind: 'text', content: ci.mechanismSummary });
     if (ci.receptorActivity) defs.push({ key: 'receptor', title: 'Receptor / Target Activity', kind: 'text', content: ci.receptorActivity });
     if (ci.pathwaySummary) defs.push({ key: 'pathway', title: 'Signaling Pathway', kind: 'text', content: ci.pathwaySummary });
-    if (ci.tiers.length > 0) defs.push({ key: 'tiers', title: 'Available Tiers', kind: 'tiers' });
     if (ci.analytical.length > 0) defs.push({ key: 'analytical', title: 'Analytical Parameters', kind: 'datagrid', rows: ci.analytical });
     if (!ci.hasMolecularIntelligence && allSpecs.length > 0) defs.push({ key: 'specs', title: 'Specifications', kind: 'datagrid', rows: allSpecs });
     if (selectProcurementRows(product).length > 0) defs.push({ key: 'procurement', title: 'Procurement Data', kind: 'procurement' });
@@ -253,6 +254,26 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                 </div>
               )}
 
+              {/* Tier selector + live price */}
+              {ci.tiers.length > 0 && (
+                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="flex items-baseline justify-between mb-2">
+                    <span className="text-white/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                      Tier
+                    </span>
+                    <span className="text-white font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                      {formatPrice(priceCents)}
+                    </span>
+                  </div>
+                  <TierStrip
+                    mode="select"
+                    variants={ci.tiers}
+                    selectedIndex={selectedTierIndex}
+                    onSelect={setSelectedTierIndex}
+                  />
+                </div>
+              )}
+
               <div className="flex-1" />
 
               {/* Desktop CTA */}
@@ -268,9 +289,14 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                     Add to Inquiry
                   </button>
                 </div>
-                {(activeTier || quantity > 1) && (
-                  <p className="text-white/26 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
-                    {[activeTier?.dose, quantity > 1 ? `${quantity} units` : '1 unit'].filter(Boolean).join(' · ')}
+                {(activeTier || quantity > 1 || priceCents != null) && (
+                  <p className="text-white/30 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
+                    {[
+                      activeTier?.dose,
+                      quantity > 1
+                        ? `${quantity} × ${formatPrice(priceCents)} = ${formatPrice(priceCents != null ? priceCents * quantity : null)}`
+                        : formatPrice(priceCents),
+                    ].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 <Link to={`/product/${product.id}`} onClick={onClose}
@@ -307,6 +333,21 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
               {/* Scrollable module list */}
               <div className="flex-1 overflow-y-auto overscroll-contain">
 
+                {/* Plain-English summary — sits directly under the name,
+                    before any technical module. The one friendly,
+                    colorized read; everything below it is the detail. */}
+                {ci.summary && (
+                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-white/35 uppercase mb-2" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                      Summary
+                    </p>
+                    <SummaryText
+                      text={ci.summary}
+                      className="text-[13px] leading-relaxed text-white/70"
+                    />
+                  </div>
+                )}
+
                 {/* Mobile identity block */}
                 <div className="lg:hidden px-4 py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
                   <div className="flex flex-wrap gap-x-3.5 gap-y-1 mb-3">
@@ -318,6 +359,24 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                       {passportStats.map((s) => <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />)}
                     </div>
                   )}
+                  {ci.tiers.length > 0 && (
+                    <div className="mt-3">
+                      <div className="flex items-baseline justify-between mb-2">
+                        <span className="text-white/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                          Tier
+                        </span>
+                        <span className="text-white font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                          {formatPrice(priceCents)}
+                        </span>
+                      </div>
+                      <TierStrip
+                        mode="select"
+                        variants={ci.tiers}
+                        selectedIndex={selectedTierIndex}
+                        onSelect={setSelectedTierIndex}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Module stack */}
@@ -325,21 +384,6 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                   <IntelModule key={mod.key} index={mod.index} title={mod.title} defaultOpen={mod.defaultOpen} reserved={mod.reserved}>
                     {mod.kind === 'text' && (
                       <ModuleBody><ModuleText>{mod.content}</ModuleText></ModuleBody>
-                    )}
-                    {mod.kind === 'tiers' && (
-                      <ModuleBody>
-                        <TierStrip
-                          mode="select"
-                          variants={ci.tiers}
-                          selectedIndex={selectedTierIndex}
-                          onSelect={setSelectedTierIndex}
-                        />
-                        {activeTier && (
-                          <p className="mt-2.5 text-white/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
-                            Selected: {activeTier.dose}{activeTier.sku && <span className="ml-2 text-white/18">SKU {activeTier.sku}</span>}
-                          </p>
-                        )}
-                      </ModuleBody>
                     )}
                     {mod.kind === 'datagrid' && (
                       <ModuleBody><DataGrid rows={mod.rows} /></ModuleBody>

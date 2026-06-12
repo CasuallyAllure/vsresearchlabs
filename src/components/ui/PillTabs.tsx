@@ -66,12 +66,20 @@ export function PillTabs({
               if (!isActive) onChange(tab.id);
             }}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs transition-colors duration-150',
-              'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
+              'px-3 py-1.5 rounded-lg text-xs transition-all duration-150',
+              'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
               isActive
-                ? 'bg-white/[0.08] text-white font-medium'
-                : 'text-white/55 font-normal hover:text-white/80',
+                ? 'bg-holo/[0.12] text-holo-light font-medium border border-holo/30'
+                : 'text-white/55 font-normal hover:text-holo-light border border-transparent',
             )}
+            style={
+              isActive
+                ? {
+                    boxShadow:
+                      '0 0 8px rgba(100, 200, 255, 0.28), inset 0 0 6px rgba(100, 200, 255, 0.08)',
+                  }
+                : undefined
+            }
           >
             {tab.label}
           </button>

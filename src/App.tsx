@@ -5,7 +5,10 @@ import { AnimatedPortalShell } from './layout/AnimatedPortalShell';
 import { GlobalFooter } from './layout/GlobalFooter';
 import { BottomNav } from './layout/BottomNav';
 import { Landing } from './pages/Landing';
-import { ResearchSupplies } from './pages/ResearchSupplies';
+import { ResearchSuppliesHub } from './pages/ResearchSuppliesHub';
+import { BiopeptideResearchSupplies } from './pages/BiopeptideResearchSupplies';
+import { NootropicsResearchSupplies } from './pages/NootropicsResearchSupplies';
+import { SkincareResearchSupplies } from './pages/SkincareResearchSupplies';
 import { LaboratoryEquipment } from './pages/LaboratoryEquipment';
 import { ProductPage } from './pages/ProductPage';
 import { Catalog } from './pages/Catalog';
@@ -17,6 +20,12 @@ import { DocumentDetail } from './pages/DocumentDetail';
 import { AdminList } from './pages/admin/AdminList';
 import { AdminEdit } from './pages/admin/AdminEdit';
 import { AdminGate } from './pages/admin/AdminGate';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminInventory } from './pages/admin/AdminInventory';
+import { AdminInquiries } from './pages/admin/AdminInquiries';
+import { AdminOrders } from './pages/admin/AdminOrders';
+import { AdminOrderDetail } from './pages/admin/AdminOrderDetail';
+import { AdminStockHistory } from './pages/admin/AdminStockHistory';
 
 export default function App() {
   return (
@@ -26,7 +35,10 @@ export default function App() {
         <AnimatedPortalShell>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/research-supplies" element={<ResearchSupplies />} />
+            <Route path="/research-supplies" element={<ResearchSuppliesHub />} />
+            <Route path="/research-supplies/biopeptide" element={<BiopeptideResearchSupplies />} />
+            <Route path="/research-supplies/nootropics" element={<NootropicsResearchSupplies />} />
+            <Route path="/research-supplies/skincare" element={<SkincareResearchSupplies />} />
             <Route path="/laboratory-equipment" element={<LaboratoryEquipment />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/research" element={<Research />} />
@@ -35,30 +47,15 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/documentation/:id" element={<DocumentDetail />} />
-            <Route
-              path="/admin"
-              element={
-                <AdminGate>
-                  <AdminList />
-                </AdminGate>
-              }
-            />
-            <Route
-              path="/admin/new"
-              element={
-                <AdminGate>
-                  <AdminEdit />
-                </AdminGate>
-              }
-            />
-            <Route
-              path="/admin/:id/edit"
-              element={
-                <AdminGate>
-                  <AdminEdit />
-                </AdminGate>
-              }
-            />
+            <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
+            <Route path="/admin/inventory" element={<AdminGate><AdminInventory /></AdminGate>} />
+            <Route path="/admin/inquiries" element={<AdminGate><AdminInquiries /></AdminGate>} />
+            <Route path="/admin/orders" element={<AdminGate><AdminOrders /></AdminGate>} />
+            <Route path="/admin/orders/:id" element={<AdminGate><AdminOrderDetail /></AdminGate>} />
+            <Route path="/admin/stock-history" element={<AdminGate><AdminStockHistory /></AdminGate>} />
+            <Route path="/admin/products" element={<AdminGate><AdminList /></AdminGate>} />
+            <Route path="/admin/new" element={<AdminGate><AdminEdit /></AdminGate>} />
+            <Route path="/admin/:id/edit" element={<AdminGate><AdminEdit /></AdminGate>} />
           </Routes>
         </AnimatedPortalShell>
         <GlobalFooter />

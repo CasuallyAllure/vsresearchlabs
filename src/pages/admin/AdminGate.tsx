@@ -1,97 +1,130 @@
 /**
  * AdminGate
- * Phase 3.6 — minimal local gate for /admin routes.
  *
- * This is NOT real auth. It's a deliberately small speed bump so the
- * admin scaffold isn't world-readable while we iterate. A real auth
- * system replaces this in a later phase.
+ * Real auth gate for /admin/* routes. Wraps the admin tree and renders:
+ *   - loading spinner while the initial session is resolved
+ *   - sign-in form if no session or non-admin session
+ *   - children only if signed in AND in admin_users.active=true
  *
- * Behavior
- * --------
- * - If `VITE_ADMIN_PASSPHRASE` is unset (e.g. local dev with empty .env),
- *   the gate is transparent — children render directly.
- * - Otherwise, the user must enter the passphrase once. The unlock token
- *   is stored in `sessionStorage`, so it survives in-tab navigation but
- *   not full browser restart.
+ * The auth state is exposed to descendants via the `useAdminAuth` hook
+ * (called again inside child pages — it's cheap; subscribes to the same
+ * auth event stream).
  */
 
 import { useState, type ReactNode } from 'react';
-
-const SESSION_KEY = 'vsresearchlabs.admin.unlocked';
-const REQUIRED = (import.meta.env.VITE_ADMIN_PASSPHRASE as string | undefined) ?? '';
-
-function isUnlocked(): boolean {
-  if (REQUIRED.length === 0) return true;
-  try {
-    return sessionStorage.getItem(SESSION_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
+import { useAdminAuth } from '../../lib/adminAuth';
+import { supabase } from '../../lib/supabase';
 
 export function AdminGate({ children }: { children: ReactNode }) {
-  const [unlocked, setUnlocked] = useState<boolean>(isUnlocked);
-  const [value, setValue] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const { loading, user, isAdmin, error, signIn } = useAdminAuth();
 
-  if (unlocked) return <>{children}</>;
+  if (!supabase) {
+    return (
+      <section className="py-[var(--space-16)] max-w-[52ch]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+          Admin
+        </p>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-4)]">
+          <span className="font-light text-white/85">Backend </span>
+          <span className="font-medium text-white">not configured.</span>
+        </h1>
+        <p className="holo-text-body text-[13px] leading-relaxed">
+          Set <code className="font-mono text-holo-light">VITE_SUPABASE_URL</code> and{' '}
+          <code className="font-mono text-holo-light">VITE_SUPABASE_ANON_KEY</code> in
+          your environment, then redeploy. Admin access requires the
+          Supabase backend.
+        </p>
+      </section>
+    );
+  }
 
-  function handleSubmit(e: React.FormEvent) {
+  if (loading) {
+    return (
+      <section className="py-[var(--space-16)] flex items-center justify-center">
+        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em]">
+          Verifying session…
+        </p>
+      </section>
+    );
+  }
+
+  if (user && isAdmin) {
+    return <>{children}</>;
+  }
+
+  return <AdminSignInForm signIn={signIn} error={error} />;
+}
+
+interface AdminSignInFormProps {
+  signIn: (email: string, password: string) => Promise<boolean>;
+  error: string | null;
+}
+
+function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (value === REQUIRED) {
-      try {
-        sessionStorage.setItem(SESSION_KEY, '1');
-      } catch {
-        /* sessionStorage unavailable — gate stays for this render */
-      }
-      setUnlocked(true);
-      setError(null);
-    } else {
-      setError('Incorrect passphrase.');
-    }
+    if (submitting) return;
+    setSubmitting(true);
+    await signIn(email.trim(), password);
+    setSubmitting(false);
   }
 
   return (
-    <section className="py-[var(--space-16)] max-w-[40ch]">
-      <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
-        Admin
+    <section className="py-[var(--space-16)] max-w-[44ch]">
+      <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+        Admin · Restricted
       </p>
-      <h1 className="text-3xl font-light text-white tracking-tight mb-[var(--space-3)]">
-        Restricted area
+      <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-3)]">
+        <span className="font-light text-white/85">Sign </span>
+        <span className="font-medium text-white">in.</span>
       </h1>
-      <p className="text-sm text-white/55 leading-relaxed mb-[var(--space-8)]">
-        This area is for internal catalog management. Enter the admin
-        passphrase to continue.
+      <p className="holo-text-body text-[13px] leading-relaxed mb-[var(--space-8)]">
+        This area is for internal operations. Accounts are provisioned
+        by an existing admin via the Supabase dashboard.
       </p>
 
       <form onSubmit={handleSubmit} noValidate>
         <label
-          htmlFor="admin-passphrase"
-          className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+          htmlFor="admin-email"
+          className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]"
         >
-          Passphrase
+          Email
         </label>
         <input
-          id="admin-passphrase"
-          type="password"
-          autoComplete="current-password"
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            if (error) setError(null);
-          }}
-          aria-invalid={!!error || undefined}
-          className={[
-            'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black/40 border rounded-lg text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
-            error
-              ? 'border-red-500/60 focus:border-red-400'
-              : 'border-white/10 focus:border-gold/50',
-          ].join(' ')}
+          id="admin-email"
+          type="email"
+          required
+          autoComplete="username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors mb-[var(--space-5)]"
+          placeholder="you@vsresearchlabs.com"
         />
+
+        <label
+          htmlFor="admin-password"
+          className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]"
+        >
+          Password
+        </label>
+        <input
+          id="admin-password"
+          type="password"
+          required
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+        />
+
         {error && (
           <p
             role="alert"
-            className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400"
+            className="mt-[var(--space-4)] text-[11px] uppercase tracking-[0.2em] text-red-400"
           >
             {error}
           </p>
@@ -99,9 +132,11 @@ export function AdminGate({ children }: { children: ReactNode }) {
 
         <button
           type="submit"
-          className="mt-[var(--space-6)] px-[var(--space-8)] py-[var(--space-3)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
+          disabled={submitting || email.length === 0 || password.length === 0}
+          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
         >
-          Unlock
+          <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
+          <span className="relative">{submitting ? 'Signing in…' : 'Sign in'}</span>
         </button>
       </form>
     </section>

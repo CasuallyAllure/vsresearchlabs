@@ -28,3 +28,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Agent / tool state — local to this machine, not part of the project
+.agents/
+.claude/
+skills-lock.json

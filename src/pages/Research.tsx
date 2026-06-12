@@ -22,10 +22,9 @@
 
 import { useMemo, useState } from 'react';
 import { PillTabs, type PillTab } from '../components/ui/PillTabs';
-import { InventoryList } from '../components/catalog/InventoryList';
+import { ProductGrid } from '../components/ProductGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { useProducts } from '../hooks/useProducts';
-import { ErrorState } from '../components/system/ErrorState';
 import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 
 const ALL_TAB = '__all__';
@@ -86,18 +85,19 @@ export function Research() {
 
   return (
     <section className="py-[var(--space-8)]">
-      {/* Header — intelligence archive framing. No procurement language. */}
+      {/* Header — intelligence archive framing. Holo register. */}
       <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Research Intelligence Library
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
-          Research Intelligence
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
+          <span className="font-light text-white/85">Compounds </span>
+          <span className="font-medium text-white">on record.</span>
         </h1>
-        <p className="mt-[var(--space-3)] text-sm text-white/55 max-w-[58ch] leading-relaxed">
-          Every compound on record. Mechanism, receptor activity,
-          signaling pathway, published studies, regulatory posture —
-          sourced and citable. Open any compound to read its full
+        <p className="holo-text-body mt-[var(--space-3)] max-w-[58ch] text-[13px] leading-relaxed">
+          Every compound on record — mechanism, receptor activity,
+          signaling pathway, published studies, regulatory posture.
+          Sourced and citable. Open any compound to read its full
           intelligence dossier.
         </p>
       </header>
@@ -179,20 +179,17 @@ export function Research() {
         {totalLabel}
       </p>
 
-      {error && <ErrorState message="Intelligence library could not be loaded." />}
-
-      {!error && (
-        <InventoryList
-          products={filtered}
-          loading={loading}
-          emptyLabel={
-            query.trim().length > 0
-              ? `No compounds match "${query.trim()}".`
-              : 'No compounds match the active filters.'
-          }
-          onInspect={setInspectedId}
-        />
-      )}
+      <ProductGrid
+        products={filtered}
+        loading={loading}
+        error={error}
+        emptyLabel={
+          query.trim().length > 0
+            ? `No compounds match "${query.trim()}".`
+            : 'No compounds match the active filters.'
+        }
+        onInspect={setInspectedId}
+      />
 
       {inspectedProduct && (
         <CompoundIntelligenceOverlay

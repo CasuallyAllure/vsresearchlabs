@@ -42,6 +42,7 @@ import {
   ModuleText,
 } from '../components/catalog/intelligence/IntelModule';
 import { StudyCard } from '../components/catalog/intelligence/StudyCard';
+import { SummaryText } from '../components/catalog/intelligence/SummaryText';
 import { RegulatoryChipCluster } from '../components/catalog/intelligence/RegulatoryChipCluster';
 import { TierStrip } from '../components/catalog/intelligence/TierStrip';
 import {
@@ -198,10 +199,17 @@ export function ProductPage() {
     defaultOpen: true,
     render: () => (
       <ModuleBody>
-        {product.shortDescription && (
-          <p className="text-white/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
-            {product.shortDescription}
-          </p>
+        {product.laymanSummary ? (
+          <SummaryText
+            text={product.laymanSummary}
+            className="text-[13px] leading-relaxed text-white/75 mb-[var(--space-3)]"
+          />
+        ) : (
+          product.shortDescription && (
+            <p className="text-white/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
+              {product.shortDescription}
+            </p>
+          )
         )}
         {product.longDescription && (
           <p className="text-white/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>
@@ -275,23 +283,23 @@ export function ProductPage() {
   return (
     <article className="pb-[var(--space-24)] lg:pb-[var(--space-8)]">
       {/* Breadcrumb */}
-      <nav className="mb-[var(--space-5)] text-xs uppercase tracking-widest text-white/40">
-        <Link to="/" className="hover:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30">
+      <nav className="mb-[var(--space-5)] text-xs uppercase tracking-widest holo-text-caption">
+        <Link to="/" className="hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/30">
           Home
         </Link>
         <span className="mx-[var(--space-2)] text-white/20">/</span>
-        <Link to={categoryHref} className="hover:text-white/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30">
+        <Link to={categoryHref} className="hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/30">
           {categoryLabel}
         </Link>
         <span className="mx-[var(--space-2)] text-white/20">/</span>
-        <span className="text-white/60 normal-case tracking-normal">{ci.substance}</span>
+        <span className="holo-text-body normal-case tracking-normal">{ci.substance}</span>
       </nav>
 
       <div className="flex flex-col lg:flex-row lg:gap-x-[var(--space-8)] lg:items-start">
 
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
-          className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-14 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
+          className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
           style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}
           aria-label="Compound reference and inquiry"
         >
@@ -347,7 +355,7 @@ export function ProductPage() {
               <AbbreviationChip value={ci.abbreviation} />
               <span className="text-[10px] uppercase tracking-[0.25em] text-white/45">{ci.family}</span>
             </div>
-            <h1 className="text-white font-medium leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
+            <h1 className="holo-text-display font-medium leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
               {ci.substance}
             </h1>
             <p className="text-white/60" style={{ fontSize: '11.5px' }}>
@@ -477,9 +485,9 @@ export function ProductPage() {
         </main>
       </div>
 
-      {/* Mobile sticky action bar — clears the BottomNav (h-14) */}
+      {/* Mobile sticky action bar — sits above the floating BottomNav pill */}
       <div
-        className="lg:hidden fixed left-0 right-0 bottom-14 z-40"
+        className="lg:hidden fixed left-0 right-0 bottom-[56px] z-40"
         style={{ backgroundColor: '#000', borderTop: '1px solid rgba(255,255,255,0.07)' }}
         role="region"
         aria-label="Add to inquiry"

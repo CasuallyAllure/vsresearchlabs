@@ -1,0 +1,546 @@
+/**
+ * CompoundHologram3D
+ *
+ * Real WebGL 3D rendering of a peptide structure for the FIG-01 hero frame.
+ *
+ * REAL STRUCTURE: when given a `structure` whose atoms carry element /
+ * residue identity (see src/data/structures/retatrutide.json, parsed from
+ * RCSB PDB 8YW3 — the cryo-EM retatrutide·GLP-1R·Gs complex), every dot is
+ * an experimentally-resolved heavy atom and the scouter reads its TRUE
+ * element, residue, atom name, and real bond length. Nothing fabricated.
+ *
+ * Fallback: with no structure (or atoms lacking element data) it renders a
+ * stylized procedural alpha-helix — clearly illustrative, and the scouter
+ * reports only element-level facts true of any peptide backbone.
+ *
+ * Interaction
+ * ───────────
+ *  - Auto rotation; pauses while a target is locked.
+ *  - Drag to rotate; scroll/pinch to zoom (clamped); pan disabled.
+ *  - HOVER SCOUTER: a CRT readout locks onto any atom or bond, anchored to
+ *    the 3D point and tracking rotation. prefers-reduced-motion drops the
+ *    scan/flicker animations.
+ *  - Pointer events only inside the inset; frame margins stay swipeable.
+ *
+ * Encapsulation: everything WebGL + HUD lives in this file.
+ */
+
+import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { OrbitControls, Html } from '@react-three/drei';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AdditiveBlending, Color, Group, Quaternion, Vector3 } from 'three';
+
+// ── Public types ──────────────────────────────────────────────────────────
+
+interface Atom {
+  pos: [number, number, number];
+  /** Procedural styling hint (fallback helix only). */
+  type?: 'core' | 'accent';
+  /** Real-structure fields (present for PDB-derived data). */
+  el?: string;
+  res?: string;
+  resSeq?: number;
+  name?: string;
+  bb?: boolean;
+}
+
+/** [a, b] or [a, b, type, lengthÅ] for real structures. */
+type Bond = [number, number] | [number, number, string, number];
+
+export interface CompoundStructure {
+  atoms: Atom[];
+  bonds: Bond[];
+  accentBondIndices?: number[];
+  meta?: Record<string, unknown>;
+}
+
+interface CompoundHologram3DProps {
+  structure?: CompoundStructure;
+}
+
+// ── Element data (real chemistry) + holographic CPK palette ───────────────
+
+const ELEMENTS: Record<string, { name: string; z: number; mass: number; eneg: number }> = {
+  H: { name: 'Hydrogen', z: 1, mass: 1.008, eneg: 2.2 },
+  C: { name: 'Carbon', z: 6, mass: 12.01, eneg: 2.55 },
+  N: { name: 'Nitrogen', z: 7, mass: 14.01, eneg: 3.04 },
+  O: { name: 'Oxygen', z: 8, mass: 16.0, eneg: 3.44 },
+  S: { name: 'Sulfur', z: 16, mass: 32.06, eneg: 2.58 },
+  P: { name: 'Phosphorus', z: 15, mass: 30.97, eneg: 2.19 },
+};
+
+const ELEMENT_STYLE: Record<string, { color: string; emissive: string }> = {
+  C: { color: '#5EE6E8', emissive: '#1F7878' }, // teal
+  N: { color: '#6AA8FF', emissive: '#274C9C' }, // blue
+  O: { color: '#FF8A9B', emissive: '#9C3A48' }, // coral (oxygen)
+  S: { color: '#E8D6A8', emissive: '#9C7C3E' }, // gold
+  P: { color: '#FFB066', emissive: '#9C5A20' }, // orange
+};
+const ELEMENT_FALLBACK = { color: '#8FD4FF', emissive: '#2A6A9C' };
+
+// Procedural-helix palette (fallback only)
+const ATOM_PALETTE = [
+  { color: '#64C8FF', emissive: '#2A7AB8' },
+  { color: '#4FE0C9', emissive: '#1F7A6A' },
+  { color: '#8AD4FF', emissive: '#3A7AB8' },
+  { color: '#6CE8C0', emissive: '#2A7A60' },
+  { color: '#7BD9F0', emissive: '#2A6A78' },
+  { color: '#5EE6E8', emissive: '#1F7878' },
+] as const;
+const ACCENT_ATOM = { color: '#E8D6A8', emissive: '#9C7C3E' };
+const BOND_COLOR = '#5EDDF6';
+const ACCENT_BOND_COLOR = '#C4A35A';
+
+const RES_NAMES: Record<string, string> = {
+  ALA: 'Ala', ARG: 'Arg', ASN: 'Asn', ASP: 'Asp', CYS: 'Cys', GLN: 'Gln', GLU: 'Glu',
+  GLY: 'Gly', HIS: 'His', ILE: 'Ile', LEU: 'Leu', LYS: 'Lys', MET: 'Met', PHE: 'Phe',
+  PRO: 'Pro', SER: 'Ser', THR: 'Thr', TRP: 'Trp', TYR: 'Tyr', VAL: 'Val',
+  AIB: 'Aib', '2ML': 'α-Me-Leu',
+};
+function resLabel(a: Atom): string {
+  return `${RES_NAMES[a.res ?? ''] ?? a.res ?? '?'} ${a.resSeq ?? ''}`.trim();
+}
+function atomRole(a: Atom): string {
+  switch (a.name) {
+    case 'N': return 'Backbone amide N';
+    case 'CA': return 'α-Carbon · Cα';
+    case 'C': return 'Carbonyl C';
+    case 'O': return 'Carbonyl O';
+    case 'CB': return 'β-Carbon';
+    case 'OXT': return 'C-terminal O';
+    default: return a.bb ? 'Backbone' : `Side chain · ${a.name ?? ''}`.trim();
+  }
+}
+
+// ── Scouter readout model ─────────────────────────────────────────────────
+
+interface AtomScan {
+  kind: 'atom';
+  symbol: string; elementName: string; z: number; mass: number; eneg: number;
+  role: string; residue?: string; accent: boolean; source?: string;
+}
+interface BondScan {
+  kind: 'bond';
+  btype: string; detail: string; length: string; energy?: string; accent: boolean; source?: string;
+}
+type Scan = (AtomScan | BondScan) & { anchor: [number, number, number] };
+
+// ── Procedural alpha-helix (fallback) ─────────────────────────────────────
+
+function buildHelixStructure(): CompoundStructure {
+  const turns = 2.4, height = 3.6, radius = 0.85, atomsPerTurn = 6;
+  const total = Math.round(turns * atomsPerTurn);
+  const atoms: Atom[] = [];
+  for (let i = 0; i < total; i++) {
+    const t = i / (total - 1);
+    const angle = t * turns * Math.PI * 2;
+    const y = t * height - height / 2;
+    atoms.push({ pos: [Math.cos(angle) * radius, y, Math.sin(angle) * radius], type: 'core' });
+  }
+  const accentTopIdx = atoms.length;
+  atoms.push({ pos: [0, height / 2 + 0.7, 0], type: 'accent' });
+  const accentBottomIdx = atoms.length;
+  atoms.push({ pos: [0, -height / 2 - 0.7, 0], type: 'accent' });
+  const bonds: Bond[] = [];
+  for (let i = 0; i < total - 1; i++) bonds.push([i, i + 1]);
+  const accentBondIndices: number[] = [];
+  bonds.push([total - 1, accentTopIdx]); accentBondIndices.push(bonds.length - 1);
+  bonds.push([0, accentBottomIdx]); accentBondIndices.push(bonds.length - 1);
+  for (let i = 0; i + 4 < total; i += 4) bonds.push([i, i + 4]);
+  return { atoms, bonds, accentBondIndices };
+}
+
+function proceduralAtomScan(index: number, total: number, accent: boolean): AtomScan {
+  if (accent) {
+    const top = index === total;
+    return top
+      ? { kind: 'atom', symbol: 'O', elementName: 'Oxygen', z: 8, mass: 16.0, eneg: 3.44, role: 'C-terminus · –COO⁻', accent: true }
+      : { kind: 'atom', symbol: 'C', elementName: 'Carbon', z: 6, mass: 12.01, eneg: 2.55, role: 'Lipidation site · γGlu–C20', accent: true };
+  }
+  const slot = index % 3;
+  const el = slot === 0 ? ELEMENTS.N : ELEMENTS.C;
+  const symbol = slot === 0 ? 'N' : 'C';
+  const role = slot === 0 ? 'Backbone amide N' : slot === 1 ? 'α-Carbon · Cα' : 'Carbonyl C · C=O';
+  return { kind: 'atom', symbol, elementName: el.name, z: el.z, mass: el.mass, eneg: el.eneg, role, accent: false };
+}
+
+// ── Atom mesh ─────────────────────────────────────────────────────────────
+
+function AtomMesh({
+  atom, index, dense, paletteIndex, onHover, onClear,
+}: {
+  atom: Atom; index: number; dense: boolean; paletteIndex: number;
+  onHover: (kind: 'atom', index: number) => void; onClear: () => void;
+}) {
+  const accent = atom.type === 'accent';
+  const style = atom.el ? (ELEMENT_STYLE[atom.el] ?? ELEMENT_FALLBACK) : accent ? ACCENT_ATOM : ATOM_PALETTE[paletteIndex % ATOM_PALETTE.length];
+  const coreRadius = dense ? (atom.el === 'O' || atom.el === 'N' ? 0.07 : 0.078) : accent ? 0.14 : 0.1;
+  const haloRadius = dense ? 0.135 : accent ? 0.32 : 0.26;
+  const haloOpacity = dense ? 0.13 : accent ? 0.22 : 0.18;
+  const [hot, setHot] = useState(false);
+
+  function enter(e: ThreeEvent<PointerEvent>) {
+    e.stopPropagation(); setHot(true); document.body.style.cursor = 'crosshair'; onHover('atom', index);
+  }
+  function leave(e: ThreeEvent<PointerEvent>) {
+    e.stopPropagation(); setHot(false); document.body.style.cursor = ''; onClear();
+  }
+
+  return (
+    <group position={atom.pos}>
+      <mesh>
+        <sphereGeometry args={[coreRadius, dense ? 12 : 20, dense ? 12 : 20]} />
+        <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : 1.1} roughness={0.3} metalness={0.15} />
+      </mesh>
+      {/* Halo doubles as the (larger) hover target. */}
+      <mesh onPointerOver={enter} onPointerOut={leave}>
+        <sphereGeometry args={[haloRadius, 10, 10]} />
+        <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// ── Bond mesh ─────────────────────────────────────────────────────────────
+
+function BondMesh({
+  from, to, accent, dense, index, onHover, onClear,
+}: {
+  from: [number, number, number]; to: [number, number, number]; accent: boolean; dense: boolean;
+  index: number; onHover: (kind: 'bond', index: number) => void; onClear: () => void;
+}) {
+  const { position, quaternion, length } = useMemo(() => {
+    const start = new Vector3(...from), end = new Vector3(...to);
+    const direction = new Vector3().subVectors(end, start);
+    const len = direction.length();
+    const mid = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const q = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.clone().normalize());
+    return { position: mid.toArray() as [number, number, number], quaternion: q, length: len };
+  }, [from, to]);
+
+  const color = accent ? ACCENT_BOND_COLOR : BOND_COLOR;
+  const coreR = dense ? 0.02 : 0.018;
+  const hitR = dense ? 0.06 : 0.13;
+  const [hot, setHot] = useState(false);
+
+  function enter(e: ThreeEvent<PointerEvent>) {
+    e.stopPropagation(); setHot(true); document.body.style.cursor = 'crosshair'; onHover('bond', index);
+  }
+  function leave(e: ThreeEvent<PointerEvent>) {
+    e.stopPropagation(); setHot(false); document.body.style.cursor = ''; onClear();
+  }
+
+  return (
+    <group position={position} quaternion={quaternion}>
+      <mesh>
+        <cylinderGeometry args={[coreR, coreR, length, 7]} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hot ? 2.6 : 1.4} roughness={0.4} />
+      </mesh>
+      {!dense && (
+        <mesh>
+          <cylinderGeometry args={[0.05, 0.05, length, 9]} />
+          <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : 0.22} blending={AdditiveBlending} depthWrite={false} />
+        </mesh>
+      )}
+      <mesh onPointerOver={enter} onPointerOut={leave}>
+        <cylinderGeometry args={[hitR, hitR, length, 6]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// ── Scouter HUD card ──────────────────────────────────────────────────────
+
+function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolean; placement: { right: boolean; top: boolean } }) {
+  const accent = scan.accent;
+  const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(110,240,224,0.9)';
+  const glow = accent ? 'rgba(196,163,90,0.30)' : 'rgba(94,221,246,0.30)';
+  const tint = accent ? '#F2D98A' : '#8FF4E8';
+
+  // Open the card toward screen-centre so it never bleeds off an edge,
+  // hugging the atom with a small offset.
+  const pos = {
+    [placement.right ? 'right' : 'left']: 12,
+    [placement.top ? 'top' : 'bottom']: 12,
+    transformOrigin: `${placement.right ? 'right' : 'left'} ${placement.top ? 'top' : 'bottom'}`,
+  } as React.CSSProperties;
+
+  return (
+    <div className="holo-scouter-anchor">
+      <svg className="holo-scouter-link" width="0" height="0" style={{ overflow: 'visible' }} aria-hidden="true">
+        <circle cx="0" cy="0" r="7" fill="none" stroke={edge} strokeWidth="1" className={reduced ? '' : 'holo-reticle'} />
+        <circle cx="0" cy="0" r="2" fill={tint} />
+      </svg>
+
+      <div className={`holo-scouter-card${reduced ? '' : ' holo-live'}`} style={{ borderColor: edge, boxShadow: `0 0 0 1px ${glow}, 0 5px 18px rgba(0,0,0,0.6), 0 0 22px ${glow}`, ...pos }}>
+        <i className="holo-cnr tl" style={{ borderColor: edge }} />
+        <i className="holo-cnr tr" style={{ borderColor: edge }} />
+        <i className="holo-cnr bl" style={{ borderColor: edge }} />
+        <i className="holo-cnr br" style={{ borderColor: edge }} />
+
+        <div className="holo-status">
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: tint }}>
+            <span className={reduced ? '' : 'holo-blink'} style={{ width: 5, height: 5, borderRadius: '50%', background: tint, boxShadow: `0 0 6px ${tint}` }} />
+            LOCKED
+          </span>
+          <span style={{ color: 'rgba(255,255,255,0.35)' }}>{scan.kind === 'atom' ? 'ATOM' : 'BOND'}</span>
+        </div>
+
+        {scan.kind === 'atom' ? (
+          <>
+            <div className="holo-head">
+              <span className="holo-sym" style={{ color: tint, borderColor: edge, boxShadow: `inset 0 0 10px ${glow}` }}>{scan.symbol}</span>
+              <div style={{ minWidth: 0 }}>
+                <div className="holo-title">{scan.elementName}</div>
+                <div className="holo-sub">Z {scan.z} · {scan.mass.toFixed(2)} u · χ {scan.eneg.toFixed(2)}</div>
+              </div>
+            </div>
+            <div className="holo-kv"><span className="holo-lbl">ROLE</span><span className="holo-val">{scan.role}</span></div>
+            {scan.residue && <div className="holo-kv"><span className="holo-lbl">RESIDUE</span><span className="holo-val">{scan.residue}</span></div>}
+          </>
+        ) : (
+          <>
+            <div className="holo-title" style={{ marginTop: 1 }}>{scan.btype}</div>
+            <div className="holo-sub" style={{ marginBottom: 6 }}>{scan.detail}</div>
+            <div className="holo-kv"><span className="holo-lbl">LENGTH</span><span className="holo-val">{scan.length}</span></div>
+            {scan.energy && <div className="holo-kv"><span className="holo-lbl">ENERGY</span><span className="holo-val">{scan.energy}</span></div>}
+          </>
+        )}
+
+        {scan.source && (
+          <div className="holo-src" style={{ color: tint }}>{scan.source}</div>
+        )}
+
+        {!reduced && <span className="holo-sweep" style={{ background: `linear-gradient(180deg, transparent, ${edge}, transparent)` }} />}
+        <span className="holo-crt" aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
+// ── Scene ─────────────────────────────────────────────────────────────────
+
+function MolecularScene({
+  structure, hovered, onHover, onClear, reduced,
+}: {
+  structure: CompoundStructure;
+  hovered: { kind: 'atom' | 'bond'; index: number } | null;
+  onHover: (kind: 'atom' | 'bond', index: number) => void;
+  onClear: () => void;
+  reduced: boolean;
+}) {
+  const groupRef = useRef<Group>(null);
+  const { camera } = useThree();
+  const dense = useMemo(() => structure.atoms.some((a) => !!a.el), [structure.atoms]);
+  const coreCount = useMemo(() => structure.atoms.filter((a) => a.type !== 'accent').length, [structure.atoms]);
+  const accentBondSet = useMemo(() => new Set(structure.accentBondIndices ?? []), [structure.accentBondIndices]);
+  const source = useMemo(() => {
+    const m = structure.meta;
+    if (!m) return undefined;
+    return `${String(m.name ?? '').toUpperCase()} · PDB ${m.pdb ?? ''} · ${m.method ?? ''}`.replace(/ · $/, '').trim();
+  }, [structure.meta]);
+
+  // Build the active scan + anchor from the hovered index.
+  const scan: Scan | null = useMemo(() => {
+    if (!hovered) return null;
+    if (hovered.kind === 'atom') {
+      const a = structure.atoms[hovered.index];
+      if (!a) return null;
+      let base: AtomScan;
+      if (a.el) {
+        const e = ELEMENTS[a.el] ?? { name: a.el, z: 0, mass: 0, eneg: 0 };
+        base = { kind: 'atom', symbol: a.el, elementName: e.name, z: e.z, mass: e.mass, eneg: e.eneg, role: atomRole(a), residue: resLabel(a), accent: false, source };
+      } else {
+        base = { ...proceduralAtomScan(hovered.index, coreCount, a.type === 'accent') };
+      }
+      return { ...base, anchor: a.pos };
+    }
+    const bond = structure.bonds[hovered.index];
+    if (!bond) return null;
+    const a = structure.atoms[bond[0]], b = structure.atoms[bond[1]];
+    const mid: [number, number, number] = [(a.pos[0] + b.pos[0]) / 2, (a.pos[1] + b.pos[1]) / 2, (a.pos[2] + b.pos[2]) / 2];
+    let base: BondScan;
+    if (bond.length >= 4) {
+      const t = bond[2] as string;
+      const len = bond[3] as number;
+      const btype = t === 'peptide' ? 'Peptide bond' : t === 'backbone' ? 'Backbone bond' : 'Side-chain bond';
+      const detail = `${a.name ?? ''} (${resLabel(a)}) — ${b.name ?? ''} (${resLabel(b)})`.trim();
+      base = { kind: 'bond', btype, detail, length: `${len.toFixed(2)} Å`, accent: t === 'peptide', source };
+    } else {
+      // procedural bond classification
+      const accentB = accentBondSet.has(hovered.index);
+      base = accentB
+        ? { kind: 'bond', btype: 'Terminal linkage', detail: 'chain terminus / acyl chain', length: '—', accent: true }
+        : Math.abs(bond[0] - bond[1]) === 4
+          ? { kind: 'bond', btype: 'α-Helix H-bond', detail: 'N–H···O=C (i → i+4)', length: '≈ 2.0 Å', energy: '≈ 21 kJ/mol', accent: false }
+          : { kind: 'bond', btype: 'Peptide bond', detail: 'C–N amide (partial C=N)', length: '≈ 1.33 Å', energy: '≈ 308 kJ/mol', accent: false };
+    }
+    return { ...base, anchor: mid };
+  }, [hovered, structure, coreCount, accentBondSet, source]);
+
+  // Which screen quadrant is the locked point in? Open the card the other
+  // way so it never bleeds off the top/right edges. Done in-frame (where
+  // reading the ref is legal) so it reflects the model's live orientation;
+  // also drives the slow axial wobble.
+  const [placement, setPlacement] = useState({ right: false, top: false });
+  const projVec = useRef(new Vector3());
+
+  useFrame((state) => {
+    const g = groupRef.current;
+    if (!g) return;
+    if (!reduced && !hovered) {
+      g.rotation.z = Math.sin(state.clock.elapsedTime * 0.3) * 0.035;
+    }
+    if (scan) {
+      const v = projVec.current
+        .set(scan.anchor[0], scan.anchor[1], scan.anchor[2])
+        .applyMatrix4(g.matrixWorld)
+        .project(camera);
+      const right = v.x > 0.1;
+      const top = v.y > 0.1;
+      if (right !== placement.right || top !== placement.top) setPlacement({ right, top });
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {structure.atoms.map((atom, i) => (
+        <AtomMesh key={`a${i}`} atom={atom} index={i} dense={dense} paletteIndex={i} onHover={onHover} onClear={onClear} />
+      ))}
+      {structure.bonds.map((bond, i) => (
+        <BondMesh
+          key={`b${i}`}
+          from={structure.atoms[bond[0]].pos}
+          to={structure.atoms[bond[1]].pos}
+          accent={accentBondSet.has(i) || (bond.length >= 4 && bond[2] === 'peptide')}
+          dense={dense}
+          index={i}
+          onHover={onHover}
+          onClear={onClear}
+        />
+      ))}
+
+      {scan && (
+        <Html position={scan.anchor} center zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }} wrapperClass="holo-scouter-wrap">
+          <ScouterCard scan={scan} reduced={reduced} placement={placement} />
+        </Html>
+      )}
+    </group>
+  );
+}
+
+// ── Public component ─────────────────────────────────────────────────────
+
+export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) {
+  const resolved = useMemo(() => structure ?? buildHelixStructure(), [structure]);
+  const dense = useMemo(() => resolved.atoms.some((a) => !!a.el), [resolved]);
+  const [hovered, setHovered] = useState<{ kind: 'atom' | 'bond'; index: number } | null>(null);
+
+  const reduced = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  useEffect(() => () => { document.body.style.cursor = ''; }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+      <div className="absolute inset-[6%] pointer-events-auto" style={{ touchAction: 'pan-x' }}>
+        <Canvas
+          camera={{ position: [0, 0, dense ? 8 : 7], fov: 30 }}
+          dpr={[1, 2]}
+          gl={{ antialias: true, alpha: true }}
+          style={{ background: 'transparent' }}
+          onPointerMissed={() => setHovered(null)}
+          onCreated={({ scene }) => {
+            scene.background = null;
+            scene.fog = null;
+            scene.environment = null;
+            const tint = new Color('#04101a');
+            scene.background = null;
+            void tint;
+          }}
+        >
+          <ambientLight intensity={0.45} color="#3A8CB8" />
+          <pointLight position={[3, 4, 5]} intensity={1.6} color="#64C8FF" />
+          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#A8E5FF" />
+          <pointLight position={[0, 4, -3]} intensity={0.5} color="#C4A35A" />
+          <pointLight position={[2, -3, -2]} intensity={0.4} color="#4FE0C9" />
+
+          <MolecularScene
+            structure={resolved}
+            hovered={hovered}
+            onHover={(kind, index) => setHovered({ kind, index })}
+            onClear={() => setHovered(null)}
+            reduced={reduced}
+          />
+
+          <OrbitControls
+            enablePan={false}
+            enableZoom
+            enableRotate
+            autoRotate={!hovered}
+            autoRotateSpeed={0.7}
+            minDistance={dense ? 4 : 3.5}
+            maxDistance={dense ? 16 : 11}
+            zoomSpeed={0.6}
+            rotateSpeed={0.7}
+            target={[0, 0, 0]}
+          />
+        </Canvas>
+      </div>
+
+      <style>{`
+        .holo-scouter-wrap { pointer-events: none; }
+        .holo-scouter-anchor { position: relative; width: 0; height: 0; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+        .holo-scouter-link { position: absolute; left: 0; top: 0; }
+        .holo-scouter-card {
+          position: absolute;
+          width: 150px; padding: 6px 8px 7px;
+          background: linear-gradient(180deg, rgba(8,17,23,0.95), rgba(5,10,14,0.97));
+          border: 1px solid; border-radius: 7px; overflow: hidden;
+          -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+        }
+        .holo-live { animation: holoPop 170ms cubic-bezier(0.2,0.9,0.25,1) both, holoFlicker 6s linear 200ms infinite; }
+        @keyframes holoPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes holoFlicker {
+          0%, 100% { opacity: 1; }
+          3% { opacity: 0.96; } 4% { opacity: 1; }
+          41% { opacity: 1; } 42% { opacity: 0.82; } 43% { opacity: 1; }
+          71% { opacity: 0.93; } 72% { opacity: 1; }
+          88% { opacity: 1; } 89% { opacity: 0.87; } 90% { opacity: 1; }
+        }
+        .holo-crt {
+          position: absolute; inset: 0; pointer-events: none; border-radius: 8px;
+          background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 1.6px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0.22) 3px);
+          opacity: 0.5; animation: holoCrt 3.4s ease-in-out infinite;
+        }
+        @keyframes holoCrt { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.58; } }
+        .holo-sweep { position: absolute; left: 0; right: 0; top: 0; height: 42%; opacity: 0.10; pointer-events: none; animation: holoSweep 2.6s linear infinite; }
+        @keyframes holoSweep { 0% { transform: translateY(-120%); } 100% { transform: translateY(360%); } }
+        .holo-blink { animation: holoBlink 0.9s steps(2, jump-none) infinite; }
+        @keyframes holoBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+        .holo-reticle { transform-box: fill-box; transform-origin: center; animation: holoSpin 4s linear infinite; }
+        @keyframes holoSpin { to { transform: rotate(360deg); } }
+        .holo-cnr { position: absolute; width: 6px; height: 6px; border: 0 solid; opacity: 0.9; z-index: 2; }
+        .holo-cnr.tl { left: 4px; top: 4px; border-left-width: 1px; border-top-width: 1px; }
+        .holo-cnr.tr { right: 4px; top: 4px; border-right-width: 1px; border-top-width: 1px; }
+        .holo-cnr.bl { left: 4px; bottom: 4px; border-left-width: 1px; border-bottom-width: 1px; }
+        .holo-cnr.br { right: 4px; bottom: 4px; border-right-width: 1px; border-bottom-width: 1px; }
+        .holo-status { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; font-size: 6.5px; letter-spacing: 0.18em; margin-bottom: 5px; }
+        .holo-head { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+        .holo-sym { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        .holo-title { position: relative; z-index: 1; font-size: 10.5px; font-weight: 600; color: #fff; line-height: 1.12; }
+        .holo-sub { position: relative; z-index: 1; font-size: 7px; letter-spacing: 0.03em; color: rgba(255,255,255,0.5); font-variant-numeric: tabular-nums; margin-top: 1px; }
+        .holo-kv { position: relative; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 3px; }
+        .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+        .holo-val { font-size: 8.5px; color: rgba(255,255,255,0.85); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
+        .holo-src { position: relative; z-index: 1; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 6.5px; letter-spacing: 0.12em; opacity: 0.85; }
+        @media (prefers-reduced-motion: reduce) {
+          .holo-live, .holo-crt, .holo-sweep, .holo-blink, .holo-reticle { animation: none !important; }
+        }
+      `}</style>
+    </div>
+  );
+}

@@ -5,21 +5,47 @@
  * this file (re-exported via `../types`).
  */
 
-export type ProductCategory = 'research-supplies' | 'laboratory-equipment';
+/**
+ * ProductCategory — top-level catalog department.
+ *
+ * Compounds live under one of three `*-research-supplies` categories.
+ * Equipment (instruments, consumables, handling tools) lives under
+ * `laboratory-equipment` and is further refined by `EquipmentClassification`.
+ *
+ * Invariant: compound categories carry the `-research-supplies` suffix;
+ * `laboratory-equipment` does not. This lets domain membership be derived
+ * from the category string itself without a separate domain field.
+ */
+export type ProductCategory =
+  | 'biopeptide-research-supplies'
+  | 'nootropics-research-supplies'
+  | 'skincare-research-supplies'
+  | 'laboratory-equipment';
+
+/**
+ * EquipmentClassification — internal filter dimension on the lab equipment
+ * catalog. Only meaningful when `category === 'laboratory-equipment'`;
+ * undefined for compound products.
+ */
+export type EquipmentClassification =
+  | 'general'
+  | 'biopeptide-sciences'
+  | 'nootropics-research'
+  | 'skincare-research';
 
 export type ProductType = 'peptide' | 'solvent' | 'consumable' | 'equipment';
 
 export type ResearchClassification =
-  | 'glp-1-agonist'
-  | 'dual-agonist'
-  | 'triple-agonist'
-  | 'growth-hormone-secretagogue'
-  | 'growth-factor'
-  | 'metabolic-lipolytic'
+  | 'glp1-appetite'
+  | 'gh-secretagogue'
+  | 'growth-factor-anabolic'
+  | 'metabolic-cofactor'
+  | 'regenerative'
   | 'nootropic-neuroactive'
-  | 'regenerative-healing'
+  | 'bioregulator'
   | 'immunomodulatory'
-  | 'bio-regulator'
+  | 'reproductive-hormonal'
+  | 'antioxidant-beauty'
   | 'experimental';
 
 export interface ProductSpec {
@@ -55,10 +81,23 @@ export interface Product {
   name: string;
   /** Enum category. No free strings. */
   category: ProductCategory;
+  /**
+   * Internal classification for laboratory-equipment items. Drives the
+   * PillTabs filter on `/laboratory-equipment`. Undefined on compound
+   * products — invariant enforced at the catalog page boundary.
+   */
+  equipmentClassification?: EquipmentClassification;
   /** Card subtitle / meta description. ≤ ~160 chars. */
   shortDescription: string;
   /** Product detail body. Plain text (no markdown in v1). */
   longDescription: string;
+  /**
+   * Plain-English, user-friendly summary shown prominently under the
+   * compound name (before the technical modules). Written for a regular
+   * reader, not a researcher. Supports a tiny highlight markup:
+   *   **text** → key term (cyan)   ~text~ → positive outcome (mint)   *text* → strong (white)
+   */
+  laymanSummary?: string;
   /** First image is hero, rest populate gallery. */
   images: string[];
   /** Key/value spec table. Optional per product. */
@@ -72,9 +111,9 @@ export interface Product {
   abbreviation: string;
   /**
    * Pharmacological / instrument class. Distinct from `category`:
-   * `category` is the catalog department (research-supplies vs
-   * laboratory-equipment); `family` is the procurement-meaningful
-   * grouping ("GLP-1 Agonist", "Solvent", "Sample Prep", etc.).
+   * `category` is the catalog department (one of three compound
+   * categories or laboratory-equipment); `family` is the procurement-
+   * meaningful grouping ("GLP-1 Agonist", "Solvent", "Sample Prep", etc.).
    * Wave 7c.
    */
   family: string;

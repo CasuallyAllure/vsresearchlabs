@@ -375,16 +375,17 @@ export function CartPage() {
     return (
       <div className="py-[var(--space-12)]">
         <header className="mb-[var(--space-10)]">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+          <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
             Inquiry Intake
           </p>
-          <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
-            Inquiry List
+          <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
+            <span className="font-light text-white/85">Inquiry </span>
+            <span className="font-medium text-white">list.</span>
           </h1>
         </header>
 
         <div className="py-[var(--space-12)] border-y border-white/[0.06] text-center">
-          <p className="text-white/55 text-sm mb-[var(--space-8)]">
+          <p className="holo-text-body text-[13px] mb-[var(--space-8)]">
             No items on the inquiry list. Add inventory from any product page.
           </p>
           <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
@@ -412,11 +413,12 @@ export function CartPage() {
   return (
     <div className="py-[var(--space-8)]">
       <header className="mb-[var(--space-10)]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Inquiry Intake
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
-          Inquiry List
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
+          <span className="font-light text-white/85">Inquiry </span>
+          <span className="font-medium text-white">list.</span>
         </h1>
       </header>
 
@@ -715,9 +717,10 @@ export function CartPage() {
           type="submit"
           onClick={() => setTouched({ name: true, contact: true })}
           disabled={formInvalid || submit.kind === 'submitting'}
-          className="mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
         >
-          {submit.kind === 'submitting' ? 'Sending…' : 'Send Inquiry'}
+          <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
+          <span className="relative">{submit.kind === 'submitting' ? 'Sending…' : 'Send Inquiry'}</span>
         </button>
             </form>
           </div>
