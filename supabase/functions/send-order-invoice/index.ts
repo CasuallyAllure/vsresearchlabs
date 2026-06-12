@@ -113,6 +113,9 @@ function buildInvoiceEmailHtml(args: {
       <p style="margin-top:18px;color:#888;font-size:11px;">
         Reference: <span style="font-family:monospace;">${escapeHtml(args.orderNumber)}</span>
       </p>
+      <p style="margin-top:12px;color:#888;font-size:11px;">
+        For Research Purposes Only — Not for Human or Veterinary Use.
+      </p>
     </div>`;
 }
 

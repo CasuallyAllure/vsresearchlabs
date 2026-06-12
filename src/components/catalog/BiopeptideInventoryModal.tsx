@@ -34,9 +34,14 @@ interface ManifestRow {
   model: string;
   group: ManifestGroup;
   specification: string;
+  /** Public-catalog visibility. Rows with hidden=true are excluded from the
+   *  customer-facing modal but remain in the data file + product_stock so
+   *  admin can still inventory-track them. */
+  hidden?: boolean;
+  hiddenReason?: string;
 }
 
-const ROWS = manifest as ManifestRow[];
+const ROWS = (manifest as ManifestRow[]).filter((r) => r.hidden !== true);
 
 const ALL_GROUPS = '__all__';
 

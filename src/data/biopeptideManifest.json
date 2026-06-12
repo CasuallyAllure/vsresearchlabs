@@ -459,35 +459,45 @@
     "abbreviation": "H10",
     "model": "HGH",
     "group": "growth-factor-anabolic",
-    "specification": "10mg"
+    "specification": "10mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 68,
     "abbreviation": "H12",
     "model": "HGH",
     "group": "growth-factor-anabolic",
-    "specification": "12mg"
+    "specification": "12mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 69,
     "abbreviation": "H15",
     "model": "HGH",
     "group": "growth-factor-anabolic",
-    "specification": "15mg"
+    "specification": "15mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 70,
     "abbreviation": "H24",
     "model": "HGH",
     "group": "growth-factor-anabolic",
-    "specification": "24mg"
+    "specification": "24mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 71,
     "abbreviation": "H36",
     "model": "HGH",
     "group": "growth-factor-anabolic",
-    "specification": "36mg"
+    "specification": "36mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 72,
@@ -900,7 +910,9 @@
     "abbreviation": "DR5",
     "model": "Dermorphin",
     "group": "nootropic-neuroactive",
-    "specification": "5mg"
+    "specification": "5mg",
+    "hidden": true,
+    "hiddenReason": "tier-1-restricted"
   },
   {
     "serial": 131,
