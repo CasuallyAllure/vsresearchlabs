@@ -331,11 +331,18 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </ul>
         </nav>
 
-        {/* Drawer footer — quiet legal/meta */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-white/[0.05]">
-          <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/30">
-            For research use only · Not for human use
+        {/* Drawer footer — quiet legal/meta + admin sign-in */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-white/[0.05] flex items-center justify-between gap-3">
+          <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/30 leading-snug">
+            For research use only<br />Not for human use
           </p>
+          <Link
+            to="/admin"
+            onClick={onClose}
+            className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/40 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm px-2 py-1 -mr-1 shrink-0"
+          >
+            Admin →
+          </Link>
         </div>
       </aside>
     </>
