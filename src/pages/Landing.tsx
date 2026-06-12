@@ -607,6 +607,17 @@ export function Landing() {
                 <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-white/20" />
                 <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-white/20" />
 
+                {/* Top scrim — keeps the caption legible and fades slide
+                    text out beneath it (above the carousel, below caption). */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-24"
+                  style={{
+                    background:
+                      'linear-gradient(to bottom, rgba(7,7,7,0.92) 0%, rgba(7,7,7,0.6) 45%, transparent 100%)',
+                  }}
+                />
+
                 {/* Top-left caption — micrographic data block */}
                 <div className="absolute left-4 top-4 z-10 flex flex-col gap-1">
                   <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-white/30">

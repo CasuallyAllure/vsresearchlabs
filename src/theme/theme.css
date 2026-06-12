@@ -802,7 +802,17 @@
   }
 }
 
+/* Bottom-nav hint bubble — a gentle bob to draw the eye to Research Supplies. */
+.vsr-nav-hint {
+  animation: vsr-nav-hint-bob 2.2s ease-in-out infinite;
+}
+@keyframes vsr-nav-hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vsr-light-leaks { animation: none; }
   .module-aura { animation: none; }
+  .vsr-nav-hint { animation: none; }
 }

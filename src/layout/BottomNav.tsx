@@ -238,6 +238,15 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
   const [sheetOpen, setSheetOpen] = useState(false);
+  // First-run hint bubble pointing at the Research Supplies slot. Once the
+  // user opens the sheet, it's dismissed for good.
+  const [hintSeen, setHintSeen] = useState(() => {
+    try {
+      return localStorage.getItem('vsr.suppliesHint') === '1';
+    } catch {
+      return false;
+    }
+  });
 
   const path = location.pathname;
   const isHome = path === '/';
@@ -259,6 +268,18 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
   useEffect(() => {
     setSheetOpen(false);
   }, [path]);
+
+  // Dismiss the hint permanently the first time the sheet is opened.
+  useEffect(() => {
+    if (sheetOpen && !hintSeen) {
+      setHintSeen(true);
+      try {
+        localStorage.setItem('vsr.suppliesHint', '1');
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [sheetOpen, hintSeen]);
 
   function handleSheetEntry(to: string) {
     setSheetOpen(false);
@@ -361,6 +382,37 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             '0 0 0 0.5px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 0.5px 0 rgba(255, 255, 255, 0.12)',
         }}
       >
+        {/* First-run hint — points at the center Research Supplies slot. */}
+        {!hintSeen && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap"
+          >
+            <span
+              className={`relative inline-block rounded-full px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.14em] ${reduce ? '' : 'vsr-nav-hint'}`}
+              style={{
+                color: '#06101a',
+                background: 'linear-gradient(180deg, #a6e9ff 0%, #5cc6f5 100%)',
+                boxShadow:
+                  '0 0 0 0.5px rgba(170,228,255,0.7), 0 4px 14px rgba(90,190,245,0.45), 0 0 22px rgba(120,210,255,0.4)',
+              }}
+            >
+              Research Supplies
+              <span
+                aria-hidden="true"
+                className="absolute left-1/2 top-full -translate-x-1/2"
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderLeft: '5px solid transparent',
+                  borderRight: '5px solid transparent',
+                  borderTop: '5px solid #5cc6f5',
+                }}
+              />
+            </span>
+          </div>
+        )}
+
         <ul className="flex items-center gap-2 px-3 py-1">
           <NavSlot isActive={isHome} ariaLabel="Home" kind="link" to="/">
             <HomeIcon active={isHome} reduce={reduce} />

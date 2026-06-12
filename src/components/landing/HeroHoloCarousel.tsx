@@ -328,7 +328,7 @@ function SlideHologram({ fdaStatus, humanTrials }: SlideHologramProps = {}) {
 
 function SlideEffects({ effects }: { effects: EffectRow[] }) {
   return (
-    <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 pt-20 sm:px-10 sm:pt-24">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-24">
       <div className="w-full max-w-[44ch]">
         <p className="mb-4 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Summary · Effects
@@ -364,7 +364,7 @@ function SlideEffects({ effects }: { effects: EffectRow[] }) {
 
 function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
   return (
-    <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 pt-12 sm:px-10">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-12">
       <div className="max-w-[40ch] text-center">
         <p className="mb-3 font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Mechanism · Brief
@@ -400,7 +400,7 @@ function SlideClinical({
 }) {
   const lead = study.notes?.[0];
   return (
-    <div className="absolute inset-0 flex items-center justify-center px-6 pb-10 pt-12 sm:px-10">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-12">
       <div className="max-w-[42ch]">
         <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           {study.phase ? `Clinical · ${study.phase}` : 'Clinical Observation'}
