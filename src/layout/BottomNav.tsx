@@ -389,12 +389,15 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap"
           >
             <span
-              className={`relative inline-block rounded-full px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.14em] ${reduce ? '' : 'vsr-nav-hint'}`}
+              className={`relative inline-block rounded-full px-2 py-[2.5px] text-[7px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
-                color: '#06101a',
-                background: 'linear-gradient(180deg, #a6e9ff 0%, #5cc6f5 100%)',
+                color: '#cdeeff',
+                background: 'linear-gradient(180deg, rgba(18,38,56,0.82) 0%, rgba(9,18,28,0.9) 100%)',
+                border: '0.5px solid rgba(120,210,255,0.45)',
                 boxShadow:
-                  '0 0 0 0.5px rgba(170,228,255,0.7), 0 4px 14px rgba(90,190,245,0.45), 0 0 22px rgba(120,210,255,0.4)',
+                  '0 0 0 0.5px rgba(120,210,255,0.14), 0 0 12px rgba(100,200,255,0.32), 0 4px 12px rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
               }}
             >
               Research Supplies
@@ -404,9 +407,9 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                 style={{
                   width: 0,
                   height: 0,
-                  borderLeft: '5px solid transparent',
-                  borderRight: '5px solid transparent',
-                  borderTop: '5px solid #5cc6f5',
+                  borderLeft: '4px solid transparent',
+                  borderRight: '4px solid transparent',
+                  borderTop: '4px solid rgba(120,210,255,0.55)',
                 }}
               />
             </span>

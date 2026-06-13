@@ -802,17 +802,44 @@
   }
 }
 
-/* Bottom-nav hint bubble — a gentle bob to draw the eye to Research Supplies. */
-.vsr-nav-hint {
-  animation: vsr-nav-hint-bob 2.2s ease-in-out infinite;
+/* Bottom-nav hint bubble — mostly stable, with intermittent chromatic
+   glitches (RGB split + micro jitter) to draw the eye to Research Supplies. */
+.vsr-nav-hint-glitch {
+  animation: vsr-nav-hint-glitch 3.4s steps(1, end) infinite;
 }
-@keyframes vsr-nav-hint-bob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-3px); }
+@keyframes vsr-nav-hint-glitch {
+  0%, 84%, 100% {
+    transform: translate(0, 0);
+    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+    opacity: 1;
+  }
+  85% {
+    transform: translate(-1px, 0.4px) skewX(-5deg);
+    text-shadow: 1.6px 0 rgba(255, 45, 85, 0.9), -1.6px 0 rgba(60, 230, 255, 0.9);
+    opacity: 0.92;
+  }
+  87% {
+    transform: translate(1px, -0.4px) skewX(4deg);
+    text-shadow: -1.6px 0 rgba(255, 45, 85, 0.9), 1.6px 0 rgba(60, 230, 255, 0.9);
+  }
+  88% {
+    transform: translate(0, 0);
+    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+  }
+  92% {
+    transform: translate(0.8px, 0);
+    text-shadow: 1px 0 rgba(255, 45, 85, 0.7), -1px 0 rgba(60, 230, 255, 0.7);
+    opacity: 0.85;
+  }
+  93% {
+    transform: translate(0, 0);
+    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .vsr-light-leaks { animation: none; }
   .module-aura { animation: none; }
-  .vsr-nav-hint { animation: none; }
+  .vsr-nav-hint-glitch { animation: none; }
 }
