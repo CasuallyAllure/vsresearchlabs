@@ -48,7 +48,7 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
   'growth-factor-anabolic':
     'Direct anabolic peptides — growth hormone itself, IGF-1 variants, and HGH fragments. Drives nitrogen retention, ribosomal protein synthesis, and tissue growth signaling via the GHR / IGF-1R / PI3K-Akt pathway.',
   'metabolic-cofactor':
-    'Coenzymes and metabolic intermediates supporting mitochondrial function and ATP production. Includes NAD+ precursors, mitochondria-targeted peptides (SS-31 / elamipretide), and amino acid analogues that modulate substrate utilization or REDOX balance.',
+    'Compounds supporting metabolic regulation outside the incretin axis. Includes NAD+ precursors, mitochondria-targeted peptides (SS-31 / elamipretide), AMPK activators (AICAR), NNMT inhibitors (5- and 10-Amino-1MQ), MOTS-C, and lipolytic cofactors (L-Carnitine, Lipo-C, AOD-9604). Unifying theme: non-incretin metabolic intervention.',
   'regenerative':
     'Tissue-repair and angiogenic peptides. Mechanisms include VEGFR-2 sensitization, FAK-paxillin–driven cell migration, eNOS upregulation, and ECM remodeling. Includes BPC-157, TB-500, and copper-peptide derivatives.',
   'nootropic-neuroactive':
@@ -58,7 +58,7 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
   'immunomodulatory':
     'Peptides that modulate immune-signaling pathways — NF-κB, STAT3, melanocortin receptor cascades. Includes α-MSH C-terminal fragments (KPV), thymosin α-1 (TLR signaling), and small-molecule cytokine modulators.',
   'reproductive-hormonal':
-    'Hormones and analogues acting on the hypothalamic-pituitary-gonadal axis. Includes GnRH agonists (Gonadorelin), gonadotropins (HCG, HMG), Kisspeptin-class neuropeptides, and neuroendocrine peptides such as Oxytocin.',
+    'Hormones, gonadotropins, and CNS neuroendocrine signaling compounds related to the reproductive axis. Includes HPG-axis hormones (GnRH agonists such as Gonadorelin, gonadotropins HCG and HMG), Kisspeptin-class neuropeptides, oxytocinergic compounds, and CNS melanocortin agonists targeting sexual function (PT-141 / Bremelanotide acting on MC4R).',
   'antioxidant-beauty':
     'Peptides and small molecules supporting collagen synthesis, melanogenesis modulation, and oxidative-stress reduction. Includes glutathione, copper tripeptides (GHK-Cu for skincare research), and antioxidant chelators.',
   'experimental':

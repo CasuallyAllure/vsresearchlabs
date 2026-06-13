@@ -154,7 +154,7 @@
     ],
     "sku": "VSR-RS-TZP-010",
     "abbreviation": "TZP",
-    "family": "Dual Agonist",
+    "family": "GIP/GLP-1 Dual Agonist",
     "variants": [
       {
         "dose": "5mg"
@@ -284,7 +284,7 @@
     ],
     "sku": "VSR-RS-RTT-005",
     "abbreviation": "RTT",
-    "family": "Triple Agonist",
+    "family": "GIP/GLP-1/Glucagon Triple Agonist",
     "variants": [
       {
         "dose": "5mg"

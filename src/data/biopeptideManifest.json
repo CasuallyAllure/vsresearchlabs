@@ -430,7 +430,7 @@
     "serial": 63,
     "abbreviation": "P41",
     "model": "PT-141",
-    "group": "antioxidant-beauty",
+    "group": "reproductive-hormonal",
     "specification": "10mg"
   },
   {
@@ -734,14 +734,14 @@
     "serial": 105,
     "abbreviation": "AP2",
     "model": "Adipotide",
-    "group": "metabolic-cofactor",
+    "group": "experimental",
     "specification": "2mg"
   },
   {
     "serial": 106,
     "abbreviation": "AP5",
     "model": "Adipotide",
-    "group": "metabolic-cofactor",
+    "group": "experimental",
     "specification": "5mg"
   },
   {
