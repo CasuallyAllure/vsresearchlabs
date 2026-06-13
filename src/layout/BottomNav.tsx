@@ -374,11 +374,11 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             <span
               className={`relative inline-block rounded-full px-2 py-[2.5px] text-[7px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
-                color: '#cdeeff',
-                background: 'linear-gradient(180deg, rgba(18,38,56,0.82) 0%, rgba(9,18,28,0.9) 100%)',
-                border: '0.5px solid rgba(120,210,255,0.45)',
+                color: '#86ffb4',
+                background: 'linear-gradient(180deg, rgba(10,30,18,0.84) 0%, rgba(6,16,10,0.9) 100%)',
+                border: '0.5px solid rgba(85,240,150,0.5)',
                 boxShadow:
-                  '0 0 0 0.5px rgba(120,210,255,0.14), 0 0 12px rgba(100,200,255,0.32), 0 4px 12px rgba(0,0,0,0.5)',
+                  '0 0 0 0.5px rgba(85,240,150,0.16), 0 0 12px rgba(70,235,135,0.38), 0 4px 12px rgba(0,0,0,0.5)',
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
               }}
@@ -392,7 +392,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                   height: 0,
                   borderLeft: '4px solid transparent',
                   borderRight: '4px solid transparent',
-                  borderTop: '4px solid rgba(120,210,255,0.55)',
+                  borderTop: '4px solid rgba(85,240,150,0.6)',
                 }}
               />
             </span>

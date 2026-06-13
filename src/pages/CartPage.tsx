@@ -28,6 +28,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { BrandStamp } from '../components/brand/BrandStamp';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
@@ -200,6 +201,10 @@ export function CartPage() {
 
         {/* Document header — identifier band */}
         <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06] print:border-black/15">
+          {/* Brand stamp — themeable ink (light on screen, dark in print). */}
+          <div className="mb-[var(--space-5)] text-white/85 print:text-black">
+            <BrandStamp width={248} />
+          </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-white/35 print:text-black/50 mb-[var(--space-4)]">
             VS Research Labs · Procurement Intake
           </p>

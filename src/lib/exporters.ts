@@ -65,7 +65,7 @@ export function toCsv<T>(columns: Column<T>[], rows: T[]): string {
 
 export function downloadCsv<T>(filename: string, columns: Column<T>[], rows: T[]): void {
   // Prepend a BOM so Excel reads UTF-8 (µ, ≥, °, etc.) correctly.
-  const blob = new Blob(['﻿', toCsv(columns, rows)], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob(["\uFEFF", toCsv(columns, rows)], { type: 'text/csv;charset=utf-8' });
   triggerDownload(blob, filename.endsWith('.csv') ? filename : `${filename}.csv`);
 }
 
@@ -76,6 +76,7 @@ function xmlEscape(s: string): string {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;')
     // strip control chars XML 1.0 forbids
+    // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
 }
 

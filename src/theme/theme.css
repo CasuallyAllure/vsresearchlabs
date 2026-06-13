@@ -810,30 +810,30 @@
 @keyframes vsr-nav-hint-glitch {
   0%, 84%, 100% {
     transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
     opacity: 1;
   }
   85% {
     transform: translate(-1px, 0.4px) skewX(-5deg);
-    text-shadow: 1.6px 0 rgba(255, 45, 85, 0.9), -1.6px 0 rgba(60, 230, 255, 0.9);
+    text-shadow: 1.6px 0 rgba(255, 45, 85, 0.9), -1.6px 0 rgba(70, 255, 150, 0.9);
     opacity: 0.92;
   }
   87% {
     transform: translate(1px, -0.4px) skewX(4deg);
-    text-shadow: -1.6px 0 rgba(255, 45, 85, 0.9), 1.6px 0 rgba(60, 230, 255, 0.9);
+    text-shadow: -1.6px 0 rgba(255, 45, 85, 0.9), 1.6px 0 rgba(70, 255, 150, 0.9);
   }
   88% {
     transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
   }
   92% {
     transform: translate(0.8px, 0);
-    text-shadow: 1px 0 rgba(255, 45, 85, 0.7), -1px 0 rgba(60, 230, 255, 0.7);
+    text-shadow: 1px 0 rgba(255, 45, 85, 0.7), -1px 0 rgba(70, 255, 150, 0.7);
     opacity: 0.85;
   }
   93% {
     transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(120, 210, 255, 0.4);
+    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
     opacity: 1;
   }
 }

@@ -33,3 +33,6 @@ dist-ssr
 .agents/
 .claude/
 skills-lock.json
+
+# Supabase CLI local cache
+supabase/.temp/

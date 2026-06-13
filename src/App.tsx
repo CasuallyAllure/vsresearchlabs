@@ -30,6 +30,7 @@ import { AdminAuditLog } from './pages/admin/AdminAuditLog';
 import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminCustomerDetail } from './pages/admin/AdminCustomerDetail';
 import { AdminSystemHealth } from './pages/admin/AdminSystemHealth';
+import { AdminReports } from './pages/admin/AdminReports';
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/admin/customers/:id" element={<AdminGate><AdminCustomerDetail /></AdminGate>} />
             <Route path="/admin/audit-log" element={<AdminGate><AdminAuditLog /></AdminGate>} />
             <Route path="/admin/system-health" element={<AdminGate><AdminSystemHealth /></AdminGate>} />
+            <Route path="/admin/reports" element={<AdminGate><AdminReports /></AdminGate>} />
             <Route path="/admin/products" element={<AdminGate><AdminList /></AdminGate>} />
             <Route path="/admin/new" element={<AdminGate><AdminEdit /></AdminGate>} />
             <Route path="/admin/:id/edit" element={<AdminGate><AdminEdit /></AdminGate>} />

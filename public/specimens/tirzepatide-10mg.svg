@@ -116,7 +116,7 @@
 
   <!-- MW / class block -->
   <text x="60" y="716" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">MW 4813.47 g/mol</text>
-  <text x="60" y="729" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.14)" letter-spacing="1">GLP-1 &amp; APPETITE</text>
+  <text x="60" y="729" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.14)" letter-spacing="1">INCRETIN &amp; METABOLIC RECEPTOR AGONISTS</text>
 
   <!-- Footer -->
   <line x1="60" y1="752" x2="740" y2="752" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
