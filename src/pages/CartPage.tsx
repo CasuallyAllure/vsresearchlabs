@@ -34,6 +34,17 @@ import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
+import { tierPriceCents } from '../lib/pricing';
+import { deriveProductDose } from '../types';
+import { PaymentInstructions } from '../components/order/PaymentInstructions';
+import { formatUsd } from '../lib/payment';
+
+interface OrderResult {
+  orderNumber: string;
+  amountCents: number;
+  invoiceEmailSent: boolean;
+  contact: string;
+}
 
 type SubmitState =
   | { kind: 'idle' }
@@ -56,6 +67,7 @@ export function CartPage() {
   const [notes, setNotes] = useState('');
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const [record, setRecord] = useState<InquiryRecord | null>(null);
+  const [order, setOrder] = useState<OrderResult | null>(null);
 
   // Field-level validation tracking. We only show errors after a field
   // has been touched (blur) so users aren't yelled at on first paint.
