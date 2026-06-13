@@ -111,17 +111,18 @@ export function CartPage() {
     if (!supabase) {
       setSubmit({
         kind: 'error',
-        message: 'Inquiry service is not configured. Please try again later.',
+        message: 'Ordering service is not configured. Please try again later.',
       });
       return;
     }
 
     const orgTrim   = organization.trim();
     const notesTrim = notes.trim();
+    const contactTrim = contact.trim();
 
     const payload = {
       name:         name.trim(),
-      contact:      contact.trim(),
+      contact:      contactTrim,
       organization: orgTrim || undefined,
       notes:        notesTrim || undefined,
       items: items.map((i) => ({
@@ -133,10 +134,12 @@ export function CartPage() {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
+        // Cart-derived price for this line (placeholder pricing for now).
+        unitPriceCents: tierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
       })),
     };
 
-    const { data, error } = await supabase.functions.invoke('send-inquiry', {
+    const { data, error } = await supabase.functions.invoke('place-order', {
       body: payload,
     });
 
@@ -146,42 +149,43 @@ export function CartPage() {
           ? String((data as { error: unknown }).error)
           : null) ??
         error?.message ??
-        'Failed to send inquiry. Please try again.';
+        'Failed to place order. Please try again.';
       setSubmit({ kind: 'error', message });
       return;
     }
 
-    // Validate server returned an authoritative reference ID.
+    // Server-authoritative order data.
     const serverResp = data as {
       success: true;
+      orderNumber?: string;
       referenceId?: string;
-      submittedAt?: string;
-      intakeChannel?: string;
-      processingNode?: string;
-      classificationStatus?: string;
+      createdAt?: string;
+      amountCents?: number;
+      invoiceEmailSent?: boolean;
     };
 
-    if (!serverResp.referenceId) {
+    if (!serverResp.orderNumber) {
       setSubmit({
         kind: 'error',
-        message: 'Inquiry submitted but reference was not returned. Contact us to confirm receipt.',
+        message: 'Order placed but no order number was returned. Contact us to confirm.',
       });
       return;
     }
 
+    // Build the receipt record (uses the order number as the identifier).
     const server: InquiryServerData = {
-      referenceId:          serverResp.referenceId,
-      submittedAt:          serverResp.submittedAt          ?? new Date().toISOString(),
-      intakeChannel:        serverResp.intakeChannel        ?? 'VSR-WEB-PORTAL',
-      processingNode:       serverResp.processingNode       ?? 'VSR-HQ-INTAKE',
-      classificationStatus: serverResp.classificationStatus ?? 'OPEN',
+      referenceId:          serverResp.orderNumber,
+      submittedAt:          serverResp.createdAt ?? new Date().toISOString(),
+      intakeChannel:        'VSR-WEB-PORTAL',
+      processingNode:       'VSR-HQ-INTAKE',
+      classificationStatus: 'INVOICE SENT',
     };
 
     // Capture snapshot before clearing — items are gone after clear().
     const generatedRecord = generateInquiryRecord(
       {
         name:         name.trim(),
-        contact:      contact.trim(),
+        contact:      contactTrim,
         organization: organization.trim(),
         items:        [...items],
       },
@@ -193,6 +197,12 @@ export function CartPage() {
     setOrganization('');
     setNotes('');
     setRecord(generatedRecord);
+    setOrder({
+      orderNumber:      serverResp.orderNumber,
+      amountCents:      serverResp.amountCents ?? 0,
+      invoiceEmailSent: serverResp.invoiceEmailSent ?? false,
+      contact:          contactTrim,
+    });
     setSubmit({ kind: 'success' });
   }
 
@@ -218,10 +228,10 @@ export function CartPage() {
             <BrandStamp width={248} />
           </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-white/35 print:text-black/50 mb-[var(--space-4)]">
-            VS Research Labs · Procurement Intake
+            VS Research Labs · Order Confirmation
           </p>
           <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 print:text-black/45 mb-[var(--space-2)]">
-            Reference
+            Order Number
           </p>
           <code className="block text-2xl sm:text-3xl font-mono tabular-nums tracking-[0.04em] text-white print:text-black">
             {record.referenceId}
@@ -231,8 +241,31 @@ export function CartPage() {
             <span className="ml-[var(--space-4)] text-white/25 print:text-black/35">
               · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
             </span>
+            {order && (
+              <span className="ml-[var(--space-4)] text-white/55 print:text-black/60">
+                · Total {formatUsd(order.amountCents)}
+              </span>
+            )}
           </p>
+          {order && (
+            <p className="mt-[var(--space-3)] text-[12px] leading-relaxed text-white/55 print:text-black/65 max-w-[64ch]">
+              {order.invoiceEmailSent ? (
+                <>An invoice with payment instructions has been emailed to{' '}
+                <span className="text-white/80 print:text-black">{order.contact}</span>. </>
+              ) : (
+                <>Your order is recorded. </>
+              )}
+              Follow the payment instructions below and include your order number in the payment note.
+            </p>
+          )}
         </header>
+
+        {/* Payment instructions — the key call to action */}
+        {order && (
+          <div className="mb-[var(--space-8)]">
+            <PaymentInstructions orderNumber={record.referenceId} amountCents={order.amountCents} />
+          </div>
+        )}
 
         {/* Intake record surface */}
         <div className="research-surface-solid p-[var(--space-6)] print:bg-white print:border-black/15 print:rounded-none">
@@ -393,17 +426,17 @@ export function CartPage() {
       <div className="py-[var(--space-12)]">
         <header className="mb-[var(--space-10)]">
           <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
-            Inquiry Intake
+            Checkout
           </p>
           <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-            <span className="font-light text-white/85">Inquiry </span>
-            <span className="font-medium text-white">list.</span>
+            <span className="font-light text-white/85">Your </span>
+            <span className="font-medium text-white">order.</span>
           </h1>
         </header>
 
         <div className="py-[var(--space-12)] border-y border-white/[0.06] text-center">
           <p className="holo-text-body text-[13px] mb-[var(--space-8)]">
-            No items on the inquiry list. Add inventory from any product page.
+            Your cart is empty. Add inventory from any product page.
           </p>
           <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
             <Link
@@ -431,11 +464,11 @@ export function CartPage() {
     <div className="py-[var(--space-8)]">
       <header className="mb-[var(--space-10)]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
-          Inquiry Intake
+          Checkout
         </p>
         <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-          <span className="font-light text-white/85">Inquiry </span>
-          <span className="font-medium text-white">list.</span>
+          <span className="font-light text-white/85">Your </span>
+          <span className="font-medium text-white">order.</span>
         </h1>
       </header>
 
@@ -737,7 +770,7 @@ export function CartPage() {
           className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
         >
           <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
-          <span className="relative">{submit.kind === 'submitting' ? 'Sending…' : 'Send Inquiry'}</span>
+          <span className="relative">{submit.kind === 'submitting' ? 'Placing order…' : 'Place Order'}</span>
         </button>
             </form>
           </div>
