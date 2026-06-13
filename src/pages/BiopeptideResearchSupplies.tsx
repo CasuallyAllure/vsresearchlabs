@@ -4,7 +4,7 @@ import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInventoryModal';
 import { useProducts } from '../hooks/useProducts';
-import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../lib/compoundIntelligence';
 import { inStockByKey } from '../lib/stock';
 
 const ALL_TAB = '__all__';
@@ -26,6 +26,7 @@ export function BiopeptideResearchSupplies() {
         tabs.push({
           id: p.researchClassification,
           label: CLASSIFICATION_LABELS[p.researchClassification] ?? p.researchClassification,
+          tooltip: CLASSIFICATION_DEFINITIONS[p.researchClassification],
         });
       }
     }

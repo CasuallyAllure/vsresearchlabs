@@ -3,126 +3,126 @@
     "serial": 1,
     "abbreviation": "TR5",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "5mg"
   },
   {
     "serial": 2,
     "abbreviation": "TR10",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
     "serial": 3,
     "abbreviation": "TR15",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "15mg"
   },
   {
     "serial": 4,
     "abbreviation": "TR20",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "20mg"
   },
   {
     "serial": 5,
     "abbreviation": "TR30",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "30mg"
   },
   {
     "serial": 6,
     "abbreviation": "TR40",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "40mg"
   },
   {
     "serial": 7,
     "abbreviation": "TR50",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "50mg"
   },
   {
     "serial": 8,
     "abbreviation": "TR60",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "60mg"
   },
   {
     "serial": 9,
     "abbreviation": "TR100",
     "model": "Tirzepatide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "100mg"
   },
   {
     "serial": 10,
     "abbreviation": "RT5",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "5mg"
   },
   {
     "serial": 11,
     "abbreviation": "RT10",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
     "serial": 12,
     "abbreviation": "RT15",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "15mg"
   },
   {
     "serial": 13,
     "abbreviation": "RT20",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "20mg"
   },
   {
     "serial": 14,
     "abbreviation": "RT30",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "30mg"
   },
   {
     "serial": 15,
     "abbreviation": "RT40",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "40mg"
   },
   {
     "serial": 16,
     "abbreviation": "RT50",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "50mg"
   },
   {
     "serial": 17,
     "abbreviation": "RT60",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "60mg"
   },
   {
     "serial": 18,
     "abbreviation": "RT100",
     "model": "Retatrutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "100mg"
   },
   {
@@ -517,14 +517,14 @@
     "serial": 74,
     "abbreviation": "CGL5",
     "model": "Cagrilintide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "5mg"
   },
   {
     "serial": 75,
     "abbreviation": "CGL10",
     "model": "Cagrilintide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
@@ -545,14 +545,14 @@
     "serial": 78,
     "abbreviation": "CS5",
     "model": "Cagrilintide 5mg + Semaglutide 5mg",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "5mg"
   },
   {
     "serial": 79,
     "abbreviation": "CS10",
     "model": "Cagrilintide + Semaglutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
@@ -727,7 +727,7 @@
     "serial": 104,
     "abbreviation": "MDT10",
     "model": "Mazdutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
@@ -1100,21 +1100,21 @@
     "serial": 157,
     "abbreviation": "MZ5",
     "model": "Mazdutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "5mg"
   },
   {
     "serial": 158,
     "abbreviation": "MZ10",
     "model": "Mazdutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {
     "serial": 159,
     "abbreviation": "SUR10",
     "model": "Survodutide",
-    "group": "glp1-appetite",
+    "group": "incretin-metabolic-agonists",
     "specification": "10mg"
   },
   {

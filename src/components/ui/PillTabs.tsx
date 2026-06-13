@@ -21,10 +21,14 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
+import { Tooltip } from './Tooltip';
 
 export interface PillTab {
   id: string;
   label: ReactNode;
+  /** Optional definition / explanatory text shown on hover & keyboard
+   *  focus. Plain string so it can be rendered inside a Tooltip. */
+  tooltip?: string;
 }
 
 interface PillTabsProps {
@@ -56,12 +60,12 @@ export function PillTabs({
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeId;
-        return (
+        const button = (
           <button
-            key={tab.id}
             type="button"
             role="tab"
             aria-selected={isActive}
+            aria-describedby={tab.tooltip ? `tt-${tab.id}` : undefined}
             onClick={() => {
               if (!isActive) onChange(tab.id);
             }}
@@ -83,6 +87,13 @@ export function PillTabs({
           >
             {tab.label}
           </button>
+        );
+        return tab.tooltip ? (
+          <Tooltip key={tab.id} content={tab.tooltip} ariaId={`tt-${tab.id}`}>
+            {button}
+          </Tooltip>
+        ) : (
+          <span key={tab.id}>{button}</span>
         );
       })}
     </div>

@@ -55,7 +55,7 @@ export const EXISTING = {
  *   purity  HPLC purity string (default "≥ 98%")
  */
 export const META = {
-  // ── glp1-appetite ────────────────────────────────────────────────────
+  // ── incretin-metabolic-agonists ────────────────────────────────────────────────────
   cagrilintide: {
     name: 'Cagrilintide', abbr: 'CGL', family: 'Amylin Analogue',
     eyebrow: 'LONG-ACTING AMYLIN ANALOGUE',
@@ -371,7 +371,7 @@ export const META = {
  * obscure blends/extracts are intentionally left on the plain line.
  */
 export const LAYMAN = {
-  // glp1-appetite
+  // incretin-metabolic-agonists
   cagrilintide:
     "Cagrilintide is a long-acting **amylin** analogue — a satiety hormone that works *alongside* GLP-1. On its own it ~curbs appetite~, and paired with semaglutide (CagriSema) it's one of the most promising *next-generation weight-research* combinations.",
   cagrisema:

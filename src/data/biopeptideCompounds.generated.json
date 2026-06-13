@@ -467,7 +467,7 @@
     "priceCents": null,
     "stock": null,
     "tags": [
-      "glp1-appetite",
+      "incretin-metabolic-agonists",
       "peptide",
       "research"
     ],
@@ -482,7 +482,7 @@
     "leadTimeDays": 7,
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "researchClassification": "glp1-appetite",
+    "researchClassification": "incretin-metabolic-agonists",
     "productType": "peptide",
     "casNumber": "1415456-99-3",
     "molecularWeight": "4409.01 g/mol",
@@ -547,7 +547,7 @@
     "priceCents": null,
     "stock": null,
     "tags": [
-      "glp1-appetite",
+      "incretin-metabolic-agonists",
       "blend",
       "research"
     ],
@@ -562,7 +562,7 @@
     "leadTimeDays": 7,
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "researchClassification": "glp1-appetite",
+    "researchClassification": "incretin-metabolic-agonists",
     "mechanismSummary": "Fixed combination of two molecules: cagrilintide (amylin/calcitonin agonist) and semaglutide (GLP-1 agonist). The two act on complementary appetite pathways — amylin and incretin signalling — for additive reductions in food intake and body weight.",
     "receptorActivity": "Combined activity at the amylin/calcitonin receptors (cagrilintide) and the GLP-1 receptor (semaglutide).",
     "pathwaySummary": "Dual GPCR agonism: cAMP signalling via amylin/calcitonin receptors plus GLP-1R-mediated cAMP/PKA signalling in hypothalamic and hindbrain satiety circuits.",
@@ -2160,7 +2160,7 @@
     "priceCents": null,
     "stock": null,
     "tags": [
-      "glp1-appetite",
+      "incretin-metabolic-agonists",
       "peptide",
       "research"
     ],
@@ -2175,7 +2175,7 @@
     "leadTimeDays": 7,
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "researchClassification": "glp1-appetite",
+    "researchClassification": "incretin-metabolic-agonists",
     "productType": "peptide",
     "casNumber": "2259884-03-0",
     "molecularWeight": "4563.14 g/mol",
@@ -3165,7 +3165,7 @@
     "priceCents": null,
     "stock": null,
     "tags": [
-      "glp1-appetite",
+      "incretin-metabolic-agonists",
       "peptide",
       "research"
     ],
@@ -3180,7 +3180,7 @@
     "leadTimeDays": 7,
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "researchClassification": "glp1-appetite",
+    "researchClassification": "incretin-metabolic-agonists",
     "productType": "peptide",
     "casNumber": "2805997-46-8",
     "molecularWeight": "4231.69 g/mol",

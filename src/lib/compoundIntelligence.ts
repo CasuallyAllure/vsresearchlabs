@@ -24,7 +24,7 @@ import { deriveProductDose } from '../types';
 /** Canonical classification labels. The authoritative copy lives here;
  *  other surfaces should import this rather than re-declaring it. */
 export const CLASSIFICATION_LABELS: Record<ResearchClassification, string> = {
-  'glp1-appetite': 'GLP-1 & Appetite',
+  'incretin-metabolic-agonists': 'Incretin & Metabolic Receptor Agonists',
   'gh-secretagogue': 'GH Secretagogues',
   'growth-factor-anabolic': 'Growth Factors / Anabolic',
   'metabolic-cofactor': 'Metabolic Cofactors',
@@ -37,11 +37,39 @@ export const CLASSIFICATION_LABELS: Record<ResearchClassification, string> = {
   'experimental': 'Experimental',
 };
 
+/** Scientific definitions surfaced as tooltips wherever a classification
+ *  appears in the UI. Lay-research register: technical enough to be
+ *  accurate, accessible enough that a non-specialist can orient. */
+export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> = {
+  'incretin-metabolic-agonists':
+    'Peptide receptor agonists targeting the incretin axis (GLP-1, GIP, glucagon receptors) and related metabolic hormones such as amylin. Covers single-, dual-, and triple-agonist classes. Research applications: glucose regulation, satiety signaling, energy expenditure.',
+  'gh-secretagogue':
+    'Compounds that stimulate endogenous growth hormone release from the anterior pituitary. Two mechanism families: GHRH analogues (CJC-1295, Sermorelin, Tesamorelin) acting on GHRHR, and ghrelin-mimetic GHS-R1a agonists (Ipamorelin, Hexarelin, GHRP-2/6). Effects mediated through the somatotroph cAMP axis.',
+  'growth-factor-anabolic':
+    'Direct anabolic peptides — growth hormone itself, IGF-1 variants, and HGH fragments. Drives nitrogen retention, ribosomal protein synthesis, and tissue growth signaling via the GHR / IGF-1R / PI3K-Akt pathway.',
+  'metabolic-cofactor':
+    'Coenzymes and metabolic intermediates supporting mitochondrial function and ATP production. Includes NAD+ precursors, mitochondria-targeted peptides (SS-31 / elamipretide), and amino acid analogues that modulate substrate utilization or REDOX balance.',
+  'regenerative':
+    'Tissue-repair and angiogenic peptides. Mechanisms include VEGFR-2 sensitization, FAK-paxillin–driven cell migration, eNOS upregulation, and ECM remodeling. Includes BPC-157, TB-500, and copper-peptide derivatives.',
+  'nootropic-neuroactive':
+    'Neuropeptides and neuromodulators acting at cortical synapses or upstream of neurotrophic factor expression. Mechanisms span BDNF/NGF upregulation (Semax), prolyl-oligopeptidase inhibition, GABAergic modulation (Selank), and ACTH-derived fragment activity.',
+  'bioregulator':
+    'Short peptides — typically 2 to 4 residues — originally isolated from tissue extracts (pineal, thymus, vascular). Proposed mechanisms involve intranuclear chromatin modulation and tissue-specific gene-expression regulation. Studied in longevity, circadian, and neuroendocrine-aging models.',
+  'immunomodulatory':
+    'Peptides that modulate immune-signaling pathways — NF-κB, STAT3, melanocortin receptor cascades. Includes α-MSH C-terminal fragments (KPV), thymosin α-1 (TLR signaling), and small-molecule cytokine modulators.',
+  'reproductive-hormonal':
+    'Hormones and analogues acting on the hypothalamic-pituitary-gonadal axis. Includes GnRH agonists (Gonadorelin), gonadotropins (HCG, HMG), Kisspeptin-class neuropeptides, and neuroendocrine peptides such as Oxytocin.',
+  'antioxidant-beauty':
+    'Peptides and small molecules supporting collagen synthesis, melanogenesis modulation, and oxidative-stress reduction. Includes glutathione, copper tripeptides (GHK-Cu for skincare research), and antioxidant chelators.',
+  'experimental':
+    'Novel investigational compounds outside the established functional classes. Published evidence is limited, mechanism may be incompletely characterized, and the research context is exploratory rather than confirmatory.',
+};
+
 /** Canonical display order for the categories above. Used by filter
  *  surfaces so tabs/sections appear in a consistent, intentional order
  *  rather than data-insertion order. */
 export const CLASSIFICATION_ORDER: ResearchClassification[] = [
-  'glp1-appetite',
+  'incretin-metabolic-agonists',
   'gh-secretagogue',
   'growth-factor-anabolic',
   'metabolic-cofactor',

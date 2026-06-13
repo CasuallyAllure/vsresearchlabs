@@ -20,7 +20,7 @@
  */
 
 export const INTELLIGENCE = {
-  // ── glp1-appetite ──────────────────────────────────────────────────────
+  // ── incretin-metabolic-agonists ──────────────────────────────────────────────────────
   cagrilintide: {
     mechanismSummary:
       'Long-acting acylated analogue of the pancreatic hormone amylin. A C20 fatty-diacid chain enables albumin binding for once-weekly dosing. It signals in hypothalamic and hindbrain satiety centres to suppress food intake, slow gastric emptying, and promote satiety.',

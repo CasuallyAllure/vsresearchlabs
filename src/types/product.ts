@@ -36,7 +36,7 @@ export type EquipmentClassification =
 export type ProductType = 'peptide' | 'solvent' | 'consumable' | 'equipment';
 
 export type ResearchClassification =
-  | 'glp1-appetite'
+  | 'incretin-metabolic-agonists'
   | 'gh-secretagogue'
   | 'growth-factor-anabolic'
   | 'metabolic-cofactor'

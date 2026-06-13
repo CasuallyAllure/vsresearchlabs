@@ -3,7 +3,7 @@ import { ProductGrid } from '../components/ProductGrid';
 import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { useProducts } from '../hooks/useProducts';
-import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../lib/compoundIntelligence';
 
 const ALL_TAB = '__all__';
 
@@ -21,6 +21,7 @@ export function NootropicsResearchSupplies() {
         tabs.push({
           id: p.researchClassification,
           label: CLASSIFICATION_LABELS[p.researchClassification] ?? p.researchClassification,
+          tooltip: CLASSIFICATION_DEFINITIONS[p.researchClassification],
         });
       }
     }

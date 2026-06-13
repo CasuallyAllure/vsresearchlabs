@@ -21,7 +21,7 @@ import manifest from '../../data/biopeptideManifest.json';
 import { useCart } from '../../hooks/useCart';
 import type { Product, ResearchClassification } from '../../types/product';
 import { PillTabs, type PillTab } from '../ui/PillTabs';
-import { CLASSIFICATION_LABELS, CLASSIFICATION_ORDER } from '../../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS, CLASSIFICATION_ORDER } from '../../lib/compoundIntelligence';
 import { inStockBySerial as inStock } from '../../lib/stock';
 
 /** A manifest group is a research classification, plus 'supply' for
@@ -104,9 +104,20 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
 
   const groupTabs = useMemo<PillTab[]>(() => {
     const present = new Set(ROWS.map((r) => r.group));
-    const tabs: PillTab[] = [{ id: ALL_GROUPS, label: 'All' }];
+    const tabs: PillTab[] = [
+      { id: ALL_GROUPS, label: 'All', tooltip: 'Show every product in the manifest, across all classification groups.' },
+    ];
     for (const g of GROUP_ORDER) {
-      if (present.has(g)) tabs.push({ id: g, label: groupLabel(g) });
+      if (present.has(g)) {
+        tabs.push({
+          id: g,
+          label: groupLabel(g),
+          tooltip:
+            g === 'supply'
+              ? 'Consumables and accessories that support research workflows but are not active compounds.'
+              : CLASSIFICATION_DEFINITIONS[g as ResearchClassification],
+        });
+      }
     }
     return tabs;
   }, []);

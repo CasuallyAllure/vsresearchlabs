@@ -32,7 +32,7 @@ const OUT = resolve(ROOT, 'src/data/biopeptideCompounds.generated.json');
 const STAMP = '2026-06-01T00:00:00.000Z';
 
 const CLASSIFICATION_LABELS = {
-  'glp1-appetite': 'GLP-1 & Appetite',
+  'incretin-metabolic-agonists': 'Incretin & Metabolic Receptor Agonists',
   'gh-secretagogue': 'GH Secretagogues',
   'growth-factor-anabolic': 'Growth Factors / Anabolic',
   'metabolic-cofactor': 'Metabolic Cofactors',
