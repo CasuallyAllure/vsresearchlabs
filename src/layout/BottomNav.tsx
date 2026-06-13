@@ -238,15 +238,6 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
   const [sheetOpen, setSheetOpen] = useState(false);
-  // First-run hint bubble pointing at the Research Supplies slot. Once the
-  // user opens the sheet, it's dismissed for good.
-  const [hintSeen, setHintSeen] = useState(() => {
-    try {
-      return localStorage.getItem('vsr.suppliesHint') === '1';
-    } catch {
-      return false;
-    }
-  });
 
   const path = location.pathname;
   const isHome = path === '/';
@@ -269,17 +260,9 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
     setSheetOpen(false);
   }, [path]);
 
-  // Dismiss the hint permanently the first time the sheet is opened.
-  useEffect(() => {
-    if (sheetOpen && !hintSeen) {
-      setHintSeen(true);
-      try {
-        localStorage.setItem('vsr.suppliesHint', '1');
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [sheetOpen, hintSeen]);
+  // Persistent hint — show whenever the sheet is closed and the user isn't
+  // already on a research-supplies page.
+  const showHint = !sheetOpen && !isResearchSupplies;
 
   function handleSheetEntry(to: string) {
     setSheetOpen(false);
@@ -382,8 +365,8 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             '0 0 0 0.5px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 0.5px 0 rgba(255, 255, 255, 0.12)',
         }}
       >
-        {/* First-run hint — points at the center Research Supplies slot. */}
-        {!hintSeen && (
+        {/* Hint — points at the center Research Supplies slot. */}
+        {showHint && (
           <div
             aria-hidden="true"
             className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap"
