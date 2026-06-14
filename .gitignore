@@ -36,3 +36,6 @@ skills-lock.json
 
 # Supabase CLI local cache
 supabase/.temp/
+
+# Wrangler local cache
+.wrangler/
