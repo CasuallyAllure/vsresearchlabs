@@ -621,7 +621,7 @@ export function CartPage() {
             chrome and editorial surfaces no longer carry glass and
             the form's glass register read as decorative softness
             rather than as institutional intake. */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 pb-24 lg:pb-0">
           <div className="research-surface-solid lg:sticky lg:top-[calc(56px+var(--space-4))] p-[var(--space-6)]">
             <form onSubmit={handleSubmit} noValidate>
         {/* Section 1 — Buyer Identification (required) */}

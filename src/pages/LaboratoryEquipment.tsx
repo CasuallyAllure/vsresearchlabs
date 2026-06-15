@@ -12,7 +12,7 @@
 
 import { useMemo, useState } from 'react';
 import { ProductGrid } from '../components/ProductGrid';
-import { PillTabs, type PillTab } from '../components/ui/PillTabs';
+import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
 import { useProducts } from '../hooks/useProducts';
 import type { EquipmentClassification } from '../types/product';
 
@@ -23,6 +23,13 @@ const CLASSIFICATION_LABELS: Record<EquipmentClassification, string> = {
   'biopeptide-sciences': 'Biopeptide Sciences',
   'nootropics-research': 'Nootropics Research',
   'skincare-research': 'Skincare Research',
+};
+
+const EQUIPMENT_DESC: Record<string, string> = {
+  'general': 'General lab gear used across every workflow — handling tools, basics, and consumables.',
+  'biopeptide-sciences': 'Tools for reconstituting, storing, and dosing peptides — vials, syringes, water handling, cold storage.',
+  'nootropics-research': 'Tooling for nootropic compound prep, measurement, and handling.',
+  'skincare-research': 'Equipment for topical / skincare formulation and testing.',
 };
 
 const CLASSIFICATION_ORDER: EquipmentClassification[] = [
@@ -36,12 +43,12 @@ export function LaboratoryEquipment() {
   const { products, loading, error } = useProducts('laboratory-equipment');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
 
-  const classificationTabs = useMemo<PillTab[]>(() => {
+  const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const present = new Set<EquipmentClassification>();
     for (const p of products) {
       if (p.equipmentClassification) present.add(p.equipmentClassification);
     }
-    const tabs: PillTab[] = [{ id: ALL_TAB, label: 'All' }];
+    const tabs: { id: string; label: string }[] = [{ id: ALL_TAB, label: 'All' }];
     for (const key of CLASSIFICATION_ORDER) {
       if (present.has(key)) {
         tabs.push({ id: key, label: CLASSIFICATION_LABELS[key] });
@@ -73,14 +80,13 @@ export function LaboratoryEquipment() {
       </header>
 
       {classificationTabs.length > 1 && (
-        <div className="mb-[var(--space-6)]">
-          <PillTabs
-            tabs={classificationTabs}
-            activeId={classFilter}
-            onChange={setClassFilter}
-            ariaLabel="Filter by equipment classification"
-          />
-        </div>
+        <ClassificationFilter
+          tabs={classificationTabs}
+          value={classFilter}
+          onChange={setClassFilter}
+          allLayman="All laboratory equipment — pick a research domain to narrow the list."
+          describe={(id) => (EQUIPMENT_DESC[id] ? { layman: EQUIPMENT_DESC[id] } : undefined)}
+        />
       )}
 
       <ProductGrid

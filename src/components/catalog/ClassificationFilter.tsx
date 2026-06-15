@@ -23,6 +23,9 @@ interface ClassificationFilterProps {
   onChange: (id: string) => void;
   allLayman: string;
   allTechnical?: string;
+  /** Custom per-category copy (overrides the compound-classification maps).
+   *  Used by non-compound surfaces like laboratory equipment. */
+  describe?: (id: string) => { layman: string; technical?: string } | undefined;
   inStock?: { on: boolean; toggle: () => void; color?: string };
 }
 
@@ -32,6 +35,7 @@ export function ClassificationFilter({
   onChange,
   allLayman,
   allTechnical,
+  describe,
   inStock,
 }: ClassificationFilterProps) {
   const allId = tabs[0]?.id;
@@ -65,8 +69,13 @@ export function ClassificationFilter({
 
   const isAll = value === allId;
   const currentLabel = tabs.find((t) => t.id === value)?.label ?? tabs[0]?.label ?? 'All';
-  const layman = isAll ? allLayman : CLASSIFICATION_LAYMAN[value as ResearchClassification] ?? allLayman;
-  const technical = isAll ? allTechnical : CLASSIFICATION_DEFINITIONS[value as ResearchClassification];
+  const custom = describe?.(value);
+  const layman = isAll
+    ? allLayman
+    : custom?.layman ?? CLASSIFICATION_LAYMAN[value as ResearchClassification] ?? allLayman;
+  const technical = isAll
+    ? allTechnical
+    : custom?.technical ?? CLASSIFICATION_DEFINITIONS[value as ResearchClassification];
   const hasTech = !!technical && technical !== layman;
 
   return (

@@ -36,7 +36,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
         data-role={role}
         style={{ backgroundColor: 'rgba(244, 239, 230, 0.82)' }}
       >
-        <div className="relative z-10 h-[88px] sm:h-[74px] px-[var(--space-6)] flex items-center">
+        <div className="relative z-10 h-[72px] sm:h-[72px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}
           <button
             type="button"

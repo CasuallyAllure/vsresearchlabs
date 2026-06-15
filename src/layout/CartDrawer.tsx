@@ -26,6 +26,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
@@ -52,8 +53,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const clear = useCart((s) => s.clear);
 
   const [view, setView] = useState<View>('list');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [human, setHuman] = useState(false);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
 
   // ESC closes
@@ -88,9 +92,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     return () => clearTimeout(t);
   }, [open]);
 
-  const nameEmpty = name.trim().length === 0;
-  const emailEmpty = email.trim().length === 0;
-  const formInvalid = nameEmpty || emailEmpty || items.length === 0;
+  const emailValid = /.+@.+\..+/.test(email.trim());
+  const formInvalid =
+    firstName.trim().length === 0 ||
+    lastName.trim().length === 0 ||
+    !emailValid ||
+    address.trim().length === 0 ||
+    !human ||
+    items.length === 0;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -107,8 +116,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     }
 
     const payload = {
-      name: name.trim(),
+      name: `${firstName.trim()} ${lastName.trim()}`,
       contact: email.trim(),
+      notes: `Shipping address: ${address.trim()}`,
       items: items.map((i) => ({
         product: {
           id: i.product.id,
@@ -143,8 +153,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
     const sentEmail = email.trim();
     clear();
-    setName('');
+    setFirstName('');
+    setLastName('');
     setEmail('');
+    setAddress('');
+    setHuman(false);
     setSubmit({ kind: 'success', email: sentEmail, reference });
   }
 
@@ -244,23 +257,41 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             </p>
 
             <div className="mt-5 space-y-4">
-              <div>
-                <label htmlFor="cart-name" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
-                  Name
-                </label>
-                <input
-                  id="cart-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoComplete="name"
-                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
-                  placeholder="Full name"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="cart-first" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                    First name *
+                  </label>
+                  <input
+                    id="cart-first"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    autoComplete="given-name"
+                    required
+                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    placeholder="First"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="cart-last" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                    Last name *
+                  </label>
+                  <input
+                    id="cart-last"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    autoComplete="family-name"
+                    required
+                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    placeholder="Last"
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
-                  Email
+                  Email *
                 </label>
                 <input
                   id="cart-email"
@@ -268,10 +299,48 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
+                  required
                   className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
                   placeholder="you@example.com"
                 />
               </div>
+              <div>
+                <label htmlFor="cart-address" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                  Shipping address *
+                </label>
+                <textarea
+                  id="cart-address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  autoComplete="street-address"
+                  required
+                  rows={2}
+                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors resize-y"
+                  placeholder="Street, city, state, ZIP"
+                />
+              </div>
+              <label className="flex items-start gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={human}
+                  onChange={(e) => setHuman(e.target.checked)}
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                  style={{ accentColor: '#34727A' }}
+                />
+                <span className="text-[11px] leading-relaxed text-ink/55">
+                  I confirm I'm a real person acquiring these materials for legitimate research use.
+                </span>
+              </label>
+            </div>
+
+            {/* B2B note */}
+            <div className="mt-4 rounded-md border border-ink/[0.09] bg-ink/[0.03] px-3 py-2.5">
+              <p className="text-[11px] leading-relaxed text-ink/55">
+                <span className="font-medium text-ink/80">We're primarily a B2B research lab</span> — labs &amp; clinics get volume pricing.{' '}
+                <Link to="/contact" onClick={onClose} className="text-holo underline underline-offset-2 hover:opacity-80">
+                  Find out more →
+                </Link>
+              </p>
             </div>
 
             {submit.kind === 'error' && (

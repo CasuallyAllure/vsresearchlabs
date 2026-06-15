@@ -88,10 +88,12 @@ export function Logo({
   if (variant === 'mark') {
     body = mark;
   } else if (variant === 'stacked') {
+    // The mark's SVG carries whitespace below the "V"; the negative margin
+    // pulls the wordmark up into it so there isn't a dead gap under the mark.
     body = (
-      <span className="flex flex-col items-center gap-2 min-w-0">
+      <span className="flex flex-col items-center gap-0 min-w-0">
         {mark}
-        <span className="flex flex-col items-center gap-1.5 min-w-0">
+        <span className="flex flex-col items-center gap-1 min-w-0 -mt-[7px]">
           {wordmark}
           {tagline}
         </span>
