@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ProductGrid } from '../components/ProductGrid';
-import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
+import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
 import { useProducts } from '../hooks/useProducts';
-import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 
 const ALL_TAB = '__all__';
 
@@ -12,16 +12,15 @@ export function SkincareResearchSupplies() {
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
 
-  const classificationTabs = useMemo<PillTab[]>(() => {
+  const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
-    const tabs: PillTab[] = [{ id: ALL_TAB, label: 'All' }];
+    const tabs: { id: string; label: string }[] = [{ id: ALL_TAB, label: 'All' }];
     for (const p of products) {
       if (p.researchClassification && !seen.has(p.researchClassification)) {
         seen.add(p.researchClassification);
         tabs.push({
           id: p.researchClassification,
           label: CLASSIFICATION_LABELS[p.researchClassification] ?? p.researchClassification,
-          tooltip: CLASSIFICATION_DEFINITIONS[p.researchClassification],
         });
       }
     }
@@ -55,14 +54,12 @@ export function SkincareResearchSupplies() {
       </header>
 
       {classificationTabs.length > 1 && (
-        <div className="mb-[var(--space-6)]">
-          <PillTabs
-            tabs={classificationTabs}
-            activeId={classFilter}
-            onChange={setClassFilter}
-            ariaLabel="Filter by research classification"
-          />
-        </div>
+        <ClassificationFilter
+          tabs={classificationTabs}
+          value={classFilter}
+          onChange={setClassFilter}
+          allLayman="The full skincare catalog — tap a category to filter the list and read what it does in plain terms. Swipe right for the technical detail."
+        />
       )}
 
       <ProductGrid

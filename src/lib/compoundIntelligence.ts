@@ -65,6 +65,34 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
     'Novel investigational compounds outside the established functional classes. Published evidence is limited, mechanism may be incompletely characterized, and the research context is exploratory rather than confirmatory.',
 };
 
+/** Plain-English ("layman") version of each classification — what it actually
+ *  does, in language a non-specialist gets. Shown first; the technical
+ *  CLASSIFICATION_DEFINITIONS sits one swipe to the right. */
+export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
+  'incretin-metabolic-agonists':
+    'The appetite & metabolism family — this is the GLP-1 group (the "Ozempic / Mounjaro" class). Studied for curbing appetite, steadying blood sugar, and how the body burns energy.',
+  'gh-secretagogue':
+    'The "make your own growth hormone" group — rather than taking growth hormone directly, these nudge your body’s own pituitary to release more of it.',
+  'growth-factor-anabolic':
+    'The build-and-grow group — growth hormone and IGF-1-type compounds studied for muscle growth and tissue building.',
+  'metabolic-cofactor':
+    'The cellular-energy & fat-metabolism group — NAD+, mitochondria helpers, and fat-handling cofactors that work outside the appetite pathway.',
+  'regenerative':
+    'The repair crew — peptides studied for healing and recovery of gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
+  'nootropic-neuroactive':
+    'The brain group — studied for focus, mood, and memory by supporting brain signaling and growth factors.',
+  'bioregulator':
+    'Tiny "tune-up" peptides — very short chains studied in aging and tissue health, thought to gently nudge specific tissues back toward normal function.',
+  'immunomodulatory':
+    'The immune-balancing group — studied for calming or rebalancing the immune response and inflammation.',
+  'reproductive-hormonal':
+    'The hormones & libido group — tied to reproductive hormones and sexual-function signaling (for example, PT-141).',
+  'antioxidant-beauty':
+    'The skin & antioxidant group — collagen, glutathione, and copper peptides studied for skin quality, glow, and oxidative stress.',
+  'experimental':
+    'The new & unproven group — investigational compounds where the science is still early: exploratory, not established.',
+};
+
 /** Canonical display order for the categories above. Used by filter
  *  surfaces so tabs/sections appear in a consistent, intentional order
  *  rather than data-insertion order. */

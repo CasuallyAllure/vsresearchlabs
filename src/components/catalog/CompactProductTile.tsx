@@ -143,9 +143,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: added ? 'rgba(52,114,122,0.18)' : 'rgba(255,255,255,0.07)',
-              border: added ? '1px solid rgba(52,114,122,0.40)' : '1px solid rgba(255,255,255,0.14)',
-              color: added ? '#9BD8FF' : 'rgba(255,255,255,0.82)',
+              backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
+              border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',
+              color: added ? '#34727A' : 'rgba(26,23,20,0.78)',
             }}
           >
             {added ? '✓' : '+ Add'}
