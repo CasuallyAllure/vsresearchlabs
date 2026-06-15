@@ -21,9 +21,9 @@
  */
 
 import { useMemo, useState } from 'react';
-import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { ProductGrid } from '../components/ProductGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
+import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
 import { useProducts } from '../hooks/useProducts';
 import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 
@@ -47,9 +47,9 @@ export function Research() {
   // Pharmacological classification tabs — the only filter dimension the
   // library exposes. Type tabs are unnecessary (everything here is a
   // peptide).
-  const classificationTabs = useMemo<PillTab[]>(() => {
+  const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
-    const tabs: PillTab[] = [{ id: ALL_TAB, label: 'All Compounds' }];
+    const tabs: { id: string; label: string }[] = [{ id: ALL_TAB, label: 'All Compounds' }];
     for (const p of compounds) {
       if (p.researchClassification && !seen.has(p.researchClassification)) {
         seen.add(p.researchClassification);
@@ -161,14 +161,12 @@ export function Research() {
 
       {/* Pharmacological classification filter */}
       {classificationTabs.length > 1 && (
-        <div className="mb-[var(--space-4)]">
-          <PillTabs
-            tabs={classificationTabs}
-            activeId={classFilter}
-            onChange={setClassFilter}
-            ariaLabel="Filter by pharmacological classification"
-          />
-        </div>
+        <ClassificationFilter
+          tabs={classificationTabs}
+          value={classFilter}
+          onChange={setClassFilter}
+          allLayman="Every compound on record. Pick a category to focus the library, or read what each class does in plain terms — swipe right for the technical detail."
+        />
       )}
 
       <p
@@ -189,12 +187,15 @@ export function Research() {
             : 'No compounds match the active filters.'
         }
         onInspect={setInspectedId}
+        compact
       />
 
       {inspectedProduct && (
         <CompoundIntelligenceOverlay
           product={inspectedProduct}
           onClose={() => setInspectedId(null)}
+          list={filtered}
+          onNavigate={setInspectedId}
         />
       )}
     </section>
