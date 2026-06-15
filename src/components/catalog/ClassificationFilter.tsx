@@ -1,10 +1,10 @@
 /**
- * ClassificationFilter — vertical, click-to-expand classification filter.
+ * ClassificationFilter — compact category filter.
  *
- * Replaces the old horizontal swipe-row of pills. Tap a category and it
- * expands DOWN (accordion) to reveal what it is — in PLAIN ENGLISH first,
- * with the full technical definition one swipe to the right (a 2-slide
- * carousel). Selecting a category also filters the grid (via onChange).
+ * All categories are visible at once as wrapping pills (no horizontal swipe,
+ * no long vertical list). Click a title to select it (filters the grid); a
+ * single small description below swaps to that category — PLAIN ENGLISH first,
+ * with the full technical definition one swipe to the right (2-slide carousel).
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -30,8 +30,9 @@ interface ClassificationFilterProps {
 function DescriptionCarousel({ layman, technical }: { layman: string; technical?: string }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState(0);
+  const hasTech = !!technical && technical !== layman;
 
-  // reset to the plain slide whenever the content changes
+  // reset to the plain slide whenever the selected category changes
   useEffect(() => {
     setView(0);
     if (trackRef.current) trackRef.current.scrollTo({ left: 0 });
@@ -44,10 +45,8 @@ function DescriptionCarousel({ layman, technical }: { layman: string; technical?
     setView(i);
   };
 
-  const hasTech = !!technical && technical !== layman;
-
   return (
-    <div className="mt-[var(--space-2)]">
+    <div>
       {hasTech && (
         <div className="mb-1.5 flex items-center gap-1">
           {['Plain terms', 'Technical'].map((lbl, i) => (
@@ -76,7 +75,7 @@ function DescriptionCarousel({ layman, technical }: { layman: string; technical?
         }}
         className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <p className="min-w-full shrink-0 snap-start pr-4 text-[12.5px] leading-relaxed text-ink/70">
+        <p className="min-w-full shrink-0 snap-start pr-4 text-[12px] leading-relaxed text-ink/65">
           {layman}
         </p>
         {hasTech && (
@@ -100,9 +99,13 @@ export function ClassificationFilter({
   const allId = tabs[0]?.id;
   const stockColor = inStock?.color ?? '#2E7D5B';
 
+  const isAll = value === allId;
+  const layman = isAll ? allLayman : CLASSIFICATION_LAYMAN[value as ResearchClassification] ?? allLayman;
+  const technical = isAll ? allTechnical : CLASSIFICATION_DEFINITIONS[value as ResearchClassification];
+
   return (
     <div className="mb-[var(--space-6)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-3)]">
-      {/* Header row — label + optional in-stock toggle */}
+      {/* Header — label + optional in-stock toggle */}
       <div className="flex items-center justify-between gap-3">
         <span className="text-[10px] uppercase tracking-[0.28em] text-ink/45">Filter by category</span>
         {inStock && (
@@ -131,39 +134,34 @@ export function ClassificationFilter({
         )}
       </div>
 
-      {/* Vertical accordion of categories */}
-      <ul className="mt-[var(--space-3)] flex flex-col divide-y divide-ink/[0.06]">
+      {/* Category pills — all visible, wrap to new rows (no swipe / no long list) */}
+      <div role="tablist" aria-label="Filter by category" className="mt-[var(--space-3)] flex flex-wrap gap-1.5">
         {tabs.map((tab) => {
           const active = tab.id === value;
-          const isAll = tab.id === allId;
-          const layman = isAll ? allLayman : CLASSIFICATION_LAYMAN[tab.id as ResearchClassification] ?? allLayman;
-          const technical = isAll
-            ? allTechnical
-            : CLASSIFICATION_DEFINITIONS[tab.id as ResearchClassification];
           return (
-            <li key={tab.id}>
-              <button
-                type="button"
-                aria-expanded={active}
-                onClick={() => onChange(tab.id)}
-                className={[
-                  'flex w-full items-center justify-between gap-3 py-2.5 text-left transition-colors focus:outline-none',
-                  active ? 'text-ink' : 'text-ink/65 hover:text-ink',
-                ].join(' ')}
-              >
-                <span className={`text-[13px] tracking-tight ${active ? 'font-medium' : ''}`}>{tab.label}</span>
-                <span
-                  aria-hidden="true"
-                  className={`shrink-0 text-[11px] transition-transform duration-200 ${active ? 'rotate-180 text-holo' : 'text-ink/35'}`}
-                >
-                  ▾
-                </span>
-              </button>
-              {active && <div className="pb-[var(--space-3)]"><DescriptionCarousel layman={layman} technical={technical} /></div>}
-            </li>
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => onChange(tab.id)}
+              className={[
+                'whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
+                active
+                  ? 'border border-holo/40 bg-holo/[0.12] text-holo font-medium'
+                  : 'border border-ink/12 text-ink/55 hover:text-ink/85 hover:border-ink/25',
+              ].join(' ')}
+            >
+              {tab.label}
+            </button>
           );
         })}
-      </ul>
+      </div>
+
+      {/* Single description for the selected category — small, swaps on click */}
+      <div className="mt-[var(--space-3)] border-t border-ink/[0.07] pt-[var(--space-3)]">
+        <DescriptionCarousel layman={layman} technical={technical} />
+      </div>
     </div>
   );
 }
