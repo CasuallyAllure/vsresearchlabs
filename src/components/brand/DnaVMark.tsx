@@ -1,15 +1,17 @@
 /**
  * DnaVMark — inline, animatable version of the DNA·V monogram.
  *
- * Identical art to /brand/vs-dna-s-full-colour.svg, but inlined so the
- * three orbiting "bodies" are live DOM. On hover they swing around a shared
- * center at different speeds/directions — a three-body weave — and glow.
+ * Identical art to /brand/vs-dna-s-full-colour.svg, inlined so the three
+ * orbiting "bodies" are live DOM. The bodies orbit a shared center
+ * CONTINUOUSLY (one reversed, all at different tempos — a three-body weave);
+ * clicking the mark toggles the motion (stop / resume) without navigating.
  *
- * The three body circles are lifted out of the nested scale/translate group
- * to the SVG root and pre-transformed into view-box coordinates, so each can
+ * The three body circles are pre-transformed into view-box coordinates and
  * rotate around a single common center via `transform-box: view-box`.
- * Respects prefers-reduced-motion (glow stays, orbit stops).
+ * Respects prefers-reduced-motion (motion off; mark stays static).
  */
+
+import { useId, useState } from 'react';
 
 interface DnaVMarkProps {
   size?: number;
@@ -20,6 +22,17 @@ interface DnaVMarkProps {
 const ORBIT = '67px 26px';
 
 export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
+  const uid = useId().replace(/[:]/g, '');
+  const grad = `sStrand-${uid}`;
+  const [spinning, setSpinning] = useState(true);
+
+  const bodyStyle = (delay: string) => ({
+    transformBox: 'view-box' as const,
+    transformOrigin: ORBIT,
+    animationPlayState: spinning ? ('running' as const) : ('paused' as const),
+    animationDelay: delay,
+  });
+
   return (
     <svg
       className={`dna-v-mark shrink-0 select-none ${className}`}
@@ -27,11 +40,17 @@ export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
       height={size}
       viewBox="0 0 100 100"
       fill="none"
-      role="img"
-      aria-label="VS Research Labs"
+      role="button"
+      aria-label={spinning ? 'VS Research Labs — bodies orbiting (click to pause)' : 'VS Research Labs — orbit paused (click to resume)'}
+      style={{ cursor: 'pointer' }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setSpinning((s) => !s);
+      }}
     >
       <defs>
-        <linearGradient id="sStrand" gradientUnits="userSpaceOnUse" x1="66" y1="20" x2="66" y2="55">
+        <linearGradient id={grad} gradientUnits="userSpaceOnUse" x1="66" y1="20" x2="66" y2="55">
           <stop offset="0" stopColor="#E1C57E" />
           <stop offset="0.55" stopColor="#C49A48" />
           <stop offset="1" stopColor="#A87D2D" />
@@ -52,9 +71,9 @@ export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
       </g>
 
       {/* S strand (DNA, gold) */}
-      <path d="M61.52 54.50 L61.80 53.80 L62.12 53.11 L62.52 52.45 L63.01 51.83 L63.58 51.24 L64.21 50.67 L64.85 50.11 L65.44 49.52 L65.90 48.89 L66.17 48.18 L66.21 47.38 L65.99 46.49 L65.52 45.50 L64.85 44.43 L64.04 43.31 L63.19 42.17 L62.40 41.06 L61.78 40.01 L61.41 39.06 L61.37 38.23 L61.69 37.54 L62.32 36.97 L63.23 36.51 L64.38 36.14 L65.73 35.85 L67.21 35.61 L68.77 35.39 L70.33 35.18 L71.83 34.95 L73.19 34.66 L74.37 34.30 L75.31 33.85 L75.97 33.30 L76.34 32.63 L76.41 31.84 L76.19 30.95 L75.70 29.95 L75.00 28.87 L74.08 27.71 L73.08 26.51 L72.18 25.35 L71.44 24.26 L70.92 23.25 L70.63 22.33 L70.60 21.50 L70.80 20.77" fill="none" stroke="url(#sStrand)" strokeWidth="5.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.28" />
-      <path d="M61.52 54.50 L61.80 53.80 L62.12 53.11 L62.52 52.45 L63.01 51.83 L63.58 51.24 L64.21 50.67 L64.85 50.11 L65.44 49.52 L65.90 48.89 L66.17 48.18 L66.21 47.38 L65.99 46.49 L65.52 45.50 L64.85 44.43 L64.04 43.31 L63.19 42.17 L62.40 41.06 L61.78 40.01 L61.41 39.06 L61.37 38.23 L61.69 37.54 L62.32 36.97 L63.23 36.51 L64.38 36.14 L65.73 35.85 L67.21 35.61 L68.77 35.39 L70.33 35.18 L71.83 34.95 L73.19 34.66 L74.37 34.30 L75.31 33.85 L75.97 33.30 L76.34 32.63 L76.41 31.84 L76.19 30.95 L75.70 29.95 L75.00 28.87 L74.08 27.71 L73.08 26.51 L72.18 25.35 L71.44 24.26 L70.92 23.25 L70.63 22.33 L70.60 21.50 L70.80 20.77" fill="none" stroke="url(#sStrand)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M76.80 23.08 L71.20 20.92" fill="none" stroke="url(#sStrand)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M61.52 54.50 L61.80 53.80 L62.12 53.11 L62.52 52.45 L63.01 51.83 L63.58 51.24 L64.21 50.67 L64.85 50.11 L65.44 49.52 L65.90 48.89 L66.17 48.18 L66.21 47.38 L65.99 46.49 L65.52 45.50 L64.85 44.43 L64.04 43.31 L63.19 42.17 L62.40 41.06 L61.78 40.01 L61.41 39.06 L61.37 38.23 L61.69 37.54 L62.32 36.97 L63.23 36.51 L64.38 36.14 L65.73 35.85 L67.21 35.61 L68.77 35.39 L70.33 35.18 L71.83 34.95 L73.19 34.66 L74.37 34.30 L75.31 33.85 L75.97 33.30 L76.34 32.63 L76.41 31.84 L76.19 30.95 L75.70 29.95 L75.00 28.87 L74.08 27.71 L73.08 26.51 L72.18 25.35 L71.44 24.26 L70.92 23.25 L70.63 22.33 L70.60 21.50 L70.80 20.77" fill="none" stroke={`url(#${grad})`} strokeWidth="5.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.28" />
+      <path d="M61.52 54.50 L61.80 53.80 L62.12 53.11 L62.52 52.45 L63.01 51.83 L63.58 51.24 L64.21 50.67 L64.85 50.11 L65.44 49.52 L65.90 48.89 L66.17 48.18 L66.21 47.38 L65.99 46.49 L65.52 45.50 L64.85 44.43 L64.04 43.31 L63.19 42.17 L62.40 41.06 L61.78 40.01 L61.41 39.06 L61.37 38.23 L61.69 37.54 L62.32 36.97 L63.23 36.51 L64.38 36.14 L65.73 35.85 L67.21 35.61 L68.77 35.39 L70.33 35.18 L71.83 34.95 L73.19 34.66 L74.37 34.30 L75.31 33.85 L75.97 33.30 L76.34 32.63 L76.41 31.84 L76.19 30.95 L75.70 29.95 L75.00 28.87 L74.08 27.71 L73.08 26.51 L72.18 25.35 L71.44 24.26 L70.92 23.25 L70.63 22.33 L70.60 21.50 L70.80 20.77" fill="none" stroke={`url(#${grad})`} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M76.80 23.08 L71.20 20.92" fill="none" stroke={`url(#${grad})`} strokeWidth="3" strokeLinecap="round" />
 
       {/* Orbit rings (static) */}
       <g transform="translate(34,1.5) scale(0.6)">
@@ -64,23 +83,19 @@ export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
         </g>
       </g>
 
-      {/* Three bodies — root-level (view-box coords) so they orbit a shared
-          center on hover. */}
-      <circle className="vsbody vsbody-1" cx="69.4" cy="9.9"  r="1.86" fill="#1A1714" opacity="0.5" style={{ transformBox: 'view-box', transformOrigin: ORBIT }} />
-      <circle className="vsbody vsbody-2" cx="49"   cy="39.3" r="2.82" fill="#34727A" opacity="0.9" style={{ transformBox: 'view-box', transformOrigin: ORBIT }} />
-      <circle className="vsbody vsbody-3" cx="83.2" cy="27.3" r="4.2"  fill="#B5904B" opacity="1"   style={{ transformBox: 'view-box', transformOrigin: ORBIT }} />
+      {/* Three bodies — root-level (view-box coords) so they orbit a shared center. */}
+      <circle className="vsbody vsbody-1" cx="69.4" cy="9.9" r="1.86" fill="#1A1714" opacity="0.5" style={bodyStyle('0s')} />
+      <circle className="vsbody vsbody-2" cx="49" cy="39.3" r="2.82" fill="#34727A" opacity="0.9" style={bodyStyle('-1.2s')} />
+      <circle className="vsbody vsbody-3" cx="83.2" cy="27.3" r="4.2" fill="#B5904B" opacity="1" style={bodyStyle('-0.6s')} />
 
       <style>{`
-        .dna-v-mark .vsbody { transition: filter 240ms ease; }
-        /* Hover: glow + orbit. Each body sweeps the shared center at its own
-           tempo (one reversed) so they weave like a three-body system. */
-        .dna-v-mark:hover .vsbody-1 { filter: drop-shadow(0 0 1.5px rgba(40,40,40,0.55)); animation: vsbody-cw 2.6s linear infinite; }
-        .dna-v-mark:hover .vsbody-2 { filter: drop-shadow(0 0 2px #34727A) drop-shadow(0 0 4px rgba(52,114,122,0.6)); animation: vsbody-ccw 3.6s linear infinite; }
-        .dna-v-mark:hover .vsbody-3 { filter: drop-shadow(0 0 2.5px #B5904B) drop-shadow(0 0 6px rgba(181,144,75,0.6)); animation: vsbody-cw 4.8s linear infinite; }
-        @keyframes vsbody-cw  { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
-        @keyframes vsbody-ccw { from { transform: rotate(0deg); }   to { transform: rotate(-360deg); } }
+        .dna-v-mark .vsbody-1 { animation: vsbody-cw  7s  linear infinite; }
+        .dna-v-mark .vsbody-2 { animation: vsbody-ccw 11s linear infinite; }
+        .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }
+        @keyframes vsbody-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes vsbody-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
         @media (prefers-reduced-motion: reduce) {
-          .dna-v-mark:hover .vsbody { animation: none !important; }
+          .dna-v-mark .vsbody { animation: none !important; }
         }
       `}</style>
     </svg>

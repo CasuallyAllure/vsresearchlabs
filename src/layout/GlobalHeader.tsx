@@ -36,7 +36,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
         data-role={role}
         style={{ backgroundColor: 'rgba(244, 239, 230, 0.82)' }}
       >
-        <div className="relative z-10 h-[60px] sm:h-[74px] px-[var(--space-6)] flex items-center">
+        <div className="relative z-10 h-[88px] sm:h-[74px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}
           <button
             type="button"
@@ -64,9 +64,9 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
           </button>
 
           {/* CENTER — DNA·V identity lockup.
-              Mobile: left-aligned next to the menu, compact.
-              Desktop (sm+): absolutely centered, larger. */}
-          <Logo variant="lockup" markSize={40} wordSize={14} className="ml-1.5 sm:hidden" />
+              Mobile: stacked (mark above wordmark), bigger, centered.
+              Desktop (sm+): horizontal lockup, centered, larger. */}
+          <Logo variant="stacked" markSize={50} wordSize={13} className="sm:hidden absolute left-1/2 -translate-x-1/2" />
           <Logo
             variant="lockup"
             markSize={56}
