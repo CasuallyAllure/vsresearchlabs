@@ -121,7 +121,7 @@ for (const key of keys) {
   const svg = renderSpecimen({
     eyebrow: meta.eyebrow,
     specimenId,
-    compoundName: meta.name.toUpperCase(),
+    compoundName: meta.name,
     doseLabel,
     sku,
     purity,
@@ -224,7 +224,7 @@ for (const p of products) {
   const svg = renderSpecimen({
     eyebrow: (p.family || classLabel).toUpperCase(),
     specimenId: `VS-RS-${p.abbreviation}`,
-    compoundName: substanceOf(p.name).toUpperCase(),
+    compoundName: substanceOf(p.name),
     doseLabel: mass ? `${mass.replace(/\s*\/\s*vial/, '')} / vial` : `${p.variants?.[0]?.dose || ''} / vial`,
     sku: p.sku,
     purity,

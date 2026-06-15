@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="VS Research Labs — apothecary seal">
+<title>VS Research Labs — apothecary seal</title>
+<defs></defs>
+<circle cx="50" cy="50" r="47.5" fill="none" stroke="#34727A" stroke-width="1.3"></circle>
+      <circle cx="50" cy="50" r="45.4" fill="none" stroke="#34727A" stroke-width="0.45"></circle>
+      <circle cx="50" cy="50" r="35" fill="none" stroke="#B5904B" stroke-width="1"></circle>
+      <circle cx="50" cy="50" r="33.4" fill="none" stroke="#B5904B" stroke-width="0.4"></circle>
+      <path id="cTop" d="M9.5 50 A40.5 40.5 0 0 1 90.5 50" fill="none"></path>
+      <path id="cBot" d="M90.5 50 A40.5 40.5 0 0 1 9.5 50" fill="none"></path>
+      <text font-family="&#39;IBM Plex Mono&#39;,monospace" font-size="4.35" letter-spacing="1.15" fill="#1A1714">
+        <textPath href="#cTop" startOffset="50%" text-anchor="middle">VELARI · SYSTEMS · RESEARCH · LABS</textPath>
+      </text>
+      <text font-family="&#39;IBM Plex Mono&#39;,monospace" font-size="4.35" letter-spacing="1.05" fill="#1A1714">
+        <textPath href="#cBot" startOffset="50%" text-anchor="middle">RESEARCH USE ONLY · BAY AREA · CA</textPath>
+      </text>
+      
+      <defs>
+        <radialGradient id="bGold" cx="0.36" cy="0.30" r="0.85"><stop offset="0" stop-color="#E6CD92"></stop><stop offset="1" stop-color="#8C6A2A"></stop></radialGradient>
+        <radialGradient id="bTeal" cx="0.36" cy="0.30" r="0.9"><stop offset="0" stop-color="#62A0A6"></stop><stop offset="1" stop-color="#1E444A"></stop></radialGradient>
+        <radialGradient id="bInk" cx="0.36" cy="0.30" r="0.9"><stop offset="0" stop-color="#4C443A"></stop><stop offset="1" stop-color="#131110"></stop></radialGradient>
+      </defs>
+      <g transform="translate(10.2,11.8) scale(0.78)">
+        <g class="triad-orbits" fill="none" stroke="#1A1714" stroke-linecap="round">
+          <ellipse cx="50" cy="52" rx="36" ry="21.5" transform="rotate(-20 50 52)" opacity="0.30" stroke-width="0.8"></ellipse>
+          <ellipse cx="53" cy="47" rx="25" ry="38" transform="rotate(33 53 47)" opacity="0.17" stroke-width="0.7"></ellipse>
+        </g>
+        <circle data-pillar="skin-care" cx="59" cy="14" r="3.1" fill="url(#bInk)" opacity="0.6"></circle>
+        <circle data-pillar="nootropics" cx="25" cy="63" r="4.7" fill="url(#bTeal)"></circle>
+        <circle data-pillar="biopeptides" cx="82" cy="43" r="7" fill="url(#bGold)"></circle>
+      </g>
+      <text x="50" y="51.5" font-family="&#39;Cormorant Garamond&#39;,serif" font-weight="600" font-size="31" letter-spacing="0.5" fill="#1A1714" text-anchor="middle" dominant-baseline="central">VS</text>
+</svg>

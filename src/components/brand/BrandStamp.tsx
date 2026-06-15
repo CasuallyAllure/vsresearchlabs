@@ -10,8 +10,8 @@
  *   - Ink uses `currentColor`, so the stamp adapts to its surface: dark
  *     ink on a white invoice, light ink on the dark app. Set color via
  *     the wrapping element (or the `tone` prop).
- *   - The triple-slash keeps its fixed brand colors (cyan / blue / orange)
- *     — the one accent — and reads on both light and dark.
+ *   - The three orbiting bodies (gold / teal / ink) are the one accent —
+ *     the brand's "three body" mark (biopeptides · nootropics · skin-care).
  *   - No animation, no background-clip-text — intentionally print- and
  *     export-safe (unlike the live animated header wordmark).
  *
@@ -30,7 +30,7 @@ interface BrandStampProps {
   title?: string;
 }
 
-const SLASH = { cyan: '#7AE5FF', blue: '#4A95E0', orange: '#FF8A2E' };
+const BODY = { gold: '#B5904B', teal: '#34727A', ink: '#1A1714' };
 
 export function BrandStamp({
   width = 240,
@@ -69,24 +69,28 @@ export function BrandStamp({
 
       {/* Top micro caption */}
       <text x="160" y="26" textAnchor="middle" fill="currentColor" fillOpacity="0.5"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace" fontSize="6.5"
+        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
         letterSpacing="3" style={{ textTransform: 'uppercase' }}>
         Research-Grade · Bay Area · California
       </text>
 
-      {/* Wordmark row: VS RESEARCH LABS + triple-slash */}
-      <text x="150" y="56" textAnchor="middle" fill="currentColor"
-        fontFamily="Inter, system-ui, -apple-system, sans-serif"
-        fontSize="22" fontWeight="700" letterSpacing="1.5"
+      {/* Wordmark row: VS RESEARCH LABS (Cormorant serif) + three bodies */}
+      <text x="150" y="57" textAnchor="middle" fill="currentColor"
+        fontFamily="'Cormorant Garamond', 'Times New Roman', Georgia, serif"
+        fontSize="25" fontWeight="600" letterSpacing="2"
         style={{ textTransform: 'uppercase' }}>
         VS Research Labs
       </text>
 
-      {/* Triple-slash — the single accent, sized to the wordmark cap height */}
-      <g transform="translate(268, 42)" strokeLinecap="round" strokeWidth="2.4">
-        <line x1="0" y1="16" x2="6" y2="2" stroke={SLASH.cyan} />
-        <line x1="7" y1="16" x2="13" y2="2" stroke={SLASH.blue} />
-        <line x1="14" y1="16" x2="20" y2="2" stroke={SLASH.orange} />
+      {/* Three bodies — the single accent, sized to the wordmark cap height */}
+      <g transform="translate(262, 40) scale(0.24)">
+        <g fill="none" stroke="currentColor" strokeOpacity="0.4" strokeLinecap="round">
+          <ellipse cx="50" cy="52" rx="36" ry="21.5" transform="rotate(-20 50 52)" strokeWidth="2.6" />
+          <ellipse cx="53" cy="47" rx="25" ry="38" transform="rotate(33 53 47)" strokeWidth="2.2" />
+        </g>
+        <circle cx="59" cy="14" r="3.1" fill={BODY.ink} fillOpacity="0.55" />
+        <circle cx="25" cy="63" r="4.7" fill={BODY.teal} />
+        <circle cx="82" cy="43" r="7" fill={BODY.gold} />
       </g>
 
       {/* Divider hairline */}
@@ -94,14 +98,14 @@ export function BrandStamp({
 
       {/* Sub-caption */}
       <text x="160" y="82" textAnchor="middle" fill="currentColor" fillOpacity="0.62"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace" fontSize="6.5"
+        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
         letterSpacing="2.4" style={{ textTransform: 'uppercase' }}>
         BioPeptide Sciences · Nootropics · Skin-Care
       </text>
 
       {/* Bottom micro disclaimer */}
       <text x="160" y="93.5" textAnchor="middle" fill="currentColor" fillOpacity="0.4"
-        fontFamily="'JetBrains Mono', ui-monospace, monospace" fontSize="5.5"
+        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="5.5"
         letterSpacing="2.2" style={{ textTransform: 'uppercase' }}>
         For Research Use Only · Not For Human Consumption
       </text>

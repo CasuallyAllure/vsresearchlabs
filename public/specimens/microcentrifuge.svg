@@ -1,6 +1,6 @@
 <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
 
-  <rect width="800" height="800" fill="#0a0a0a"/>
+  <rect width="800" height="800" fill="#16130F"/>
 
   <line x1="60" y1="74" x2="740" y2="74" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
   <text x="60" y="56" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.28)" letter-spacing="3">BENCHTOP CENTRIFUGE · 24-PLACE</text>
@@ -89,7 +89,7 @@
   <text x="60" y="419" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.18)" letter-spacing="1">PROFILES · SHORT-SPIN</text>
 
   <text x="60" y="602" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.16)" letter-spacing="1">15,000 rpm · 21,130 × g · 24 × 1.5 / 2 mL</text>
-  <text x="400" y="602" font-family="monospace" font-size="9" fill="#C4A35A" letter-spacing="1.5" text-anchor="middle" opacity="0.75">VSR-LE-CEN-024</text>
+  <text x="400" y="602" font-family="monospace" font-size="9" fill="#B5904B" letter-spacing="1.5" text-anchor="middle" opacity="0.75">VSR-LE-CEN-024</text>
 
   <line x1="60" y1="618" x2="740" y2="618" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
   <text x="60" y="636" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.22)" letter-spacing="2">FOR LABORATORY RESEARCH USE ONLY</text>

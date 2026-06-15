@@ -342,11 +342,11 @@ export function AdminReports() {
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
           Reports
         </p>
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-          <span className="font-light text-white/85">Export the </span>
-          <span className="font-medium text-white">numbers.</span>
+        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+          <span className="font-light text-ink/85">Export the </span>
+          <span className="font-medium text-ink">numbers.</span>
         </h2>
-        <p className="text-[12px] text-white/45 mt-[var(--space-2)] max-w-[64ch]">
+        <p className="text-[12px] text-ink/45 mt-[var(--space-2)] max-w-[64ch]">
           Pick a report, set a range, and download a real Excel workbook or CSV. Exports include every matching row (preview shows the first {PREVIEW_LIMIT}).
         </p>
       </header>
@@ -361,8 +361,8 @@ export function AdminReports() {
             className={[
               'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
               activeId === r.id
-                ? 'bg-white/[0.10] text-white border border-white/25'
-                : 'border border-white/[0.08] text-white/55 hover:text-white/90',
+                ? 'bg-ink/[0.10] text-ink border border-ink/25'
+                : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
             ].join(' ')}
           >
             {r.label}
@@ -373,8 +373,8 @@ export function AdminReports() {
       {/* Controls row: description + range + export */}
       <div className="research-surface-solid p-[var(--space-5)] mb-[var(--space-5)] flex flex-col gap-[var(--space-4)] sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] text-white/80">{active.label}</p>
-          <p className="text-[11.5px] text-white/45 mt-0.5 max-w-[60ch]">{active.description}</p>
+          <p className="text-[13px] text-ink/80">{active.label}</p>
+          <p className="text-[11.5px] text-ink/45 mt-0.5 max-w-[60ch]">{active.description}</p>
           {active.hasRange && (
             <div className="flex flex-wrap items-center gap-1.5 mt-[var(--space-3)]">
               {RANGES.map((rg) => (
@@ -385,8 +385,8 @@ export function AdminReports() {
                   className={[
                     'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.16em] transition-colors',
                     rangeId === rg.id
-                      ? 'bg-white/[0.08] text-white border border-white/20'
-                      : 'border border-white/[0.06] text-white/45 hover:text-white/80',
+                      ? 'bg-ink/[0.08] text-ink border border-ink/20'
+                      : 'border border-ink/[0.06] text-ink/45 hover:text-ink/80',
                   ].join(' ')}
                 >
                   {rg.label}
@@ -397,14 +397,14 @@ export function AdminReports() {
         </div>
 
         <div className="flex items-center gap-[var(--space-2)] shrink-0">
-          <span className="font-mono text-[10px] text-white/40 tabular-nums mr-[var(--space-2)]">
+          <span className="font-mono text-[10px] text-ink/40 tabular-nums mr-[var(--space-2)]">
             {rows ? `${rows.length} rows` : 'Loading…'}
           </span>
           <button
             type="button"
             disabled={!canExport}
             onClick={() => downloadXlsx(`${filenameBase}.xlsx`, active.sheet, active.columns, rows ?? [])}
-            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] bg-[#7CD992]/[0.10] border border-[#7CD992]/40 text-[#9fe6b3] hover:bg-[#7CD992]/[0.16] transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] bg-[#2E7D5B]/[0.10] border border-[#2E7D5B]/40 text-[#9fe6b3] hover:bg-[#2E7D5B]/[0.16] transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
           >
             Export Excel
           </button>
@@ -412,7 +412,7 @@ export function AdminReports() {
             type="button"
             disabled={!canExport}
             onClick={() => downloadCsv(`${filenameBase}.csv`, active.columns, rows ?? [])}
-            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
           >
             CSV
           </button>
@@ -428,12 +428,12 @@ export function AdminReports() {
         <div className="research-surface-solid overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.10]">
+              <tr className="border-b border-ink/[0.10]">
                 {active.columns.map((c) => (
                   <th
                     key={c.header}
                     className={[
-                      'py-[var(--space-3)] px-[var(--space-3)] text-[10px] uppercase tracking-[0.18em] text-white/45 font-normal whitespace-nowrap',
+                      'py-[var(--space-3)] px-[var(--space-3)] text-[10px] uppercase tracking-[0.18em] text-ink/45 font-normal whitespace-nowrap',
                       c.type === 'number' || c.type === 'currency' ? 'text-right' : 'text-left',
                     ].join(' ')}
                   >
@@ -444,15 +444,15 @@ export function AdminReports() {
             </thead>
             <tbody>
               {rows.slice(0, PREVIEW_LIMIT).map((row, i) => (
-                <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors">
+                <tr key={i} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
                   {active.columns.map((c) => (
                     <td
                       key={c.header}
                       className={[
                         'py-[var(--space-2)] px-[var(--space-3)] text-[11.5px] align-top',
                         c.type === 'number' || c.type === 'currency'
-                          ? 'text-right font-mono tabular-nums text-white/75'
-                          : 'text-left text-white/80',
+                          ? 'text-right font-mono tabular-nums text-ink/75'
+                          : 'text-left text-ink/80',
                         'max-w-[260px] truncate',
                       ].join(' ')}
                       title={displayCell(c, row)}
@@ -465,7 +465,7 @@ export function AdminReports() {
             </tbody>
           </table>
           {rows.length > PREVIEW_LIMIT && (
-            <p className="px-[var(--space-4)] py-[var(--space-3)] text-[10px] uppercase tracking-[0.2em] text-white/35 border-t border-white/[0.06]">
+            <p className="px-[var(--space-4)] py-[var(--space-3)] text-[10px] uppercase tracking-[0.2em] text-ink/35 border-t border-ink/[0.06]">
               Showing {PREVIEW_LIMIT} of {rows.length} — export includes all {rows.length}.
             </p>
           )}
@@ -474,7 +474,7 @@ export function AdminReports() {
 
       {rows && rows.length === 0 && !error && (
         <div className="research-surface-solid p-[var(--space-6)]">
-          <p className="text-[13px] text-white/55">No rows for this report{active.hasRange ? ' in the selected range' : ''}.</p>
+          <p className="text-[13px] text-ink/55">No rows for this report{active.hasRange ? ' in the selected range' : ''}.</p>
         </div>
       )}
     </AdminLayout>

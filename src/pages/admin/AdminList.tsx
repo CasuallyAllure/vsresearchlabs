@@ -131,39 +131,39 @@ export function AdminList() {
           <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
             Admin
           </p>
-          <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-light text-ink tracking-tight">
             Products
           </h1>
-          <p className="mt-[var(--space-2)] text-xs text-white/45">
+          <p className="mt-[var(--space-2)] text-xs text-ink/45">
             {products.length} product{products.length === 1 ? '' : 's'} in
             local catalog.
           </p>
         </div>
         <Link
           to="/admin/new"
-          className="inline-block px-[var(--space-6)] py-[var(--space-3)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
+          className="inline-block px-[var(--space-6)] py-[var(--space-3)] rounded-full bg-gold text-ink text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
         >
           + New Product
         </Link>
       </header>
 
       {/* Catalog actions */}
-      <div className="mb-[var(--space-10)] pb-[var(--space-6)] border-b border-white/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-white/40 mb-[var(--space-4)]">
+      <div className="mb-[var(--space-10)] pb-[var(--space-6)] border-b border-ink/[0.06]">
+        <p className="text-[11px] uppercase tracking-[0.25em] text-ink/40 mb-[var(--space-4)]">
           Catalog Actions
         </p>
         <div className="flex flex-wrap gap-[var(--space-3)]">
           <button
             type="button"
             onClick={handleImportClick}
-            className="px-[var(--space-5)] py-[var(--space-2-5)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+            className="px-[var(--space-5)] py-[var(--space-2-5)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors"
           >
             Import JSON
           </button>
           <button
             type="button"
             onClick={handleExport}
-            className="px-[var(--space-5)] py-[var(--space-2-5)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+            className="px-[var(--space-5)] py-[var(--space-2-5)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors"
           >
             Export JSON
           </button>
@@ -203,7 +203,7 @@ export function AdminList() {
       {/* Table */}
       {products.length === 0 ? (
         <div className="py-[var(--space-12)] text-center">
-          <p className="text-sm text-white/55 mb-[var(--space-4)]">
+          <p className="text-sm text-ink/55 mb-[var(--space-4)]">
             No products in the catalog.
           </p>
           <Link
@@ -217,23 +217,23 @@ export function AdminList() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-white/[0.1]">
-                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+              <tr className="border-b border-ink/[0.1]">
+                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   Name
                 </th>
-                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   SKU
                 </th>
-                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   Category
                 </th>
-                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   Featured
                 </th>
-                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+                <th className="py-[var(--space-3)] pr-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   Stock
                 </th>
-                <th className="py-[var(--space-3)] text-right text-[11px] uppercase tracking-[0.25em] text-white/40 font-normal">
+                <th className="py-[var(--space-3)] text-right text-[11px] uppercase tracking-[0.25em] text-ink/40 font-normal">
                   Actions
                 </th>
               </tr>
@@ -242,32 +242,32 @@ export function AdminList() {
               {products.map((product) => (
                 <tr
                   key={product.id}
-                  className="border-b border-white/[0.06] align-middle"
+                  className="border-b border-ink/[0.06] align-middle"
                 >
                   <td className="py-[var(--space-4)] pr-[var(--space-4)]">
                     <Link
                       to={`/product/${product.id}`}
-                      className="text-sm text-white hover:text-gold transition-colors"
+                      className="text-sm text-ink hover:text-gold transition-colors"
                     >
                       {product.name}
                     </Link>
                   </td>
-                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs font-mono text-white/55">
+                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs font-mono text-ink/55">
                     {product.sku}
                   </td>
-                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-white/55">
+                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-ink/55">
                     {product.category.replace(/-/g, ' ')}
                   </td>
-                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-white/55">
+                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-ink/55">
                     {product.featured ? '✓' : '—'}
                   </td>
-                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-white/55 tabular-nums">
+                  <td className="py-[var(--space-4)] pr-[var(--space-4)] text-xs text-ink/55 tabular-nums">
                     {product.stock === null ? '—' : product.stock}
                   </td>
                   <td className="py-[var(--space-4)] text-right whitespace-nowrap">
                     <Link
                       to={`/admin/${product.id}/edit`}
-                      className="text-[11px] uppercase tracking-[0.25em] text-white/70 hover:text-white transition-colors"
+                      className="text-[11px] uppercase tracking-[0.25em] text-ink/70 hover:text-ink transition-colors"
                     >
                       Edit
                     </Link>

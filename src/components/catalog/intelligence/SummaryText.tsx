@@ -1,30 +1,19 @@
 /**
  * SummaryText
  *
- * Renders a plain-English compound summary with a tiny inline highlight
- * markup so a non-technical reader can scan the key points:
+ * Renders a plain-English compound summary with a tiny inline emphasis
+ * markup. All three markers render the same way — **bold ink**, no color,
+ * no glow — so key points read clearly without decoration:
  *
- *   **text**  → key term        (cyan / holo)
- *   ~text~    → positive outcome (mint)
- *   *text*    → strong emphasis  (white, semibold)
+ *   **text**  ~text~  *text*  → all → bold (same ink color)
  *
  * Markup is intentionally minimal and non-nested. Anything not wrapped
- * renders as ordinary muted body copy. This is the ONE friendly,
- * colorized surface — the heavy technical detail lives in the modules.
+ * renders as ordinary body copy.
  */
 
 import { Fragment } from 'react';
 
 const TOKEN = /(\*\*[^*]+\*\*|~[^~]+~|\*[^*]+\*)/g;
-
-const KEY_STYLE: React.CSSProperties = {
-  color: '#8FD6FF',
-  textShadow: '0 0 6px rgba(100,200,255,0.45), 0 0 14px rgba(100,200,255,0.18)',
-};
-const GOOD_STYLE: React.CSSProperties = {
-  color: '#7CE6C2',
-  textShadow: '0 0 6px rgba(110,232,192,0.40), 0 0 14px rgba(110,232,192,0.16)',
-};
 
 interface SummaryTextProps {
   text: string;
@@ -37,24 +26,18 @@ export function SummaryText({ text, className }: SummaryTextProps) {
     <p className={className}>
       {parts.map((part, i) => {
         if (!part) return null;
-        if (part.startsWith('**') && part.endsWith('**')) {
+        // All emphasis markers → plain bold, same color, no glow.
+        const inner =
+          part.startsWith('**') && part.endsWith('**')
+            ? part.slice(2, -2)
+            : (part.startsWith('~') && part.endsWith('~')) ||
+              (part.startsWith('*') && part.endsWith('*'))
+            ? part.slice(1, -1)
+            : null;
+        if (inner !== null) {
           return (
-            <span key={i} className="font-medium" style={KEY_STYLE}>
-              {part.slice(2, -2)}
-            </span>
-          );
-        }
-        if (part.startsWith('~') && part.endsWith('~')) {
-          return (
-            <span key={i} className="font-medium" style={GOOD_STYLE}>
-              {part.slice(1, -1)}
-            </span>
-          );
-        }
-        if (part.startsWith('*') && part.endsWith('*')) {
-          return (
-            <span key={i} className="font-semibold text-white">
-              {part.slice(1, -1)}
+            <span key={i} className="font-semibold text-ink">
+              {inner}
             </span>
           );
         }

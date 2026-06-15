@@ -14,24 +14,24 @@
  * surface posture that the procurement register has otherwise removed.
  */
 
+import { Logo } from '../components/brand/Logo';
+
 export function GlobalFooter() {
   return (
     <footer
-      className="border-t border-white/[0.06] pb-14 lg:pb-0"
+      className="border-t border-ink/[0.08] pb-14 lg:pb-0"
       role="contentinfo"
     >
       <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-8)]">
-        <div className="flex flex-col gap-[var(--space-2)] sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-[var(--space-1)]">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-white/45">
-              VS Research Labs
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-white/35">
+        <div className="flex flex-col gap-[var(--space-4)] sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-[var(--space-3)]">
+            <Logo variant="lockup" markSize={26} wordSize={14} showTagline={false} />
+            <p className="text-[11px] uppercase tracking-[0.25em] text-ink/40">
               Research procurement · For Research Purposes Only
             </p>
           </div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/25 tabular-nums sm:text-right">
-            © {new Date().getFullYear()}
+          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink/35 tabular-nums sm:text-right">
+            © {new Date().getFullYear()} Velari Systems Research Labs
           </p>
         </div>
       </div>

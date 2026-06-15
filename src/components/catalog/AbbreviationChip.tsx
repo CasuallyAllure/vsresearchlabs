@@ -17,9 +17,9 @@
  *     numeric tails ("SEM-005" style).
  *
  * Surface tokens:
- *   bg     → bg-white/[0.06]   (matches PillTabs / search-input bg)
- *   border → border-white/[0.1]
- *   text   → text-white/70
+ *   bg     → bg-ink/[0.06]   (matches PillTabs / search-input bg)
+ *   border → border-ink/[0.1]
+ *   text   → text-ink/70
  */
 
 interface AbbreviationChipProps {
@@ -35,8 +35,8 @@ export function AbbreviationChip({ value, className }: AbbreviationChipProps) {
         'inline-flex items-center',
         'px-1.5 py-[2px]',
         'rounded',
-        'bg-white/[0.05] border border-white/[0.09]',
-        'text-white/60',
+        'bg-ink/[0.05] border border-ink/[0.09]',
+        'text-ink/60',
         'text-[10px] font-medium tracking-[0.1em] uppercase',
         'tabular-nums',
         'shrink-0',

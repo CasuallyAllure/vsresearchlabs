@@ -70,9 +70,9 @@ export function AdminAuditLog() {
           Audit Log
         </p>
         <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-            <span className="font-light text-white/85">Who did </span>
-            <span className="font-medium text-white">what when.</span>
+          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+            <span className="font-light text-ink/85">Who did </span>
+            <span className="font-medium text-ink">what when.</span>
           </h2>
           <div className="flex items-center gap-1.5 flex-wrap">
             {ENTITY_FILTERS.map((f) => (
@@ -83,8 +83,8 @@ export function AdminAuditLog() {
                 className={[
                   'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
                   entityFilter === f
-                    ? 'bg-white/[0.10] text-white border border-white/25'
-                    : 'border border-white/[0.08] text-white/55 hover:text-white/90',
+                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
+                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
                 ].join(' ')}
               >
                 {f}
@@ -95,7 +95,7 @@ export function AdminAuditLog() {
               placeholder="Filter by actor email"
               value={actorFilter}
               onChange={(e) => setActorFilter(e.target.value)}
-              className="ml-[var(--space-2)] w-[200px] px-[var(--space-3)] py-[var(--space-1)] bg-black border border-white/10 rounded-full text-[11px] text-white placeholder-white/30 focus:outline-none focus:border-white/30"
+              className="ml-[var(--space-2)] w-[200px] px-[var(--space-3)] py-[var(--space-1)] bg-base-700 border border-ink/10 rounded-full text-[11px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
             />
           </div>
         </div>
@@ -111,7 +111,7 @@ export function AdminAuditLog() {
 
       {rows && rows.length === 0 && (
         <div className="research-surface-solid p-[var(--space-6)]">
-          <p className="text-[13px] text-white/55">
+          <p className="text-[13px] text-ink/55">
             No audit entries match the current filter. Entries are written
             on every admin-driven state change (stock adjustments, order
             transitions, customer edits).
@@ -123,17 +123,17 @@ export function AdminAuditLog() {
         <div className="research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[820px] border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.08]">
-                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[150px]">
+              <tr className="border-b border-ink/[0.08]">
+                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[150px]">
                   When
                 </th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[170px]">
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">
                   Action
                 </th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal">
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">
                   Summary
                 </th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[170px]">
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">
                   Actor
                 </th>
               </tr>
@@ -145,17 +145,17 @@ export function AdminAuditLog() {
                   <>
                     <tr
                       key={row.id}
-                      className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors cursor-pointer"
+                      className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors cursor-pointer"
                       onClick={() => setExpanded(isOpen ? null : row.id)}
                     >
-                      <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] font-mono text-[10.5px] tabular-nums text-white/45 align-top">
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] font-mono text-[10.5px] tabular-nums text-ink/45 align-top">
                         {formatTs(row.occurred_at)}
                       </td>
                       <td className="py-[var(--space-3)] px-[var(--space-3)] font-mono text-[11px] text-holo-light/80 align-top">
                         {row.action}
                       </td>
-                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-[12.5px] text-white/85 align-top">
-                        {row.summary ?? <span className="text-white/35">—</span>}
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-[12.5px] text-ink/85 align-top">
+                        {row.summary ?? <span className="text-ink/35">—</span>}
                         {row.entity_type === 'order' && row.entity_id && (
                           <Link
                             to={`/admin/orders/${row.entity_id}`}
@@ -166,12 +166,12 @@ export function AdminAuditLog() {
                           </Link>
                         )}
                       </td>
-                      <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] font-mono text-[10.5px] text-white/55 truncate align-top">
-                        {row.actor_email ?? <span className="text-white/35">system</span>}
+                      <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] font-mono text-[10.5px] text-ink/55 truncate align-top">
+                        {row.actor_email ?? <span className="text-ink/35">system</span>}
                       </td>
                     </tr>
                     {isOpen && (row.before_value !== null || row.after_value !== null) && (
-                      <tr key={`${row.id}-detail`} className="bg-black/40">
+                      <tr key={`${row.id}-detail`} className="bg-ink/40">
                         <td colSpan={4} className="px-[var(--space-4)] pb-[var(--space-4)]">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-3)] pt-[var(--space-3)]">
                             <DetailJson title="Before" value={row.before_value} />
@@ -199,15 +199,15 @@ function DetailJson({ title, value }: { title: string; value: unknown }) {
   if (value === null || value === undefined) {
     return (
       <div>
-        <p className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-[var(--space-1)]">{title}</p>
-        <p className="text-[11px] text-white/30">—</p>
+        <p className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-[var(--space-1)]">{title}</p>
+        <p className="text-[11px] text-ink/30">—</p>
       </div>
     );
   }
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-[var(--space-1)]">{title}</p>
-      <pre className="text-[11px] font-mono text-white/70 whitespace-pre-wrap break-all bg-black/60 border border-white/[0.06] rounded-sm p-[var(--space-2)] overflow-x-auto">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-[var(--space-1)]">{title}</p>
+      <pre className="text-[11px] font-mono text-ink/70 whitespace-pre-wrap break-all bg-ink/60 border border-ink/[0.06] rounded-sm p-[var(--space-2)] overflow-x-auto">
         {JSON.stringify(value, null, 2)}
       </pre>
     </div>

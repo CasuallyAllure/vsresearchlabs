@@ -165,7 +165,7 @@ export function ProductPage() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="text-xs uppercase tracking-widest text-white/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="text-xs uppercase tracking-widest text-ink/60 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
             Go back
           </button>
@@ -202,17 +202,17 @@ export function ProductPage() {
         {product.laymanSummary ? (
           <SummaryText
             text={product.laymanSummary}
-            className="text-[13px] leading-relaxed text-white/75 mb-[var(--space-3)]"
+            className="text-[13px] leading-relaxed text-ink/75 mb-[var(--space-3)]"
           />
         ) : (
           product.shortDescription && (
-            <p className="text-white/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
+            <p className="text-ink/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
               {product.shortDescription}
             </p>
           )
         )}
         {product.longDescription && (
-          <p className="text-white/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>
+          <p className="text-ink/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>
             {product.longDescription}
           </p>
         )}
@@ -287,11 +287,11 @@ export function ProductPage() {
         <Link to="/" className="hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/30">
           Home
         </Link>
-        <span className="mx-[var(--space-2)] text-white/20">/</span>
+        <span className="mx-[var(--space-2)] text-ink/20">/</span>
         <Link to={categoryHref} className="hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/30">
           {categoryLabel}
         </Link>
-        <span className="mx-[var(--space-2)] text-white/20">/</span>
+        <span className="mx-[var(--space-2)] text-ink/20">/</span>
         <span className="holo-text-body normal-case tracking-normal">{ci.substance}</span>
       </nav>
 
@@ -315,7 +315,7 @@ export function ProductPage() {
           {/* Mobile image gallery — replaces the visual zone at < lg */}
           {activeImageUrl && (
             <div className="lg:hidden" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className="aspect-[4/3] w-full overflow-hidden bg-[#050505]">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-display">
                 <img src={activeImageUrl} alt={product.name} className="h-full w-full object-cover" />
               </div>
               {hasGallery && (
@@ -335,9 +335,9 @@ export function ProductPage() {
                         aria-label={`View image ${idx + 1} of ${images.length}`}
                         onClick={() => setActiveImageIndex(idx)}
                         className={[
-                          'shrink-0 w-14 h-14 overflow-hidden bg-[#050505] border transition-colors',
-                          'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
-                          isActive ? 'border-white' : 'border-white/[0.06] hover:border-white/20',
+                          'shrink-0 w-14 h-14 overflow-hidden bg-display border transition-colors',
+                          'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                          isActive ? 'border-ink' : 'border-ink/[0.06] hover:border-ink/20',
                         ].join(' ')}
                       >
                         <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -353,31 +353,31 @@ export function ProductPage() {
           <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2 mb-[var(--space-2)] flex-wrap">
               <AbbreviationChip value={ci.abbreviation} />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-white/45">{ci.family}</span>
+              <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">{ci.family}</span>
             </div>
             <h1 className="holo-text-display font-medium leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
               {ci.substance}
             </h1>
-            <p className="text-white/60" style={{ fontSize: '11.5px' }}>
+            <p className="text-ink/60" style={{ fontSize: '11.5px' }}>
               {product.name}
             </p>
             <div className="mt-[var(--space-3)] flex flex-wrap gap-x-[var(--space-3)] gap-y-1 items-center">
-              <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
-                SKU <SKUCode value={ci.sku} className="text-white/55" />
+              <span className="font-mono text-ink/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                SKU <SKUCode value={ci.sku} className="text-ink/55" />
               </span>
               {ci.casNumber && (
                 <>
-                  <span className="text-white/15" aria-hidden="true">·</span>
-                  <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
-                    CAS <span className="text-white/55">{ci.casNumber}</span>
+                  <span className="text-ink/15" aria-hidden="true">·</span>
+                  <span className="font-mono text-ink/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                    CAS <span className="text-ink/55">{ci.casNumber}</span>
                   </span>
                 </>
               )}
               {ci.molecularWeight && (
                 <>
-                  <span className="text-white/15" aria-hidden="true">·</span>
-                  <span className="font-mono text-white/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
-                    MW <span className="text-white/55">{ci.molecularWeight}</span>
+                  <span className="text-ink/15" aria-hidden="true">·</span>
+                  <span className="font-mono text-ink/35 tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
+                    MW <span className="text-ink/55">{ci.molecularWeight}</span>
                   </span>
                 </>
               )}
@@ -394,7 +394,7 @@ export function ProductPage() {
           {/* Tier strip (interactive) */}
           {ci.tiers.length > 0 && (
             <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="text-white/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
+              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
                 Available Tiers
               </p>
               <TierStrip
@@ -414,7 +414,7 @@ export function ProductPage() {
                 type="button"
                 onClick={handleAddToInquiry}
                 disabled={outOfStock}
-                className="flex-1 h-8 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   fontSize: '11px',
                   letterSpacing: '0.04em',
@@ -429,7 +429,7 @@ export function ProductPage() {
               </button>
             </div>
             {(activeTier || quantity > 1) && (
-              <p className="text-white/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
+              <p className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
                 {[
                   activeTier?.dose,
                   activeTier?.sku ? `SKU ${activeTier.sku}` : null,
@@ -439,7 +439,7 @@ export function ProductPage() {
             )}
             {product.priceCents != null && (
               <p className="mt-[var(--space-2)]">
-                <ProcurementValue cents={product.priceCents} className="text-sm text-white/70" />
+                <ProcurementValue cents={product.priceCents} className="text-sm text-ink/70" />
               </p>
             )}
           </div>
@@ -447,14 +447,14 @@ export function ProductPage() {
           {/* Compact procurement strip — top 4 fields */}
           {procurementRowCount > 0 && (
             <div className="px-[var(--space-4)] py-[var(--space-4)]">
-              <p className="text-white/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
+              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
                 Procurement
               </p>
               <ProcurementSheet product={product} variant="passport" maxRows={4} />
               {procurementRowCount > 4 && (
                 <a
                   href="#procurement"
-                  className="mt-[var(--space-3)] inline-flex items-center gap-1 text-white/30 hover:text-white/70 transition-colors"
+                  className="mt-[var(--space-3)] inline-flex items-center gap-1 text-ink/30 hover:text-ink/70 transition-colors"
                   style={{ fontSize: '10px', letterSpacing: '0.05em' }}
                 >
                   {procurementRowCount - 4} more in Procurement →
@@ -498,7 +498,7 @@ export function ProductPage() {
             type="button"
             onClick={handleAddToInquiry}
             disabled={outOfStock}
-            className="flex-1 h-9 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 h-9 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.16)' }}
           >
             {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}

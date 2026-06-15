@@ -182,7 +182,7 @@ export function AdminOrderDetail() {
       <button
         type="button"
         onClick={() => navigate('/admin/orders')}
-        className="text-[10px] uppercase tracking-[0.22em] text-white/45 hover:text-white/80 transition-colors mb-[var(--space-5)]"
+        className="text-[10px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors mb-[var(--space-5)]"
       >
         ← All orders
       </button>
@@ -194,13 +194,13 @@ export function AdminOrderDetail() {
 
       {order && (
         <>
-          <header className="mb-[var(--space-6)] pb-[var(--space-5)] border-b border-white/[0.06]">
+          <header className="mb-[var(--space-6)] pb-[var(--space-5)] border-b border-ink/[0.06]">
             <div className="flex items-start justify-between gap-[var(--space-4)] flex-wrap">
               <div>
                 <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
                   Order · {formatTs(order.created_at)}
                 </p>
-                <h2 className="font-mono text-[clamp(1.2rem,2.4vw,1.6rem)] text-white tracking-[0.04em]">
+                <h2 className="font-mono text-[clamp(1.2rem,2.4vw,1.6rem)] text-ink tracking-[0.04em]">
                   {order.order_number}
                 </h2>
               </div>
@@ -208,15 +208,15 @@ export function AdminOrderDetail() {
             </div>
             <dl className="mt-[var(--space-4)] grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-4)] text-[12px]">
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-0.5">Buyer</dt>
-                <dd className="text-white/85">{order.buyer_name}</dd>
-                <dd className="text-white/55">{order.buyer_contact}</dd>
-                {order.buyer_organization && <dd className="text-white/55">{order.buyer_organization}</dd>}
+                <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Buyer</dt>
+                <dd className="text-ink/85">{order.buyer_name}</dd>
+                <dd className="text-ink/55">{order.buyer_contact}</dd>
+                {order.buyer_organization && <dd className="text-ink/55">{order.buyer_organization}</dd>}
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-0.5">Invoice</dt>
-                <dd className="text-white/85 font-mono tabular-nums">{formatCents(order.invoice_amount_cents)}</dd>
-                <dd className="text-white/55">{order.payment_method ?? '—'}</dd>
+                <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Invoice</dt>
+                <dd className="text-ink/85 font-mono tabular-nums">{formatCents(order.invoice_amount_cents)}</dd>
+                <dd className="text-ink/55">{order.payment_method ?? '—'}</dd>
                 {order.invoice_url && (
                   <dd>
                     <a href={order.invoice_url} target="_blank" rel="noopener noreferrer" className="text-holo-light/85 text-[11.5px] underline underline-offset-4 decoration-holo/30 hover:decoration-holo/60">
@@ -226,8 +226,8 @@ export function AdminOrderDetail() {
                 )}
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-0.5">Timeline</dt>
-                <dd className="text-white/70 font-mono text-[11px] tabular-nums">
+                <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Timeline</dt>
+                <dd className="text-ink/70 font-mono text-[11px] tabular-nums">
                   {order.invoiced_at && <>Invoiced: {formatTs(order.invoiced_at)}<br/></>}
                   {order.paid_at && <>Paid: {formatTs(order.paid_at)}<br/></>}
                   {order.fulfilled_at && <>Shipped: {formatTs(order.fulfilled_at)}<br/></>}
@@ -237,8 +237,8 @@ export function AdminOrderDetail() {
               </div>
             </dl>
             {order.notes && (
-              <p className="mt-[var(--space-4)] text-[12.5px] text-white/70 leading-relaxed max-w-[72ch]">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-white/35 mr-2">Notes</span>
+              <p className="mt-[var(--space-4)] text-[12.5px] text-ink/70 leading-relaxed max-w-[72ch]">
+                <span className="text-[10px] uppercase tracking-[0.22em] text-ink/35 mr-2">Notes</span>
                 {order.notes}
               </p>
             )}
@@ -257,25 +257,25 @@ export function AdminOrderDetail() {
             <div className="research-surface-solid overflow-x-auto">
               <table className="w-full min-w-[520px] border-collapse">
                 <thead>
-                  <tr className="border-b border-white/[0.08]">
-                    <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[170px]">SKU</th>
-                    <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal">Product</th>
-                    <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[80px]">Qty</th>
-                    <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[100px]">Unit</th>
+                  <tr className="border-b border-ink/[0.08]">
+                    <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">SKU</th>
+                    <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Product</th>
+                    <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[80px]">Qty</th>
+                    <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Unit</th>
                   </tr>
                 </thead>
                 <tbody>
                   {lines.map((line) => (
-                    <tr key={line.id} className="border-b border-white/[0.04]">
+                    <tr key={line.id} className="border-b border-ink/[0.04]">
                       <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] font-mono text-[11.5px] text-holo-light/80">{line.sku}</td>
-                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-[12.5px] text-white/80">
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-[12.5px] text-ink/80">
                         {line.product_name}
                         {line.item_note && (
-                          <div className="text-[11px] text-white/45 mt-0.5">Note: {line.item_note}</div>
+                          <div className="text-[11px] text-ink/45 mt-0.5">Note: {line.item_note}</div>
                         )}
                       </td>
-                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-right font-mono tabular-nums text-[12px] text-white/85">{line.quantity}</td>
-                      <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right font-mono tabular-nums text-[12px] text-white/55">{formatCents(line.unit_price_cents)}</td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] text-right font-mono tabular-nums text-[12px] text-ink/85">{line.quantity}</td>
+                      <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right font-mono tabular-nums text-[12px] text-ink/55">{formatCents(line.unit_price_cents)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -331,7 +331,7 @@ function ActionPanel({
   if (status === 'cancelled' || status === 'refunded' || status === 'fulfilled') {
     return (
       <section className="research-surface-solid p-[var(--space-5)]">
-        <p className="text-[12px] text-white/55">
+        <p className="text-[12px] text-ink/55">
           This order is in a terminal state. No further actions are available.
         </p>
       </section>
@@ -342,15 +342,15 @@ function ActionPanel({
     <section className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-4)]">
       {status === 'pending_invoice' && (
         <ActionCard title="Send invoice">
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-1)]">Invoice URL</label>
+          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Invoice URL</label>
           <input
             type="url"
             value={invoiceUrl}
             onChange={(e) => setInvoiceUrl(e.target.value)}
             placeholder="https://invoice.stripe.com/…"
-            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/40 mb-[var(--space-3)]"
+            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
           />
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-1)]">Amount (USD)</label>
+          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Amount (USD)</label>
           <input
             type="number"
             step="0.01"
@@ -358,9 +358,9 @@ function ActionPanel({
             value={invoiceAmount}
             onChange={(e) => setInvoiceAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/40 mb-[var(--space-3)]"
+            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
           />
-          <p className="text-[11px] text-white/45 mb-[var(--space-4)] leading-relaxed">
+          <p className="text-[11px] text-ink/45 mb-[var(--space-4)] leading-relaxed">
             Will email the buyer the payment-instructions template (PayPal F&amp;F / Zelle only)
             with the invoice link, and flip the order to <span className="font-mono">invoice_sent</span>.
           </p>
@@ -372,7 +372,7 @@ function ActionPanel({
               onSendInvoice(invoiceUrl.trim(), cents);
             }}
             disabled={busy || invoiceUrl.trim().length === 0 || !Number.isFinite(parseFloat(invoiceAmount))}
-            className="rounded-full bg-white/[0.10] border border-white/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-white hover:bg-white/[0.15] hover:border-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? 'Sending…' : 'Send invoice + email'}
           </button>
@@ -381,7 +381,7 @@ function ActionPanel({
 
       {status === 'invoice_sent' && (
         <ActionCard title="Confirm payment received">
-          <p className="text-[12px] text-white/70 mb-[var(--space-4)] leading-relaxed">
+          <p className="text-[12px] text-ink/70 mb-[var(--space-4)] leading-relaxed">
             Mark the order as paid once funds have been received via PayPal F&amp;F or Zelle.
             Stock is NOT decremented at this step.
           </p>
@@ -389,7 +389,7 @@ function ActionPanel({
             type="button"
             onClick={onMarkPaid}
             disabled={busy}
-            className="rounded-full bg-[#7CD992]/[0.12] border border-[#7CD992]/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-[#7CD992] hover:bg-[#7CD992]/[0.18] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-full bg-[#2E7D5B]/[0.12] border border-[#2E7D5B]/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-[#2E7D5B] hover:bg-[#2E7D5B]/[0.18] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? 'Updating…' : 'Mark paid'}
           </button>
@@ -398,15 +398,15 @@ function ActionPanel({
 
       {status === 'paid' && (
         <ActionCard title="Confirm fulfillment">
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-1)]">Tracking number (optional)</label>
+          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Tracking number (optional)</label>
           <input
             type="text"
             value={tracking}
             onChange={(e) => setTracking(e.target.value)}
-            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/40 mb-[var(--space-3)]"
+            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
           />
-          <p className="text-[11px] text-white/45 leading-relaxed mb-[var(--space-4)]">
-            <strong className="text-white/75">Decrements stock for every line.</strong>{' '}
+          <p className="text-[11px] text-ink/45 leading-relaxed mb-[var(--space-4)]">
+            <strong className="text-ink/75">Decrements stock for every line.</strong>{' '}
             If any SKU is short, the entire transaction rolls back and no
             stock moves. Each line writes a row to{' '}
             <code className="font-mono text-holo-light/70">stock_movements</code>.
@@ -416,7 +416,7 @@ function ActionPanel({
             onClick={() => onConfirmFulfilled(tracking.trim() || null)}
             disabled={busy}
             className="rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ boxShadow: '0 0 8px rgba(100,200,255,0.28), inset 0 0 6px rgba(100,200,255,0.08)' }}
+            style={{ boxShadow: '0 0 8px rgba(52, 114, 122,0.28), inset 0 0 6px rgba(52, 114, 122,0.08)' }}
           >
             {busy ? 'Confirming…' : 'Confirm fulfilled — decrement stock'}
           </button>
@@ -424,15 +424,15 @@ function ActionPanel({
       )}
 
       <ActionCard title="Cancel order" tone="danger">
-        <label className="block text-[10px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-1)]">Reason</label>
+        <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Reason</label>
         <input
           type="text"
           value={cancelReason}
           onChange={(e) => setCancelReason(e.target.value)}
           placeholder="Buyer changed mind / payment issue / etc."
-          className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/40 mb-[var(--space-3)]"
+          className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
         />
-        <p className="text-[11px] text-white/45 leading-relaxed mb-[var(--space-4)]">
+        <p className="text-[11px] text-ink/45 leading-relaxed mb-[var(--space-4)]">
           {status === 'paid'
             ? 'Order is paid but not yet fulfilled. Cancelling does not move stock.'
             : 'Cancelling a fulfilled order would restock all lines. This order has not shipped yet.'}

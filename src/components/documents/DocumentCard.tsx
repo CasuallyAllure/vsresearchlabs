@@ -52,7 +52,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
   const inner = (
     <article className="research-surface-solid group flex gap-[var(--space-4)] p-[var(--space-4)] h-full">
       {/* Thumbnail — small, document-aspect, quiet placeholder. */}
-      <div className="shrink-0 w-20 sm:w-24 aspect-[3/4] overflow-hidden bg-[#050505] border border-white/[0.09]">
+      <div className="shrink-0 w-20 sm:w-24 aspect-[3/4] overflow-hidden bg-display border border-ink/[0.09]">
         {document.thumbnailUrl ? (
           <img
             src={document.thumbnailUrl}
@@ -62,7 +62,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
             aria-hidden="true"
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">
+          <div className="h-full w-full flex items-center justify-center text-ink/20 text-[10px] uppercase tracking-widest">
             Doc
           </div>
         )}
@@ -70,35 +70,35 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
 
       {/* Metadata column — stacked, restrained typographic hierarchy. */}
       <div className="flex flex-col min-w-0 flex-1">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/45 mb-[var(--space-1)] truncate">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-ink/45 mb-[var(--space-1)] truncate">
           {document.documentType}{document.documentVersion ? ` · ${document.documentVersion}` : ''}
         </p>
-        <h3 className="text-sm font-medium text-white truncate group-hover:text-gold transition-colors">
+        <h3 className="text-sm font-medium text-ink truncate group-hover:text-gold transition-colors">
           {document.productName}
         </h3>
         {document.issuer && (
-          <p className="text-[10px] text-white/35 truncate">
+          <p className="text-[10px] text-ink/35 truncate">
             {document.issuer}
           </p>
         )}
-        <p className="mt-[var(--space-1)] text-[11px] text-white/55 truncate">
+        <p className="mt-[var(--space-1)] text-[11px] text-ink/55 truncate">
           Batch{' '}
-          <BatchCode value={document.batchId} className="text-white/55" />
-          <span className="text-white/20" aria-hidden="true"> · </span>
-          <DateStamp iso={document.issuedDate} className="text-white/45" />
+          <BatchCode value={document.batchId} className="text-ink/55" />
+          <span className="text-ink/20" aria-hidden="true"> · </span>
+          <DateStamp iso={document.issuedDate} className="text-ink/45" />
         </p>
         {document.standardReference && (
-          <p className="mt-[var(--space-1)] text-[10px] text-white/30 truncate font-mono">
+          <p className="mt-[var(--space-1)] text-[10px] text-ink/30 truncate font-mono">
             {document.standardReference}
           </p>
         )}
 
         {href && (
-          <span className="mt-auto pt-[var(--space-3)] inline-flex items-center gap-[var(--space-2)] text-[10px] uppercase tracking-[0.25em] text-white/55 group-hover:text-white transition-colors">
+          <span className="mt-auto pt-[var(--space-3)] inline-flex items-center gap-[var(--space-2)] text-[10px] uppercase tracking-[0.25em] text-ink/55 group-hover:text-ink transition-colors">
             <span>View document</span>
             <span
               aria-hidden="true"
-              className="text-white/30 group-hover:text-gold group-hover:translate-x-0.5 transition-[color,transform] duration-150"
+              className="text-ink/30 group-hover:text-gold group-hover:translate-x-0.5 transition-[color,transform] duration-150"
             >
               →
             </span>
@@ -113,7 +113,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
   return (
     <Link
       to={href}
-      className="block rounded-[4px] focus:outline-none focus-visible:[&>article]:ring-1 focus-visible:[&>article]:ring-white/25"
+      className="block rounded-[4px] focus:outline-none focus-visible:[&>article]:ring-1 focus-visible:[&>article]:ring-ink/25"
       aria-label={`${document.documentType} — ${document.productName}, batch ${document.batchId}`}
     >
       {inner}

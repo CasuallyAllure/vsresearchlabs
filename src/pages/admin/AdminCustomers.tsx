@@ -80,9 +80,9 @@ export function AdminCustomers() {
           Customers
         </p>
         <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-            <span className="font-light text-white/85">Directory </span>
-            <span className="font-medium text-white">on file.</span>
+          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+            <span className="font-light text-ink/85">Directory </span>
+            <span className="font-medium text-ink">on file.</span>
           </h2>
           <div className="flex items-center gap-1.5 flex-wrap">
             {STATUS_FILTERS.map((s) => (
@@ -93,8 +93,8 @@ export function AdminCustomers() {
                 className={[
                   'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
                   statusFilter === s
-                    ? 'bg-white/[0.10] text-white border border-white/25'
-                    : 'border border-white/[0.08] text-white/55 hover:text-white/90',
+                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
+                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
                 ].join(' ')}
               >
                 {s}
@@ -105,7 +105,7 @@ export function AdminCustomers() {
               placeholder="Name / email / org"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="ml-[var(--space-2)] w-[220px] px-[var(--space-3)] py-[var(--space-1)] bg-black border border-white/10 rounded-full text-[11px] text-white placeholder-white/30 focus:outline-none focus:border-white/30"
+              className="ml-[var(--space-2)] w-[220px] px-[var(--space-3)] py-[var(--space-1)] bg-base-700 border border-ink/10 rounded-full text-[11px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
             />
           </div>
         </div>
@@ -119,7 +119,7 @@ export function AdminCustomers() {
 
       {rows && rows.length === 0 && (
         <div className="research-surface-solid p-[var(--space-6)]">
-          <p className="text-[13px] text-white/55">
+          <p className="text-[13px] text-ink/55">
             No customers on file yet. Records are auto-created when the
             first inquiry from a contact lands.
           </p>
@@ -127,28 +127,28 @@ export function AdminCustomers() {
       )}
 
       {rows && rows.length > 0 && (
-        <ul className="research-surface-solid divide-y divide-white/[0.04]">
+        <ul className="research-surface-solid divide-y divide-ink/[0.04]">
           {filtered.map((row) => (
             <li key={row.id}>
               <Link
                 to={`/admin/customers/${row.id}`}
-                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-white/[0.015] focus:outline-none focus-visible:bg-white/[0.02] transition-colors"
+                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
               >
                 <div className="flex items-start gap-[var(--space-4)]">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-white truncate">{row.display_name}</p>
-                    <p className="font-mono text-[11px] text-white/55 truncate">
+                    <p className="text-[13px] text-ink truncate">{row.display_name}</p>
+                    <p className="font-mono text-[11px] text-ink/55 truncate">
                       {row.contact}
                       {row.organization && (
-                        <span className="text-white/35"> · {row.organization}</span>
+                        <span className="text-ink/35"> · {row.organization}</span>
                       )}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-mono text-[11px] text-white/70 tabular-nums">
+                    <p className="font-mono text-[11px] text-ink/70 tabular-nums">
                       {row.inquiry_count} inq · {row.order_count} ord
                     </p>
-                    <p className="font-mono text-[10px] text-white/35 tabular-nums">
+                    <p className="font-mono text-[10px] text-ink/35 tabular-nums">
                       last seen {formatDate(row.last_seen_at)}
                     </p>
                   </div>
@@ -160,7 +160,7 @@ export function AdminCustomers() {
             </li>
           ))}
           {filtered.length === 0 && (
-            <li className="px-[var(--space-5)] py-[var(--space-8)] text-center text-[12px] text-white/40">
+            <li className="px-[var(--space-5)] py-[var(--space-8)] text-center text-[12px] text-ink/40">
               No matches for "{query}"
             </li>
           )}
@@ -172,8 +172,8 @@ export function AdminCustomers() {
 
 function statusChipStyles(status: CustomerRow['status']): string {
   switch (status) {
-    case 'active':   return 'border-[#7CD992]/40 text-[#7CD992]/90 bg-[#7CD992]/[0.06]';
-    case 'inactive': return 'border-white/15 text-white/55 bg-white/[0.02]';
+    case 'active':   return 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]';
+    case 'inactive': return 'border-ink/15 text-ink/55 bg-ink/[0.02]';
     case 'blocked':  return 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]';
   }
 }

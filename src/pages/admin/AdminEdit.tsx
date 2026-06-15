@@ -318,7 +318,7 @@ export function AdminEdit() {
         </p>
         <Link
           to="/admin"
-          className="text-xs uppercase tracking-[0.25em] text-white/60 hover:text-white"
+          className="text-xs uppercase tracking-[0.25em] text-ink/60 hover:text-ink"
         >
           ← Back to Admin
         </Link>
@@ -332,12 +332,12 @@ export function AdminEdit() {
   return (
     <section className="py-[var(--space-8)]">
       {/* Breadcrumb */}
-      <nav className="mb-[var(--space-6)] text-xs uppercase tracking-widest text-white/40">
-        <Link to="/admin" className="hover:text-white/70">
+      <nav className="mb-[var(--space-6)] text-xs uppercase tracking-widest text-ink/40">
+        <Link to="/admin" className="hover:text-ink/70">
           Admin
         </Link>
-        <span className="mx-[var(--space-2)] text-white/20">/</span>
-        <span className="text-white/60">
+        <span className="mx-[var(--space-2)] text-ink/20">/</span>
+        <span className="text-ink/60">
           {isEdit ? 'Edit Product' : 'New Product'}
         </span>
       </nav>
@@ -346,10 +346,10 @@ export function AdminEdit() {
         <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-[var(--space-3)]">
           {isEdit ? 'Edit Product' : 'New Product'}
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-light text-ink tracking-tight">
           {isEdit ? form.name || 'Untitled' : 'Create a new product'}
         </h1>
-        <p className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.25em] text-white/35">
+        <p className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.25em] text-ink/35">
           ID — {productId}
         </p>
       </header>
@@ -412,7 +412,7 @@ export function AdminEdit() {
               className={inputClass(false)}
             >
               {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value} className="bg-black">
+                <option key={c.value} value={c.value} className="bg-base-700">
                   {c.label}
                 </option>
               ))}
@@ -551,7 +551,7 @@ export function AdminEdit() {
             />
             <label
               htmlFor="f-featured"
-              className="text-sm text-white/80 select-none"
+              className="text-sm text-ink/80 select-none"
             >
               Featured on landing strip
             </label>
@@ -571,13 +571,13 @@ export function AdminEdit() {
         <div className="mt-[var(--space-10)] flex flex-wrap items-center gap-[var(--space-3)]">
           <button
             type="submit"
-            className="px-[var(--space-8)] py-[var(--space-3)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
+            className="px-[var(--space-8)] py-[var(--space-3)] rounded-full bg-gold text-ink text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
           >
             {isEdit ? 'Save Changes' : 'Create Product'}
           </button>
           <Link
             to="/admin"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors"
           >
             Cancel
           </Link>
@@ -602,10 +602,10 @@ export function AdminEdit() {
 
 function inputClass(invalid: boolean): string {
   const base =
-    'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black/40 border rounded-lg text-sm text-white placeholder-white/30 focus:outline-none transition-colors resize-y';
+    'w-full px-[var(--space-4)] py-[var(--space-3)] bg-ink/40 border rounded-lg text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors resize-y';
   return invalid
     ? `${base} border-red-500/60 focus:border-red-400`
-    : `${base} border-white/10 focus:border-gold/50`;
+    : `${base} border-ink/10 focus:border-gold/50`;
 }
 
 function FieldGroup({
@@ -616,8 +616,8 @@ function FieldGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mb-[var(--space-10)] pb-[var(--space-6)] border-b border-white/[0.06] last:border-b-0">
-      <p className="text-[11px] uppercase tracking-[0.3em] text-white/45 mb-[var(--space-5)]">
+    <div className="mb-[var(--space-10)] pb-[var(--space-6)] border-b border-ink/[0.06] last:border-b-0">
+      <p className="text-[11px] uppercase tracking-[0.3em] text-ink/45 mb-[var(--space-5)]">
         {label}
       </p>
       <div className="space-y-[var(--space-5)]">{children}</div>
@@ -644,13 +644,13 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="block text-xs uppercase tracking-widest text-white/55 mb-[var(--space-2)]"
+        className="block text-xs uppercase tracking-widest text-ink/55 mb-[var(--space-2)]"
       >
         {label} {required && <span className="text-gold">*</span>}
       </label>
       {children}
       {hint && !error && (
-        <p className="mt-[var(--space-2)] text-[11px] text-white/35">
+        <p className="mt-[var(--space-2)] text-[11px] text-ink/35">
           {hint}
         </p>
       )}

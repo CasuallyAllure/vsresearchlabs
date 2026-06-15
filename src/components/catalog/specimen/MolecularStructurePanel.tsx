@@ -63,15 +63,15 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
       <div className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-end justify-between pointer-events-none"
         style={{ background: 'linear-gradient(to top, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.4) 60%, transparent 100%)' }}>
         <div>
-          <p className="font-mono text-white/22 uppercase" style={{ fontSize: '8px', letterSpacing: '0.22em' }}>
+          <p className="font-mono text-ink/22 uppercase" style={{ fontSize: '8px', letterSpacing: '0.22em' }}>
             Molecular Structure
           </p>
-          <p className="font-mono text-white/35 mt-0.5" style={{ fontSize: '9px' }}>
+          <p className="font-mono text-ink/35 mt-0.5" style={{ fontSize: '9px' }}>
             {substance}
           </p>
         </div>
         {!failed && loaded && (
-          <p className="font-mono text-white/16 uppercase" style={{ fontSize: '7.5px', letterSpacing: '0.16em' }}>
+          <p className="font-mono text-ink/16 uppercase" style={{ fontSize: '7.5px', letterSpacing: '0.16em' }}>
             PubChem
           </p>
         )}

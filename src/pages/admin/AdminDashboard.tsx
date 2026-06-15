@@ -144,7 +144,7 @@ export function AdminDashboard() {
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Catalog Seed
         </p>
-        <h2 className="text-[clamp(1.1rem,2vw,1.4rem)] font-light text-white tracking-tight mb-[var(--space-3)]">
+        <h2 className="text-[clamp(1.1rem,2vw,1.4rem)] font-light text-ink tracking-tight mb-[var(--space-3)]">
           Hydrate stock from catalog.
         </h2>
         <p className="holo-text-body text-[13px] leading-relaxed max-w-[60ch] mb-[var(--space-5)]">
@@ -160,14 +160,14 @@ export function AdminDashboard() {
             type="button"
             onClick={handleSeed}
             disabled={seedState.kind === 'running'}
-            className="rounded-full border border-white/20 bg-white/[0.04] px-[var(--space-6)] py-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-white/80 hover:text-white hover:border-white/35 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-6)] py-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/80 hover:text-ink hover:border-ink/35 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
             {seedState.kind === 'running'
               ? `Seeding ${seedState.processed}/${seedState.total}…`
               : 'Seed catalog stock'}
           </button>
           {seedState.kind === 'done' && (
-            <p className="text-[11px] font-mono tabular-nums text-white/55">
+            <p className="text-[11px] font-mono tabular-nums text-ink/55">
               Inserted {seedState.inserted} · Skipped {seedState.skipped} (already present)
             </p>
           )}
@@ -195,7 +195,7 @@ function DashboardStat({ label, value, link, emphasis }: DashboardStatProps) {
       to={link}
       className={[
         'block research-surface-solid px-[var(--space-4)] py-[var(--space-5)]',
-        'transition-colors hover:bg-white/[0.02] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30',
+        'transition-colors hover:bg-ink/[0.02] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30',
       ].join(' ')}
     >
       <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em] mb-[var(--space-2)]">
@@ -205,7 +205,7 @@ function DashboardStat({ label, value, link, emphasis }: DashboardStatProps) {
         className={
           emphasis
             ? 'holo-text-display text-[clamp(1.4rem,2.6vw,1.8rem)] font-light tabular-nums leading-none'
-            : 'text-[clamp(1.4rem,2.6vw,1.8rem)] font-light text-white tabular-nums leading-none'
+            : 'text-[clamp(1.4rem,2.6vw,1.8rem)] font-light text-ink tabular-nums leading-none'
         }
       >
         {value === undefined ? '—' : value}

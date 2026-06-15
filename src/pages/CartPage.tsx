@@ -217,41 +217,41 @@ export function CartPage() {
       <div className="py-[var(--space-8)] pb-[var(--space-24)] lg:pb-[var(--space-8)]">
 
         {/* Print-only classification header */}
-        <p className="hidden print:block text-[9px] font-mono uppercase tracking-[0.2em] text-black/35 border-b border-black/10 pb-[var(--space-3)] mb-[var(--space-6)]">
+        <p className="hidden print:block text-[9px] font-mono uppercase tracking-[0.2em] text-ink/35 border-b border-black/10 pb-[var(--space-3)] mb-[var(--space-6)]">
           Uncontrolled Copy · For Buyer Reference Only · Do Not Redistribute
         </p>
 
         {/* Document header — identifier band */}
-        <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06] print:border-black/15">
+        <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06] print:border-black/15">
           {/* Brand stamp — themeable ink (light on screen, dark in print). */}
-          <div className="mb-[var(--space-5)] text-white/85 print:text-black">
+          <div className="mb-[var(--space-5)] text-ink/85 print:text-black">
             <BrandStamp width={248} />
           </div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-white/35 print:text-black/50 mb-[var(--space-4)]">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-ink/35 print:text-black/50 mb-[var(--space-4)]">
             VS Research Labs · Order Confirmation
           </p>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-white/30 print:text-black/45 mb-[var(--space-2)]">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-ink/30 print:text-black/45 mb-[var(--space-2)]">
             Order Number
           </p>
-          <code className="block text-2xl sm:text-3xl font-mono tabular-nums tracking-[0.04em] text-white print:text-black">
+          <code className="block text-2xl sm:text-3xl font-mono tabular-nums tracking-[0.04em] text-ink print:text-black">
             {record.referenceId}
           </code>
-          <p className="mt-[var(--space-3)] text-[11px] font-mono tabular-nums text-white/35 print:text-black/50 uppercase tracking-[0.1em]">
+          <p className="mt-[var(--space-3)] text-[11px] font-mono tabular-nums text-ink/35 print:text-black/50 uppercase tracking-[0.1em]">
             {tsDisplay}
-            <span className="ml-[var(--space-4)] text-white/25 print:text-black/35">
+            <span className="ml-[var(--space-4)] text-ink/25 print:text-black/35">
               · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
             </span>
             {order && (
-              <span className="ml-[var(--space-4)] text-white/55 print:text-black/60">
+              <span className="ml-[var(--space-4)] text-ink/55 print:text-black/60">
                 · Total {formatUsd(order.amountCents)}
               </span>
             )}
           </p>
           {order && (
-            <p className="mt-[var(--space-3)] text-[12px] leading-relaxed text-white/55 print:text-black/65 max-w-[64ch]">
+            <p className="mt-[var(--space-3)] text-[12px] leading-relaxed text-ink/55 print:text-black/65 max-w-[64ch]">
               {order.invoiceEmailSent ? (
                 <>An invoice with payment instructions has been emailed to{' '}
-                <span className="text-white/80 print:text-black">{order.contact}</span>. </>
+                <span className="text-ink/80 print:text-black">{order.contact}</span>. </>
               ) : (
                 <>Your order is recorded. </>
               )}
@@ -272,22 +272,22 @@ export function CartPage() {
 
           {/* Buyer */}
           <div className="mb-[var(--space-6)]">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 print:text-black/50 mb-[var(--space-2)]">
               Buyer
             </p>
-            <dl className="border-t border-white/[0.06] print:border-black/15">
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Name</dt>
-                <dd className="text-sm text-white/80 print:text-black text-right">{record.contactSummary.name}</dd>
+            <dl className="border-t border-ink/[0.06] print:border-black/15">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Name</dt>
+                <dd className="text-sm text-ink/80 print:text-black text-right">{record.contactSummary.name}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Contact</dt>
-                <dd className="text-sm font-mono tabular-nums text-white/80 print:text-black text-right">{record.contactSummary.contact}</dd>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Contact</dt>
+                <dd className="text-sm font-mono tabular-nums text-ink/80 print:text-black text-right">{record.contactSummary.contact}</dd>
               </div>
               {record.contactSummary.organization && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                  <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Institution</dt>
-                  <dd className="text-sm text-white/80 print:text-black text-right">{record.contactSummary.organization}</dd>
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                  <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Institution</dt>
+                  <dd className="text-sm text-ink/80 print:text-black text-right">{record.contactSummary.organization}</dd>
                 </div>
               )}
             </dl>
@@ -295,26 +295,26 @@ export function CartPage() {
 
           {/* Requested inventory — tabular summary */}
           <div className="mb-[var(--space-6)]">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 print:text-black/50 mb-[var(--space-2)]">
               Requested Inventory
-              <span className="ml-[var(--space-3)] text-white/20 print:text-black/30">
+              <span className="ml-[var(--space-3)] text-ink/20 print:text-black/30">
                 · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
               </span>
             </p>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] border-collapse">
                 <thead>
-                  <tr className="border-t border-b border-white/[0.06] print:border-black/15">
-                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal">
+                  <tr className="border-t border-b border-ink/[0.06] print:border-black/15">
+                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/25 print:text-black/40 font-normal">
                       SKU
                     </th>
-                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal pl-[var(--space-4)]">
+                    <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/25 print:text-black/40 font-normal pl-[var(--space-4)]">
                       Item
                     </th>
-                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal w-12">
+                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/25 print:text-black/40 font-normal w-12">
                       Qty
                     </th>
-                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-white/25 print:text-black/40 font-normal w-20 pl-[var(--space-4)]">
+                    <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/25 print:text-black/40 font-normal w-20 pl-[var(--space-4)]">
                       Notes
                     </th>
                   </tr>
@@ -323,20 +323,20 @@ export function CartPage() {
                   {record.procurementSummary.map((item) => (
                     <tr
                       key={item.sku}
-                      className="border-b border-white/[0.06] print:border-black/10"
+                      className="border-b border-ink/[0.06] print:border-black/10"
                     >
                       <td className="py-[var(--space-3)] align-baseline">
-                        <SKUCode value={item.sku} className="text-white/60 print:text-black/60" />
+                        <SKUCode value={item.sku} className="text-ink/60 print:text-black/60" />
                       </td>
-                      <td className="py-[var(--space-3)] pl-[var(--space-4)] align-baseline text-sm text-white/75 print:text-black">
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] align-baseline text-sm text-ink/75 print:text-black">
                         {item.name}
                       </td>
-                      <td className="py-[var(--space-3)] text-right align-baseline text-sm font-mono tabular-nums text-white/70 print:text-black">
+                      <td className="py-[var(--space-3)] text-right align-baseline text-sm font-mono tabular-nums text-ink/70 print:text-black">
                         {item.quantity}
                       </td>
-                      <td className="py-[var(--space-3)] pl-[var(--space-4)] text-right align-baseline text-[10px] font-mono uppercase tracking-[0.1em] text-white/35 print:text-black/40 print:text-left">
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] text-right align-baseline text-[10px] font-mono uppercase tracking-[0.1em] text-ink/35 print:text-black/40 print:text-left">
                         <span className="print:hidden">{item.note ? 'Attached' : '—'}</span>
-                        <span className="hidden print:inline text-[9px] font-sans font-normal normal-case tracking-normal text-black/55 leading-relaxed">
+                        <span className="hidden print:inline text-[9px] font-sans font-normal normal-case tracking-normal text-ink/55 leading-relaxed">
                           {item.note || '—'}
                         </span>
                       </td>
@@ -348,29 +348,29 @@ export function CartPage() {
           </div>
 
           {/* Operational status */}
-          <div className="pt-[var(--space-4)] border-t border-white/[0.06] print:border-black/15">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 print:text-black/50 mb-[var(--space-2)]">
+          <div className="pt-[var(--space-4)] border-t border-ink/[0.06] print:border-black/15">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 print:text-black/50 mb-[var(--space-2)]">
               Operational Status
             </p>
-            <dl className="border-t border-white/[0.06] print:border-black/15 mb-[var(--space-4)]">
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Status</dt>
-                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/60 print:text-black/70 text-right">{record.classificationStatus}</dd>
+            <dl className="border-t border-ink/[0.06] print:border-black/15 mb-[var(--space-4)]">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Status</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink/60 print:text-black/70 text-right">{record.classificationStatus}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Response Window</dt>
-                <dd className="text-[11px] font-mono tabular-nums text-white/60 print:text-black/70 text-right">{record.estimatedResponseWindow}</dd>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Response Window</dt>
+                <dd className="text-[11px] font-mono tabular-nums text-ink/60 print:text-black/70 text-right">{record.estimatedResponseWindow}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Channel</dt>
-                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/40 print:text-black/55 text-right">{record.intakeChannel}</dd>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Channel</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink/40 print:text-black/55 text-right">{record.intakeChannel}</dd>
               </div>
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-                <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">Processing Node</dt>
-                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-white/40 print:text-black/55 text-right">{record.processingNode}</dd>
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+                <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">Processing Node</dt>
+                <dd className="text-[11px] font-mono uppercase tracking-[0.1em] text-ink/40 print:text-black/55 text-right">{record.processingNode}</dd>
               </div>
             </dl>
-            <p className="text-[11px] text-white/40 print:text-black/50 leading-relaxed max-w-[72ch]">
+            <p className="text-[11px] text-ink/40 print:text-black/50 leading-relaxed max-w-[72ch]">
               Reference{' '}
               <span className="font-mono tabular-nums">{record.referenceId}</span>{' '}
               has been filed. Retain for procurement tracking. Documentation
@@ -383,10 +383,10 @@ export function CartPage() {
 
         {/* Print-only record footer */}
         <div className="hidden print:block mt-[var(--space-8)] pt-[var(--space-4)] border-t border-black/15">
-          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-black/35">
+          <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-ink/35">
             VS Research Labs · Procurement Intake Record · {record.referenceId}
           </p>
-          <p className="mt-[var(--space-2)] text-[9px] font-mono uppercase tracking-[0.2em] text-black/25">
+          <p className="mt-[var(--space-2)] text-[9px] font-mono uppercase tracking-[0.2em] text-ink/25">
             For buyer reference only. Does not constitute a confirmed commitment or binding agreement.
           </p>
         </div>
@@ -396,19 +396,19 @@ export function CartPage() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
             Print Record
           </button>
           <Link
             to="/documentation"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
             Documentation Archive
           </Link>
           <Link
             to="/research-supplies"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
             Research Supplies
           </Link>
@@ -428,26 +428,26 @@ export function CartPage() {
           <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
             Checkout
           </p>
-          <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-            <span className="font-light text-white/85">Your </span>
-            <span className="font-medium text-white">order.</span>
+          <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+            <span className="font-light text-ink/85">Your </span>
+            <span className="font-medium text-ink">order.</span>
           </h1>
         </header>
 
-        <div className="py-[var(--space-12)] border-y border-white/[0.06] text-center">
+        <div className="py-[var(--space-12)] border-y border-ink/[0.06] text-center">
           <p className="holo-text-body text-[13px] mb-[var(--space-8)]">
             Your cart is empty. Add inventory from any product page.
           </p>
           <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
             <Link
               to="/research-supplies"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             >
               Research Supplies
             </Link>
             <Link
               to="/laboratory-equipment"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-white/15 text-xs uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             >
               Laboratory Equipment
             </Link>
@@ -466,9 +466,9 @@ export function CartPage() {
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Checkout
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-          <span className="font-light text-white/85">Your </span>
-          <span className="font-medium text-white">order.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <span className="font-light text-ink/85">Your </span>
+          <span className="font-medium text-ink">order.</span>
         </h1>
       </header>
 
@@ -487,7 +487,7 @@ export function CartPage() {
             column as "Requested Inventory," propagating the
             procurement-grouping vocabulary into this region. */}
         <div className="lg:col-span-8">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-4)]">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-[var(--space-4)]">
             Requested Inventory
           </p>
           <div className="research-surface-solid overflow-hidden">
@@ -500,10 +500,10 @@ export function CartPage() {
           return (
             <li
               key={item.product.id}
-              className="py-[var(--space-5)] border-b border-white/[0.06]"
+              className="py-[var(--space-5)] border-b border-ink/[0.06]"
             >
               <div className="flex items-center gap-[var(--space-4)]">
-                <div className="w-16 h-16 shrink-0 overflow-hidden bg-[#050505] border border-white/[0.09]">
+                <div className="w-16 h-16 shrink-0 overflow-hidden bg-display border border-ink/[0.09]">
                   {imageUrl ? (
                     <img
                       src={imageUrl}
@@ -511,21 +511,21 @@ export function CartPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">
+                    <div className="w-full h-full flex items-center justify-center text-ink/20 text-[10px] uppercase tracking-widest">
                       No image
                     </div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white truncate">
+                  <p className="text-sm text-ink truncate">
                     {item.product.name}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-white/40 truncate">
-                    <SKUCode value={item.product.sku} className="text-white/40" />
+                  <p className="mt-0.5 text-[11px] text-ink/40 truncate">
+                    <SKUCode value={item.product.sku} className="text-ink/40" />
                     {item.product.category && (
                       <>
-                        <span className="mx-1.5 text-white/20" aria-hidden="true">·</span>
+                        <span className="mx-1.5 text-ink/20" aria-hidden="true">·</span>
                         {item.product.category.replace(/-/g, ' ')}
                       </>
                     )}
@@ -538,12 +538,12 @@ export function CartPage() {
                     type="button"
                     onClick={() => handleDecrement(item.product.id, item.quantity)}
                     aria-label="Decrease quantity"
-                    className="w-7 h-7 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+                    className="w-7 h-7 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   >
                     −
                   </button>
                   <span
-                    className="w-6 text-center text-sm text-white tabular-nums"
+                    className="w-6 text-center text-sm text-ink tabular-nums"
                     aria-live="polite"
                   >
                     {item.quantity}
@@ -553,7 +553,7 @@ export function CartPage() {
                     onClick={() => handleIncrement(item.product.id, item.quantity)}
                     disabled={atMax}
                     aria-label="Increase quantity"
-                    className="w-7 h-7 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-white/70 disabled:hover:border-white/15"
+                    className="w-7 h-7 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-ink/70 disabled:hover:border-ink/15"
                   >
                     +
                   </button>
@@ -563,7 +563,7 @@ export function CartPage() {
                   type="button"
                   onClick={() => remove(item.product.id)}
                   aria-label="Remove item"
-                  className="ml-[var(--space-2)] text-white/40 hover:text-white text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                  className="ml-[var(--space-2)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove
                 </button>
@@ -575,7 +575,7 @@ export function CartPage() {
                   <button
                     type="button"
                     onClick={() => toggleNote(item.product.id)}
-                    className="text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                    className="text-[11px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                   >
                     + Add note
                   </button>
@@ -583,7 +583,7 @@ export function CartPage() {
                   <div>
                     <label
                       htmlFor={`note-${item.product.id}`}
-                      className="block text-[11px] uppercase tracking-[0.2em] text-white/40 mb-[var(--space-2)]"
+                      className="block text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-[var(--space-2)]"
                     >
                       Note
                     </label>
@@ -595,13 +595,13 @@ export function CartPage() {
                       }
                       rows={2}
                       placeholder="Quantity, concentration, lot preferences, etc."
-                      className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-y"
+                      className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors resize-y"
                     />
                     {noteValue.length === 0 && (
                       <button
                         type="button"
                         onClick={() => toggleNote(item.product.id)}
-                        className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                        className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                       >
                         Cancel
                       </button>
@@ -625,7 +625,7 @@ export function CartPage() {
           <div className="research-surface-solid lg:sticky lg:top-[calc(56px+var(--space-4))] p-[var(--space-6)]">
             <form onSubmit={handleSubmit} noValidate>
         {/* Section 1 — Buyer Identification (required) */}
-        <h2 className="text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
+        <h2 className="text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
           Buyer Identification
         </h2>
 
@@ -633,9 +633,9 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-name"
-              className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
             >
-              Name <span className="text-white/55">*</span>
+              Name <span className="text-ink/55">*</span>
             </label>
             <input
               id="inquiry-name"
@@ -648,10 +648,10 @@ export function CartPage() {
               required
               autoComplete="name"
               className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border rounded-sm text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
+                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors',
                 showNameError
                   ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-white/10 focus:border-white/40',
+                  : 'border-ink/10 focus:border-ink/40',
               ].join(' ')}
               placeholder="Full name"
             />
@@ -668,9 +668,9 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-contact"
-              className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
             >
-              Email or Phone <span className="text-white/55">*</span>
+              Email or Phone <span className="text-ink/55">*</span>
             </label>
             <input
               id="inquiry-contact"
@@ -685,10 +685,10 @@ export function CartPage() {
               required
               autoComplete="email"
               className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border rounded-sm text-sm text-white placeholder-white/30 focus:outline-none transition-colors',
+                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors',
                 showContactError
                   ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-white/10 focus:border-white/40',
+                  : 'border-ink/10 focus:border-ink/40',
               ].join(' ')}
               placeholder="you@example.com or +1 555 000 0000"
             />
@@ -706,7 +706,7 @@ export function CartPage() {
         {/* Section 2 — Organization or Lab (optional).
             Merges into `notes` on submit; supabase payload shape
             is unchanged. */}
-        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
           Organization or Lab
         </h2>
 
@@ -714,7 +714,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-organization"
-              className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
             >
               Institution (optional)
             </label>
@@ -724,14 +724,14 @@ export function CartPage() {
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
               autoComplete="organization"
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
               placeholder="Lab, university, or operational entity"
             />
           </div>
         </div>
 
         {/* Section 3 — Procurement Notes (optional) */}
-        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-white/55 mb-[var(--space-6)]">
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
           Procurement Notes
         </h2>
 
@@ -739,7 +739,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-notes"
-              className="block text-xs uppercase tracking-widest text-white/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
             >
               Notes (optional)
             </label>
@@ -748,7 +748,7 @@ export function CartPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-y"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors resize-y"
               placeholder="Lot preferences, batch requirements, delivery constraints, etc."
             />
           </div>
@@ -767,7 +767,7 @@ export function CartPage() {
           type="submit"
           onClick={() => setTouched({ name: true, contact: true })}
           disabled={formInvalid || submit.kind === 'submitting'}
-          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
         >
           <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
           <span className="relative">{submit.kind === 'submitting' ? 'Placing order…' : 'Place Order'}</span>

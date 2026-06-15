@@ -40,13 +40,13 @@ export function SkincareResearchSupplies() {
 
   return (
     <section className="py-[var(--space-8)]">
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
+      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Research Supplies · Skincare
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-          <span className="font-light text-white/85">Skincare </span>
-          <span className="font-medium text-white">research supplies.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <span className="font-light text-ink/85">Skincare </span>
+          <span className="font-medium text-ink">research supplies.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
           Topical and dermatological research compounds for barrier,

@@ -62,14 +62,14 @@ export function ModuleHeader({ index, title, reserved = false, open, onToggle }:
 
   const inner = (
     <>
-      <span className="font-mono tabular-nums text-white/30 shrink-0 leading-none" style={{ fontSize: '9.5px', minWidth: '14px' }}>
+      <span className="font-mono tabular-nums text-ink/30 shrink-0 leading-none" style={{ fontSize: '9.5px', minWidth: '14px' }}>
         {String(index).padStart(2, '0')}
       </span>
-      <span className="flex-1 min-w-0 text-white/58" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+      <span className="flex-1 min-w-0 text-ink/58" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
         {title}
       </span>
       {reserved && (
-        <span className="text-white/22 shrink-0" style={{ fontSize: '8.5px', letterSpacing: '0.18em', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', padding: '1px 4px' }}>
+        <span className="text-ink/22 shrink-0" style={{ fontSize: '8.5px', letterSpacing: '0.18em', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', padding: '1px 4px' }}>
           Planned
         </span>
       )}
@@ -90,7 +90,7 @@ export function ModuleHeader({ index, title, reserved = false, open, onToggle }:
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      className="w-full flex items-center gap-3 py-2.5 px-4 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/20 active:scale-[0.99]"
+      className="w-full flex items-center gap-3 py-2.5 px-4 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink/20 active:scale-[0.99]"
       style={{ backgroundColor: open ? 'rgba(255,255,255,0.022)' : 'transparent', transition: 'background-color 120ms ease-out' }}
       onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.028)'; }}
       onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
@@ -124,10 +124,10 @@ export function IntelModule({ index, title, defaultOpen = false, reserved = fals
             {reserved ? (
               <div className="px-4 py-4">
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed rgba(255,255,255,0.08)' }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-white/22 shrink-0">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-ink/22 shrink-0">
                     <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
                   </svg>
-                  <span className="text-white/28" style={{ fontSize: '10.5px', letterSpacing: '0.04em' }}>{title} documentation pending</span>
+                  <span className="text-ink/28" style={{ fontSize: '10.5px', letterSpacing: '0.04em' }}>{title} documentation pending</span>
                 </div>
               </div>
             ) : children}
@@ -145,7 +145,7 @@ export function ModuleBody({ children }: { children: ReactNode }) {
 }
 
 export function ModuleText({ children }: { children: string }) {
-  return <p className="text-white/60 leading-[1.65]" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>{children}</p>;
+  return <p className="text-ink/60 leading-[1.65]" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>{children}</p>;
 }
 
 interface DataGridRow {
@@ -158,8 +158,8 @@ export function DataGrid({ rows }: { rows: DataGridRow[] }) {
     <dl className="space-y-1.5">
       {rows.map((r) => (
         <div key={r.label} className="flex items-baseline justify-between gap-4 min-w-0">
-          <dt className="text-white/32 shrink-0" style={{ fontSize: '10px', letterSpacing: '0.04em' }}>{r.label}</dt>
-          <dd className="text-white/62 text-right font-mono truncate tabular-nums" style={{ fontSize: '10.5px' }}>{r.value}</dd>
+          <dt className="text-ink/32 shrink-0" style={{ fontSize: '10px', letterSpacing: '0.04em' }}>{r.label}</dt>
+          <dd className="text-ink/62 text-right font-mono truncate tabular-nums" style={{ fontSize: '10.5px' }}>{r.value}</dd>
         </div>
       ))}
     </dl>
@@ -174,8 +174,8 @@ export function StatChip({ label, value, highlight }: { label: string; value: st
         border: highlight ? '1px solid rgba(255,255,255,0.14)' : '1px solid rgba(255,255,255,0.06)',
         transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
       }}>
-      <p className="text-white/28 uppercase truncate" style={{ fontSize: '8.5px', letterSpacing: '0.24em' }}>{label}</p>
-      <p className="text-white/60 font-mono truncate mt-0.5" style={{ fontSize: '10.5px' }}>{value}</p>
+      <p className="text-ink/28 uppercase truncate" style={{ fontSize: '8.5px', letterSpacing: '0.24em' }}>{label}</p>
+      <p className="text-ink/60 font-mono truncate mt-0.5" style={{ fontSize: '10.5px' }}>{value}</p>
     </div>
   );
 }

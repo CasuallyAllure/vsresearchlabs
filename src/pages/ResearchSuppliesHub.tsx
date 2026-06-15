@@ -54,13 +54,13 @@ export function ResearchSuppliesHub() {
 
   return (
     <section className="py-[var(--space-8)]">
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
+      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Research Supplies
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-          <span className="font-light text-white/85">Compounds </span>
-          <span className="font-medium text-white">by domain.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <span className="font-light text-ink/85">Compounds </span>
+          <span className="font-medium text-ink">by domain.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
           Compound catalogs separated by research domain. Equipment,
@@ -75,20 +75,20 @@ export function ResearchSuppliesHub() {
         </p>
       </header>
 
-      <ul className="border-t border-white/[0.06]">
+      <ul className="border-t border-ink/[0.06]">
         {ROWS.map((row) => {
           const count = countFor(row.countCategory);
           return (
-            <li key={row.to} className="border-b border-white/[0.06]">
+            <li key={row.to} className="border-b border-ink/[0.06]">
               <Link
                 to={row.to}
-                className="group flex items-start gap-[var(--space-5)] py-[var(--space-6)] transition-colors duration-150 hover:bg-white/[0.015] focus:outline-none focus-visible:bg-white/[0.02]"
+                className="group flex items-start gap-[var(--space-5)] py-[var(--space-6)] transition-colors duration-150 hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02]"
               >
                 <span className="holo-text-display font-mono text-[13px] tabular-nums tracking-[0.1em] pt-1 shrink-0">
                   {row.eyebrow}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-[clamp(1.1rem,2vw,1.4rem)] font-light text-white tracking-tight leading-tight">
+                  <h2 className="text-[clamp(1.1rem,2vw,1.4rem)] font-light text-ink tracking-tight leading-tight">
                     {row.title}
                   </h2>
                   <p className="holo-text-body mt-[var(--space-2)] text-[13px] leading-relaxed max-w-[60ch]">
@@ -100,7 +100,7 @@ export function ResearchSuppliesHub() {
                 </div>
                 <span
                   aria-hidden="true"
-                  className="shrink-0 self-center text-lg text-white/25 transition-colors duration-150 group-hover:text-holo-light"
+                  className="shrink-0 self-center text-lg text-ink/25 transition-colors duration-150 group-hover:text-holo-light"
                 >
                   →
                 </span>

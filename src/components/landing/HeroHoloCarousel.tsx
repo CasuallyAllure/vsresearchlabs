@@ -144,8 +144,8 @@ export function HeroHoloCarousel() {
                 aria-label={`View ${SLIDE_LABEL[key]}`}
                 className="h-1.5 w-1.5 rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/50"
                 style={{
-                  backgroundColor: on ? 'rgba(100,200,255,0.85)' : 'rgba(255,255,255,0.18)',
-                  boxShadow: on ? '0 0 8px rgba(100,200,255,0.55)' : 'none',
+                  backgroundColor: on ? 'rgba(52, 114, 122,0.85)' : 'rgba(26,23,20,0.18)',
+                  boxShadow: on ? '0 0 8px rgba(52, 114, 122,0.55)' : 'none',
                   transform: on ? 'scale(1.1)' : 'scale(1)',
                 }}
               />
@@ -163,7 +163,7 @@ export function HeroHoloCarousel() {
           aria-label="Next slide"
           className="hero-holo-next-cue absolute right-2 top-1/2 z-30 flex h-8 w-5 items-center justify-center text-holo/65 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm"
           style={{
-            filter: 'drop-shadow(0 0 6px rgba(100,200,255,0.6)) drop-shadow(0 0 14px rgba(100,200,255,0.3))',
+            filter: 'drop-shadow(0 0 6px rgba(52, 114, 122,0.6)) drop-shadow(0 0 14px rgba(52, 114, 122,0.3))',
           }}
         >
           <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true">

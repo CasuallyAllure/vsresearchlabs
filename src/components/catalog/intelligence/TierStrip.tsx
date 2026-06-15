@@ -52,7 +52,7 @@ export function TierStrip(props: TierStripProps) {
               key={v.dose}
               type="button"
               onClick={() => onSelect(i)}
-              className="rounded-[2px] font-mono tabular-nums leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 active:scale-[0.95]"
+              className="rounded-[2px] font-mono tabular-nums leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 active:scale-[0.95]"
               style={{
                 padding: sm ? '3px 7px' : '4px 10px',
                 fontSize: sm ? '9.5px' : '11px',
@@ -91,8 +91,8 @@ export function TierStrip(props: TierStripProps) {
               'text-[10px] tabular-nums',
               'transition-colors',
               isActive
-                ? 'bg-white/[0.08] border border-white/[0.18] text-white/85'
-                : 'bg-transparent border border-white/[0.06] text-white/45',
+                ? 'bg-ink/[0.08] border border-ink/[0.18] text-ink/85'
+                : 'bg-transparent border border-ink/[0.06] text-ink/45',
             ].join(' ')}
           >
             {v.dose}

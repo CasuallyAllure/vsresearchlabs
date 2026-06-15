@@ -20,7 +20,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export type NavRole = 'guest' | 'owner';
 
-const ACCENT = '#7AE5FF';
+const ACCENT = '#34727A';
 
 /* ── prefers-reduced-motion hook ────────────────────────────────────────── */
 
@@ -276,7 +276,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
           <div
             aria-hidden="true"
             onClick={() => setSheetOpen(false)}
-            className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px]"
+            className="fixed inset-0 z-40 bg-ink/55 backdrop-blur-[2px]"
           />
           <div
             role="dialog"
@@ -287,20 +287,20 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
               bottom: 'calc(0.75rem + 36px + 0.5rem)',
               width: 'min(360px, calc(100vw - 1.5rem))',
               background:
-                'linear-gradient(180deg, rgba(28, 28, 28, 0.92) 0%, rgba(14, 14, 14, 0.94) 100%)',
-              border: '0.5px solid rgba(255, 255, 255, 0.14)',
+                'linear-gradient(180deg, rgba(251, 249, 244, 0.96) 0%, rgba(244, 239, 230, 0.97) 100%)',
+              border: '0.5px solid rgba(26, 23, 20, 0.12)',
               borderRadius: '20px',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
               boxShadow:
-                '0 0 0 0.5px rgba(0, 0, 0, 0.4), 0 12px 36px rgba(0, 0, 0, 0.65), inset 0 0.5px 0 rgba(255, 255, 255, 0.10)',
+                '0 12px 36px -16px rgba(26, 23, 20, 0.28), inset 0 0.5px 0 rgba(255, 255, 255, 0.7)',
             }}
           >
             <div className="px-4 pt-4 pb-2">
-              <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-white/40">
+              <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-ink/40">
                 Research Supplies
               </p>
-              <p className="mt-1 text-[11px] text-white/55">
+              <p className="mt-1 text-[11px] text-ink/55">
                 Choose a research domain.
               </p>
             </div>
@@ -315,21 +315,21 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                       aria-current={isActive ? 'page' : undefined}
                       className={[
                         'w-full flex items-center justify-between gap-3 px-3 py-3 rounded-[10px] transition-colors',
-                        'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40',
+                        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
                         isActive
-                          ? 'bg-white/[0.10]'
-                          : 'hover:bg-white/[0.05] active:bg-white/[0.08]',
+                          ? 'bg-ink/[0.10]'
+                          : 'hover:bg-ink/[0.05] active:bg-ink/[0.08]',
                       ].join(' ')}
                     >
                       <span className="flex flex-col items-start min-w-0">
-                        <span className={`text-[13px] tracking-tight ${isActive ? 'text-white' : 'text-white/85'}`}>
+                        <span className={`text-[13px] tracking-tight ${isActive ? 'text-ink' : 'text-ink/85'}`}>
                           {entry.label}
                         </span>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/40 mt-0.5">
+                        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
                           {entry.caption}
                         </span>
                       </span>
-                      <span aria-hidden="true" className="text-white/35 text-sm shrink-0">
+                      <span aria-hidden="true" className="text-ink/35 text-sm shrink-0">
                         →
                       </span>
                     </button>
@@ -337,11 +337,11 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                 );
               })}
             </ul>
-            <div className="px-4 pb-3 pt-1 border-t border-white/[0.06]">
+            <div className="px-4 pb-3 pt-1 border-t border-ink/[0.06]">
               <Link
                 to="/research-supplies"
                 onClick={() => setSheetOpen(false)}
-                className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-white/45 hover:text-white/80 transition-colors"
+                className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors"
               >
                 View hub →
               </Link>
@@ -356,13 +356,13 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
         aria-label="Primary"
         style={{
           background:
-            'linear-gradient(180deg, rgba(28, 28, 28, 0.82) 0%, rgba(14, 14, 14, 0.86) 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.14)',
+            'linear-gradient(180deg, rgba(251, 249, 244, 0.9) 0%, rgba(244, 239, 230, 0.94) 100%)',
+          border: '0.5px solid rgba(26, 23, 20, 0.12)',
           borderRadius: '9999px',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           boxShadow:
-            '0 0 0 0.5px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 0.5px 0 rgba(255, 255, 255, 0.12)',
+            '0 8px 24px -12px rgba(26, 23, 20, 0.28), inset 0 0.5px 0 rgba(255, 255, 255, 0.7)',
         }}
       >
         {/* Hint — points at the center Research Supplies slot. */}
@@ -374,11 +374,11 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             <span
               className={`relative inline-block rounded-full px-2 py-[2.5px] text-[7px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
-                color: '#86ffb4',
-                background: 'linear-gradient(180deg, rgba(10,30,18,0.84) 0%, rgba(6,16,10,0.9) 100%)',
-                border: '0.5px solid rgba(85,240,150,0.5)',
+                color: '#FBF9F4',
+                background: 'linear-gradient(180deg, #B5904B 0%, #8C6A2A 100%)',
+                border: '0.5px solid rgba(140,110,50,0.6)',
                 boxShadow:
-                  '0 0 0 0.5px rgba(85,240,150,0.16), 0 0 12px rgba(70,235,135,0.38), 0 4px 12px rgba(0,0,0,0.5)',
+                  '0 2px 8px -2px rgba(26,23,20,0.35)',
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
               }}
@@ -392,7 +392,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                   height: 0,
                   borderLeft: '4px solid transparent',
                   borderRight: '4px solid transparent',
-                  borderTop: '4px solid rgba(85,240,150,0.6)',
+                  borderTop: '4px solid #8C6A2A',
                 }}
               />
             </span>
@@ -449,8 +449,8 @@ type NavSlotProps =
 function NavSlot(props: NavSlotProps) {
   const baseClass = [
     'relative flex items-center justify-center h-7 w-14 rounded-full transition-colors duration-150',
-    'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40',
-    props.isActive ? 'text-white' : 'text-white/50 hover:text-white/90',
+    'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
+    props.isActive ? 'text-ink' : 'text-ink/50 hover:text-ink/90',
   ].join(' ');
   const style = props.isActive
     ? {
