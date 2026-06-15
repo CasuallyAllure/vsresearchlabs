@@ -44,12 +44,12 @@ export function CompoundVisualZone({
     return (
       <div
         className="hidden lg:flex flex-col shrink-0 overflow-hidden"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}
       >
         {/* Top: molecular structure — square */}
         <div
           className="aspect-square w-full overflow-hidden"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}
         >
           <MolecularStructurePanel substance={substance} abbreviation={abbreviation} />
         </div>
@@ -57,7 +57,7 @@ export function CompoundVisualZone({
         {/* Bottom: vial — 240px band, centered */}
         <div
           className="shrink-0 flex items-center justify-center overflow-hidden"
-          style={{ height: '240px', backgroundColor: '#040404' }}
+          style={{ height: '240px', backgroundColor: '#F4EFE6' }}
         >
           <div style={{ width: '110px', height: '232px' }}>
             <VialRender
@@ -76,15 +76,15 @@ export function CompoundVisualZone({
   return (
     <div
       className="hidden lg:flex flex-row shrink-0 overflow-hidden"
-      style={{ height: '200px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ height: '200px', borderBottom: '1px solid rgba(26,23,20,0.07)' }}
     >
-      <div className="flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid rgba(26,23,20,0.06)' }}>
         <MolecularStructurePanel substance={substance} abbreviation={abbreviation} />
       </div>
 
       <div
         className="shrink-0 flex items-center justify-center overflow-hidden"
-        style={{ width: '300px', backgroundColor: '#040404' }}
+        style={{ width: '300px', backgroundColor: '#F4EFE6' }}
       >
         <div style={{ width: '90px', height: '188px' }}>
           <VialRender

@@ -173,14 +173,14 @@ function SlidePanel({
 }) {
   const add = useCart((s) => s.add);
   return (
-    <div className="grid h-full grid-cols-1 md:grid-cols-5">
+    <div className="grid h-full grid-cols-1 grid-rows-[128px_1fr] md:grid-cols-5 md:grid-rows-none">
       {/* Specimen plate — anchors the visual, does not dominate */}
-      <div className="relative min-h-[260px] min-w-0 border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
+      <div className="relative min-h-0 min-w-0 border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
         {ci.specimenImage ? (
           <img
             src={ci.specimenImage}
             alt={`${ci.substance} specimen plate`}
-            className="h-full w-full object-contain p-5"
+            className="h-full w-full object-contain p-3 md:p-6"
             style={{ opacity: 0.94 }}
           />
         ) : null}
@@ -585,7 +585,7 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="module-aura flex h-[600px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[640px] lg:h-[700px]"
+        className="module-aura flex h-[540px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[600px] lg:h-[680px]"
       >
         {/* Header bar */}
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-3 sm:px-5">

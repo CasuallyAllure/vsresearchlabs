@@ -69,7 +69,7 @@ export function ModuleHeader({ index, title, reserved = false, open, onToggle }:
         {title}
       </span>
       {reserved && (
-        <span className="text-ink/22 shrink-0" style={{ fontSize: '8.5px', letterSpacing: '0.18em', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', padding: '1px 4px' }}>
+        <span className="text-ink/22 shrink-0" style={{ fontSize: '8.5px', letterSpacing: '0.18em', textTransform: 'uppercase', border: '1px solid rgba(26,23,20,0.08)', borderRadius: '2px', padding: '1px 4px' }}>
           Planned
         </span>
       )}
@@ -91,8 +91,8 @@ export function ModuleHeader({ index, title, reserved = false, open, onToggle }:
       onClick={onToggle}
       aria-expanded={open}
       className="w-full flex items-center gap-3 py-2.5 px-4 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink/20 active:scale-[0.99]"
-      style={{ backgroundColor: open ? 'rgba(255,255,255,0.022)' : 'transparent', transition: 'background-color 120ms ease-out' }}
-      onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.028)'; }}
+      style={{ backgroundColor: open ? 'rgba(26,23,20,0.022)' : 'transparent', transition: 'background-color 120ms ease-out' }}
+      onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(26,23,20,0.028)'; }}
       onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
     >
       {inner}
@@ -115,15 +115,15 @@ export function IntelModule({ index, title, defaultOpen = false, reserved = fals
   return (
     <div
       className="cio-module"
-      style={{ '--mi': index, borderBottom: '1px solid rgba(255,255,255,0.05)' } as React.CSSProperties}
+      style={{ '--mi': index, borderBottom: '1px solid rgba(26,23,20,0.05)' } as React.CSSProperties}
     >
       <ModuleHeader index={index} title={title} reserved={reserved} open={open} onToggle={() => setOpen((o) => !o)} />
       <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 200ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ backgroundColor: open ? '#181818' : 'transparent', transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1)', borderTop: open ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent' }}>
+          <div style={{ backgroundColor: open ? '#FFFFFF' : 'transparent', transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1)', borderTop: open ? '1px solid rgba(26,23,20,0.05)' : '1px solid transparent' }}>
             {reserved ? (
               <div className="px-4 py-4">
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed rgba(255,255,255,0.08)' }}>
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed rgba(26,23,20,0.08)' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-ink/22 shrink-0">
                     <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
                   </svg>
@@ -170,8 +170,8 @@ export function StatChip({ label, value, highlight }: { label: string; value: st
   return (
     <div className="rounded-[2px] px-2 py-1.5 min-w-0"
       style={{
-        backgroundColor: highlight ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.035)',
-        border: highlight ? '1px solid rgba(255,255,255,0.14)' : '1px solid rgba(255,255,255,0.06)',
+        backgroundColor: highlight ? 'rgba(26,23,20,0.07)' : 'rgba(26,23,20,0.035)',
+        border: highlight ? '1px solid rgba(26,23,20,0.14)' : '1px solid rgba(26,23,20,0.06)',
         transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
       }}>
       <p className="text-ink/28 uppercase truncate" style={{ fontSize: '8.5px', letterSpacing: '0.24em' }}>{label}</p>
