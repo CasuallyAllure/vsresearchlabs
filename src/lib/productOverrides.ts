@@ -29,6 +29,10 @@ export interface ProductOverride {
   hidden: boolean;
   price_cents_override: number | null;
   deleted_at: string | null;
+  video_url: string | null;
+  video_title: string | null;
+  video_description: string | null;
+  video_thumbnail: string | null;
 }
 
 interface OverridesState {
@@ -60,7 +64,7 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
     set({ loading: true, error: null });
     const { data, error } = await supabase
       .from('public_product_overrides')
-      .select('sku, on_hand, hidden, price_cents_override, deleted_at');
+      .select('sku, on_hand, hidden, price_cents_override, deleted_at, video_url, video_title, video_description, video_thumbnail');
     if (error) {
       set({ loading: false, error: error.message });
       return;
@@ -104,4 +108,22 @@ export function isSkuInStock(sku: string): boolean {
  *  override exists — callers should fall back to lib/pricing. */
 export function priceOverrideCents(sku: string): number | null {
   return useProductOverrides.getState().bySku[sku]?.price_cents_override ?? null;
+}
+
+/** Admin-set cited-clip for a SKU, if any. Returns null when no video_url
+ *  override exists — callers fall back to the static COMPOUND_VIDEOS map. */
+export function videoOverrideFor(sku: string): {
+  url: string;
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+} | null {
+  const o = useProductOverrides.getState().bySku[sku];
+  if (!o?.video_url) return null;
+  return {
+    url: o.video_url,
+    title: o.video_title ?? undefined,
+    description: o.video_description ?? undefined,
+    thumbnail: o.video_thumbnail ?? undefined,
+  };
 }

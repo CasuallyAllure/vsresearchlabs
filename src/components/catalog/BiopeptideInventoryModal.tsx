@@ -18,13 +18,16 @@ import { deriveProductDose } from '../../types';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
-import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
+import { ClassificationFilter } from './ClassificationFilter';
 import { inStockByKey } from '../../lib/stock';
 import { tierPriceCents, formatPrice } from '../../lib/pricing';
 
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
 const STOCK_RED = '#B23A3A';
+const ALL_LAYMAN =
+  'The full biopeptide catalog — pick a category to filter the list and read what it does in plain terms. Swipe right for the technical detail.';
 const ALL_DESCRIPTION =
   'The complete biopeptide catalog. Pick a class to narrow the list and read what it covers.';
 
@@ -135,11 +138,6 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
     return tabs;
   }, [products]);
 
-  const activeDescription =
-    classFilter === ALL_TAB
-      ? ALL_DESCRIPTION
-      : CLASSIFICATION_DEFINITIONS[classFilter as keyof typeof CLASSIFICATION_DEFINITIONS] ?? null;
-
   const filtered = useMemo(
     () =>
       products.filter((p) => {
@@ -222,68 +220,16 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
               </button>
             </div>
 
-            {/* Compact filter — label + in-stock toggle, scrolling class pills, description */}
-            <div className="mt-[var(--space-4)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-3)]">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[10px] uppercase tracking-[0.28em] text-ink/45">Filter</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={inStockOnly}
-                  onClick={() => setInStockOnly((v) => !v)}
-                  className={[
-                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-                    inStockOnly ? 'text-ink' : 'border-ink/15 text-ink/50 hover:text-ink/80 hover:border-ink/25',
-                  ].join(' ')}
-                  style={
-                    inStockOnly
-                      ? { borderColor: `${STOCK_GREEN}80`, backgroundColor: `${STOCK_GREEN}18`, boxShadow: `0 0 10px ${STOCK_GREEN}33` }
-                      : undefined
-                  }
-                >
-                  <span
-                    aria-hidden="true"
-                    className="inline-block h-[6px] w-[6px] rounded-full"
-                    style={{ backgroundColor: inStockOnly ? STOCK_GREEN : 'rgba(26,23,20,0.25)', boxShadow: inStockOnly ? `0 0 5px ${STOCK_GREEN}aa` : undefined }}
-                  />
-                  In stock only
-                </button>
-              </div>
-
-              {classificationTabs.length > 1 && (
-                <div
-                  role="tablist"
-                  aria-label="Filter inventory by classification"
-                  className="mt-[var(--space-3)] flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                >
-                  {classificationTabs.map((tab) => {
-                    const active = tab.id === classFilter;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        onClick={() => setClassFilter(tab.id)}
-                        className={[
-                          'shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
-                          active
-                            ? 'border border-holo/30 bg-holo/[0.12] text-holo-light font-medium'
-                            : 'border border-ink/12 text-ink/55 hover:text-ink/85 hover:border-ink/25',
-                        ].join(' ')}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activeDescription && (
-                <p className="mt-[var(--space-3)] border-t border-ink/[0.07] pt-[var(--space-3)] text-[12px] leading-relaxed text-ink/60 max-w-[72ch]">
-                  {activeDescription}
-                </p>
-              )}
+            {/* Filter — same dropdown grammar as the Biopeptide page */}
+            <div className="mt-[var(--space-4)]">
+              <ClassificationFilter
+                tabs={classificationTabs}
+                value={classFilter}
+                onChange={setClassFilter}
+                allLayman={ALL_LAYMAN}
+                allTechnical={ALL_DESCRIPTION}
+                inStock={{ on: inStockOnly, toggle: () => setInStockOnly((v) => !v) }}
+              />
             </div>
           </header>
 

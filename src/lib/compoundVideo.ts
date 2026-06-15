@@ -12,6 +12,7 @@
  */
 
 import type { Product } from '../types';
+import { videoOverrideFor } from './productOverrides';
 
 export interface CompoundVideoMeta {
   url: string;
@@ -31,16 +32,25 @@ export interface CompoundVideoMeta {
 const COMPOUND_VIDEOS: Record<string, CompoundVideoMeta> = {
   'mots-c': {
     url: 'https://www.tiktok.com/@kristisawicki/video/7615592662862712077',
-    title: 'MOTS-C in humans — what we know',
+    title: 'MOTS-C, explained by a Ph.D.',
     description:
-      'Dr. Kristi Sawicki breaks down the mitochondrial peptide MOTS-C and the early human research. Third-party clip, shown for reference.',
+      'Dr. Kristi Sawicki walks through what current human research suggests about the mitochondrial peptide MOTS-C. Independent third-party clip, shared for reference.',
     thumbnail: '/media/mots-c.jpg',
     author: 'Dr. Kristi Sawicki, Ph.D.',
   },
 };
 
-/** The citation video for a product, if any. */
+/** The citation video for a product, if any.
+ *
+ * Resolution order (first hit wins):
+ *   1. Admin override on the SKU (set in Admin → Inventory → Clip, or via the
+ *      bulk inventory seed). This is the live, no-redeploy path.
+ *   2. The product's own video fields (static catalog data).
+ *   3. The `COMPOUND_VIDEOS` demo map keyed by slug (e.g. MOTS-C). */
 export function getCompoundVideo(product: Product): CompoundVideoMeta | undefined {
+  const override = videoOverrideFor(product.sku);
+  if (override) return override;
+
   const p = product as Product & {
     videoUrl?: string;
     videoTitle?: string;

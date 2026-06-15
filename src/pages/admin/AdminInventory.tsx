@@ -42,6 +42,10 @@ interface StockRow {
   hidden: boolean;
   price_cents_override: number | null;
   deleted_at: string | null;
+  video_url: string | null;
+  video_title: string | null;
+  video_description: string | null;
+  video_thumbnail: string | null;
 }
 
 type AdjustReason =
@@ -84,6 +88,7 @@ export function AdminInventory() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('visible');
   const [adjustingSku, setAdjustingSku] = useState<string | null>(null);
   const [pricingSku, setPricingSku] = useState<string | null>(null);
+  const [clippingSku, setClippingSku] = useState<string | null>(null);
   const [busySku, setBusySku] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
@@ -96,7 +101,7 @@ export function AdminInventory() {
       }
       const { data, error } = await supabase
         .from('product_stock')
-        .select('sku, on_hand, reorder_at, last_counted, updated_at, hidden, price_cents_override, deleted_at')
+        .select('sku, on_hand, reorder_at, last_counted, updated_at, hidden, price_cents_override, deleted_at, video_url, video_title, video_description, video_thumbnail')
         .order('sku', { ascending: true });
       if (cancelled) return;
       if (error) {
@@ -130,6 +135,7 @@ export function AdminInventory() {
 
   const adjusting = rows?.find((r) => r.sku === adjustingSku) ?? null;
   const pricing = rows?.find((r) => r.sku === pricingSku) ?? null;
+  const clipping = rows?.find((r) => r.sku === clippingSku) ?? null;
 
   async function toggleHidden(row: StockRow) {
     if (!supabase) return;
@@ -222,7 +228,7 @@ export function AdminInventory() {
 
       {rows && rows.length > 0 && (
         <div className="research-surface-solid overflow-x-auto">
-          <table className="w-full min-w-[920px] border-collapse">
+          <table className="w-full min-w-[1000px] border-collapse">
             <thead>
               <tr className="border-b border-ink/[0.10]">
                 <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">SKU</th>
@@ -230,7 +236,7 @@ export function AdminInventory() {
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[80px]">On hand</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Price</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Status</th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[270px]">Actions</th>
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[330px]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -243,7 +249,17 @@ export function AdminInventory() {
                       {row.sku}
                     </td>
                     <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
-                      {displayNameFor(row.sku)}
+                      <span className="inline-flex items-center gap-1.5">
+                        {displayNameFor(row.sku)}
+                        {row.video_url && (
+                          <span
+                            title="Cited clip attached"
+                            className="inline-flex items-center justify-center h-[15px] px-1 rounded-[3px] bg-holo/10 border border-holo/30 font-mono text-[8px] uppercase tracking-[0.1em] text-holo"
+                          >
+                            ▶ clip
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[12px] tabular-nums">
                       <span className={row.on_hand === 0 ? 'text-red-400/85' : 'text-ink'}>{row.on_hand}</span>
@@ -265,6 +281,9 @@ export function AdminInventory() {
                         </ActionButton>
                         <ActionButton onClick={() => setPricingSku(row.sku)} disabled={busy} title="Set price override">
                           Price
+                        </ActionButton>
+                        <ActionButton onClick={() => setClippingSku(row.sku)} disabled={busy} title="Attach a cited clip">
+                          Clip
                         </ActionButton>
                         <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
                           {row.hidden ? 'Show' : 'Hide'}
@@ -302,6 +321,15 @@ export function AdminInventory() {
           row={pricing}
           onClose={() => setPricingSku(null)}
           onSuccess={() => { setPricingSku(null); setRefreshCounter((c) => c + 1); }}
+        />
+      )}
+
+      {clipping && (
+        <ClipModal
+          row={clipping}
+          label={displayNameFor(clipping.sku)}
+          onClose={() => setClippingSku(null)}
+          onSuccess={() => { setClippingSku(null); setRefreshCounter((c) => c + 1); }}
         />
       )}
     </AdminLayout>
