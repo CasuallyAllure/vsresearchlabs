@@ -34,7 +34,7 @@ import {
 import { StudyCard } from './intelligence/StudyCard';
 import { SummaryText } from './intelligence/SummaryText';
 import { CompoundVideo } from './intelligence/CompoundVideo';
-import { getCompoundVideoUrl } from '../../lib/compoundVideo';
+import { getCompoundVideo } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
 import { tierPriceCents, formatPrice } from '../../lib/pricing';
@@ -202,7 +202,7 @@ export function CompoundIntelligenceOverlay({
     [product],
   );
 
-  const videoUrl = getCompoundVideoUrl(product);
+  const video = getCompoundVideo(product);
 
   const moduleList = useMemo(() => {
     type ModuleDef =
@@ -211,7 +211,6 @@ export function CompoundIntelligenceOverlay({
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'datagrid'; rows: Array<{ label: string; value: string }> }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'procurement' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'studies' }
-      | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'video'; url: string }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'reserved' };
 
     const defs: ModuleDef[] = [];
@@ -222,10 +221,11 @@ export function CompoundIntelligenceOverlay({
     if (!ci.hasMolecularIntelligence && allSpecs.length > 0) defs.push({ key: 'specs', title: 'Specifications', kind: 'datagrid', rows: allSpecs });
     if (selectProcurementRows(product).length > 0) defs.push({ key: 'procurement', title: 'Procurement Data', kind: 'procurement' });
     if (ci.hasStudies) defs.push({ key: 'studies', title: 'Known Studies', kind: 'studies' });
-    if (videoUrl) defs.push({ key: 'media', title: 'Research Media', kind: 'video', url: videoUrl, defaultOpen: true });
-    else if (ci.hasMolecularIntelligence) defs.push({ key: 'media', title: 'Research Media', kind: 'reserved', reserved: true });
+    // Research media now renders as a poster at the top of the column; only
+    // the reserved placeholder remains for compounds with no clip.
+    else if (ci.hasMolecularIntelligence && !video) defs.push({ key: 'media', title: 'Research Media', kind: 'reserved', reserved: true });
     return defs.map((m, i) => ({ ...m, index: i + 1 }));
-  }, [ci, allSpecs, product, videoUrl]);
+  }, [ci, allSpecs, product, video]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -436,6 +436,13 @@ export function CompoundIntelligenceOverlay({
               {/* Scrollable module list */}
               <div className="flex-1 overflow-y-auto overscroll-contain">
 
+                {/* Research media poster — top of the column, above summary. */}
+                {video && (
+                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+                    <CompoundVideo url={video.url} title={video.title} description={video.description} />
+                  </div>
+                )}
+
                 {/* Plain-English summary — sits directly under the name,
                     before any technical module. The one friendly,
                     colorized read; everything below it is the detail. */}
@@ -511,9 +518,6 @@ export function CompoundIntelligenceOverlay({
                     )}
                     {mod.kind === 'procurement' && (
                       <ModuleBody><ProcurementSheet product={product} /></ModuleBody>
-                    )}
-                    {mod.kind === 'video' && (
-                      <ModuleBody><CompoundVideo url={mod.url} /></ModuleBody>
                     )}
                     {mod.kind === 'studies' && (
                       <ModuleBody>
