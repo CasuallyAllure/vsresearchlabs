@@ -495,6 +495,164 @@ function PriceOverrideModal({ row, onClose, onSuccess }: PriceModalProps) {
   );
 }
 
+// ── Cited-clip modal ────────────────────────────────────────────────────────
+
+interface ClipModalProps {
+  row: StockRow;
+  label: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
+  const [url, setUrl] = useState(row.video_url ?? '');
+  const [title, setTitle] = useState(row.video_title ?? '');
+  const [description, setDescription] = useState(row.video_description ?? '');
+  const [thumbnail, setThumbnail] = useState(row.video_thumbnail ?? '');
+  const [submitting, setSubmitting] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+
+  const hasUrl = url.trim() !== '';
+
+  // Pull author / caption / thumbnail from TikTok via the resolve-video function.
+  async function fetchDetails() {
+    if (!supabase || !hasUrl) return;
+    setFetching(true);
+    setError(null);
+    setNote(null);
+    const { data, error } = await supabase.functions.invoke('resolve-video', {
+      body: { url: url.trim() },
+    });
+    setFetching(false);
+    if (error) {
+      setError(`Couldn't fetch: ${error.message}`);
+      return;
+    }
+    const d = data as {
+      url?: string;
+      author?: string | null;
+      title?: string | null;
+      thumbnailUrl?: string | null;
+      thumbnailExpires?: boolean;
+    };
+    if (d.url) setUrl(d.url); // canonical (expands short links)
+    // Compose a clean title: caption is often long → keep it as the description,
+    // and seed a short title from the author if the title field is still empty.
+    if (d.title && !description.trim()) setDescription(d.title);
+    if (d.author && !title.trim()) setTitle(`${d.author} — cited clip`);
+    if (d.thumbnailUrl && !thumbnail.trim()) setThumbnail(d.thumbnailUrl);
+    setNote(
+      d.thumbnailExpires
+        ? 'Fetched. Heads-up: the TikTok thumbnail URL expires — for a permanent poster, host the image (e.g. /media/<slug>.jpg) and paste that URL instead.'
+        : 'Fetched.',
+    );
+  }
+
+  async function save(clear = false) {
+    if (!supabase || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const { error } = await supabase.rpc('set_product_video', {
+      p_sku: row.sku,
+      p_url: clear ? '' : url.trim(),
+      p_title: clear ? '' : title.trim(),
+      p_description: clear ? '' : description.trim(),
+      p_thumbnail: clear ? '' : thumbnail.trim(),
+    });
+    setSubmitting(false);
+    if (error) return setError(error.message);
+    onSuccess();
+  }
+
+  return (
+    <ModalShell onClose={onClose} title="Cited clip" subtitle={`${row.sku} · ${label}`}>
+      <form onSubmit={(e) => { e.preventDefault(); save(false); }}>
+        <Label>Video URL (TikTok)</Label>
+        <div className="flex gap-2 mb-[var(--space-3)]">
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://www.tiktok.com/@creator/video/…  or a /t/ short link"
+            className={`${inputCls} mb-0`}
+          />
+          <button
+            type="button"
+            onClick={fetchDetails}
+            disabled={!hasUrl || fetching}
+            className="shrink-0 rounded-sm border border-holo/40 bg-holo/[0.06] px-[var(--space-4)] text-[10px] uppercase tracking-[0.16em] text-holo hover:bg-holo/[0.12] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {fetching ? '…' : 'Fetch'}
+          </button>
+        </div>
+
+        <div className="flex gap-3">
+          {/* Live poster preview */}
+          <div
+            className="shrink-0 w-[64px] aspect-[9/16] overflow-hidden rounded-[6px] border border-ink/15"
+            style={{ background: 'linear-gradient(150deg, #2b2622, #0f0d0b)' }}
+          >
+            {thumbnail.trim() && (
+              <img src={thumbnail} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <Label>Title</Label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. MOTS-C, explained by a Ph.D."
+              className={inputCls}
+            />
+            <Label>Thumbnail URL</Label>
+            <input
+              type="url"
+              value={thumbnail}
+              onChange={(e) => setThumbnail(e.target.value)}
+              placeholder="/media/<slug>.jpg (hosted, permanent)"
+              className={inputCls}
+            />
+          </div>
+        </div>
+
+        <Label>Description</Label>
+        <textarea
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="1–2 lines on what the clip covers. Note it's an independent third-party clip, shared for reference."
+          className={`${inputCls} resize-y`}
+        />
+
+        {note && <p className="text-[11px] leading-relaxed text-holo/90 mb-[var(--space-2)]">{note}</p>}
+        {error && <p role="alert" className="text-[12px] text-red-400 mb-[var(--space-2)]">{error}</p>}
+
+        <div className="mt-[var(--space-5)] flex items-center justify-between gap-[var(--space-3)]">
+          <button
+            type="button"
+            onClick={() => save(true)}
+            disabled={submitting || !row.video_url}
+            className="rounded-full border border-red-400/35 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-red-400/80 hover:bg-red-400/[0.06] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Remove clip
+          </button>
+          <div className="flex items-center gap-[var(--space-3)]">
+            <button type="button" onClick={onClose} className="rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-ink/70 hover:text-ink hover:border-ink/30 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={submitting || !hasUrl} className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              {submitting ? 'Saving…' : 'Save clip'}
+            </button>
+          </div>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
 // ── Shared modal primitives ─────────────────────────────────────────────────
 
 const inputCls =
