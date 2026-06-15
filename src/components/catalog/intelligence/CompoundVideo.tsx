@@ -13,7 +13,7 @@ import { parseEmbed, type CompoundVideoMeta } from '../../../lib/compoundVideo';
 
 type CompoundVideoProps = CompoundVideoMeta;
 
-export function CompoundVideo({ url, title, description }: CompoundVideoProps) {
+export function CompoundVideo({ url, title, description, thumbnail, author: authorProp }: CompoundVideoProps) {
   const embed = parseEmbed(url);
   const [open, setOpen] = useState(false);
 
@@ -34,7 +34,7 @@ export function CompoundVideo({ url, title, description }: CompoundVideoProps) {
     );
   }
 
-  const author = embed.author ?? '';
+  const author = authorProp || embed.author || '';
 
   return (
     <div className="flex items-stretch gap-3">
@@ -50,6 +50,18 @@ export function CompoundVideo({ url, title, description }: CompoundVideoProps) {
           border: '1px solid rgba(26,23,20,0.18)',
         }}
       >
+        {/* Thumbnail (locally hosted) */}
+        {thumbnail && (
+          <img
+            src={thumbnail}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        {/* Darken for play-badge legibility */}
+        <span className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.45) 100%)' }} aria-hidden="true" />
         {/* Play badge */}
         <span className="absolute inset-0 flex items-center justify-center">
           <span
@@ -61,10 +73,9 @@ export function CompoundVideo({ url, title, description }: CompoundVideoProps) {
             </svg>
           </span>
         </span>
-        {/* Handle + TikTok tag */}
+        {/* TikTok tag */}
         <span className="absolute inset-x-0 bottom-0 px-1.5 py-1 text-left">
-          <span className="block font-mono text-[7.5px] uppercase tracking-[0.14em] text-white/55">TikTok</span>
-          {author && <span className="block font-mono text-[8px] text-white/85 truncate">{author}</span>}
+          <span className="block font-mono text-[7.5px] uppercase tracking-[0.14em] text-white/70">TikTok</span>
         </span>
       </button>
 

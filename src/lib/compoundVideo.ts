@@ -19,15 +19,23 @@ export interface CompoundVideoMeta {
   title?: string;
   /** 1–2 line "what this clip covers" blurb (admin-editable later). */
   description?: string;
+  /** Locally-hosted poster image (e.g. /media/<slug>.jpg). We host it
+   *  rather than hotlinking because TikTok CDN thumbnails are signed +
+   *  expire. See the add-a-clip workflow memory. */
+  thumbnail?: string;
+  /** Display name for the creator (overrides the @handle from the URL). */
+  author?: string;
 }
 
 /** Demo entries until the admin fields are wired. Keyed by product slug. */
 const COMPOUND_VIDEOS: Record<string, CompoundVideoMeta> = {
   'mots-c': {
     url: 'https://www.tiktok.com/@kristisawicki/video/7615592662862712077',
-    title: 'Firsthand MOTS-C account',
+    title: 'MOTS-C in humans — what we know',
     description:
-      'A creator shares their experience with MOTS-C and what the research suggests. Third-party clip, shown for reference.',
+      'Dr. Kristi Sawicki breaks down the mitochondrial peptide MOTS-C and the early human research. Third-party clip, shown for reference.',
+    thumbnail: '/media/mots-c.jpg',
+    author: 'Dr. Kristi Sawicki, Ph.D.',
   },
 };
 
@@ -37,9 +45,17 @@ export function getCompoundVideo(product: Product): CompoundVideoMeta | undefine
     videoUrl?: string;
     videoTitle?: string;
     videoDescription?: string;
+    videoThumbnail?: string;
+    videoAuthor?: string;
   };
   if (p.videoUrl) {
-    return { url: p.videoUrl, title: p.videoTitle, description: p.videoDescription };
+    return {
+      url: p.videoUrl,
+      title: p.videoTitle,
+      description: p.videoDescription,
+      thumbnail: p.videoThumbnail,
+      author: p.videoAuthor,
+    };
   }
   return COMPOUND_VIDEOS[product.slug];
 }
