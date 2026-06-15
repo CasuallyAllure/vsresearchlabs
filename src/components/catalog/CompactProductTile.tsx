@@ -26,8 +26,8 @@ import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { inStockByKey } from '../../lib/stock';
 import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { useProductOverrides, isSkuInStock } from '../../lib/productOverrides';
 
 const STOCK_GREEN = '#2E7D5B';
 const STOCK_RED = '#B23A3A';
@@ -40,12 +40,16 @@ interface CompactProductTileProps {
 
 export function CompactProductTile({ product, onInspect }: CompactProductTileProps) {
   const imageUrl = product.images?.[0] ?? null;
-  const stocked = inStockByKey(product.id);
+
+  // Subscribe to overrides so admin changes propagate immediately.
+  const override = useProductOverrides((s) => s.bySku[product.sku] ?? null);
+  const stocked = isSkuInStock(product.sku);
   const variants = product.variants ?? [];
 
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
-  const priceCents = tierPriceCents(product, activeDose);
+  const baseCents = tierPriceCents(product, activeDose);
+  const priceCents = override?.price_cents_override ?? baseCents;
 
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);

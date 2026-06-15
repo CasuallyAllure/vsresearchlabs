@@ -252,57 +252,53 @@ export function CompoundIntelligenceOverlay({
             transition: dragX === 0 ? 'transform 200ms cubic-bezier(0.23, 1, 0.32, 1)' : undefined,
           }}
         >
-          {/* Carousel nav bar — only when a list is provided. Floats over
-              the visual zone so the existing layout doesn't shift. */}
-          {hasNav && (
-            <div
-              className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2 pointer-events-none"
-              style={{ background: 'linear-gradient(180deg, rgba(26,23,20,0.32) 0%, rgba(26,23,20,0) 100%)' }}
-            >
+          {/* Top bar — carousel nav (when a list is provided) + close.
+              Relative (not floating) so it never overlaps the compound title. */}
+          <div className="relative z-10 flex items-center gap-2 px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
+            {hasNav ? (
               <button
                 type="button"
                 onClick={goPrev}
                 disabled={!prevProduct}
                 aria-label={prevProduct ? `Previous: ${prevProduct.name}` : 'No previous compound'}
-                className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 disabled:opacity-30 disabled:cursor-not-allowed"
-                style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+                className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </button>
-              <span
-                className="pointer-events-auto rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em]"
-                style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.85)', border: '0.5px solid rgba(255,255,255,0.16)', backdropFilter: 'blur(4px)' }}
-                aria-live="polite"
-              >
+            ) : (
+              <span className="h-8 w-8" aria-hidden="true" />
+            )}
+            {hasNav && (
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] tabular-nums text-ink/45" aria-live="polite">
                 {navIndex + 1} / {list!.length}
               </span>
-              <div className="flex items-center gap-2">
+            )}
+            <div className="ml-auto flex items-center gap-2">
+              {hasNav && (
                 <button
                   type="button"
                   onClick={goNext}
                   disabled={!nextProduct}
                   aria-label={nextProduct ? `Next: ${nextProduct.name}` : 'No next compound'}
-                  className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+                  className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  aria-label="Close compound intelligence"
-                  className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
-                >
-                  <CloseIcon />
-                </button>
-              </div>
+              )}
+              <button
+                type="button"
+                onClick={handleClose}
+                aria-label="Close compound intelligence"
+                className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+              >
+                <CloseIcon />
+              </button>
             </div>
-          )}
+          </div>
           {/* ── TOP: Full-width visual identity zone (desktop) ───────────── */}
           <CompoundVisualZone
             substance={ci.substance}
@@ -319,15 +315,10 @@ export function CompoundIntelligenceOverlay({
               style={{ width: '300px', backgroundColor: '#F4EFE6', borderRight: '1px solid rgba(26,23,20,0.07)' }}>
 
               {/* Passport header */}
-              <div className="flex items-center justify-between px-4 py-2.5 shrink-0"
-                style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
+              <div className="px-4 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
                 <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                   {ci.classificationLabel || 'Compound'}
                 </span>
-                <button type="button" onClick={handleClose} aria-label="Close compound intelligence"
-                  className="h-6 w-6 flex items-center justify-center text-ink/28 hover:text-ink/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm">
-                  <CloseIcon />
-                </button>
               </div>
 
               {/* Compound identity */}
@@ -365,12 +356,12 @@ export function CompoundIntelligenceOverlay({
                 </div>
               )}
 
-              {/* Tier selector + live price */}
+              {/* Select mg + live price + add-to-inquiry, co-located */}
               {ci.tiers.length > 0 && (
                 <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
                   <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                      Tier
+                    <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                      Select mg
                     </span>
                     <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                       {formatPrice(priceCents)}
@@ -382,24 +373,23 @@ export function CompoundIntelligenceOverlay({
                     selectedIndex={selectedTierIndex}
                     onSelect={setSelectedTierIndex}
                   />
+                  <div className="mt-3 flex items-center gap-2">
+                    <QuantityStepper quantity={quantity} onChange={setQuantity} />
+                    <button
+                      type="button"
+                      onClick={handleAddToInquiry}
+                      className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-medium uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
+                    >
+                      Add to Inquiry
+                    </button>
+                  </div>
                 </div>
               )}
 
               <div className="flex-1" />
 
-              {/* Desktop CTA */}
+              {/* Desktop footer — price recap + full record (add lives by the tier) */}
               <div className="shrink-0 px-4 pb-4 pt-3" style={{ borderTop: '1px solid rgba(26,23,20,0.07)' }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                  {/* Add to inquiry */}
-                  <button type="button" onClick={handleAddToInquiry}
-                    className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                    style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.09)', border: '1px solid rgba(26,23,20,0.16)', transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out' }}
-                    onMouseEnter={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.14)'; el.style.borderColor = 'rgba(26,23,20,0.24)'; }}
-                    onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.09)'; el.style.borderColor = 'rgba(26,23,20,0.16)'; }}>
-                    Add to Inquiry
-                  </button>
-                </div>
                 {(activeTier || quantity > 1 || priceCents != null) && (
                   <p className="text-ink/30 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
                     {[
@@ -435,10 +425,6 @@ export function CompoundIntelligenceOverlay({
                     </p>
                   </div>
                 </div>
-                <button type="button" onClick={handleClose} aria-label="Close"
-                  className="lg:hidden h-7 w-7 flex items-center justify-center text-ink/28 hover:text-ink/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm shrink-0">
-                  <CloseIcon />
-                </button>
               </div>
 
               {/* Scrollable module list */}
@@ -473,8 +459,8 @@ export function CompoundIntelligenceOverlay({
                   {ci.tiers.length > 0 && (
                     <div className="mt-3">
                       <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                          Tier
+                        <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                          Select mg
                         </span>
                         <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                           {formatPrice(priceCents)}
@@ -486,6 +472,24 @@ export function CompoundIntelligenceOverlay({
                         selectedIndex={selectedTierIndex}
                         onSelect={setSelectedTierIndex}
                       />
+                      <div className="mt-3 flex items-center gap-2">
+                        <QuantityStepper quantity={quantity} onChange={setQuantity} />
+                        <button
+                          type="button"
+                          onClick={handleAddToInquiry}
+                          className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-medium uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
+                        >
+                          Add to Inquiry
+                        </button>
+                      </div>
+                      <Link
+                        to={`/product/${product.id}`}
+                        onClick={onClose}
+                        className="mt-2 inline-flex items-center gap-1 text-ink/40 hover:text-ink/75 transition-colors"
+                        style={{ fontSize: '10px', letterSpacing: '0.04em' }}
+                      >
+                        View full record <ArrowUpRightIcon />
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -519,21 +523,6 @@ export function CompoundIntelligenceOverlay({
                 <div className="h-4" />
               </div>
 
-              {/* Mobile action bar */}
-              <div className="lg:hidden shrink-0 flex items-center gap-2.5 px-4 py-3.5"
-                style={{ borderTop: '1px solid rgba(26,23,20,0.07)' }}>
-                <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                <button type="button" onClick={handleAddToInquiry}
-                  className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                  style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.09)', border: '1px solid rgba(26,23,20,0.15)' }}>
-                  Add to Inquiry
-                </button>
-                <Link to={`/product/${product.id}`} onClick={onClose}
-                  className="h-8 px-3 inline-flex items-center gap-1 text-ink/36 hover:text-ink/76 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 rounded-sm shrink-0"
-                  style={{ fontSize: '10px', letterSpacing: '0.04em' }}>
-                  Record <ArrowUpRightIcon />
-                </Link>
-              </div>
             </div>
           </div>
         </div>

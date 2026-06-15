@@ -5,7 +5,7 @@ import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInvent
 import { useProducts } from '../hooks/useProducts';
 import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
-import { inStockByKey } from '../lib/stock';
+import { isSkuInStock, isSkuVisible } from '../lib/productOverrides';
 
 const ALL_TAB = '__all__';
 
@@ -38,8 +38,9 @@ export function BiopeptideResearchSupplies() {
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
+      if (!isSkuVisible(p.sku)) return false;
       if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
-      if (inStockOnly && !inStockByKey(p.id)) return false;
+      if (inStockOnly && !isSkuInStock(p.sku)) return false;
       return true;
     });
   }, [products, classFilter, inStockOnly]);

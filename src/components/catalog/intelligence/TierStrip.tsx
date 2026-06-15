@@ -56,9 +56,9 @@ export function TierStrip(props: TierStripProps) {
               style={{
                 padding: sm ? '3px 7px' : '4px 10px',
                 fontSize: sm ? '9.5px' : '11px',
-                backgroundColor: active ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.025)',
-                border: active ? '1px solid rgba(255,255,255,0.24)' : '1px solid rgba(255,255,255,0.07)',
-                color: active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.45)',
+                backgroundColor: active ? 'rgba(52,114,122,0.12)' : 'rgba(26,23,20,0.03)',
+                border: active ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.12)',
+                color: active ? '#34727A' : 'rgba(26,23,20,0.62)',
                 transition: 'background-color 100ms ease-out, border-color 100ms ease-out, color 100ms ease-out, transform 100ms ease-out',
               }}
             >
