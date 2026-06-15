@@ -60,11 +60,45 @@ function parseTikTok(url: string): { author?: string; id?: string } {
   return { author: author ? `@${author}` : undefined, id };
 }
 
+/** A filesystem-safe object key from a SKU. */
+function safeKey(sku: string): string {
+  return sku.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 120);
+}
+
+/**
+ * Download the (expiring) thumbnail and upload a permanent copy to the public
+ * compound-media bucket. Returns the stable public URL, or null on any failure.
+ */
+async function hostThumbnail(sku: string, thumbnailUrl: string): Promise<string | null> {
+  if (!SUPABASE_URL || !SERVICE_KEY) return null;
+  try {
+    const img = await fetch(thumbnailUrl, { headers: { "User-Agent": UA } });
+    if (!img.ok) return null;
+    const contentType = img.headers.get("content-type") ?? "image/jpeg";
+    const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+    const bytes = new Uint8Array(await img.arrayBuffer());
+    if (bytes.length === 0) return null;
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+    const path = `clips/${safeKey(sku)}.${ext}`;
+    const { error } = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .upload(path, bytes, { contentType, upsert: true });
+    if (error) return null;
+
+    const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+    // Cache-bust so a re-fetch of the same SKU shows the new image.
+    return data.publicUrl ? `${data.publicUrl}?v=${bytes.length}` : null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  let payload: { url?: string };
+  let payload: { url?: string; sku?: string };
   try {
     payload = await req.json();
   } catch {
@@ -72,6 +106,7 @@ Deno.serve(async (req) => {
   }
 
   const raw = (payload.url ?? "").trim();
+  const sku = (payload.sku ?? "").trim();
   if (!raw || !/^https?:\/\//i.test(raw)) {
     return json({ error: "A full http(s) URL is required" }, 400);
   }
@@ -102,6 +137,17 @@ Deno.serve(async (req) => {
     // oEmbed best-effort; the URL + handle still resolve.
   }
 
+  // 3. Host a permanent copy of the thumbnail when we have a SKU to key it by.
+  let finalThumb = thumbnailUrl;
+  let expires = !!thumbnailUrl;
+  if (thumbnailUrl && sku) {
+    const hosted = await hostThumbnail(sku, thumbnailUrl);
+    if (hosted) {
+      finalThumb = hosted;
+      expires = false;
+    }
+  }
+
   return json({
     provider: "tiktok",
     url: fullUrl,
@@ -109,7 +155,7 @@ Deno.serve(async (req) => {
     author: authorName,
     handle: handle ?? null,
     title,
-    thumbnailUrl,
-    thumbnailExpires: !!thumbnailUrl, // host a stable copy for production
+    thumbnailUrl: finalThumb,
+    thumbnailExpires: expires, // false → permanently hosted in compound-media
   });
 });

@@ -17,12 +17,14 @@ override first, then static product fields, then the `COMPOUND_VIDEOS` demo map.
 ## Deploy order (REQUIRED before pushing the frontend to live use)
 
 ```bash
-# 1. Migrations — add the columns + RPCs
-supabase db push          # applies 007_compound_video.sql + 008_inventory_import.sql
+# 1. Migrations — columns, RPCs, and the media bucket
+supabase db push          # applies 007 + 008 + 009
 #   007: video_* columns, view update, set_product_video()
 #   008: import_inventory(jsonb) bulk RPC
+#   009: public 'compound-media' Storage bucket (hosted thumbnails)
 
-# 2. Edge function — server-side oEmbed for the "Fetch" button
+# 2. Edge function — oEmbed + thumbnail hosting (uses the auto-injected
+#    SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY to upload to compound-media)
 supabase functions deploy resolve-video
 #   optional: supabase secrets set ALLOWED_ORIGIN=https://vsresearchlabs.com
 ```
@@ -52,16 +54,21 @@ Columns (headers are the exact import keys — keep them):
 - Unknown SKUs are flagged in the preview and skipped.
 - `import_inventory` returns `{ applied, skipped, errors[] }`; the page shows it.
 
-## Thumbnails — the one manual step
+## Thumbnails — now automatic
 
-TikTok CDN thumbnail URLs are **signed and expire**, so a fetched thumbnail is
-fine for preview but not durable. For a permanent poster, host the image and
-paste that stable URL into `video_thumbnail`:
+TikTok CDN thumbnail URLs are **signed and expire**, so they can't be used
+directly. Both paths now host a permanent copy for you:
 
-```bash
-curl -s -A "Mozilla/5.0" "https://www.tiktok.com/oembed?url=<fullUrl>" | python3 -c "import sys,json;print(json.load(sys.stdin)['thumbnail_url'])"
-mkdir -p public/media && curl -s -A "Mozilla/5.0" -o public/media/<slug>.jpg "<thumbnail_url>"
-# then set video_thumbnail = /media/<slug>.jpg
-```
+- **Clip modal → Fetch**: downloads the thumbnail and uploads it to the
+  `compound-media` bucket, then drops the permanent public URL into the field.
+- **Import**: any clip row with a `video_url` but no `video_thumbnail` is
+  resolved + hosted automatically during a "Hosting thumbnails" pre-pass before
+  the rows are written. So pasting just the URL is enough.
 
-(Same step we did for MOTS-C. See the `project_compound_video_workflow` memory.)
+Hosted at `…/storage/v1/object/public/compound-media/clips/<sku>.<ext>`.
+
+If hosting ever fails (network, oEmbed down), the flow degrades gracefully: the
+clip still saves, just without a poster. You can re-run Fetch later, or paste a
+self-hosted URL (e.g. `/media/<slug>.jpg`) by hand — the static code path in
+`COMPOUND_VIDEOS` still works too. See the `project_compound_video_workflow`
+memory.

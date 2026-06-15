@@ -523,7 +523,7 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
     setError(null);
     setNote(null);
     const { data, error } = await supabase.functions.invoke('resolve-video', {
-      body: { url: url.trim() },
+      body: { url: url.trim(), sku: row.sku },
     });
     setFetching(false);
     if (error) {
@@ -542,11 +542,13 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
     // and seed a short title from the author if the title field is still empty.
     if (d.title && !description.trim()) setDescription(d.title);
     if (d.author && !title.trim()) setTitle(`${d.author} — cited clip`);
-    if (d.thumbnailUrl && !thumbnail.trim()) setThumbnail(d.thumbnailUrl);
+    // Always adopt a freshly-hosted (permanent) thumbnail; only keep a manual
+    // one if the fetch couldn't host a stable copy.
+    if (d.thumbnailUrl && (!d.thumbnailExpires || !thumbnail.trim())) setThumbnail(d.thumbnailUrl);
     setNote(
       d.thumbnailExpires
-        ? 'Fetched. Heads-up: the TikTok thumbnail URL expires — for a permanent poster, host the image (e.g. /media/<slug>.jpg) and paste that URL instead.'
-        : 'Fetched.',
+        ? "Fetched. Couldn't host the thumbnail this time — for a permanent poster, paste a stable image URL (e.g. /media/<slug>.jpg)."
+        : 'Fetched — thumbnail hosted permanently. Just Save.',
     );
   }
 

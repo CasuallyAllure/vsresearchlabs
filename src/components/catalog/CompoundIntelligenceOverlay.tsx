@@ -18,7 +18,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
@@ -48,14 +47,6 @@ function CloseIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
-
-function ArrowUpRightIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="7" y1="17" x2="17" y2="7" /><polyline points="7 7 17 7 17 17" />
     </svg>
   );
 }
@@ -407,11 +398,6 @@ export function CompoundIntelligenceOverlay({
                     ].filter(Boolean).join(' · ')}
                   </p>
                 )}
-                <Link to={`/product/${product.id}`} onClick={onClose}
-                  className="w-full flex items-center justify-center gap-1.5 h-6 text-ink/30 hover:text-ink/70 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm"
-                  style={{ fontSize: '10px', letterSpacing: '0.05em' }}>
-                  View full record <ArrowUpRightIcon />
-                </Link>
               </div>
             </div>
 
@@ -496,14 +482,6 @@ export function CompoundIntelligenceOverlay({
                           Add to Inquiry
                         </button>
                       </div>
-                      <Link
-                        to={`/product/${product.id}`}
-                        onClick={onClose}
-                        className="mt-2 inline-flex items-center gap-1 text-ink/40 hover:text-ink/75 transition-colors"
-                        style={{ fontSize: '10px', letterSpacing: '0.04em' }}
-                      >
-                        View full record <ArrowUpRightIcon />
-                      </Link>
                     </div>
                   )}
                 </div>

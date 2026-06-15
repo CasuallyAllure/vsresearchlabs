@@ -141,7 +141,7 @@ export function AdminImport() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; label: string } | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const reloadOverrides = useProductOverrides((s) => s.reload);
@@ -218,9 +218,32 @@ export function AdminImport() {
     if (valid.length === 0) return;
     setApplying(true);
     setResult(null);
+
+    // Pre-pass: for any clip without a thumbnail, host one permanently via the
+    // resolve-video function (downloads the TikTok thumb → compound-media bucket).
+    const needThumb = valid.filter((r) => r.payload.video_url && !r.payload.video_thumbnail);
+    if (needThumb.length > 0) {
+      setProgress({ done: 0, total: needThumb.length, label: 'Hosting thumbnails' });
+      for (let i = 0; i < needThumb.length; i++) {
+        const r = needThumb[i];
+        try {
+          const { data, error } = await supabase.functions.invoke('resolve-video', {
+            body: { url: r.payload.video_url, sku: r.sku },
+          });
+          if (!error && data) {
+            const d = data as { url?: string; title?: string | null; thumbnailUrl?: string | null; thumbnailExpires?: boolean };
+            if (d.url) r.payload.video_url = d.url;
+            if (d.thumbnailUrl && !d.thumbnailExpires) r.payload.video_thumbnail = d.thumbnailUrl;
+            if (d.title && !r.payload.video_description) r.payload.video_description = d.title;
+          }
+        } catch { /* best-effort — apply proceeds without a hosted thumb */ }
+        setProgress({ done: i + 1, total: needThumb.length, label: 'Hosting thumbnails' });
+      }
+    }
+
     const agg: ImportResult = { applied: 0, skipped: 0, errors: [] };
     const CHUNK = 100;
-    setProgress({ done: 0, total: valid.length });
+    setProgress({ done: 0, total: valid.length, label: 'Applying' });
     for (let i = 0; i < valid.length; i += CHUNK) {
       const slice = valid.slice(i, i + CHUNK).map((r) => r.payload);
       const { data, error } = await supabase.rpc('import_inventory', { p_rows: slice });
@@ -232,7 +255,7 @@ export function AdminImport() {
       agg.applied += res.applied ?? 0;
       agg.skipped += res.skipped ?? 0;
       if (Array.isArray(res.errors)) agg.errors.push(...res.errors);
-      setProgress({ done: Math.min(i + CHUNK, valid.length), total: valid.length });
+      setProgress({ done: Math.min(i + CHUNK, valid.length), total: valid.length, label: 'Applying' });
     }
     setApplying(false);
     setProgress(null);
@@ -262,7 +285,9 @@ export function AdminImport() {
         <p className="text-[13px] leading-relaxed text-ink/75 mb-[var(--space-4)] max-w-[64ch]">
           Downloads with every catalog SKU and its current live values already filled in. Edit
           stock, price, visibility and the cited-clip fields, then save as CSV and upload below.
-          Blank cells are left untouched — you only change what you fill in.
+          Blank cells are left untouched — you only change what you fill in. For a clip, pasting
+          just the <span className="text-ink/90">video_url</span> is enough — the thumbnail is
+          fetched and hosted automatically on import.
           {stockBySku === null && <span className="text-ink/40"> Loading current values…</span>}
         </p>
         <div className="flex flex-wrap items-center gap-[var(--space-3)]">
@@ -306,7 +331,7 @@ export function AdminImport() {
             </div>
             <button type="button" onClick={apply} disabled={applying || validCount === 0} className={primaryBtn}>
               {applying
-                ? progress ? `Applying ${progress.done}/${progress.total}…` : 'Applying…'
+                ? progress ? `${progress.label} ${progress.done}/${progress.total}…` : 'Applying…'
                 : `Apply ${validCount} row${validCount === 1 ? '' : 's'}`}
             </button>
           </div>
