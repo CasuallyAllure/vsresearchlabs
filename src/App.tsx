@@ -33,6 +33,8 @@ import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminCustomerDetail } from './pages/admin/AdminCustomerDetail';
 import { AdminSystemHealth } from './pages/admin/AdminSystemHealth';
 import { AdminReports } from './pages/admin/AdminReports';
+import { RouteTransitionLoader } from './components/brand/RouteTransitionLoader';
+import { DisclaimerGate } from './components/brand/DisclaimerGate';
 
 export default function App() {
   return (
@@ -75,6 +77,8 @@ export default function App() {
         <GlobalFooter />
       </GlobalSurface>
       <BottomNav />
+      <RouteTransitionLoader />
+      <DisclaimerGate />
     </BrowserRouter>
   );
 }
