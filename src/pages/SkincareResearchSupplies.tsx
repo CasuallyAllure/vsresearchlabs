@@ -71,12 +71,15 @@ export function SkincareResearchSupplies() {
         error={error}
         emptyLabel="No skincare research supplies in the active catalog. Cataloging in progress."
         onInspect={setInspectedId}
+        compact
       />
 
       {inspectedProduct && (
         <CompoundIntelligenceOverlay
           product={inspectedProduct}
           onClose={() => setInspectedId(null)}
+          list={filtered}
+          onNavigate={setInspectedId}
         />
       )}
     </section>

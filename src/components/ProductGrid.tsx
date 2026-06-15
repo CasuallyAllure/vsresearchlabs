@@ -13,6 +13,7 @@
 
 import type { Product } from '../types';
 import { ProductCard, ProductCardSkeleton } from './catalog/ProductCard';
+import { CompactProductTile, CompactProductTileSkeleton } from './catalog/CompactProductTile';
 import { EmptyState } from './system/EmptyState';
 import { ErrorState } from './system/ErrorState';
 
@@ -26,9 +27,16 @@ interface ProductGridProps {
   showStock?: boolean;
   /** When true, each card carries an interactive tier picker, live price, and Add button. */
   showPurchase?: boolean;
+  /** Dense grid mode: small tiles with inline dose select + price + add.
+   *  Columns: 2 mobile → 3 sm → 4 md → 5 lg. Click body opens overlay. */
+  compact?: boolean;
 }
 
-const SKELETON_COUNT = 6;
+const SKELETON_COUNT_DEFAULT = 6;
+const SKELETON_COUNT_COMPACT = 10;
+
+const COMPACT_GRID = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3';
+const DEFAULT_GRID = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]';
 
 export function ProductGrid({
   products,
@@ -38,17 +46,17 @@ export function ProductGrid({
   onInspect,
   showStock,
   showPurchase,
+  compact,
 }: ProductGridProps) {
+  const grid = compact ? COMPACT_GRID : DEFAULT_GRID;
+  const skeletonCount = compact ? SKELETON_COUNT_COMPACT : SKELETON_COUNT_DEFAULT;
+
   if (loading) {
     return (
-      <ul
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]"
-        aria-busy="true"
-        aria-label="Loading inventory"
-      >
-        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+      <ul className={grid} aria-busy="true" aria-label="Loading inventory">
+        {Array.from({ length: skeletonCount }).map((_, i) => (
           <li key={i}>
-            <ProductCardSkeleton />
+            {compact ? <CompactProductTileSkeleton /> : <ProductCardSkeleton />}
           </li>
         ))}
       </ul>
@@ -64,10 +72,14 @@ export function ProductGrid({
   }
 
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]">
+    <ul className={grid}>
       {products.map((product) => (
         <li key={product.id}>
-          <ProductCard product={product} onInspect={onInspect} showStock={showStock} showPurchase={showPurchase} />
+          {compact ? (
+            <CompactProductTile product={product} onInspect={onInspect} />
+          ) : (
+            <ProductCard product={product} onInspect={onInspect} showStock={showStock} showPurchase={showPurchase} />
+          )}
         </li>
       ))}
     </ul>

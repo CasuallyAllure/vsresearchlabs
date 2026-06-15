@@ -171,14 +171,15 @@ export function BiopeptideResearchSupplies() {
         error={error}
         emptyLabel="No biopeptide research supplies match the active filter."
         onInspect={setInspectedId}
-        showStock
-        showPurchase
+        compact
       />
 
       {inspectedProduct && (
         <CompoundIntelligenceOverlay
           product={inspectedProduct}
           onClose={() => setInspectedId(null)}
+          list={filtered}
+          onNavigate={setInspectedId}
         />
       )}
 

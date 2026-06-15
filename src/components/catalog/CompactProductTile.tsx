@@ -1,0 +1,171 @@
+/**
+ * CompactProductTile
+ *
+ * Dense catalog tile sized for the mobile gallery grid (2 cols on
+ * phone, 3 on small tablet, 4 on tablet, 5+ on desktop). Carries the
+ * minimum interactive surface the user can act on without leaving
+ * the catalog:
+ *
+ *   ┌────────────────┐
+ *   │   thumbnail    │
+ *   │  (square top)  │
+ *   ├────────────────┤
+ *   │ FAMILY · ABBR  │  ← eyebrow
+ *   │ Compound name  │  ← 1-line truncated
+ *   │ [ tier select ]│  ← native <select> for thumb-friendly tap
+ *   │ $price    [+] │  ← live price + add to inquiry
+ *   └────────────────┘
+ *
+ * Tapping the thumbnail or name opens the compound-intelligence
+ * overlay via `onInspect`. The tier select and Add button do NOT
+ * propagate — they update / submit inquiry state without opening
+ * the overlay.
+ */
+
+import { useState, useRef } from 'react';
+import type { Product } from '../../types';
+import { deriveProductDose } from '../../types';
+import { useCart } from '../../hooks/useCart';
+import { inStockByKey } from '../../lib/stock';
+import { tierPriceCents, formatPrice } from '../../lib/pricing';
+
+const STOCK_GREEN = '#2E7D5B';
+const STOCK_RED = '#B23A3A';
+
+interface CompactProductTileProps {
+  product: Product;
+  /** Tap the body to open the intelligence overlay. */
+  onInspect?: (id: string) => void;
+}
+
+export function CompactProductTile({ product, onInspect }: CompactProductTileProps) {
+  const imageUrl = product.images?.[0] ?? null;
+  const stocked = inStockByKey(product.id);
+  const variants = product.variants ?? [];
+
+  const [tierIndex, setTierIndex] = useState(0);
+  const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
+  const priceCents = tierPriceCents(product, activeDose);
+
+  const add = useCart((s) => s.add);
+  const updateQuantity = useCart((s) => s.updateQuantity);
+  const [added, setAdded] = useState(false);
+  const flashTimer = useRef<number | null>(null);
+
+  function handleAdd(e: React.MouseEvent) {
+    e.stopPropagation();
+    const items = useCart.getState().items;
+    const existing = items.find((i) => i.product.id === product.id);
+    if (existing) updateQuantity(product.id, existing.quantity + 1);
+    else add(product);
+    setAdded(true);
+    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setAdded(false), 1100);
+  }
+
+  function handleTileClick() {
+    if (onInspect) onInspect(product.id);
+  }
+
+  return (
+    <article className="research-surface-solid overflow-hidden rounded-[6px] flex flex-col group">
+      {/* Tappable head: image + identity → inspect overlay */}
+      <button
+        type="button"
+        onClick={handleTileClick}
+        className="text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 flex-1 flex flex-col"
+        aria-label={`Inspect ${product.name}`}
+      >
+        <div className="relative aspect-square w-full overflow-hidden bg-display">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt=""
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              loading="lazy"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-ink/20 text-[9px] uppercase tracking-[0.2em]">
+              No image
+            </div>
+          )}
+          {/* Stock pip — top-right corner */}
+          <span
+            aria-label={stocked ? 'In stock' : 'Out of stock'}
+            className="absolute right-1.5 top-1.5 inline-block h-[7px] w-[7px] rounded-full"
+            style={{
+              backgroundColor: stocked ? STOCK_GREEN : STOCK_RED,
+              boxShadow: `0 0 4px ${(stocked ? STOCK_GREEN : STOCK_RED)}aa, inset 0 0 0 0.5px rgba(255,255,255,0.3)`,
+            }}
+          />
+        </div>
+
+        {/* Identity — compact 2-line */}
+        <div className="px-2 pt-1.5 pb-1">
+          <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-ink/40 truncate">
+            {product.abbreviation} · {product.family.split(' ')[0]}
+          </p>
+          <p className="text-[11px] font-medium text-ink leading-tight truncate">
+            {product.name}
+          </p>
+        </div>
+      </button>
+
+      {/* Buy controls — outside the tap target */}
+      <div className="px-2 pb-2 pt-1 border-t border-ink/[0.05] mt-auto">
+        {variants.length > 1 && (
+          <select
+            value={activeDose}
+            onChange={(e) => {
+              const idx = variants.findIndex((v) => v.dose === e.target.value);
+              if (idx >= 0) setTierIndex(idx);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Select dose tier"
+            className="block w-full mb-1 px-1.5 py-1 text-[10px] font-mono tabular-nums tracking-[0.04em] text-ink/85 bg-ink/[0.04] border border-ink/[0.08] rounded-[3px] focus:outline-none focus:border-ink/25"
+          >
+            {variants.map((v) => (
+              <option key={v.dose} value={v.dose}>
+                {v.dose}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <div className="flex items-center justify-between gap-1">
+          <span className="font-mono tabular-nums text-[10.5px] text-ink/85 leading-none whitespace-nowrap">
+            {formatPrice(priceCents)}
+          </span>
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!stocked}
+            aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+            className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: added ? 'rgba(52,114,122,0.18)' : 'rgba(255,255,255,0.07)',
+              border: added ? '1px solid rgba(52,114,122,0.40)' : '1px solid rgba(255,255,255,0.14)',
+              color: added ? '#9BD8FF' : 'rgba(255,255,255,0.82)',
+            }}
+          >
+            {added ? '✓' : '+ Add'}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function CompactProductTileSkeleton() {
+  return (
+    <article className="research-surface-solid overflow-hidden rounded-[6px]" aria-hidden="true">
+      <div className="aspect-square w-full bg-ink/[0.06] animate-pulse" />
+      <div className="px-2 py-2 space-y-1.5">
+        <div className="h-2 bg-ink/[0.06] rounded animate-pulse w-1/2" />
+        <div className="h-2.5 bg-ink/[0.06] rounded animate-pulse w-3/4" />
+        <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-full" />
+        <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-2/3" />
+      </div>
+    </article>
+  );
+}

@@ -62,12 +62,63 @@ function ArrowUpRightIcon() {
 interface CompoundIntelligenceOverlayProps {
   product: Product;
   onClose: () => void;
+  /** Optional sibling list (typically the current filtered catalog). When
+   *  provided, the overlay surfaces prev/next controls + touch-swipe
+   *  navigation so the user can carousel through the catalog without
+   *  leaving the modal. */
+  list?: Product[];
+  onNavigate?: (productId: string) => void;
 }
 
-export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntelligenceOverlayProps) {
+export function CompoundIntelligenceOverlay({
+  product,
+  onClose,
+  list,
+  onNavigate,
+}: CompoundIntelligenceOverlayProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+
+  // ── Carousel navigation (optional) ────────────────────────────────────────
+  // The overlay is stateless about the current selection — parent owns it.
+  // We just compute prev/next from the list and notify on navigation.
+  const navIndex = (list && list.length > 1)
+    ? list.findIndex((p) => p.id === product.id)
+    : -1;
+  const hasNav = navIndex >= 0 && !!onNavigate;
+  const prevProduct = hasNav && navIndex > 0 ? list![navIndex - 1] : null;
+  const nextProduct = hasNav && navIndex < (list?.length ?? 0) - 1 ? list![navIndex + 1] : null;
+  function goPrev() { if (prevProduct && onNavigate) onNavigate(prevProduct.id); }
+  function goNext() { if (nextProduct && onNavigate) onNavigate(nextProduct.id); }
+
+  // Touch swipe state
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const [dragX, setDragX] = useState(0);
+  function onPanelTouchStart(e: React.TouchEvent) {
+    if (!hasNav) return;
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  }
+  function onPanelTouchMove(e: React.TouchEvent) {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const dx = e.touches[0].clientX - touchStartXRef.current;
+    const dy = e.touches[0].clientY - touchStartYRef.current;
+    // Lock to horizontal if the gesture is mostly sideways; otherwise let
+    // the inner scroll container take it.
+    if (Math.abs(dx) > Math.abs(dy) * 1.4) {
+      setDragX(dx * 0.4);
+    }
+  }
+  function onPanelTouchEnd() {
+    const threshold = 80;
+    if (dragX > threshold && prevProduct) goPrev();
+    else if (dragX < -threshold && nextProduct) goNext();
+    setDragX(0);
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  }
 
   // Canonical normalized view-model — single read of Product per render.
   const ci = useMemo(() => getCompoundIntelligence(product), [product]);
@@ -113,11 +164,15 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
   }, []);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+      if (e.key === 'ArrowLeft' && prevProduct) goPrev();
+      if (e.key === 'ArrowRight' && nextProduct) goNext();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [prevProduct?.id, nextProduct?.id]);
 
   useEffect(() => {
     const el = panelRef.current?.querySelector<HTMLElement>('button, [href]');
@@ -182,7 +237,10 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
           role="dialog"
           aria-modal="true"
           aria-label={`Compound intelligence: ${ci.substance}`}
-          className="cio-panel-el pointer-events-auto w-full overflow-hidden flex flex-col"
+          className="cio-panel-el pointer-events-auto w-full overflow-hidden flex flex-col relative"
+          onTouchStart={onPanelTouchStart}
+          onTouchMove={onPanelTouchMove}
+          onTouchEnd={onPanelTouchEnd}
           style={{
             maxWidth: '1080px',
             height: 'min(calc(100dvh - 40px), 860px)',
@@ -190,8 +248,61 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
             border: '1px solid rgba(26,23,20,0.10)',
             boxShadow: 'inset 0 1px 0 rgba(26,23,20,0.04), 0 40px 120px rgba(26,23,20,0.22)',
             animation: closing ? 'cio-panel-out 230ms cubic-bezier(0.23, 1, 0.32, 1) forwards' : 'cio-panel 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
+            transform: dragX !== 0 ? `translateX(${dragX}px)` : undefined,
+            transition: dragX === 0 ? 'transform 200ms cubic-bezier(0.23, 1, 0.32, 1)' : undefined,
           }}
         >
+          {/* Carousel nav bar — only when a list is provided. Floats over
+              the visual zone so the existing layout doesn't shift. */}
+          {hasNav && (
+            <div
+              className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2 pointer-events-none"
+              style={{ background: 'linear-gradient(180deg, rgba(26,23,20,0.32) 0%, rgba(26,23,20,0) 100%)' }}
+            >
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={!prevProduct}
+                aria-label={prevProduct ? `Previous: ${prevProduct.name}` : 'No previous compound'}
+                className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <span
+                className="pointer-events-auto rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em]"
+                style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.85)', border: '0.5px solid rgba(255,255,255,0.16)', backdropFilter: 'blur(4px)' }}
+                aria-live="polite"
+              >
+                {navIndex + 1} / {list!.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={goNext}
+                  disabled={!nextProduct}
+                  aria-label={nextProduct ? `Next: ${nextProduct.name}` : 'No next compound'}
+                  className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label="Close compound intelligence"
+                  className="pointer-events-auto h-9 w-9 flex items-center justify-center rounded-full backdrop-blur-sm transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.92)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            </div>
+          )}
           {/* ── TOP: Full-width visual identity zone (desktop) ───────────── */}
           <CompoundVisualZone
             substance={ci.substance}
