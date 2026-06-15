@@ -12,17 +12,102 @@
  * Tapping a tile opens the compound-intelligence overlay above the modal.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Product } from '../../types';
+import { deriveProductDose } from '../../types';
 import { useProducts } from '../../hooks/useProducts';
-import { ProductGrid } from '../ProductGrid';
+import { useCart } from '../../hooks/useCart';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../../lib/compoundIntelligence';
 import { inStockByKey } from '../../lib/stock';
+import { tierPriceCents, formatPrice } from '../../lib/pricing';
 
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
+const STOCK_RED = '#B23A3A';
 const ALL_DESCRIPTION =
   'The complete biopeptide catalog. Pick a class to narrow the list and read what it covers.';
+
+/** One compact inventory row: name + class · dose select · price · add. */
+function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id: string) => void }) {
+  const stocked = inStockByKey(product.id);
+  const variants = product.variants ?? [];
+  const [tierIndex, setTierIndex] = useState(0);
+  const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
+  const priceCents = tierPriceCents(product, activeDose);
+  const add = useCart((s) => s.add);
+  const updateQuantity = useCart((s) => s.updateQuantity);
+  const [added, setAdded] = useState(false);
+  const timer = useRef<number | null>(null);
+
+  function handleAdd() {
+    const items = useCart.getState().items;
+    const existing = items.find((i) => i.product.id === product.id);
+    if (existing) updateQuantity(product.id, existing.quantity + 1);
+    else add(product);
+    setAdded(true);
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setAdded(false), 1100);
+  }
+
+  return (
+    <div className="flex items-center gap-2 sm:gap-3 px-1.5 py-2 border-b border-ink/[0.06] hover:bg-ink/[0.02] transition-colors">
+      <span
+        aria-label={stocked ? 'In stock' : 'Out of stock'}
+        title={stocked ? 'In stock' : 'Out of stock'}
+        className="shrink-0 inline-block h-[7px] w-[7px] rounded-full"
+        style={{ backgroundColor: stocked ? STOCK_GREEN : STOCK_RED }}
+      />
+      <button
+        type="button"
+        onClick={() => onInspect(product.id)}
+        className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm"
+      >
+        <p className="text-[12.5px] font-medium text-ink truncate">{product.name}</p>
+        <p className="text-[9.5px] font-mono uppercase tracking-[0.06em] text-ink/45 truncate">
+          {product.abbreviation} · {product.family}
+        </p>
+      </button>
+
+      {variants.length > 1 ? (
+        <select
+          value={activeDose}
+          onChange={(e) => {
+            const idx = variants.findIndex((v) => v.dose === e.target.value);
+            if (idx >= 0) setTierIndex(idx);
+          }}
+          aria-label="Select dose"
+          className="shrink-0 w-[74px] px-1.5 py-1 text-[10.5px] font-mono tabular-nums text-ink/85 bg-ink/[0.04] border border-ink/[0.1] rounded-[3px] focus:outline-none focus:border-ink/30"
+        >
+          {variants.map((v) => (
+            <option key={v.dose} value={v.dose}>{v.dose}</option>
+          ))}
+        </select>
+      ) : (
+        <span className="shrink-0 w-[74px] text-right font-mono text-[11px] tabular-nums text-ink/60">{activeDose}</span>
+      )}
+
+      <span className="shrink-0 w-[62px] text-right font-mono text-[11.5px] tabular-nums text-ink/85">
+        {formatPrice(priceCents)}
+      </span>
+
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={!stocked}
+        aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+        className="shrink-0 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
+          border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',
+          color: added ? '#34727A' : 'rgba(26,23,20,0.78)',
+        }}
+      >
+        {added ? '✓' : '+ Add'}
+      </button>
+    </div>
+  );
+}
 
 interface BiopeptideInventoryModalProps {
   open: boolean;
@@ -202,17 +287,21 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
             </div>
           </header>
 
-          {/* Scroll region — dense compact tiles */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-5)]">
-            <ProductGrid
-              compact
-              products={filtered}
-              loading={loading}
-              error={error}
-              emptyLabel="No compounds match the active filter."
-              showStock
-              onInspect={setInspectedId}
-            />
+          {/* Scroll region — compact list */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-2)]">
+            {loading ? (
+              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Loading inventory…</p>
+            ) : error ? (
+              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Inventory could not be loaded.</p>
+            ) : filtered.length === 0 ? (
+              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">No compounds match the active filter.</p>
+            ) : (
+              <div>
+                {filtered.map((p) => (
+                  <InventoryRow key={p.id} product={p} onInspect={setInspectedId} />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Footer */}
