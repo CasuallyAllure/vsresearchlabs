@@ -142,8 +142,11 @@ function brandHeaderHtml(): string {
   }
   return `
     <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 22px;text-align:center;">
-      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="64" height="64" style="display:inline-block;width:64px;height:64px;border:0;" />
-      <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;color:#6a6f76;text-transform:uppercase;margin-top:6px;">
+      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="64" height="64" style="display:block;margin:0 auto;width:64px;height:64px;border:0;" />
+      <div style="font-family:'Cormorant Garamond','EB Garamond',Garamond,Georgia,serif;font-weight:500;font-size:26px;letter-spacing:0.02em;color:#1A1714;margin-top:8px;line-height:1;">
+        Research Labs
+      </div>
+      <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:9px;letter-spacing:2px;color:#6a6f76;text-transform:uppercase;margin-top:8px;">
         BioPeptide Sciences · Nootropics · Skin-Care
       </div>
       <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:1.5px;color:#9aa0a6;text-transform:uppercase;margin-top:3px;">
