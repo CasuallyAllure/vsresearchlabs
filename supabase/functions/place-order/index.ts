@@ -52,6 +52,11 @@ interface OrderPayload {
   contact: string;
   organization?: string;
   notes?: string;
+  ship_street?: string;
+  ship_city?: string;
+  ship_state?: string;
+  ship_zip?: string;
+  ship_country?: string;
   items: OrderItemPayload[];
 }
 
@@ -313,6 +318,11 @@ Deno.serve(async (req: Request) => {
   const contact      = (payload.contact ?? "").trim();
   const organization = (payload.organization ?? "").trim();
   const notes        = (payload.notes ?? "").trim();
+  const shipStreet   = (payload.ship_street  ?? "").trim().slice(0, 200);
+  const shipCity     = (payload.ship_city    ?? "").trim().slice(0, 120);
+  const shipState    = (payload.ship_state   ?? "").trim().slice(0,  60);
+  const shipZip      = (payload.ship_zip     ?? "").trim().slice(0,  20);
+  const shipCountry  = (payload.ship_country ?? "US").trim().slice(0,  60);
   const rawItems: unknown[] = Array.isArray(payload.items) ? (payload.items as unknown[]) : [];
 
   if (!name)                     return jsonResponse({ error: "Name is required." }, 400);
@@ -367,6 +377,11 @@ Deno.serve(async (req: Request) => {
     .insert({
       reference_id: referenceId, name, contact,
       organization: organization || null, notes: notes || null,
+      ship_street:  shipStreet  || null,
+      ship_city:    shipCity    || null,
+      ship_state:   shipState   || null,
+      ship_zip:     shipZip     || null,
+      ship_country: shipCountry || null,
       status: "REVIEWING", intake_channel: INTAKE_CHANNEL, processing_node: PROCESSING_NODE,
       item_count: itemCount,
     })
@@ -389,8 +404,17 @@ Deno.serve(async (req: Request) => {
     .insert({
       order_number: orderNumber, inquiry_id: inquiryRow.id, status: "invoice_sent",
       buyer_name: name, buyer_contact: contact, buyer_organization: organization || null,
-      notes: notes || null, invoice_amount_cents: totalCents,
-      payment_method: "zelle_or_paypal_ff", invoiced_at: new Date().toISOString(),
+      notes: notes || null,
+      ship_street:  shipStreet  || null,
+      ship_city:    shipCity    || null,
+      ship_state:   shipState   || null,
+      ship_zip:     shipZip     || null,
+      ship_country: shipCountry || null,
+      subtotal_cents:       totalCents,
+      shipping_cents:       null,
+      invoice_amount_cents: totalCents,
+      payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
+      invoiced_at: new Date().toISOString(),
     })
     .select("id, order_number, created_at").single();
   if (ordErr || !orderRow) {

@@ -64,6 +64,10 @@ export function CartPage() {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [organization, setOrganization] = useState('');
+  const [shipStreet, setShipStreet] = useState('');
+  const [shipCity, setShipCity] = useState('');
+  const [shipState, setShipState] = useState('');
+  const [shipZip, setShipZip] = useState('');
   const [notes, setNotes] = useState('');
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const [record, setRecord] = useState<InquiryRecord | null>(null);
@@ -125,6 +129,11 @@ export function CartPage() {
       contact:      contactTrim,
       organization: orgTrim || undefined,
       notes:        notesTrim || undefined,
+      ship_street:  shipStreet.trim() || undefined,
+      ship_city:    shipCity.trim() || undefined,
+      ship_state:   shipState.trim() || undefined,
+      ship_zip:     shipZip.trim() || undefined,
+      ship_country: 'US',
       items: items.map((i) => ({
         product: {
           id:       i.product.id,
@@ -730,7 +739,92 @@ export function CartPage() {
           </div>
         </div>
 
-        {/* Section 3 — Procurement Notes (optional) */}
+        {/* Section 3 — Shipping Address */}
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-3)]">
+          Shipping Address
+        </h2>
+        <p className="text-[12px] text-ink/55 mb-[var(--space-5)] leading-relaxed">
+          Where you'd like the order shipped. Required for fulfilment — used
+          on the invoice and on the packing slip.
+        </p>
+
+        <div className="space-y-[var(--space-4)]">
+          <div>
+            <label
+              htmlFor="ship-street"
+              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+            >
+              Street address
+            </label>
+            <input
+              id="ship-street"
+              type="text"
+              value={shipStreet}
+              onChange={(e) => setShipStreet(e.target.value)}
+              autoComplete="street-address"
+              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+              placeholder="123 Main Street, Apt 4B"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-[var(--space-3)]">
+            <div>
+              <label
+                htmlFor="ship-city"
+                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              >
+                City
+              </label>
+              <input
+                id="ship-city"
+                type="text"
+                value={shipCity}
+                onChange={(e) => setShipCity(e.target.value)}
+                autoComplete="address-level2"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+                placeholder="Sacramento"
+              />
+            </div>
+            <div className="sm:w-[100px]">
+              <label
+                htmlFor="ship-state"
+                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              >
+                State
+              </label>
+              <input
+                id="ship-state"
+                type="text"
+                value={shipState}
+                onChange={(e) => setShipState(e.target.value.toUpperCase())}
+                maxLength={2}
+                autoComplete="address-level1"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors uppercase"
+                placeholder="CA"
+              />
+            </div>
+            <div className="sm:w-[140px]">
+              <label
+                htmlFor="ship-zip"
+                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              >
+                ZIP
+              </label>
+              <input
+                id="ship-zip"
+                type="text"
+                value={shipZip}
+                onChange={(e) => setShipZip(e.target.value)}
+                autoComplete="postal-code"
+                inputMode="numeric"
+                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+                placeholder="95814"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4 — Procurement Notes (optional) */}
         <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
           Procurement Notes
         </h2>
