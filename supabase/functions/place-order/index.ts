@@ -132,27 +132,30 @@ function usd(cents: number): string {
 // Email building
 // ---------------------------------------------------------------------------
 
-// ── New brand palette (matches the live site editorial design) ───────────
-//
-// background  #F4EFE6   warm cream
-// surface     #FBF9F4   lighter cream (cards)
-// rule        #E4DFD5   hairline
-// ink         #1A1714   primary text
-// muted       #6F665C   secondary text
-// faint       #A09689   tertiary text
-// teal        #34727A   accent
-
-const LOGO_URL = "https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png";
-
 function brandHeaderHtml(): string {
-  // Centered hero — logo, brand line, INVOICE chip. Symmetric on every
-  // device width; no left/right split.
+  // Prefer a hosted PNG of the stamp if provided; otherwise an email-safe
+  // text "stamp" that mirrors the on-site mark (no SVG — clients strip it).
+  if (BRAND_STAMP_URL) {
+    return `<div style="text-align:center;margin:0 0 20px;">
+      <img src="${escapeHtml(BRAND_STAMP_URL)}" alt="VS Research Labs" width="248" style="display:inline-block;max-width:248px;height:auto;" />
+    </div>`;
+  }
   return `
-    <div style="text-align:center;margin:0 0 28px;">
-      <img src="${LOGO_URL}" alt="VS Research Labs" width="96" height="96" style="display:inline-block;width:96px;height:96px;margin-bottom:14px;border:0;" />
-      <div style="font-size:12px;letter-spacing:0.30em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:4px;">VS Research Labs</div>
-      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:14px;">Northern California Biopeptide Sciences</div>
-      <span style="display:inline-block;padding:5px 13px;border-radius:999px;background:#FBF9F4;border:0.5px solid rgba(26,23,20,0.18);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;letter-spacing:0.18em;color:#1A1714;text-transform:uppercase;">Invoice</span>
+    <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 22px;text-align:center;">
+      <div style="font-family:Inter,Arial,sans-serif;font-weight:700;font-size:20px;letter-spacing:2px;color:#11151b;text-transform:uppercase;">
+        VS Research Labs
+        <span style="display:inline-block;vertical-align:middle;margin-left:8px;">
+          <span style="display:inline-block;width:3px;height:14px;background:#1FA8D8;transform:skewX(-22deg);margin:0 1px;"></span>
+          <span style="display:inline-block;width:3px;height:14px;background:#2E6FB0;transform:skewX(-22deg);margin:0 1px;"></span>
+          <span style="display:inline-block;width:3px;height:14px;background:#E06A12;transform:skewX(-22deg);margin:0 1px;"></span>
+        </span>
+      </div>
+      <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:2px;color:#6a6f76;text-transform:uppercase;margin-top:6px;">
+        BioPeptide Sciences · Nootropics · Skin-Care
+      </div>
+      <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:1.5px;color:#9aa0a6;text-transform:uppercase;margin-top:3px;">
+        For Research Use Only · Not For Human Consumption
+      </div>
     </div>`;
 }
 
@@ -165,111 +168,87 @@ function lineRowsHtml(items: OrderItemPayload[]): string {
     const line = unit * qty;
     return `
       <tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:#6F665C;">${sku}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;color:#1A1714;font-size:13px;">${name}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#1A1714;">${qty}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#6F665C;">${unit ? usd(unit) : "—"}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#1A1714;">${line ? usd(line) : "—"}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:12px;color:#555;">${sku}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">${name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${qty}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-family:monospace;">${unit ? usd(unit) : "—"}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-family:monospace;">${line ? usd(line) : "—"}</td>
       </tr>`;
   }).join("");
 }
 
 function paymentBlockHtml(orderNumber: string, totalCents: number): string {
   return `
-    <div style="background:#FBF9F4;border:1px solid rgba(52,114,122,0.35);border-radius:12px;padding:22px 24px;margin-top:16px;">
-      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:10px;">Payment Instructions</div>
-      <p style="margin:0 0 12px;font-size:14px;color:#1A1714;line-height:1.6;">Please send <strong>${usd(totalCents)}</strong> via <strong>Zelle</strong> to:</p>
-      <div style="background:#F4EFE6;border:0.5px solid rgba(26,23,20,0.14);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:15px;color:#1A1714;letter-spacing:0.04em;word-break:break-all;"><strong>${escapeHtml(ZELLE_HANDLE)}</strong></div>
-      <p style="margin:0 0 8px;font-size:13.5px;color:#1A1714;line-height:1.6;"><strong>Include your order number in the memo / note field:</strong></p>
-      <div style="background:#F4EFE6;border:0.5px solid rgba(26,23,20,0.14);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:14px;color:#1A1714;letter-spacing:0.04em;word-break:break-all;"><strong>${escapeHtml(orderNumber)}</strong></div>
-      <p style="margin:0 0 10px;font-size:12.5px;color:#6F665C;line-height:1.6;background:#F4EFE6;padding:10px 14px;border-radius:6px;border-left:2px solid #34727A;">
-        Send as <strong>family &amp; friends</strong> if Zelle prompts you to choose. Payments without the order number in the memo, or sent as Goods &amp; Services, may be rejected — please double-check before sending.
+    <div style="border:1px solid #dcdcdc;border-radius:8px;padding:18px 20px;margin-top:24px;background:#fafafa;">
+      <h3 style="margin:0 0 10px;font-weight:600;letter-spacing:0.03em;color:#111;">How to pay</h3>
+      <p style="margin:0 0 12px;color:#222;">Amount due: <strong>${usd(totalCents)}</strong></p>
+      <p style="margin:0 0 10px;color:#333;">
+        Send payment using <strong>one</strong> of the methods below. You
+        <strong>must send it as Friends &amp; Family</strong> — any payment
+        not sent as Friends &amp; Family will be <strong>rejected</strong>.
       </p>
-      <p style="margin:0;font-size:12px;color:#6F665C;">PayPal alternative (Friends &amp; Family only): <span style="font-family:'JetBrains Mono','SF Mono',monospace;color:#1A1714;">${escapeHtml(PAYPAL_HANDLE)}</span></p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px;">
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666;width:80px;"><strong>Zelle</strong></td>
+          <td style="padding:8px 0;border-bottom:1px solid #eee;font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:#666;"><strong>PayPal</strong></td>
+          <td style="padding:8px 0;font-family:monospace;">${escapeHtml(PAYPAL_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
+        </tr>
+      </table>
+      <p style="margin:0 0 6px;color:#111;">
+        <strong>Important:</strong> put your order number
+        <span style="font-family:monospace;font-weight:700;">${escapeHtml(orderNumber)}</span>
+        in the payment note.
+      </p>
+      <p style="margin:0;color:#333;">
+        Once your payment is confirmed, your order will be processed and your
+        products shipped.
+      </p>
     </div>`;
 }
 
 function buildInvoiceEmailHtml(
-  payload: OrderPayload, orderNumber: string, totalCents: number, createdAt: string,
+  payload: OrderPayload, orderNumber: string, totalCents: number,
 ): string {
-  const shipBlock = [
-    payload.ship_street,
-    [payload.ship_city, payload.ship_state, payload.ship_zip].filter(Boolean).join(", "),
-    payload.ship_country,
-  ].filter(Boolean).map((s) => escapeHtml(String(s))).join("<br/>");
-
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Invoice ${escapeHtml(orderNumber)}</title></head>
-<body style="margin:0;padding:0;background:#F4EFE6;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1714;">
-  <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
-
-    ${brandHeaderHtml()}
-
-    <!-- Order card -->
-    <div style="background:#FBF9F4;border:1px solid rgba(26,23,20,0.10);border-radius:12px;padding:26px 24px;">
-
-      <!-- Centered Order Reference -->
-      <div style="text-align:center;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #E4DFD5;">
-        <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:8px;">Order Reference</div>
-        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:0.04em;color:#1A1714;font-weight:700;margin-bottom:6px;word-break:break-all;">${escapeHtml(orderNumber)}</div>
-        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:#6F665C;letter-spacing:0.08em;">${escapeHtml(createdAt.slice(0, 10))} · ${escapeHtml(createdAt.slice(11, 19))} UTC</div>
-      </div>
-
-      <!-- Bill To (stacked above Ship To for symmetry across widths) -->
-      <div style="margin-bottom:16px;">
-        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Bill To</div>
-        <div style="font-size:13px;color:#1A1714;line-height:1.55;">
-          <strong>${escapeHtml(payload.name)}</strong><br/>
-          ${escapeHtml(payload.contact)}
-          ${payload.organization ? `<br/>${escapeHtml(payload.organization)}` : ""}
-        </div>
-      </div>
-
-      <div style="margin-bottom:22px;">
-        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Ship To</div>
-        <div style="font-size:13px;color:#1A1714;line-height:1.55;">${shipBlock || '<span style="color:#A09689;">— to be provided —</span>'}</div>
-      </div>
-
-      <!-- Items -->
-      <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:8px;">Items</div>
-      <table role="presentation" style="width:100%;border-collapse:collapse;border:1px solid #E4DFD5;border-radius:6px;margin-bottom:14px;">
-        <thead><tr style="background:#F4EFE6;">
-          <th style="padding:9px 14px;border-bottom:1px solid #E4DFD5;text-align:left;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6F665C;font-weight:500;">SKU</th>
-          <th style="padding:9px 14px;border-bottom:1px solid #E4DFD5;text-align:left;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6F665C;font-weight:500;">Item</th>
-          <th style="padding:9px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6F665C;font-weight:500;width:50px;">Qty</th>
-          <th style="padding:9px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6F665C;font-weight:500;width:80px;">Unit</th>
-          <th style="padding:9px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6F665C;font-weight:500;width:90px;">Line</th>
-        </tr></thead>
-        <tbody>${lineRowsHtml(payload.items)}</tbody>
-      </table>
-
-      <!-- Totals -->
-      <table role="presentation" style="width:100%;border-collapse:collapse;">
-        <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Subtotal</td>
-            <td style="padding:5px 14px;text-align:right;width:120px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${usd(totalCents)}</td></tr>
-        <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Shipping</td>
-            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#A09689;">Confirmed at fulfillment</td></tr>
-        <tr style="border-top:1px solid #E4DFD5;">
-          <td style="padding:14px 14px 6px;text-align:right;font-size:11px;color:#6F665C;letter-spacing:0.2em;text-transform:uppercase;">Total Due</td>
-          <td style="padding:14px 14px 6px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:20px;color:#1A1714;font-weight:700;">${usd(totalCents)}</td>
+  return `
+    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:640px;margin:0 auto;padding:8px;">
+      ${brandHeaderHtml()}
+      <table style="width:100%;font-size:13px;color:#444;margin:0 0 14px;">
+        <tr>
+          <td style="padding:2px 0;">Order number</td>
+          <td style="padding:2px 0;text-align:right;font-family:monospace;font-weight:700;color:#111;">${escapeHtml(orderNumber)}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;">Billed to</td>
+          <td style="padding:2px 0;text-align:right;">${escapeHtml(payload.name)}</td>
         </tr>
       </table>
-    </div>
-
-    ${paymentBlockHtml(orderNumber, totalCents)}
-
-    <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">
-      Once payment is received and verified, your order moves to fulfillment and ships from our nearest warehouse (<strong>Sacramento</strong> or <strong>Vallejo, California</strong>). You'll receive a tracking number by email as soon as it leaves the dock.
-    </p>
-    <p style="margin:0 4px 16px;font-size:13px;color:#1A1714;line-height:1.6;">Questions? Simply reply to this email — your message lands on the same reference thread.</p>
-
-    <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">
-      <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:#6F665C;margin-bottom:4px;">VS Research Labs · Northern California Biopeptide Sciences</div>
-      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
-      <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(orderNumber)}</div>
-    </div>
-  </div>
-</body></html>`;
+      <h2 style="font-weight:300;letter-spacing:0.04em;margin:0 0 16px;">Your invoice</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="text-align:left;color:#666;">
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">SKU</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">Item</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Qty</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Unit</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Line</th>
+          </tr>
+        </thead>
+        <tbody>${lineRowsHtml(payload.items)}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="padding:12px;text-align:right;font-weight:600;">Total</td>
+            <td style="padding:12px;text-align:right;font-weight:700;font-family:monospace;">${usd(totalCents)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      ${paymentBlockHtml(orderNumber, totalCents)}
+      <p style="margin-top:24px;color:#888;font-size:12px;">
+        VS Research Labs — For Research Purposes Only · Not for Human Use
+      </p>
+    </div>`;
 }
 
 function buildBusinessEmailHtml(
@@ -457,7 +436,7 @@ Deno.serve(async (req: Request) => {
     const r = await sendResendEmail({
       to: contact,
       subject: `Invoice ${orderNumber} — VS Research Labs`,
-      html: buildInvoiceEmailHtml(cleanPayload, orderNumber, totalCents, orderRow.created_at),
+      html: buildInvoiceEmailHtml(cleanPayload, orderNumber, totalCents),
     });
     invoiceEmailSent = r.ok;
     if (!r.ok) console.error("Invoice email failed:", r);
