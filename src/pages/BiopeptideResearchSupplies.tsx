@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { ProductGrid } from '../components/ProductGrid';
-import { PillTabs, type PillTab } from '../components/ui/PillTabs';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInventoryModal';
 import { useProducts } from '../hooks/useProducts';
@@ -10,6 +9,9 @@ import { inStockByKey } from '../lib/stock';
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
 
+const ALL_DESCRIPTION =
+  'The complete biopeptide catalog. Pick a class to narrow the list and read what it covers.';
+
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
@@ -17,21 +19,26 @@ export function BiopeptideResearchSupplies() {
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
-  const classificationTabs = useMemo<PillTab[]>(() => {
+  const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
-    const tabs: PillTab[] = [{ id: ALL_TAB, label: 'All' }];
+    const tabs = [{ id: ALL_TAB, label: 'All' }];
     for (const p of products) {
       if (p.researchClassification && !seen.has(p.researchClassification)) {
         seen.add(p.researchClassification);
         tabs.push({
           id: p.researchClassification,
           label: CLASSIFICATION_LABELS[p.researchClassification] ?? p.researchClassification,
-          tooltip: CLASSIFICATION_DEFINITIONS[p.researchClassification],
         });
       }
     }
     return tabs;
   }, [products]);
+
+  const activeDescription =
+    classFilter === ALL_TAB
+      ? ALL_DESCRIPTION
+      : CLASSIFICATION_DEFINITIONS[classFilter as keyof typeof CLASSIFICATION_DEFINITIONS] ??
+        null;
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -58,9 +65,12 @@ export function BiopeptideResearchSupplies() {
               <span className="font-light text-ink/85">Biopeptide </span>
               <span className="font-medium text-ink">research supplies.</span>
             </h1>
-            <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
-              Lyophilized peptides sourced for research-grade consistency.
-              Click any compound to open compound intelligence.
+            <p className="holo-text-body mt-[var(--space-3)] max-w-[56ch] text-[13px] leading-relaxed">
+              Lyophilized peptides, sourced for research-grade consistency.
+              Open the full inventory for the complete list view, and filter to{' '}
+              <span className="text-ink/80">in-stock</span> compounds to surface the
+              selections cleared for our fastest dispatch. Anything not currently
+              stocked can be reserved by inquiry for a scheduled later shipment.
             </p>
           </div>
           <button
@@ -75,51 +85,85 @@ export function BiopeptideResearchSupplies() {
         </div>
       </header>
 
-      {/* Stock toggle — tiny pill above the category filters. */}
-      <div className="mb-[var(--space-4)]">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={inStockOnly}
-          onClick={() => setInStockOnly((v) => !v)}
-          className={[
-            'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-            inStockOnly
-              ? 'text-ink'
-              : 'border-ink/15 text-ink/45 hover:text-ink/75 hover:border-ink/25',
-          ].join(' ')}
-          style={
-            inStockOnly
-              ? {
-                  borderColor: `${STOCK_GREEN}80`,
-                  backgroundColor: `${STOCK_GREEN}18`,
-                  boxShadow: `0 0 10px ${STOCK_GREEN}33`,
-                }
-              : undefined
-          }
-        >
-          <span
-            aria-hidden="true"
-            className="inline-block h-[6px] w-[6px] rounded-full"
-            style={{
-              backgroundColor: inStockOnly ? STOCK_GREEN : 'rgba(255,255,255,0.3)',
-              boxShadow: inStockOnly ? `0 0 5px ${STOCK_GREEN}aa` : undefined,
-            }}
-          />
-          In stock only
-        </button>
-      </div>
-
-      {classificationTabs.length > 1 && (
-        <div className="mb-[var(--space-6)]">
-          <PillTabs
-            tabs={classificationTabs}
-            activeId={classFilter}
-            onChange={setClassFilter}
-            ariaLabel="Filter by research classification"
-          />
+      {/* Filter — compact bar: label + in-stock toggle on top, a single
+          horizontally-scrolling row of class pills, and the active class's
+          description below. */}
+      <div className="mb-[var(--space-6)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-3)]">
+        {/* Top row — label + in-stock toggle */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[10px] uppercase tracking-[0.28em] text-ink/45">
+            Filter
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={inStockOnly}
+            onClick={() => setInStockOnly((v) => !v)}
+            className={[
+              'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+              inStockOnly
+                ? 'text-ink'
+                : 'border-ink/15 text-ink/50 hover:text-ink/80 hover:border-ink/25',
+            ].join(' ')}
+            style={
+              inStockOnly
+                ? {
+                    borderColor: `${STOCK_GREEN}80`,
+                    backgroundColor: `${STOCK_GREEN}18`,
+                    boxShadow: `0 0 10px ${STOCK_GREEN}33`,
+                  }
+                : undefined
+            }
+          >
+            <span
+              aria-hidden="true"
+              className="inline-block h-[6px] w-[6px] rounded-full"
+              style={{
+                backgroundColor: inStockOnly ? STOCK_GREEN : 'rgba(26,23,20,0.25)',
+                boxShadow: inStockOnly ? `0 0 5px ${STOCK_GREEN}aa` : undefined,
+              }}
+            />
+            In stock only
+          </button>
         </div>
-      )}
+
+        {/* Class pills — one row, scrolls horizontally (no vertical sprawl) */}
+        {classificationTabs.length > 1 && (
+          <div
+            role="tablist"
+            aria-label="Filter by research classification"
+            className="mt-[var(--space-3)] flex gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {classificationTabs.map((tab) => {
+              const active = tab.id === classFilter;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setClassFilter(tab.id)}
+                  className={[
+                    'shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
+                    active
+                      ? 'border border-holo/30 bg-holo/[0.12] text-holo-light font-medium'
+                      : 'border border-ink/12 text-ink/55 hover:text-ink/85 hover:border-ink/25',
+                  ].join(' ')}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Active class description */}
+        {activeDescription && (
+          <p className="mt-[var(--space-3)] border-t border-ink/[0.07] pt-[var(--space-3)] text-[12px] leading-relaxed text-ink/60 max-w-[72ch]">
+            {activeDescription}
+          </p>
+        )}
+      </div>
 
       <ProductGrid
         products={filtered}

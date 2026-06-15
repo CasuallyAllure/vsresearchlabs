@@ -38,6 +38,7 @@ import { CompoundIntelligenceHero } from '../components/landing/CompoundIntellig
 import { HeroHoloCarousel } from '../components/landing/HeroHoloCarousel';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
+import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
 
 const documents = documentsData as unknown as Document[];
 
@@ -532,29 +533,26 @@ export function Landing() {
                 className="op-reveal mt-[var(--space-6)] flex flex-wrap items-center gap-[var(--space-3)]"
                 style={{ ['--op-delay' as string]: '240ms' }}
               >
-                <a
-                  href="#inventory"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const el = document.getElementById('inventory');
-                    if (el) {
-                      el.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start',
-                      });
-                      if (history.replaceState) {
-                        history.replaceState(null, '', '#inventory');
-                      }
-                    }
-                  }}
-                  className="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+                <HeroSegmentMenu
+                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+                  heading="Begin inquiry — choose a segment"
+                  items={[
+                    { label: 'Biopeptide', caption: 'Peptide sciences', to: '/research-supplies/biopeptide' },
+                    { label: 'Nootropics', caption: 'Cognitive', to: '/research-supplies/nootropics' },
+                    { label: 'Skin-Care', caption: 'Dermal', to: '/research-supplies/skincare' },
+                  ]}
                 >
                   <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
                   <span className="relative">Begin Inquiry</span>
-                </a>
-                <Link
-                  to="/research"
-                  className="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] uppercase tracking-[0.22em] text-holo-light transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+                </HeroSegmentMenu>
+                <HeroSegmentMenu
+                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] uppercase tracking-[0.22em] text-holo-light transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+                  heading="View research — choose a segment"
+                  items={[
+                    { label: 'Biopeptide', caption: 'Compound library', to: '/research' },
+                    { label: 'Nootropics', caption: 'Compound library', to: '/research' },
+                    { label: 'Skin-Care', caption: 'Compound library', to: '/research' },
+                  ]}
                 >
                   <span aria-hidden="true" className="hero-cta-holo-sheen pointer-events-none absolute inset-0" />
                   <span className="relative">View Research</span>
@@ -564,7 +562,7 @@ export function Landing() {
                   >
                     →
                   </span>
-                </Link>
+                </HeroSegmentMenu>
               </div>
               </div>
             </div>
