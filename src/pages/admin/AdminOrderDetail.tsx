@@ -87,8 +87,13 @@ export function AdminOrderDetail() {
     load();
   }, [load]);
 
-  async function sendInvoice(invoiceUrl: string, amountCents: number) {
+  async function sendInvoice(args: {
+    invoiceUrl: string;
+    subtotalCents: number;
+    shippingCents: number;
+  }) {
     if (!supabase || !order) return;
+    const totalCents = args.subtotalCents + args.shippingCents;
     setBusy(true);
     setActionError(null);
     // Step 1: persist invoice metadata + status transition via RPC. Doing the
@@ -96,9 +101,11 @@ export function AdminOrderDetail() {
     // in a "phantom invoice_sent" state — and if the RPC fails we abort.
     const { error: rpcError } = await supabase.rpc('mark_order_invoiced', {
       p_order_id: order.id,
-      p_invoice_url: invoiceUrl,
-      p_invoice_amount_cents: amountCents,
-      p_payment_method: 'PayPal Friends & Family or Zelle',
+      p_invoice_url: args.invoiceUrl,
+      p_invoice_amount_cents: totalCents,
+      p_payment_method: 'Zelle (info@velariss.co)',
+      p_subtotal_cents: args.subtotalCents,
+      p_shipping_cents: args.shippingCents,
     });
     if (rpcError) {
       setBusy(false);
@@ -108,11 +115,7 @@ export function AdminOrderDetail() {
     // Step 2: fire the email. Email failure is logged but does not roll
     // the order back — admin can re-send manually if needed.
     const { error: emailError } = await supabase.functions.invoke('send-order-invoice', {
-      body: {
-        order_id: order.id,
-        invoice_url: invoiceUrl,
-        invoice_amount_cents: amountCents,
-      },
+      body: { order_id: order.id, invoice_url: args.invoiceUrl },
     });
     setBusy(false);
     if (emailError) {
@@ -308,7 +311,7 @@ interface ActionPanelProps {
   busy: boolean;
   defaultInvoiceAmount: number | null;
   defaultInvoiceUrl: string | null;
-  onSendInvoice: (url: string, amountCents: number) => void;
+  onSendInvoice: (args: { invoiceUrl: string; subtotalCents: number; shippingCents: number }) => void;
   onMarkPaid: () => void;
   onConfirmFulfilled: (tracking: string | null) => void;
   onCancel: (reason: string) => void;
@@ -320,11 +323,12 @@ function ActionPanel({
   onSendInvoice, onMarkPaid, onConfirmFulfilled, onCancel,
 }: ActionPanelProps) {
   const [invoiceUrl, setInvoiceUrl] = useState(defaultInvoiceUrl ?? '');
-  const [invoiceAmount, setInvoiceAmount] = useState(
+  const [subtotalUsd, setSubtotalUsd] = useState(
     defaultInvoiceAmount !== null && defaultInvoiceAmount !== undefined
       ? (defaultInvoiceAmount / 100).toFixed(2)
       : '',
   );
+  const [shippingUsd, setShippingUsd] = useState('');
   const [tracking, setTracking] = useState('');
   const [cancelReason, setCancelReason] = useState('');
 
@@ -342,36 +346,61 @@ function ActionPanel({
     <section className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-4)]">
       {status === 'pending_invoice' && (
         <ActionCard title="Send invoice">
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Invoice URL</label>
+          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Invoice reference URL (optional)</label>
           <input
             type="url"
             value={invoiceUrl}
             onChange={(e) => setInvoiceUrl(e.target.value)}
-            placeholder="https://invoice.stripe.com/…"
+            placeholder="External invoice link if you have one"
             className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
           />
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Amount (USD)</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={invoiceAmount}
-            onChange={(e) => setInvoiceAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
-          />
+          <div className="grid grid-cols-2 gap-[var(--space-3)] mb-[var(--space-2)]">
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Subtotal (USD)</label>
+              <input
+                type="number" step="0.01" min="0"
+                value={subtotalUsd}
+                onChange={(e) => setSubtotalUsd(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Shipping (USD)</label>
+              <input
+                type="number" step="0.01" min="0"
+                value={shippingUsd}
+                onChange={(e) => setShippingUsd(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40"
+              />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between border-y border-ink/10 py-[var(--space-2)] mb-[var(--space-4)]">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-ink/45">Total</span>
+            <span className="font-mono tabular-nums text-[15px] text-ink">${(((parseFloat(subtotalUsd) || 0) + (parseFloat(shippingUsd) || 0))).toFixed(2)}</span>
+          </div>
           <p className="text-[11px] text-ink/45 mb-[var(--space-4)] leading-relaxed">
-            Will email the buyer the payment-instructions template (PayPal F&amp;F / Zelle only)
-            with the invoice link, and flip the order to <span className="font-mono">invoice_sent</span>.
+            Emails a fully-branded invoice (subtotal, shipping, total) with Zelle
+            payment instructions to{' '}
+            <span className="font-mono text-ink/70">info@velariss.co</span>.
+            Buyer is told to label the payment with the order number.
+            Status flips to <span className="font-mono">invoice_sent</span>.
           </p>
           <button
             type="button"
             onClick={() => {
-              const cents = Math.round(parseFloat(invoiceAmount) * 100);
-              if (!invoiceUrl.trim() || !Number.isFinite(cents)) return;
-              onSendInvoice(invoiceUrl.trim(), cents);
+              const subC = Math.round(parseFloat(subtotalUsd) * 100);
+              const shipC = Math.round(parseFloat(shippingUsd) * 100);
+              if (!Number.isFinite(subC) || subC < 0) return;
+              const ship = Number.isFinite(shipC) && shipC >= 0 ? shipC : 0;
+              onSendInvoice({
+                invoiceUrl: invoiceUrl.trim(),
+                subtotalCents: subC,
+                shippingCents: ship,
+              });
             }}
-            disabled={busy || invoiceUrl.trim().length === 0 || !Number.isFinite(parseFloat(invoiceAmount))}
+            disabled={busy || !Number.isFinite(parseFloat(subtotalUsd))}
             className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? 'Sending…' : 'Send invoice + email'}
