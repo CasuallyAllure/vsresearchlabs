@@ -146,11 +146,11 @@ function brandHeaderHtml(): string {
       <div style="font-family:'Cormorant Garamond','EB Garamond',Garamond,Georgia,serif;font-weight:500;font-size:26px;letter-spacing:0.02em;color:#1A1714;margin-top:8px;line-height:1;">
         Research Labs
       </div>
-      <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:9px;letter-spacing:2px;color:#6a6f76;text-transform:uppercase;margin-top:8px;">
-        BioPeptide Sciences · Nootropics · Skin-Care
+      <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:8px;letter-spacing:1px;color:#6a6f76;text-transform:uppercase;margin-top:8px;white-space:nowrap;">
+        BioPeptides · Nootropics · Skincare
       </div>
-      <div style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:1.5px;color:#9aa0a6;text-transform:uppercase;margin-top:3px;">
-        For Research Use Only · Not For Human Consumption
+      <div style="font-family:'Courier New',monospace;font-size:7px;letter-spacing:0.8px;color:#9aa0a6;text-transform:uppercase;margin-top:3px;white-space:nowrap;">
+        For Research Use Only · Not For Human Use
       </div>
     </div>`;
 }
