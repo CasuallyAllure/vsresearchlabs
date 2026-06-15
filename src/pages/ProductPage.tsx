@@ -485,10 +485,15 @@ export function ProductPage() {
         </main>
       </div>
 
-      {/* Mobile sticky action bar — sits above the floating BottomNav pill */}
+      {/* Mobile sticky action bar — sits above the floating BottomNav pill
+          (pill is 36px tall + safe-area inset from viewport bottom). */}
       <div
-        className="lg:hidden fixed left-0 right-0 bottom-[56px] z-40"
-        style={{ backgroundColor: '#000', borderTop: '1px solid rgba(255,255,255,0.07)' }}
+        className="lg:hidden fixed left-0 right-0 z-40"
+        style={{
+          bottom: 'calc(max(2px, env(safe-area-inset-bottom)) + 44px)',
+          backgroundColor: '#000',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+        }}
         role="region"
         aria-label="Add to inquiry"
       >

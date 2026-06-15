@@ -284,7 +284,9 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             aria-label="Research supplies — choose a domain"
             className="fixed left-1/2 -translate-x-1/2 z-50"
             style={{
-              bottom: 'calc(0.75rem + 36px + 0.5rem)',
+              // Sit just above the pill: pill_bottom (safe-area or 2px) +
+              // pill_height (~36px) + small gap (8px).
+              bottom: 'calc(max(2px, env(safe-area-inset-bottom)) + 44px)',
               width: 'min(360px, calc(100vw - 1.5rem))',
               background:
                 'linear-gradient(180deg, rgba(251, 249, 244, 0.96) 0%, rgba(244, 239, 230, 0.97) 100%)',
@@ -351,10 +353,14 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
       )}
 
       <nav
-        className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30"
+        className="fixed left-1/2 -translate-x-1/2 z-30"
         data-role={role}
         aria-label="Primary"
         style={{
+          // Hug the bottom of the visible viewport. On notch / home-indicator
+          // devices the safe-area inset keeps it clear of the home bar;
+          // otherwise it sits 2px above the absolute bottom edge.
+          bottom: 'max(2px, env(safe-area-inset-bottom))',
           background:
             'linear-gradient(180deg, rgba(251, 249, 244, 0.9) 0%, rgba(244, 239, 230, 0.94) 100%)',
           border: '0.5px solid rgba(26, 23, 20, 0.12)',
