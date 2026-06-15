@@ -1,13 +1,12 @@
 /**
  * IntroModal
  *
- * Floating, dismissible intro that appears when a visitor first enters the
- * site — the three-tab VideoIntroModule lifted out of the page flow into a
- * centered overlay you must dismiss (X / backdrop / ESC / "Enter site").
+ * Floating, dismissible intro that appears every time the landing page loads
+ * — the three-tab VideoIntroModule lifted out of the page flow into a centered
+ * overlay you must dismiss (X / backdrop / ESC / "Enter site").
  *
- * Shown once per browser session (sessionStorage) so it doesn't re-pop on
- * every in-site navigation or scroll. To show it on every reload instead,
- * swap sessionStorage → a ref/no-store; to show once ever, use localStorage.
+ * Shows on every load/mount (no persistence). To show it only once per session
+ * instead, gate the initial `render` on sessionStorage.
  *
  * Portaled to <body> so it escapes the sticky header's stacking context, and
  * scroll-locked while open. Honors prefers-reduced-motion.
@@ -17,18 +16,8 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VideoIntroModule } from './VideoIntroModule';
 
-const SESSION_KEY = 'vsr.intro.seen';
-
 export function IntroModal() {
-  // Decide once, lazily, whether this visit should see the intro — avoids a
-  // setState-in-effect and never flashes for a returning visitor.
-  const [render, setRender] = useState(() => {
-    try {
-      return sessionStorage.getItem(SESSION_KEY) !== '1';
-    } catch {
-      return true; // sessionStorage unavailable (private-mode quirks) — show it.
-    }
-  });
+  const [render, setRender] = useState(true);
   const [open, setOpen] = useState(false);
 
   // Trigger the enter transition on the next frame after mount.
@@ -58,7 +47,6 @@ export function IntroModal() {
 
   function close() {
     setOpen(false);
-    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch { /* ignore */ }
     // Unmount after the exit transition.
     setTimeout(() => setRender(false), 250);
   }
