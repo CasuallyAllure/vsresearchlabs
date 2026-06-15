@@ -173,7 +173,46 @@ function lineRowsHtml(items: OrderItemPayload[]): string {
   }).join("");
 }
 
+// "Ship to" block — shows the address the buyer entered in the cart so they
+// can verify it before paying, and so the business knows where to ship.
+// Renders nothing if no address fields are present (e.g. equipment quote).
+function shipBlockHtml(payload: OrderPayload, opts: { heading: string }): string {
+  const street  = (payload.ship_street  ?? "").trim();
+  const city    = (payload.ship_city    ?? "").trim();
+  const state   = (payload.ship_state   ?? "").trim();
+  const zip     = (payload.ship_zip     ?? "").trim();
+  const country = (payload.ship_country ?? "").trim();
+  if (!street && !city && !state && !zip) return "";
+  const cityLine = [city, state].filter(Boolean).join(", ");
+  const cityZip = [cityLine, zip].filter(Boolean).join(" ").trim();
+  return `
+    <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin:0 0 18px;background:#fafafa;">
+      <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.25em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
+        ${escapeHtml(opts.heading)}
+      </div>
+      <div style="font-size:14px;color:#111;line-height:1.45;">
+        ${escapeHtml(payload.name)}<br/>
+        ${street ? escapeHtml(street) + "<br/>" : ""}
+        ${cityZip ? escapeHtml(cityZip) + "<br/>" : ""}
+        ${country ? escapeHtml(country) : ""}
+      </div>
+      <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.18em;color:#9aa0a6;text-transform:uppercase;margin-top:10px;">
+        Please verify before paying — reply to this email if anything is wrong.
+      </div>
+    </div>`;
+}
+
+// Extract the short payment code (the serial after the final dash).
+// Format is VSR-ORD-YYMMDD-NNN(N) — combined with the date the buyer pays,
+// the serial is uniquely identifying. Customers only need to type these
+// 3–4 digits in the Zelle/PayPal note.
+function paymentCode(orderNumber: string): string {
+  const parts = orderNumber.split("-");
+  return parts[parts.length - 1] || orderNumber;
+}
+
 function paymentBlockHtml(orderNumber: string, totalCents: number): string {
+  const code = paymentCode(orderNumber);
   return `
     <div style="border:1px solid #dcdcdc;border-radius:8px;padding:18px 20px;margin-top:24px;background:#fafafa;">
       <h3 style="margin:0 0 10px;font-weight:600;letter-spacing:0.03em;color:#111;">How to pay</h3>
@@ -193,10 +232,21 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
           <td style="padding:8px 0;font-family:monospace;">${escapeHtml(PAYPAL_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
         </tr>
       </table>
-      <p style="margin:0 0 6px;color:#111;">
-        <strong>Important:</strong> put your order number
-        <span style="font-family:monospace;font-weight:700;">${escapeHtml(orderNumber)}</span>
-        in the payment note.
+      <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 12px;background:#fff;text-align:center;">
+        <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.3em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
+          Payment note · enter exactly
+        </div>
+        <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-weight:700;font-size:34px;letter-spacing:0.18em;color:#1A1714;line-height:1;">
+          ${escapeHtml(code)}
+        </div>
+        <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#666;margin-top:8px;">
+          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+        </div>
+      </div>
+      <p style="margin:0 0 6px;color:#444;font-size:12px;">
+        Your full order reference is
+        <span style="font-family:monospace;color:#111;">${escapeHtml(orderNumber)}</span>
+        — we use that on our end; you don't need to retype it.
       </p>
       <p style="margin:0;color:#333;">
         Once your payment is confirmed, your order will be processed and your
@@ -240,6 +290,7 @@ function buildInvoiceEmailHtml(
           </tr>
         </tfoot>
       </table>
+      ${shipBlockHtml(payload, { heading: "Ship to · verify before paying" })}
       ${paymentBlockHtml(orderNumber, totalCents)}
       <p style="margin-top:24px;color:#888;font-size:12px;">
         VS Research Labs — For Research Purposes Only · Not for Human Use
@@ -279,6 +330,7 @@ function buildBusinessEmailHtml(
         </tr>
         ${org}
       </table>
+      ${shipBlockHtml(payload, { heading: "Ship to" })}
       ${notes}
       <h2 style="font-weight:300;letter-spacing:0.04em;margin:18px 0 16px;">Order</h2>
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
@@ -301,9 +353,11 @@ function buildBusinessEmailHtml(
       </table>
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
-        Buyer received their branded invoice with Zelle / PayPal payment
-        instructions. Watch <span style="font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</span>
-        for a payment referencing <span style="font-family:monospace;font-weight:700;">${escapeHtml(orderNumber)}</span>.
+        Buyer received their branded invoice with Zelle / PayPal instructions.
+        Watch <span style="font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</span>
+        for a payment with note
+        <span style="font-family:monospace;font-weight:700;font-size:15px;color:#111;">${escapeHtml(paymentCode(orderNumber))}</span>
+        (full order <span style="font-family:monospace;">${escapeHtml(orderNumber)}</span>).
         Mark paid in Admin → Orders once confirmed.
       </div>
       <p style="margin-top:24px;color:#888;font-size:12px;">
@@ -383,7 +437,17 @@ Deno.serve(async (req: Request) => {
   const itemCount  = items.reduce((s, i) => s + clampQty(i.quantity), 0);
   const totalCents = items.reduce((s, i) => s + clampCents(i.unitPriceCents) * clampQty(i.quantity), 0);
   const contactIsEmail = EMAIL_REGEX.test(contact);
-  const cleanPayload: OrderPayload = { name, contact, organization: organization || undefined, notes: notes || undefined, items };
+  const cleanPayload: OrderPayload = {
+    name, contact,
+    organization: organization || undefined,
+    notes: notes || undefined,
+    ship_street:  shipStreet  || undefined,
+    ship_city:    shipCity    || undefined,
+    ship_state:   shipState   || undefined,
+    ship_zip:     shipZip     || undefined,
+    ship_country: shipCountry || undefined,
+    items,
+  };
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
