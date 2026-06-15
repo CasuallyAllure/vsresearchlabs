@@ -88,7 +88,10 @@ export const useProductStore = create<ProductStore>()(
       // generated compounds). Bumping invalidates v2 payloads so returning
       // browsers re-hydrate from the expanded seed rather than the stale
       // 18-product catalog.
-      name: 'vsresearchlabs.products.v3',
+      // v4 — product names no longer embed a fixed dose ("BPC-157 — 5mg" →
+      // "BPC-157"); the dose comes from the variant/tier. Bump re-hydrates so
+      // returning browsers drop the stale dose-in-name catalog.
+      name: 'vsresearchlabs.products.v4',
       storage: createJSONStorage(() => localStorage),
       // Only persist the products array; everything else is derived.
       partialize: (state) => ({ products: state.products }),
