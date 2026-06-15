@@ -58,6 +58,8 @@ interface VariantRow {
   on_hand: number;
   reorder_at: number | null;
   price_cents: number | null;
+  cost_cents: number | null;
+  lead_days: number | null;
 }
 
 /** One row of the downloadable template (current live values pre-filled).
@@ -68,8 +70,10 @@ interface TemplateRow {
   klass: string;
   dose: string;
   current_price: number | null; // reference only — ignored on import
+  cost_usd: number | null;      // admin-only COGS (never public)
   on_hand: number | null;
   price_usd: number | null;
+  lead_days: number | null;     // blank = local stock; N = order-on-demand (ships in N days)
   hidden: string;
   reorder_at: number | null;
   video_url: string;
@@ -84,6 +88,8 @@ interface ImportPayload {
   dose?: string;
   on_hand?: string;
   price_cents?: string;
+  cost_cents?: string;
+  lead_days?: string;
   hidden?: string;
   reorder_at?: string;
   video_url?: string;
@@ -121,8 +127,10 @@ const TEMPLATE_COLUMNS: Column<TemplateRow>[] = [
   { header: 'class', value: (r) => r.klass },
   { header: 'dose', value: (r) => r.dose },
   { header: 'current_price', value: (r) => r.current_price, type: 'currency' },
+  { header: 'cost_usd', value: (r) => r.cost_usd, type: 'currency' },
   { header: 'on_hand', value: (r) => r.on_hand, type: 'number' },
   { header: 'price_usd', value: (r) => r.price_usd, type: 'currency' },
+  { header: 'lead_days', value: (r) => r.lead_days, type: 'number' },
   { header: 'hidden', value: (r) => r.hidden },
   { header: 'reorder_at', value: (r) => r.reorder_at, type: 'number' },
   { header: 'video_url', value: (r) => r.video_url },
@@ -174,7 +182,7 @@ export function AdminImport() {
       // Per-dose overrides (migration 011). Optional — older DBs lack the table.
       const { data: vData } = await supabase
         .from('product_variant_stock')
-        .select('sku, dose, on_hand, reorder_at, price_cents');
+        .select('sku, dose, on_hand, reorder_at, price_cents, cost_cents, lead_days');
       if (cancelled) return;
       const vmap: Record<string, Record<string, VariantRow>> = {};
       for (const r of (vData ?? []) as VariantRow[]) (vmap[r.sku] ??= {})[r.dose] = r;
@@ -212,8 +220,10 @@ export function AdminImport() {
           klass,
           dose,
           current_price: storedCents != null ? storedCents / 100 : (formula != null ? formula / 100 : null),
+          cost_usd: v && v.cost_cents != null ? v.cost_cents / 100 : null,
           on_hand: v ? v.on_hand : (dose ? null : s?.on_hand ?? null),
           price_usd: null,
+          lead_days: v && v.lead_days != null ? v.lead_days : null,
           // hidden / clip are product-level — surface them on the first dose row only.
           hidden: first && s && s.hidden ? 'true' : '',
           reorder_at: v && v.reorder_at != null ? v.reorder_at : (first && s && s.reorder_at != null ? s.reorder_at : null),
@@ -477,7 +487,20 @@ function mapRecords(text: string): ParsedRow[] {
       }
     }
 
+    // cost_usd → cents (admin-only COGS)
+    const costRaw = (rec['cost_usd'] ?? '').trim();
+    if (costRaw !== '') {
+      const usd = parseFloat(costRaw.replace(/[$,]/g, ''));
+      if (Number.isFinite(usd) && usd >= 0) {
+        payload.cost_cents = String(Math.round(usd * 100));
+        fields.push('cost');
+      } else if (!error) {
+        error = `Bad cost "${costRaw}"`;
+      }
+    }
+
     set('on_hand', rec['on_hand'], 'on_hand');
+    set('lead_days', rec['lead_days'], 'lead_days');
     set('hidden', rec['hidden'], 'hidden');
     set('reorder_at', rec['reorder_at'], 'reorder_at');
     // Clip — record a single "clip" chip when a url is present.

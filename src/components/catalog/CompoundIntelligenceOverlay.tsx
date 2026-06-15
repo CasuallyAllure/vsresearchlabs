@@ -39,6 +39,7 @@ import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides } from '../../lib/productOverrides';
+import { AvailabilityBadge } from './AvailabilityBadge';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
 
@@ -375,6 +376,9 @@ export function CompoundIntelligenceOverlay({
                     selectedIndex={selectedTierIndex}
                     onSelect={setSelectedTierIndex}
                   />
+                  <div className="mt-2.5">
+                    <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
+                  </div>
                   <div className="mt-3 flex items-center gap-2">
                     <QuantityStepper quantity={quantity} onChange={setQuantity} />
                     <button

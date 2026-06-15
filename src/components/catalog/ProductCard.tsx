@@ -24,6 +24,7 @@ import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock } from '../../lib/productOverrides';
+import { AvailabilityBadge } from './AvailabilityBadge';
 import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
 
@@ -170,7 +171,10 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               />
             </>
           )}
-          <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-ink/[0.05] pt-2.5">
+          <div className="mt-2 flex flex-wrap gap-1">
+            <AvailabilityBadge sku={product.sku} dose={activeDose} />
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-ink/[0.05] pt-2.5">
             <span className="font-mono tabular-nums leading-none text-ink/90" style={{ fontSize: '12.5px' }}>
               {formatPrice(priceCents)}
             </span>

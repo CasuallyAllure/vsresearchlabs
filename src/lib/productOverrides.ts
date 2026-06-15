@@ -35,12 +35,14 @@ export interface ProductOverride {
   video_thumbnail: string | null;
 }
 
-/** Per-dose override (migration 011). price_cents null → fall back to lib/pricing. */
+/** Per-dose override (migration 011/013). price_cents null → lib/pricing.
+ *  lead_days non-null + on_hand 0 → order-on-demand ("Ships in N days"). */
 export interface VariantOverride {
   sku: string;
   dose: string;
   on_hand: number;
   price_cents: number | null;
+  lead_days: number | null;
 }
 
 interface OverridesState {
@@ -103,7 +105,7 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
     const variantBySku: Record<string, Record<string, VariantOverride>> = {};
     const { data: vData } = await supabase
       .from('public_variant_overrides')
-      .select('sku, dose, on_hand, price_cents');
+      .select('sku, dose, on_hand, price_cents, lead_days');
     for (const row of (vData ?? []) as VariantOverride[]) {
       (variantBySku[row.sku] ??= {})[row.dose] = row;
     }
@@ -165,6 +167,27 @@ export function variantPriceCents(sku: string, dose: string): number | null {
   const v = state.variantBySku[sku]?.[dose];
   if (v?.price_cents != null) return v.price_cents;
   return state.bySku[sku]?.price_cents_override ?? null;
+}
+
+export type DoseAvailability =
+  | { state: 'in_stock' }
+  | { state: 'lead'; leadDays: number } // order-on-demand; buy-2-get-1-free
+  | { state: 'out' }
+  | { state: 'unknown' }; // no per-dose row tracked yet
+
+/**
+ * Availability for a specific dose:
+ *   on_hand > 0                  → in_stock
+ *   on_hand 0 + lead_days > 0     → lead (ships in N days, buy 2 get 1 free)
+ *   on_hand 0 + no lead_days      → out
+ *   no per-dose row at all        → unknown (don't show a hard "out")
+ */
+export function doseAvailability(sku: string, dose: string): DoseAvailability {
+  const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
+  if (!v) return { state: 'unknown' };
+  if (v.on_hand > 0) return { state: 'in_stock' };
+  if (v.lead_days != null && v.lead_days > 0) return { state: 'lead', leadDays: v.lead_days };
+  return { state: 'out' };
 }
 
 /** Admin-set cited-clip for a SKU, if any. Returns null when no video_url
