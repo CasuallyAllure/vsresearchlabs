@@ -35,8 +35,18 @@ export interface ProductOverride {
   video_thumbnail: string | null;
 }
 
+/** Per-dose override (migration 011). price_cents null → fall back to lib/pricing. */
+export interface VariantOverride {
+  sku: string;
+  dose: string;
+  on_hand: number;
+  price_cents: number | null;
+}
+
 interface OverridesState {
   bySku: Record<string, ProductOverride>;
+  /** sku → dose → variant override */
+  variantBySku: Record<string, Record<string, VariantOverride>>;
   loaded: boolean;
   loading: boolean;
   error: string | null;
@@ -47,6 +57,7 @@ interface OverridesState {
 
 export const useProductOverrides = create<OverridesState>((set, get) => ({
   bySku: {},
+  variantBySku: {},
   loaded: false,
   loading: false,
   error: null,
@@ -85,7 +96,19 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
         ...row,
       } as ProductOverride;
     }
-    set({ bySku: next, loaded: true, loading: false, error: null });
+
+    // Per-dose overrides (migration 011). Optional — if the view isn't live yet
+    // (deploy landed before the migration), the catalog still works on formula
+    // pricing and per-sku stock.
+    const variantBySku: Record<string, Record<string, VariantOverride>> = {};
+    const { data: vData } = await supabase
+      .from('public_variant_overrides')
+      .select('sku, dose, on_hand, price_cents');
+    for (const row of (vData ?? []) as VariantOverride[]) {
+      (variantBySku[row.sku] ??= {})[row.dose] = row;
+    }
+
+    set({ bySku: next, variantBySku, loaded: true, loading: false, error: null });
   },
 
   getOverride: (sku: string) => get().bySku[sku] ?? null,
@@ -100,14 +123,19 @@ export function isSkuVisible(sku: string): boolean {
   return !o.hidden && !o.deleted_at;
 }
 
-/** Is the SKU in stock? Falls back to a deterministic hash when no row
- *  exists, so the dev experience still has variety. */
+/** Is the SKU in stock? Per-dose aware: a product is in stock if ANY of its
+ *  doses has stock. Falls back to the per-sku count, then to a deterministic
+ *  hash when nothing is known, so the dev experience still has variety. */
 export function isSkuInStock(sku: string): boolean {
-  const o = useProductOverrides.getState().bySku[sku];
-  if (o) {
-    if (o.deleted_at) return false;
-    return o.on_hand > 0;
+  const state = useProductOverrides.getState();
+  const o = state.bySku[sku];
+  if (o?.deleted_at) return false;
+  const variants = state.variantBySku[sku];
+  if (variants) {
+    const doses = Object.values(variants);
+    if (doses.length > 0) return doses.some((v) => v.on_hand > 0);
   }
+  if (o) return o.on_hand > 0;
   // Fallback: same hash-based heuristic as the old inStockByKey.
   let hash = 0;
   for (let i = 0; i < sku.length; i++) {
@@ -116,10 +144,27 @@ export function isSkuInStock(sku: string): boolean {
   return hash % 23 >= 4;
 }
 
+/** Is a specific dose of a SKU in stock? Returns true when no per-dose row
+ *  exists (unknown → don't block), false only when the dose is tracked at 0. */
+export function isDoseInStock(sku: string, dose: string): boolean {
+  const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
+  if (!v) return isSkuInStock(sku);
+  return v.on_hand > 0;
+}
+
 /** Price in cents, honoring an admin override. Returns null when no
  *  override exists — callers should fall back to lib/pricing. */
 export function priceOverrideCents(sku: string): number | null {
   return useProductOverrides.getState().bySku[sku]?.price_cents_override ?? null;
+}
+
+/** Per-dose price override in cents, if set. Falls back to the per-sku
+ *  override, then null (caller uses lib/pricing). */
+export function variantPriceCents(sku: string, dose: string): number | null {
+  const state = useProductOverrides.getState();
+  const v = state.variantBySku[sku]?.[dose];
+  if (v?.price_cents != null) return v.price_cents;
+  return state.bySku[sku]?.price_cents_override ?? null;
 }
 
 /** Admin-set cited-clip for a SKU, if any. Returns null when no video_url

@@ -21,24 +21,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import productsData from '../../data/products.json';
-import manifestData from '../../data/biopeptideManifest.json';
+import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
 import { AdminLayout } from './AdminLayout';
 import { downloadXlsx, downloadCsv, stamp, type Column } from '../../lib/exporters';
 import { parseCsvRecords } from '../../lib/csv';
 import { useProductOverrides } from '../../lib/productOverrides';
+import { tierPriceCents } from '../../lib/pricing';
 
-const products = productsData as unknown as Product[];
+// The full sellable catalog — exactly what the storefront renders (see
+// stores/productStore.ts: seed products + the generated biopeptide compounds).
+// The template and the upload validation MUST cover these SKUs and only these,
+// or rows for real products get rejected as "unknown SKU".
+const products = [
+  ...(productsData as unknown as Product[]),
+  ...(generatedCompounds as unknown as Product[]),
+];
 
-interface ManifestRow {
-  serial: number;
-  abbreviation: string;
-  model: string;
-  group?: string;
-  specification: string;
-}
-const manifest = manifestData as ManifestRow[];
-
+/** Per-sku override row (product_stock) — product-level fields. */
 interface StockRow {
   sku: string;
   on_hand: number;
@@ -51,11 +51,23 @@ interface StockRow {
   video_thumbnail: string | null;
 }
 
-/** One row of the downloadable template (current live values pre-filled). */
+/** Per-dose override row (product_variant_stock) — price + stock per strength. */
+interface VariantRow {
+  sku: string;
+  dose: string;
+  on_hand: number;
+  reorder_at: number | null;
+  price_cents: number | null;
+}
+
+/** One row of the downloadable template (current live values pre-filled).
+ *  The sheet is one row per dose; product-level fields (hidden, clip) repeat. */
 interface TemplateRow {
   sku: string;
   name: string;
   klass: string;
+  dose: string;
+  current_price: number | null; // reference only — ignored on import
   on_hand: number | null;
   price_usd: number | null;
   hidden: string;
@@ -69,6 +81,7 @@ interface TemplateRow {
 /** The payload we send per row to import_inventory (only set keys included). */
 interface ImportPayload {
   sku: string;
+  dose?: string;
   on_hand?: string;
   price_cents?: string;
   hidden?: string;
@@ -91,16 +104,12 @@ function catalogMeta(sku: string): { name: string; klass: string } {
       '';
     return { name: fromCatalog.name, klass };
   }
-  const stripped = sku.replace(/^VSR-RS-/, '');
-  const m = manifest.find((row) => row.abbreviation.replace(/\s+/g, '') === stripped);
-  if (m) return { name: `${m.model} — ${m.specification}`, klass: m.group ?? '' };
   return { name: sku, klass: '' };
 }
 
 function collectSkus(): string[] {
   const set = new Set<string>();
   for (const p of products) if (p.sku) set.add(p.sku);
-  for (const row of manifest) set.add(`VSR-RS-${row.abbreviation.replace(/\s+/g, '')}`);
   return Array.from(set).sort();
 }
 
@@ -110,6 +119,8 @@ const TEMPLATE_COLUMNS: Column<TemplateRow>[] = [
   { header: 'sku', value: (r) => r.sku },
   { header: 'name', value: (r) => r.name },
   { header: 'class', value: (r) => r.klass },
+  { header: 'dose', value: (r) => r.dose },
+  { header: 'current_price', value: (r) => r.current_price, type: 'currency' },
   { header: 'on_hand', value: (r) => r.on_hand, type: 'number' },
   { header: 'price_usd', value: (r) => r.price_usd, type: 'currency' },
   { header: 'hidden', value: (r) => r.hidden },
@@ -136,6 +147,7 @@ interface ImportResult {
 
 export function AdminImport() {
   const [stockBySku, setStockBySku] = useState<Record<string, StockRow> | null>(null);
+  const [variantBySku, setVariantBySku] = useState<Record<string, Record<string, VariantRow>>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedRow[] | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -158,32 +170,63 @@ export function AdminImport() {
       const map: Record<string, StockRow> = {};
       for (const r of (data ?? []) as StockRow[]) map[r.sku] = r;
       setStockBySku(map);
+
+      // Per-dose overrides (migration 011). Optional — older DBs lack the table.
+      const { data: vData } = await supabase
+        .from('product_variant_stock')
+        .select('sku, dose, on_hand, reorder_at, price_cents');
+      if (cancelled) return;
+      const vmap: Record<string, Record<string, VariantRow>> = {};
+      for (const r of (vData ?? []) as VariantRow[]) (vmap[r.sku] ??= {})[r.dose] = r;
+      setVariantBySku(vmap);
     }
     load();
     return () => { cancelled = true; };
   }, []);
 
-  // Build the template rows: every catalog SKU, pre-filled with live values.
+  // Build the template rows: one row per dose, pre-filled with live values.
+  // current_price is the price the storefront shows today (override or formula)
+  // for reference; price_usd is left blank so you only set what you change.
   const templateRows = useMemo<TemplateRow[]>(() => {
     const map = stockBySku ?? {};
-    return collectSkus().map((sku) => {
-      const s = map[sku];
-      const { name, klass } = catalogMeta(sku);
-      return {
-        sku,
-        name,
-        klass,
-        on_hand: s ? s.on_hand : null,
-        price_usd: s && s.price_cents_override != null ? s.price_cents_override / 100 : null,
-        hidden: s && s.hidden ? 'true' : '',
-        reorder_at: s && s.reorder_at != null ? s.reorder_at : null,
-        video_url: s?.video_url ?? '',
-        video_title: s?.video_title ?? '',
-        video_description: s?.video_description ?? '',
-        video_thumbnail: s?.video_thumbnail ?? '',
-      };
-    });
-  }, [stockBySku]);
+    const rows: TemplateRow[] = [];
+    const sorted = [...products].filter((p) => p.sku).sort((a, b) => a.sku.localeCompare(b.sku));
+    for (const p of sorted) {
+      const s = map[p.sku];
+      const klass =
+        (p as { family?: string; researchClassification?: string }).family ??
+        (p as { researchClassification?: string }).researchClassification ??
+        p.category ?? '';
+      const variants = Array.isArray(p.variants) && p.variants.length > 0
+        ? p.variants
+        : [{ dose: '' }];
+      let first = true;
+      for (const variant of variants) {
+        const dose = variant.dose ?? '';
+        const v = dose ? variantBySku[p.sku]?.[dose] : undefined;
+        const storedCents = v?.price_cents ?? (dose ? null : s?.price_cents_override ?? null);
+        const formula = dose ? tierPriceCents(p, dose) : (p.priceCents ?? null);
+        rows.push({
+          sku: p.sku,
+          name: p.name,
+          klass,
+          dose,
+          current_price: storedCents != null ? storedCents / 100 : (formula != null ? formula / 100 : null),
+          on_hand: v ? v.on_hand : (dose ? null : s?.on_hand ?? null),
+          price_usd: null,
+          // hidden / clip are product-level — surface them on the first dose row only.
+          hidden: first && s && s.hidden ? 'true' : '',
+          reorder_at: v && v.reorder_at != null ? v.reorder_at : (first && s && s.reorder_at != null ? s.reorder_at : null),
+          video_url: first ? (s?.video_url ?? '') : '',
+          video_title: first ? (s?.video_title ?? '') : '',
+          video_description: first ? (s?.video_description ?? '') : '',
+          video_thumbnail: first ? (s?.video_thumbnail ?? '') : '',
+        });
+        first = false;
+      }
+    }
+    return rows;
+  }, [stockBySku, variantBySku]);
 
   function downloadTemplate(kind: 'xlsx' | 'csv') {
     const fname = `vsr-inventory-${stamp(new Date())}`;
@@ -405,8 +448,10 @@ function mapRecords(text: string): ParsedRow[] {
   }
   return records.map((rec) => {
     const sku = (rec['sku'] ?? '').trim();
+    const dose = (rec['dose'] ?? '').trim();
     const { name } = sku ? catalogMeta(sku) : { name: '' };
     const payload: ImportPayload = { sku };
+    if (dose) payload.dose = dose;
     const fields: string[] = [];
     let error: string | undefined;
 
@@ -445,7 +490,7 @@ function mapRecords(text: string): ParsedRow[] {
       fields.push('clip');
     }
 
-    return { sku, name, payload, fields, error };
+    return { sku, name: dose ? `${name} · ${dose}` : name, payload, fields, error };
   });
 }
 

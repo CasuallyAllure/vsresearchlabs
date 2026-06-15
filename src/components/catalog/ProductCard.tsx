@@ -22,8 +22,8 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { inStockByKey } from '../../lib/stock';
-import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
+import { useProductOverrides, isSkuInStock } from '../../lib/productOverrides';
 import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
 
@@ -42,12 +42,15 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onInspect, showStock, showPurchase }: ProductCardProps) {
   const imageUrl = product.images?.[0] ?? null;
-  const stocked = inStockByKey(product.id);
+  // Subscribe to admin overrides so price/stock recompute when they load.
+  useProductOverrides((s) => s.variantBySku);
+  useProductOverrides((s) => s.bySku);
+  const stocked = isSkuInStock(product.sku);
   const variants = product.variants ?? [];
 
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
-  const priceCents = tierPriceCents(product, activeDose);
+  const priceCents = effectiveTierPriceCents(product, activeDose);
 
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);

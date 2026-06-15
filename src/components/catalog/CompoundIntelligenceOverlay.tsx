@@ -37,7 +37,8 @@ import { CompoundVideo } from './intelligence/CompoundVideo';
 import { getCompoundVideo } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
-import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
+import { useProductOverrides } from '../../lib/productOverrides';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
 
@@ -175,9 +176,12 @@ export function CompoundIntelligenceOverlay({
 
   // ─── Derived values ─────────────────────────────────────────────────────────
 
+  // Subscribe to admin overrides so the price recomputes when they load.
+  useProductOverrides((s) => s.variantBySku);
+  useProductOverrides((s) => s.bySku);
   const activeTier = ci.tiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
-  const priceCents = tierPriceCents(product, activeDoseLabel);
+  const priceCents = effectiveTierPriceCents(product, activeDoseLabel);
 
   const passportStats = useMemo(() => {
     const s: Array<{ label: string; value: string; highlight?: boolean }> = [];
