@@ -21,6 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { OrderStatusChip } from './AdminOrders';
+import { CARRIERS, carrierLabel, carrierTrackingUrl } from '../../lib/tracking';
 
 type OrderStatus =
   | 'pending_invoice'
@@ -43,10 +44,13 @@ interface OrderRecord {
   invoice_amount_cents: number | null;
   payment_method: string | null;
   tracking_number: string | null;
+  carrier: string | null;
   cancellation_reason: string | null;
   invoiced_at: string | null;
   paid_at: string | null;
   fulfilled_at: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   cancelled_at: string | null;
   created_at: string;
 }
@@ -103,7 +107,7 @@ export function AdminOrderDetail() {
       p_order_id: order.id,
       p_invoice_url: args.invoiceUrl,
       p_invoice_amount_cents: totalCents,
-      p_payment_method: 'Zelle (info@velariss.co)',
+      p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
       p_subtotal_cents: args.subtotalCents,
       p_shipping_cents: args.shippingCents,
     });
@@ -134,7 +138,7 @@ export function AdminOrderDetail() {
     else load();
   }
 
-  async function confirmFulfilled(tracking: string | null) {
+  async function confirmFulfilled(tracking: string | null, carrier: string | null) {
     if (!supabase || !order) return;
     setBusy(true);
     setActionError(null);
@@ -144,6 +148,7 @@ export function AdminOrderDetail() {
     const { error: rpcError } = await supabase.rpc('confirm_order_fulfilled', {
       p_order_id: order.id,
       p_tracking_number: tracking || null,
+      p_carrier: carrier || null,
     });
     if (rpcError) {
       setBusy(false);
@@ -175,6 +180,31 @@ export function AdminOrderDetail() {
       p_order_id: order.id,
       p_reason: reason,
     });
+    setBusy(false);
+    if (error) setActionError(error.message);
+    else load();
+  }
+
+  // Edit/attach tracking on an already-fulfilled order (no stock movement).
+  async function saveTracking(carrier: string | null, tracking: string | null) {
+    if (!supabase || !order) return;
+    setBusy(true);
+    setActionError(null);
+    const { error } = await supabase.rpc('set_order_tracking', {
+      p_order_id: order.id,
+      p_carrier: carrier || null,
+      p_tracking_number: tracking || null,
+    });
+    setBusy(false);
+    if (error) setActionError(error.message);
+    else load();
+  }
+
+  async function markDelivered() {
+    if (!supabase || !order) return;
+    setBusy(true);
+    setActionError(null);
+    const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: order.id });
     setBusy(false);
     if (error) setActionError(error.message);
     else load();
@@ -295,9 +325,14 @@ export function AdminOrderDetail() {
             busy={busy}
             defaultInvoiceAmount={order.invoice_amount_cents}
             defaultInvoiceUrl={order.invoice_url}
+            currentCarrier={order.carrier}
+            currentTracking={order.tracking_number}
+            deliveredAt={order.delivered_at}
             onSendInvoice={sendInvoice}
             onMarkPaid={markPaid}
             onConfirmFulfilled={confirmFulfilled}
+            onSaveTracking={saveTracking}
+            onMarkDelivered={markDelivered}
             onCancel={cancel}
           />
         </>
@@ -311,16 +346,22 @@ interface ActionPanelProps {
   busy: boolean;
   defaultInvoiceAmount: number | null;
   defaultInvoiceUrl: string | null;
+  currentCarrier: string | null;
+  currentTracking: string | null;
+  deliveredAt: string | null;
   onSendInvoice: (args: { invoiceUrl: string; subtotalCents: number; shippingCents: number }) => void;
   onMarkPaid: () => void;
-  onConfirmFulfilled: (tracking: string | null) => void;
+  onConfirmFulfilled: (tracking: string | null, carrier: string | null) => void;
+  onSaveTracking: (carrier: string | null, tracking: string | null) => void;
+  onMarkDelivered: () => void;
   onCancel: (reason: string) => void;
 }
 
 function ActionPanel({
   status, busy,
   defaultInvoiceAmount, defaultInvoiceUrl,
-  onSendInvoice, onMarkPaid, onConfirmFulfilled, onCancel,
+  currentCarrier, currentTracking, deliveredAt,
+  onSendInvoice, onMarkPaid, onConfirmFulfilled, onSaveTracking, onMarkDelivered, onCancel,
 }: ActionPanelProps) {
   const [invoiceUrl, setInvoiceUrl] = useState(defaultInvoiceUrl ?? '');
   const [subtotalUsd, setSubtotalUsd] = useState(
@@ -330,9 +371,24 @@ function ActionPanel({
   );
   const [shippingUsd, setShippingUsd] = useState('');
   const [tracking, setTracking] = useState('');
+  const [carrier, setCarrier] = useState('usps');
   const [cancelReason, setCancelReason] = useState('');
 
-  if (status === 'cancelled' || status === 'refunded' || status === 'fulfilled') {
+  // Fulfilled orders get a tracking-edit + delivered surface, not a dead end.
+  if (status === 'fulfilled') {
+    return (
+      <FulfilledActions
+        busy={busy}
+        currentCarrier={currentCarrier}
+        currentTracking={currentTracking}
+        deliveredAt={deliveredAt}
+        onSaveTracking={onSaveTracking}
+        onMarkDelivered={onMarkDelivered}
+      />
+    );
+  }
+
+  if (status === 'cancelled' || status === 'refunded') {
     return (
       <section className="research-surface-solid p-[var(--space-5)]">
         <p className="text-[12px] text-ink/55">
@@ -427,22 +483,40 @@ function ActionPanel({
 
       {status === 'paid' && (
         <ActionCard title="Confirm fulfillment">
-          <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Tracking number (optional)</label>
-          <input
-            type="text"
-            value={tracking}
-            onChange={(e) => setTracking(e.target.value)}
-            className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 mb-[var(--space-3)]"
-          />
+          <div className="grid grid-cols-[110px_1fr] gap-[var(--space-3)] mb-[var(--space-3)]">
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Carrier</label>
+              <select
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink focus:outline-none focus:border-ink/40"
+              >
+                {CARRIERS.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Tracking number (optional)</label>
+              <input
+                type="text"
+                value={tracking}
+                onChange={(e) => setTracking(e.target.value)}
+                placeholder="e.g. 9400 1000 0000 0000 0000 00"
+                className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40"
+              />
+            </div>
+          </div>
           <p className="text-[11px] text-ink/45 leading-relaxed mb-[var(--space-4)]">
             <strong className="text-ink/75">Decrements stock for every line.</strong>{' '}
             If any SKU is short, the entire transaction rolls back and no
             stock moves. Each line writes a row to{' '}
-            <code className="font-mono text-holo-light/70">stock_movements</code>.
+            <code className="font-mono text-holo-light/70">stock_movements</code>. The carrier +
+            tracking number power the customer’s <span className="font-mono text-ink/70">/track</span> page.
           </p>
           <button
             type="button"
-            onClick={() => onConfirmFulfilled(tracking.trim() || null)}
+            onClick={() => onConfirmFulfilled(tracking.trim() || null, tracking.trim() ? carrier : null)}
             disabled={busy}
             className="rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ boxShadow: '0 0 8px rgba(52, 114, 122,0.28), inset 0 0 6px rgba(52, 114, 122,0.08)' }}
@@ -474,6 +548,91 @@ function ActionPanel({
         >
           {busy ? 'Cancelling…' : 'Cancel order'}
         </button>
+      </ActionCard>
+    </section>
+  );
+}
+
+interface FulfilledActionsProps {
+  busy: boolean;
+  currentCarrier: string | null;
+  currentTracking: string | null;
+  deliveredAt: string | null;
+  onSaveTracking: (carrier: string | null, tracking: string | null) => void;
+  onMarkDelivered: () => void;
+}
+
+function FulfilledActions({
+  busy, currentCarrier, currentTracking, deliveredAt, onSaveTracking, onMarkDelivered,
+}: FulfilledActionsProps) {
+  const [carrier, setCarrier] = useState(currentCarrier ?? 'usps');
+  const [tracking, setTracking] = useState(currentTracking ?? '');
+  const previewUrl = carrierTrackingUrl(carrier, tracking.trim());
+
+  return (
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-4)]">
+      <ActionCard title={currentTracking ? 'Update tracking' : 'Add tracking'}>
+        <div className="grid grid-cols-[110px_1fr] gap-[var(--space-3)] mb-[var(--space-3)]">
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Carrier</label>
+            <select
+              value={carrier}
+              onChange={(e) => setCarrier(e.target.value)}
+              className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink focus:outline-none focus:border-ink/40"
+            >
+              {CARRIERS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Tracking number</label>
+            <input
+              type="text"
+              value={tracking}
+              onChange={(e) => setTracking(e.target.value)}
+              placeholder="e.g. 9400 1000 0000 0000 0000 00"
+              className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40"
+            />
+          </div>
+        </div>
+        {previewUrl && (
+          <p className="text-[11px] text-ink/45 mb-[var(--space-3)] truncate">
+            Customer link: <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-holo-light/80 underline underline-offset-2">{carrierLabel(carrier)} ↗</a>
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={() => onSaveTracking(tracking.trim() ? carrier : null, tracking.trim() || null)}
+          disabled={busy}
+          className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {busy ? 'Saving…' : 'Save tracking'}
+        </button>
+      </ActionCard>
+
+      <ActionCard title="Delivery">
+        {deliveredAt ? (
+          <p className="text-[12px] text-[#2E7D5B]">
+            Delivered {formatTs(deliveredAt)}.
+          </p>
+        ) : (
+          <>
+            <p className="text-[11px] text-ink/45 leading-relaxed mb-[var(--space-4)]">
+              Mark the order delivered once the carrier confirms it. This updates the
+              customer’s <span className="font-mono text-ink/70">/track</span> page and is the
+              trigger point for a delivered email / discount later.
+            </p>
+            <button
+              type="button"
+              onClick={onMarkDelivered}
+              disabled={busy}
+              className="rounded-full bg-[#2E7D5B]/[0.12] border border-[#2E7D5B]/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-[#2E7D5B] hover:bg-[#2E7D5B]/[0.18] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {busy ? 'Updating…' : 'Mark delivered'}
+            </button>
+          </>
+        )}
       </ActionCard>
     </section>
   );

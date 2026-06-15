@@ -36,6 +36,7 @@ import type { Document } from '../types';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
 import { CompoundIntelligenceHero } from '../components/landing/CompoundIntelligenceHero';
 import { HeroHoloCarousel } from '../components/landing/HeroHoloCarousel';
+import { VideoIntroModule } from '../components/landing/VideoIntroModule';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
 import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
@@ -823,6 +824,11 @@ export function Landing() {
             }
           `}</style>
         </div>
+      </section>
+
+      {/* ── INTRO VIDEO CAROUSEL — 3 tabs, swipeable ────────────────────── */}
+      <section className="px-[var(--space-6)] py-[var(--space-8)] sm:py-[var(--space-10)]">
+        <VideoIntroModule />
       </section>
 
       {/* ── 01 · RESEARCH PROCUREMENT ────────────────────────────────────── */}
