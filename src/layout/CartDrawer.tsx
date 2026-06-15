@@ -26,6 +26,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
@@ -161,7 +162,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     setSubmit({ kind: 'success', email: sentEmail, reference });
   }
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -470,6 +471,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           </>
         )}
       </aside>
-    </>
+    </>,
+    document.body,
   );
 }

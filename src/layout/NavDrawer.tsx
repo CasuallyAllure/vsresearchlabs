@@ -22,6 +22,7 @@
  */
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { Logo } from '../components/brand/Logo';
@@ -190,7 +191,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
     };
   }, [open]);
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -345,6 +346,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </Link>
         </div>
       </aside>
-    </>
+    </>,
+    document.body,
   );
 }
