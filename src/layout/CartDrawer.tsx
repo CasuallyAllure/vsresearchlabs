@@ -57,7 +57,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
+  const [street, setStreet] = useState('');
+  const [city, setCity] = useState('');
+  const [stateRegion, setStateRegion] = useState('');
+  const [zip, setZip] = useState('');
   const [human, setHuman] = useState(false);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
 
@@ -98,7 +101,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     firstName.trim().length === 0 ||
     lastName.trim().length === 0 ||
     !emailValid ||
-    address.trim().length === 0 ||
+    street.trim().length === 0 ||
+    city.trim().length === 0 ||
+    stateRegion.trim().length === 0 ||
+    zip.trim().length === 0 ||
     !human ||
     items.length === 0;
 
@@ -119,7 +125,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     const payload = {
       name: `${firstName.trim()} ${lastName.trim()}`,
       contact: email.trim(),
-      notes: `Shipping address: ${address.trim()}`,
+      ship_street: street.trim(),
+      ship_city: city.trim(),
+      ship_state: stateRegion.trim(),
+      ship_zip: zip.trim(),
+      ship_country: 'US',
       items: items.map((i) => ({
         product: {
           id: i.product.id,
@@ -157,7 +167,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     setFirstName('');
     setLastName('');
     setEmail('');
-    setAddress('');
+    setStreet('');
+    setCity('');
+    setStateRegion('');
+    setZip('');
     setHuman(false);
     setSubmit({ kind: 'success', email: sentEmail, reference });
   }
@@ -306,19 +319,50 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 />
               </div>
               <div>
-                <label htmlFor="cart-address" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                <label htmlFor="cart-street" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
                   Shipping address *
                 </label>
-                <textarea
-                  id="cart-address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                <input
+                  id="cart-street"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
                   autoComplete="street-address"
                   required
-                  rows={2}
-                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors resize-y"
-                  placeholder="Street, city, state, ZIP"
+                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors mb-2"
+                  placeholder="Street address"
                 />
+                <div className="grid grid-cols-[1fr_70px_90px] gap-2">
+                  <input
+                    aria-label="City"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    autoComplete="address-level2"
+                    required
+                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    placeholder="City"
+                  />
+                  <input
+                    aria-label="State"
+                    value={stateRegion}
+                    onChange={(e) => setStateRegion(e.target.value)}
+                    autoComplete="address-level1"
+                    required
+                    maxLength={3}
+                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors uppercase"
+                    placeholder="ST"
+                  />
+                  <input
+                    aria-label="ZIP code"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    autoComplete="postal-code"
+                    inputMode="numeric"
+                    required
+                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    placeholder="ZIP"
+                  />
+                </div>
+                <p className="mt-1.5 text-[10px] text-ink/40">The ZIP is how you’ll look up your order at <span className="font-mono">/track</span>.</p>
               </div>
               <label className="flex items-start gap-2 cursor-pointer select-none">
                 <input

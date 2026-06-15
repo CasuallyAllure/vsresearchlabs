@@ -205,9 +205,22 @@ export function AdminOrderDetail() {
     setBusy(true);
     setActionError(null);
     const { error } = await supabase.rpc('mark_order_delivered', { p_order_id: order.id });
+    if (error) {
+      setBusy(false);
+      setActionError(error.message);
+      return;
+    }
+    // Notify the buyer (delivered + discount). Email failure does not undo the
+    // delivered flag — admin can re-trigger by re-clicking after a fix.
+    const { error: emailError } = await supabase.functions.invoke(
+      'send-delivered-notification',
+      { body: { order_id: order.id } },
+    );
     setBusy(false);
-    if (error) setActionError(error.message);
-    else load();
+    if (emailError) {
+      setActionError(`Marked delivered, but the delivered email failed: ${emailError.message}`);
+    }
+    load();
   }
 
   return (
@@ -237,7 +250,7 @@ export function AdminOrderDetail() {
                   {order.order_number}
                 </h2>
               </div>
-              <OrderStatusChip status={order.status} />
+              <OrderStatusChip status={order.status} deliveredAt={order.delivered_at} />
             </div>
             <dl className="mt-[var(--space-4)] grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-4)] text-[12px]">
               <div>

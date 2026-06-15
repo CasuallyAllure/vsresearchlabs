@@ -15,6 +15,7 @@ import { Catalog } from './pages/Catalog';
 import { Research } from './pages/Research';
 import { CartPage } from './pages/CartPage';
 import { Contact } from './pages/Contact';
+import { TrackOrder } from './pages/TrackOrder';
 import { Documentation } from './pages/Documentation';
 import { DocumentDetail } from './pages/DocumentDetail';
 import { AdminList } from './pages/admin/AdminList';
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/track" element={<TrackOrder />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/documentation/:id" element={<DocumentDetail />} />
             <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />

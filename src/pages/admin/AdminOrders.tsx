@@ -26,6 +26,7 @@ interface OrderRow {
   buyer_contact: string;
   buyer_organization: string | null;
   invoice_amount_cents: number | null;
+  delivered_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,7 +57,7 @@ export function AdminOrders() {
       }
       let q = supabase
         .from('orders')
-        .select('id, order_number, status, buyer_name, buyer_contact, buyer_organization, invoice_amount_cents, created_at, updated_at')
+        .select('id, order_number, status, buyer_name, buyer_contact, buyer_organization, invoice_amount_cents, delivered_at, created_at, updated_at')
         .order('created_at', { ascending: false })
         .limit(200);
       if (filter === 'OPEN') q = q.in('status', OPEN_STATUSES);
@@ -142,7 +143,7 @@ export function AdminOrders() {
                   <span className="font-mono text-[11.5px] text-ink/75 tabular-nums shrink-0 w-[100px] text-right">
                     {formatCents(row.invoice_amount_cents)}
                   </span>
-                  <OrderStatusChip status={row.status} />
+                  <OrderStatusChip status={row.status} deliveredAt={row.delivered_at} />
                 </div>
               </Link>
             </li>
@@ -169,19 +170,29 @@ function formatCents(cents: number | null): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function OrderStatusChip({ status }: { status: OrderStatus }) {
+export function OrderStatusChip({ status, deliveredAt }: { status: OrderStatus; deliveredAt?: string | null }) {
+  // A fulfilled order with a delivery date reads as "delivered" — the order
+  // status enum has no 'delivered' value, so delivered_at is the signal.
+  if (deliveredAt && status === 'fulfilled') {
+    return (
+      <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]">
+        delivered
+      </span>
+    );
+  }
   let cls = '';
+  let label = status.replace(/_/g, ' ');
   switch (status) {
     case 'pending_invoice': cls = 'border-ink/25 text-ink/80 bg-ink/[0.05]'; break;
     case 'invoice_sent':    cls = 'border-holo/40 text-holo-light/80 bg-holo/[0.08]'; break;
     case 'paid':            cls = 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]'; break;
-    case 'fulfilled':       cls = 'border-ink/15 text-ink/55 bg-ink/[0.02]'; break;
+    case 'fulfilled':       cls = 'border-ink/15 text-ink/55 bg-ink/[0.02]'; label = 'shipped'; break;
     case 'cancelled':       cls = 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]'; break;
     case 'refunded':        cls = 'border-red-400/30 text-red-300/65 bg-red-400/[0.04]'; break;
   }
   return (
     <span className={`shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${cls}`}>
-      {status.replace(/_/g, ' ')}
+      {label}
     </span>
   );
 }

@@ -46,6 +46,11 @@ interface InquiryPayload {
   contact: string;
   organization?: string;
   notes?: string;
+  ship_street?: string;
+  ship_city?: string;
+  ship_state?: string;
+  ship_zip?: string;
+  ship_country?: string;
   items: InquiryItemPayload[];
 }
 
@@ -154,6 +159,15 @@ function buildBusinessEmailHtml(
   const notesSection  = payload.notes
     ? `<p style="margin-top:16px;"><strong>Notes:</strong><br/>${escapeHtml(payload.notes).replace(/\n/g, "<br/>")}</p>`
     : "";
+  const addrParts = [
+    payload.ship_street,
+    [payload.ship_city, payload.ship_state].filter(Boolean).join(", "),
+    payload.ship_zip,
+    payload.ship_country,
+  ].filter((p) => p && p.trim());
+  const shipSection = addrParts.length
+    ? `<p style="margin-top:16px;"><strong>Ship to:</strong><br/>${addrParts.map((p) => escapeHtml(p as string)).join("<br/>")}</p>`
+    : "";
 
   return `
     <div style="font-family:Inter,system-ui,sans-serif;color:#111;max-width:640px;margin:0 auto;">
@@ -166,6 +180,7 @@ function buildBusinessEmailHtml(
       <p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>
       <p><strong>Contact:</strong> ${escapeHtml(payload.contact)}</p>
       ${orgLine}
+      ${shipSection}
       ${notesSection}
       <h3 style="margin-top:24px;font-weight:400;letter-spacing:0.03em;">Requested Inventory</h3>
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
@@ -280,6 +295,11 @@ Deno.serve(async (req: Request) => {
   const contact      = (payload.contact      ?? "").trim();
   const organization = (payload.organization ?? "").trim();
   const notes        = (payload.notes        ?? "").trim();
+  const shipStreet   = (payload.ship_street  ?? "").trim().slice(0, 200);
+  const shipCity     = (payload.ship_city    ?? "").trim().slice(0, 120);
+  const shipState    = (payload.ship_state   ?? "").trim().slice(0,  60);
+  const shipZip      = (payload.ship_zip     ?? "").trim().slice(0,  20);
+  const shipCountry  = (payload.ship_country ?? "").trim().slice(0,  60);
   const rawItems: unknown[] = Array.isArray(payload.items)
     ? (payload.items as unknown[])
     : [];
@@ -362,6 +382,11 @@ Deno.serve(async (req: Request) => {
       contact,
       organization:    organization || null,
       notes:           notes || null,
+      ship_street:     shipStreet  || null,
+      ship_city:       shipCity    || null,
+      ship_state:      shipState   || null,
+      ship_zip:        shipZip     || null,
+      ship_country:    shipCountry || null,
       status:          "OPEN",
       intake_channel:  INTAKE_CHANNEL,
       processing_node: PROCESSING_NODE,

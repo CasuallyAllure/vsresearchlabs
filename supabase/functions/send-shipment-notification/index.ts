@@ -53,18 +53,45 @@ interface OrderLine {
   sku: string;
 }
 
+function carrierLabel(carrier: string | null): string {
+  const map: Record<string, string> = { usps: "USPS", ups: "UPS", fedex: "FedEx", dhl: "DHL" };
+  if (!carrier) return "the carrier";
+  return map[carrier.toLowerCase()] ?? carrier;
+}
+
+function carrierTrackingUrl(carrier: string | null, trackingNumber: string | null): string | null {
+  if (!trackingNumber) return null;
+  const num = encodeURIComponent(trackingNumber.trim());
+  switch ((carrier ?? "").toLowerCase()) {
+    case "usps":  return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${num}`;
+    case "ups":   return `https://www.ups.com/track?tracknum=${num}`;
+    case "fedex": return `https://www.fedex.com/fedextrack/?trknbr=${num}`;
+    case "dhl":   return `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${num}`;
+    default:      return `https://www.google.com/search?q=${num}+tracking`;
+  }
+}
+
 function buildShipmentEmailHtml(args: {
   orderNumber: string;
   buyerName: string;
   trackingNumber: string | null;
+  carrier: string | null;
   lines: OrderLine[];
 }): string {
+  const trackUrl = carrierTrackingUrl(args.carrier, args.trackingNumber);
   const trackingBlock = args.trackingNumber
     ? `
         <p style="margin:18px 0;">
-          <strong>Tracking number:</strong>
+          <strong>${escapeHtml(carrierLabel(args.carrier))} tracking number:</strong>
           <span style="font-family:monospace;font-size:14px;">${escapeHtml(args.trackingNumber)}</span>
         </p>
+        ${trackUrl ? `
+        <p style="margin:18px 0;">
+          <a href="${escapeHtml(trackUrl)}" style="display:inline-block;background:#34727A;color:#fff;text-decoration:none;font-size:13px;letter-spacing:0.04em;padding:11px 22px;border-radius:999px;">
+            Track your package &rarr;
+          </a>
+        </p>
+        ` : ""}
       `
     : `
         <p style="margin:18px 0;color:#555;">
@@ -180,7 +207,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("id, order_number, buyer_name, buyer_contact, tracking_number, status")
+    .select("id, order_number, buyer_name, buyer_contact, tracking_number, carrier, status")
     .eq("id", payload.order_id)
     .single();
 
@@ -216,6 +243,7 @@ Deno.serve(async (req: Request) => {
     orderNumber:    order.order_number,
     buyerName:      order.buyer_name,
     trackingNumber: order.tracking_number,
+    carrier:        order.carrier ?? null,
     lines:          (lines ?? []) as OrderLine[],
   });
 
