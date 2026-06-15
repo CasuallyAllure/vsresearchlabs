@@ -120,43 +120,38 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[] }): string
 <body style="margin:0;padding:0;background:#F4EFE6;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1714;">
   <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
 
-    <!-- Brand header -->
-    <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-      <tr>
-        <td style="vertical-align:middle;">
-          <div style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#34727A;font-weight:600;margin-bottom:4px;">VS Research Labs</div>
-          <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;">Northern California Biopeptide Sciences</div>
-        </td>
-        <td style="vertical-align:middle;text-align:right;">
-          <span style="display:inline-block;padding:5px 11px;border-radius:999px;background:#FBF9F4;border:0.5px solid rgba(26,23,20,0.18);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;letter-spacing:0.18em;color:#1A1714;text-transform:uppercase;">Invoice</span>
-        </td>
-      </tr>
-    </table>
+    <!-- Centered brand hero -->
+    <div style="text-align:center;margin:0 0 28px;">
+      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="96" height="96" style="display:inline-block;width:96px;height:96px;margin-bottom:14px;border:0;" />
+      <div style="font-size:12px;letter-spacing:0.30em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:4px;">VS Research Labs</div>
+      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:14px;">Northern California Biopeptide Sciences</div>
+      <span style="display:inline-block;padding:5px 13px;border-radius:999px;background:#FBF9F4;border:0.5px solid rgba(26,23,20,0.18);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;letter-spacing:0.18em;color:#1A1714;text-transform:uppercase;">Invoice</span>
+    </div>
 
     <!-- Order card -->
     <div style="background:#FBF9F4;border:1px solid rgba(26,23,20,0.10);border-radius:12px;padding:24px;">
 
-      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Order Reference</div>
-      <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:24px;letter-spacing:0.03em;color:#1A1714;font-weight:600;margin-bottom:4px;word-break:break-all;">${escapeHtml(order.order_number)}</div>
-      <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:#6F665C;letter-spacing:0.08em;margin-bottom:20px;">${escapeHtml(order.created_at.slice(0, 10))} · ${escapeHtml(order.created_at.slice(11, 19))} UTC</div>
+      <!-- Centered Order Reference -->
+      <div style="text-align:center;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #E4DFD5;">
+        <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:8px;">Order Reference</div>
+        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:22px;letter-spacing:0.04em;color:#1A1714;font-weight:700;margin-bottom:6px;word-break:break-all;">${escapeHtml(order.order_number)}</div>
+        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:#6F665C;letter-spacing:0.08em;">${escapeHtml(order.created_at.slice(0, 10))} · ${escapeHtml(order.created_at.slice(11, 19))} UTC</div>
+      </div>
 
-      <!-- Bill / Ship -->
-      <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:22px;">
-        <tr>
-          <td style="vertical-align:top;padding-right:16px;width:50%;">
-            <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Bill To</div>
-            <div style="font-size:13px;color:#1A1714;line-height:1.55;">
-              <strong>${escapeHtml(order.buyer_name)}</strong><br/>
-              ${escapeHtml(order.buyer_contact)}
-              ${order.buyer_organization ? `<br/>${escapeHtml(order.buyer_organization)}` : ""}
-            </div>
-          </td>
-          <td style="vertical-align:top;width:50%;">
-            <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Ship To</div>
-            <div style="font-size:13px;color:#1A1714;line-height:1.55;">${shipBlock || '<span style="color:#A09689;">— to be provided —</span>'}</div>
-          </td>
-        </tr>
-      </table>
+      <!-- Bill To stacked above Ship To for symmetry -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Bill To</div>
+        <div style="font-size:13px;color:#1A1714;line-height:1.55;">
+          <strong>${escapeHtml(order.buyer_name)}</strong><br/>
+          ${escapeHtml(order.buyer_contact)}
+          ${order.buyer_organization ? `<br/>${escapeHtml(order.buyer_organization)}` : ""}
+        </div>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Ship To</div>
+        <div style="font-size:13px;color:#1A1714;line-height:1.55;">${shipBlock || '<span style="color:#A09689;">— to be provided —</span>'}</div>
+      </div>
 
       <!-- Items -->
       <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:8px;">Items</div>
