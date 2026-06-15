@@ -62,16 +62,28 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       return;
     }
     set({ loading: true, error: null });
-    const { data, error } = await supabase
-      .from('public_product_overrides')
-      .select('sku, on_hand, hidden, price_cents_override, deleted_at, video_url, video_title, video_description, video_thumbnail');
+    // Prefer the full select (with the cited-clip fields from migration 007).
+    // If those columns aren't live yet, fall back to the base columns so the
+    // catalog never breaks on a deploy that lands before the migration.
+    const FULL = 'sku, on_hand, hidden, price_cents_override, deleted_at, video_url, video_title, video_description, video_thumbnail';
+    const BASE = 'sku, on_hand, hidden, price_cents_override, deleted_at';
+    let { data, error } = await supabase.from('public_product_overrides').select(FULL);
+    if (error) {
+      ({ data, error } = await supabase.from('public_product_overrides').select(BASE));
+    }
     if (error) {
       set({ loading: false, error: error.message });
       return;
     }
     const next: Record<string, ProductOverride> = {};
-    for (const row of (data ?? []) as ProductOverride[]) {
-      next[row.sku] = row;
+    for (const row of (data ?? []) as Partial<ProductOverride>[]) {
+      next[row.sku as string] = {
+        video_url: null,
+        video_title: null,
+        video_description: null,
+        video_thumbnail: null,
+        ...row,
+      } as ProductOverride;
     }
     set({ bySku: next, loaded: true, loading: false, error: null });
   },

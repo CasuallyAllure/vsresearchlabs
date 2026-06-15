@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
@@ -229,7 +230,7 @@ export function CompoundIntelligenceOverlay({
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div aria-hidden="true" onClick={handleClose} className="fixed inset-0 z-[70]"
@@ -542,6 +543,7 @@ export function CompoundIntelligenceOverlay({
       </div>
 
       <IntelModuleStyles />
-    </>
+    </>,
+    document.body,
   );
 }

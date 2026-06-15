@@ -7,17 +7,23 @@
 // thumbnail URL. The admin "Fetch from TikTok" button calls this to pre-fill
 // the cited-clip fields — same effect we wired by hand for MOTS-C.
 //
-// NOTE on thumbnails: oEmbed's thumbnail_url is a TikTok CDN url that is signed
-// and EXPIRES. It's fine for a quick preview, but for a permanent poster host
-// the image (e.g. /public/media/<slug>.jpg, or Supabase Storage) and paste that
-// stable url into the thumbnail field. The response flags this via
+// THUMBNAILS: oEmbed's thumbnail_url is a TikTok CDN url that is signed and
+// EXPIRES. When a `sku` is supplied, this function downloads that image and
+// uploads a PERMANENT copy to the public `compound-media` Storage bucket, then
+// returns that stable url (and sets `thumbnailExpires: false`). If hosting
+// fails (or no sku), it falls back to the expiring CDN url with
 // `thumbnailExpires: true`.
 //
-// Required env vars: ALLOWED_ORIGIN (omit for * in dev).
+// Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (auto-injected),
+//   ALLOWED_ORIGIN (omit for * in dev).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const MEDIA_BUCKET = "compound-media";
 const UA = "Mozilla/5.0 (compatible; VSRLabs/1.0; +https://vsresearchlabs.com)";
 
 const CORS_HEADERS = {

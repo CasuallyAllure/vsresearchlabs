@@ -22,6 +22,7 @@ import { AdminEdit } from './pages/admin/AdminEdit';
 import { AdminGate } from './pages/admin/AdminGate';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminInventory } from './pages/admin/AdminInventory';
+import { AdminImport } from './pages/admin/AdminImport';
 import { AdminInquiries } from './pages/admin/AdminInquiries';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminOrderDetail } from './pages/admin/AdminOrderDetail';
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/documentation/:id" element={<DocumentDetail />} />
             <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
             <Route path="/admin/inventory" element={<AdminGate><AdminInventory /></AdminGate>} />
+            <Route path="/admin/import" element={<AdminGate><AdminImport /></AdminGate>} />
             <Route path="/admin/inquiries" element={<AdminGate><AdminInquiries /></AdminGate>} />
             <Route path="/admin/orders" element={<AdminGate><AdminOrders /></AdminGate>} />
             <Route path="/admin/orders/:id" element={<AdminGate><AdminOrderDetail /></AdminGate>} />

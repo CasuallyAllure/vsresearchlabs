@@ -24,7 +24,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { CompoundIntelligenceOverlay } from '../catalog/CompoundIntelligenceOverlay';
 import productsData from '../../data/products.json';
 import type { Product, ProductStudy, StudyModel } from '../../types';
 import { useCart } from '../../hooks/useCart';
@@ -167,9 +167,11 @@ function IdentityRow({ label, value }: { label: string; value: string }) {
 function SlidePanel({
   ci,
   product,
+  onOpenRecord,
 }: {
   ci: CompoundIntelligence;
   product: Product;
+  onOpenRecord: () => void;
 }) {
   const add = useCart((s) => s.add);
   return (
@@ -250,13 +252,14 @@ function SlidePanel({
             <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Add to inquiry</span>
           </button>
-          <Link
-            to={`/product/${product.id}`}
+          <button
+            type="button"
+            onClick={onOpenRecord}
             className="group inline-flex items-center gap-1.5 px-1 text-[10.5px] uppercase tracking-[0.2em] text-holo/65 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span>Full record</span>
             <span aria-hidden className="text-holo/45 transition-colors group-hover:text-holo-light">↗</span>
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -525,6 +528,7 @@ export function CompoundIntelligenceHero() {
   const product = products.find((p) => p.slug === FEATURED_SLUG);
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [recordOpen, setRecordOpen] = useState(false);
 
   const go = useCallback((i: number) => {
     const t = trackRef.current;
@@ -658,7 +662,7 @@ export function CompoundIntelligenceHero() {
             aria-label="Slide 1: Visual Compound Panel"
             className="min-w-full max-w-full shrink-0 snap-start snap-always"
           >
-            <SlidePanel ci={ci} product={product} />
+            <SlidePanel ci={ci} product={product} onOpenRecord={() => setRecordOpen(true)} />
           </section>
           <section
             aria-label="Slide 2: Intelligence Dossier"
@@ -717,6 +721,9 @@ export function CompoundIntelligenceHero() {
           </div>
         </div>
       </div>
+      {recordOpen && (
+        <CompoundIntelligenceOverlay product={product} onClose={() => setRecordOpen(false)} />
+      )}
     </div>
   );
 }

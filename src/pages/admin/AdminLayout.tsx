@@ -20,6 +20,7 @@ const TABS: Array<{ to: string; label: string; match?: (p: string) => boolean }>
   { to: '/admin/orders',        label: 'Orders',       match: (p) => p.startsWith('/admin/orders') },
   { to: '/admin/customers',     label: 'Customers',    match: (p) => p.startsWith('/admin/customers') },
   { to: '/admin/inventory',     label: 'Inventory',    match: (p) => p.startsWith('/admin/inventory') },
+  { to: '/admin/import',        label: 'Import',       match: (p) => p.startsWith('/admin/import') },
   { to: '/admin/stock-history', label: 'Stock log',    match: (p) => p.startsWith('/admin/stock-history') },
   { to: '/admin/reports',       label: 'Reports',      match: (p) => p.startsWith('/admin/reports') },
   { to: '/admin/audit-log',     label: 'Audit log',    match: (p) => p.startsWith('/admin/audit-log') },
