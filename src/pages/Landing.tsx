@@ -305,7 +305,7 @@ export function Landing() {
                 }}
               >
               <a
-                href="https://wa.me/15555551234"
+                href="https://chat.whatsapp.com/L2cbscwNV6gDttj1oYbFyC"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Contact us on WhatsApp"

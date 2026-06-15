@@ -31,6 +31,8 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
+import { tierPriceCents } from '../lib/pricing';
+import { deriveProductDose } from '../types';
 
 const MAX_QTY = 999;
 
@@ -139,10 +141,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
+        unitPriceCents: tierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
       })),
     };
 
-    const { data, error } = await supabase.functions.invoke('send-inquiry', {
+    const { data, error } = await supabase.functions.invoke('place-order', {
       body: payload,
     });
 
@@ -152,14 +155,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           ? String((data as { error: unknown }).error)
           : null) ??
         error?.message ??
-        'Failed to send inquiry. Please try again.';
+        'Failed to place order. Please try again.';
       setSubmit({ kind: 'error', message });
       return;
     }
 
     const reference =
-      data && typeof data === 'object' && 'referenceId' in data
-        ? String((data as { referenceId: unknown }).referenceId)
+      data && typeof data === 'object' && 'orderNumber' in data
+        ? String((data as { orderNumber: unknown }).orderNumber)
         : undefined;
 
     const sentEmail = email.trim();

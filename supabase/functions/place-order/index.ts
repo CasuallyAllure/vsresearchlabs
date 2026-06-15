@@ -251,34 +251,64 @@ function buildBusinessEmailHtml(
   payload: OrderPayload, orderNumber: string, referenceId: string, totalCents: number,
 ): string {
   const org = payload.organization
-    ? `<p><strong>Organization:</strong> ${escapeHtml(payload.organization)}</p>` : "";
+    ? `<tr><td style="padding:2px 0;">Organization</td><td style="padding:2px 0;text-align:right;">${escapeHtml(payload.organization)}</td></tr>` : "";
   const notes = payload.notes
-    ? `<p><strong>Notes:</strong><br/>${escapeHtml(payload.notes).replace(/\n/g, "<br/>")}</p>` : "";
+    ? `<div style="border:1px solid #eee;border-radius:6px;padding:10px 12px;margin:14px 0;background:#fafafa;color:#333;font-size:13px;"><strong style="display:block;margin-bottom:4px;color:#666;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;font-size:11px;">Buyer notes</strong>${escapeHtml(payload.notes).replace(/\n/g, "<br/>")}</div>` : "";
   return `
-    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:640px;margin:0 auto;">
-      <p style="font-family:monospace;font-size:12px;color:#888;margin:0 0 6px;">${escapeHtml(orderNumber)} · ref ${escapeHtml(referenceId)}</p>
-      <h2 style="font-weight:300;margin:0 0 16px;">New order — invoice auto-sent</h2>
-      <p><strong>Buyer:</strong> ${escapeHtml(payload.name)}</p>
-      <p><strong>Contact:</strong> ${escapeHtml(payload.contact)}</p>
-      ${org}${notes}
-      <p><strong>Total:</strong> ${usd(totalCents)}</p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:12px;">
-        <thead><tr style="text-align:left;color:#666;">
-          <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">SKU</th>
-          <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">Item</th>
-          <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Qty</th>
-          <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Line</th>
-        </tr></thead>
-        <tbody>${payload.items.map((i) => {
-          const q = clampQty(i.quantity); const u = clampCents(i.unitPriceCents);
-          return `<tr>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:12px;color:#555;">${i.product?.sku ? escapeHtml(i.product.sku) : "—"}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;">${escapeHtml(i.product?.name ?? "Item")}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${q}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-family:monospace;">${u ? usd(u * q) : "—"}</td>
-          </tr>`;
-        }).join("")}</tbody>
+    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:640px;margin:0 auto;padding:8px;">
+      ${brandHeaderHtml()}
+      <div style="text-align:center;margin:-8px 0 18px;font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.25em;color:#9aa0a6;text-transform:uppercase;">
+        Internal copy · Buyer invoice auto-sent
+      </div>
+      <table style="width:100%;font-size:13px;color:#444;margin:0 0 14px;">
+        <tr>
+          <td style="padding:2px 0;">Order number</td>
+          <td style="padding:2px 0;text-align:right;font-family:monospace;font-weight:700;color:#111;">${escapeHtml(orderNumber)}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;">Reference</td>
+          <td style="padding:2px 0;text-align:right;font-family:monospace;color:#666;">${escapeHtml(referenceId)}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;">Buyer</td>
+          <td style="padding:2px 0;text-align:right;">${escapeHtml(payload.name)}</td>
+        </tr>
+        <tr>
+          <td style="padding:2px 0;">Contact</td>
+          <td style="padding:2px 0;text-align:right;font-family:monospace;">${escapeHtml(payload.contact)}</td>
+        </tr>
+        ${org}
       </table>
+      ${notes}
+      <h2 style="font-weight:300;letter-spacing:0.04em;margin:18px 0 16px;">Order</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="text-align:left;color:#666;">
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">SKU</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">Item</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Qty</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Unit</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Line</th>
+          </tr>
+        </thead>
+        <tbody>${lineRowsHtml(payload.items)}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="padding:12px;text-align:right;font-weight:600;">Total</td>
+            <td style="padding:12px;text-align:right;font-weight:700;font-family:monospace;">${usd(totalCents)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
+        <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
+        Buyer received their branded invoice with Zelle / PayPal payment
+        instructions. Watch <span style="font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</span>
+        for a payment referencing <span style="font-family:monospace;font-weight:700;">${escapeHtml(orderNumber)}</span>.
+        Mark paid in Admin → Orders once confirmed.
+      </div>
+      <p style="margin-top:24px;color:#888;font-size:12px;">
+        VS Research Labs — Internal notification · Do not forward to buyer
+      </p>
     </div>`;
 }
 
