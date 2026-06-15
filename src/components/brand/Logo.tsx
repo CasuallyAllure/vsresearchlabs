@@ -107,7 +107,10 @@ export function Logo({
     body = (
       <span className="flex items-center min-w-0">
         {mark}
-        <span className="flex flex-col items-center gap-1 min-w-0 -ml-[14px]">
+        <span
+          className="flex flex-col items-center gap-1 min-w-0"
+          style={{ marginLeft: `-${Math.round(markSize * 0.16)}px` }}
+        >
           {wordmark}
           {tagline}
         </span>

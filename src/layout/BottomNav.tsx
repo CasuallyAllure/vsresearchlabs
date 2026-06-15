@@ -351,7 +351,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
       )}
 
       <nav
-        className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50"
+        className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30"
         data-role={role}
         aria-label="Primary"
         style={{

@@ -349,11 +349,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </p>
             )}
 
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-4">
               <button
                 type="submit"
                 disabled={formInvalid || submit.kind === 'submitting'}
-                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-4 py-2 text-[9.5px] font-medium uppercase tracking-[0.2em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
               >
                 <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
                 <span className="relative">
