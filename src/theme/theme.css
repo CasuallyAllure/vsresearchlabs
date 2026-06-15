@@ -14,9 +14,9 @@
 
 :root {
   /* Theme Metadata */
-  --theme-id: "classy-dark";
-  --theme-mode: "dark";
-  --theme-family: "classy";
+  --theme-id: "cream-editorial";
+  --theme-mode: "light";
+  --theme-family: "editorial";
 
   /* Module / Panel Spacing */
   --module-padding: var(--space-4);
@@ -29,54 +29,68 @@
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Surfaces
      ───────────────────────────────────────────────────────────────────────── */
-  --color-surface-base: #000000;
-  --color-surface-elevated: #0a0a0a;
-  --color-surface-overlay: #121212;
-  --color-surface-sunken: #050505;
+  --color-surface-base: #F4EFE6;
+  --color-surface-elevated: #FBF9F4;
+  --color-surface-overlay: #FFFFFF;
+  --color-surface-sunken: #ECE6DA;
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Content
      ───────────────────────────────────────────────────────────────────────── */
-  --color-content-primary: #ffffff;
-  --color-content-secondary: #b3b3b3;
-  --color-content-tertiary: #666666;
-  --color-content-inverse: #000000;
+  --color-content-primary: #1A1714;
+  --color-content-secondary: #6B635A;
+  --color-content-tertiary: #9A9186;
+  --color-content-inverse: #F4EFE6;
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Border
      ───────────────────────────────────────────────────────────────────────── */
-  --color-border-default: rgba(255, 255, 255, 0.1);
-  --color-border-subtle: rgba(255, 255, 255, 0.05);
-  --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-border-default: rgba(26, 23, 20, 0.12);
+  --color-border-subtle: rgba(26, 23, 20, 0.06);
+  --color-border-strong: rgba(26, 23, 20, 0.22);
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Interactive
      ───────────────────────────────────────────────────────────────────────── */
-  --color-interactive-primary: #C4A35A;
-  --color-interactive-primaryHover: #D4B896;
-  --color-interactive-primaryActive: #8B7355;
-  --color-interactive-secondary: rgba(255, 255, 255, 0.1);
-  --color-interactive-secondaryHover: rgba(255, 255, 255, 0.15);
+  --color-interactive-primary: #B5904B;
+  --color-interactive-primaryHover: #C7A463;
+  --color-interactive-primaryActive: #8C6A2A;
+  --color-interactive-secondary: rgba(26, 23, 20, 0.06);
+  --color-interactive-secondaryHover: rgba(26, 23, 20, 0.10);
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Status
      ───────────────────────────────────────────────────────────────────────── */
-  --color-status-success: #10b981;
-  --color-status-successMuted: rgba(16, 185, 129, 0.15);
-  --color-status-warning: #f59e0b;
-  --color-status-warningMuted: rgba(245, 158, 11, 0.15);
-  --color-status-error: #ef4444;
-  --color-status-errorMuted: rgba(239, 68, 68, 0.15);
-  --color-status-info: #3b82f6;
-  --color-status-infoMuted: rgba(59, 130, 246, 0.15);
+  --color-status-success: #2E7D5B;
+  --color-status-successMuted: rgba(46, 125, 91, 0.14);
+  --color-status-warning: #B5740B;
+  --color-status-warningMuted: rgba(181, 116, 11, 0.14);
+  --color-status-error: #B23A3A;
+  --color-status-errorMuted: rgba(178, 58, 58, 0.12);
+  --color-status-info: #34727A;
+  --color-status-infoMuted: rgba(52, 114, 122, 0.14);
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Accent Palette (Gold)
      ───────────────────────────────────────────────────────────────────────── */
-  --color-accent-gold-light: #D4B896;
-  --color-accent-gold: #C4A35A;
-  --color-accent-gold-dark: #8B7355;
-  --color-accent-gold-muted: #6B5B4F;
+  --color-accent-gold-light: #C7A463;
+  --color-accent-gold: #B5904B;
+  --color-accent-gold-dark: #8C6A2A;
+  --color-accent-gold-muted: #A99770;
+
+  /* ───────────────────────────────────────────────────────────────────────
+     COLORS — Accent Palette (Teal) — secondary accent, replaces holo cyan
+     ─────────────────────────────────────────────────────────────────────── */
+  --color-accent-teal-light: #62A0A6;
+  --color-accent-teal: #34727A;
+  --color-accent-teal-dark: #1E444A;
+
+  /* ───────────────────────────────────────────────────────────────────────
+     COLORS — Display insets — the near-black "display case" surfaces that
+     hold the 3D molecule hologram and the specimen vial bays on the cream page
+     ─────────────────────────────────────────────────────────────────────── */
+  --color-display-base: #16130F;
+  --color-display-elevated: #211C16;
 
   /* ─────────────────────────────────────────────────────────────────────────
      BACKWARD-COMPATIBLE ALIASES
@@ -160,8 +174,8 @@
      ───────────────────────────────────────────────────────────────────────── */
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", "JetBrains Mono", monospace;
+  --font-display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
 
   /* ─────────────────────────────────────────────────────────────────────────
      TYPOGRAPHY — Font Sizes
@@ -288,18 +302,17 @@
      New values produce a clearly stratified three-level stack:
        Page (L0): #000000  →  Level 1: #0d0d0d  →  Level 2: #181818
      Each level is visually distinct without decorative treatment. */
-  --surface-product: #0d0d0d;
-  --surface-product-hover: #131313;
-  --surface-elevated-research: #181818;
-  --surface-cta: rgba(255, 255, 255, 0.05);
-  --border-product: rgba(255, 255, 255, 0.10);
-  --border-product-hover: rgba(255, 255, 255, 0.18);
-  --border-cta: rgba(255, 255, 255, 0.15);
+  --surface-product: #FBF9F4;
+  --surface-product-hover: #FFFFFF;
+  --surface-elevated-research: #FFFFFF;
+  --surface-cta: rgba(26, 23, 20, 0.05);
+  --border-product: rgba(26, 23, 20, 0.10);
+  --border-product-hover: rgba(26, 23, 20, 0.18);
+  --border-cta: rgba(26, 23, 20, 0.15);
   --blur-precision: 8px;
-  /* E1 — Specimen bay. Image containers are set darker than the L1 surface
-     so specimen SVGs (fill="#0a0a0a") appear as placed objects on a recessed
-     bay — lifting them from the surface rather than blending into it. */
-  --surface-specimen-bay: #050505;
+  /* E1 — Specimen/product image bay. Light now: the box+vial product shots
+     are light studio renders, so the bay is a soft near-white card surface. */
+  --surface-specimen-bay: #FBF9F4;
 }
 
 /* ─── Research surface utility classes ───
@@ -321,11 +334,9 @@
        the background, and a faint cool halo gives the dark glow that
        lifts the panel rather than letting it sit flat. */
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 2px 4px rgba(0, 0, 0, 0.6),
-      0 16px 40px -14px rgba(0, 0, 0, 0.9),
-      0 0 28px -2px rgba(60, 122, 205, 0.24),
-      0 0 60px -10px rgba(60, 122, 205, 0.14);
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 1px 2px rgba(26, 23, 20, 0.04),
+      0 10px 28px -16px rgba(26, 23, 20, 0.18);
     transition:
       background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
       border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -335,11 +346,9 @@
     background-color: var(--surface-product-hover);
     border-color: var(--border-product-hover);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 4px rgba(0, 0, 0, 0.6),
-      0 20px 50px -14px rgba(0, 0, 0, 0.92),
-      0 0 34px 0 rgba(80, 145, 225, 0.34),
-      0 0 70px -8px rgba(80, 145, 225, 0.18);
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 2px 6px rgba(26, 23, 20, 0.06),
+      0 16px 40px -16px rgba(26, 23, 20, 0.22);
   }
   .research-surface-elevated {
     background-color: var(--surface-elevated-research);
@@ -348,11 +357,9 @@
     /* Stronger inset highlight + deeper lift — L2 surfaces read as a
        layer above L1. */
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 4px rgba(0, 0, 0, 0.6),
-      0 20px 48px -14px rgba(0, 0, 0, 0.9),
-      0 0 32px -2px rgba(60, 122, 205, 0.26),
-      0 0 64px -10px rgba(60, 122, 205, 0.15);
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      0 2px 6px rgba(26, 23, 20, 0.05),
+      0 16px 40px -16px rgba(26, 23, 20, 0.2);
   }
 }
 
@@ -536,75 +543,47 @@
 /* ── Holographic typography ──────────────────────────────────────────────── */
 
 .holo-text-display {
-  color: rgb(225, 245, 255);
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.95),
-    0 0 6px rgba(150, 225, 255, 0.9),
-    0 0 16px rgba(100, 200, 255, 0.62),
-    0 0 32px rgba(100, 200, 255, 0.32);
+  color: var(--color-content-primary);
   letter-spacing: 0.005em;
 }
 
 .holo-text-body {
-  color: rgb(212, 238, 255);
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.75),
-    0 0 4px rgba(130, 215, 255, 0.7),
-    0 0 10px rgba(100, 200, 255, 0.42);
+  color: var(--color-content-primary);
 }
 
 .holo-text-caption {
-  color: rgba(170, 222, 255, 0.82);
-  text-shadow:
-    0 0 1px rgba(190, 230, 255, 0.6),
-    0 0 4px rgba(100, 200, 255, 0.5);
+  color: var(--color-content-secondary);
 }
 
 .holo-text-citation {
-  color: rgba(150, 200, 230, 0.55);
-  text-shadow:
-    0 0 1px rgba(180, 220, 255, 0.4),
-    0 0 3px rgba(100, 200, 255, 0.3);
+  color: var(--color-content-tertiary);
 }
 
-/* Display-tier opacity pulse — subtle "projection breathing".
-   Use sparingly on impact lines. */
-@keyframes holo-text-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.92; }
-}
-
+/* Editorial: "projection breathing" pulse retired. */
 .holo-text-pulse {
-  animation: holo-text-pulse 4.8s ease-in-out infinite;
+  animation: none;
 }
 
 /* ── CTA — Mint (primary) ────────────────────────────────────────────────── */
 
 .cta-mint {
-  background: linear-gradient(180deg, #A8F0DC 0%, #54DDC0 55%, #3FB89B 100%);
-  box-shadow:
-    0 0 0 0.5px rgba(168, 240, 220, 0.6),
-    0 0 12px rgba(79, 224, 201, 0.35),
-    0 3px 10px rgba(79, 224, 201, 0.22),
-    inset 0 0.5px 0 rgba(230, 255, 246, 0.6),
-    inset 0 -0.5px 0 rgba(10, 60, 50, 0.2);
+  background: var(--color-interactive-primary);
+  color: var(--color-content-inverse);
+  box-shadow: 0 1px 2px rgba(26, 23, 20, 0.12);
   transition:
     transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cta-mint:hover {
-  box-shadow:
-    0 0 0 0.5px rgba(190, 250, 230, 0.9),
-    0 0 22px rgba(108, 232, 192, 0.6),
-    0 5px 14px rgba(79, 224, 201, 0.35),
-    inset 0 0.5px 0 rgba(235, 255, 248, 0.7),
-    inset 0 -0.5px 0 rgba(10, 60, 50, 0.18);
+  background: var(--color-interactive-primaryHover);
+  box-shadow: 0 2px 8px rgba(26, 23, 20, 0.16);
   transform: translateY(-0.5px);
 }
 
 .cta-mint-sheen {
-  background: linear-gradient(110deg, transparent 35%, rgba(240,255,250,0.55) 50%, transparent 65%);
+  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%);
   transform: translateX(-140%);
   transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -613,16 +592,12 @@
   transform: translateX(140%);
 }
 
-/* ── CTA — Holo cyan (secondary) ─────────────────────────────────────────── */
+/* ── CTA — outline (secondary) ───────────────────────────────────────────── */
 
 .cta-holo {
-  background: linear-gradient(180deg, rgba(100,200,255,0.07) 0%, rgba(100,200,255,0.02) 100%);
-  border: 0.5px solid rgba(120, 210, 255, 0.4);
-  box-shadow:
-    inset 0 0 10px rgba(100, 200, 255, 0.08),
-    inset 0 0.5px 0 rgba(180, 230, 255, 0.22),
-    0 0 12px rgba(100, 200, 255, 0.2),
-    0 2px 10px rgba(100, 200, 255, 0.1);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-content-primary);
   transition:
     transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -631,18 +606,13 @@
 }
 
 .cta-holo:hover {
-  border-color: rgba(160, 225, 255, 0.8);
-  background: linear-gradient(180deg, rgba(120,210,255,0.13) 0%, rgba(100,200,255,0.04) 100%);
-  box-shadow:
-    inset 0 0 16px rgba(120, 210, 255, 0.18),
-    inset 0 0.5px 0 rgba(180, 230, 255, 0.35),
-    0 0 22px rgba(120, 210, 255, 0.45),
-    0 3px 14px rgba(100, 200, 255, 0.2);
+  border-color: var(--color-interactive-primary);
+  background: var(--color-interactive-secondary);
   transform: translateY(-0.5px);
 }
 
 .cta-holo-sheen {
-  background: linear-gradient(110deg, transparent 35%, rgba(180,235,255,0.35) 50%, transparent 65%);
+  background: linear-gradient(110deg, transparent 35%, rgba(26,23,20,0.06) 50%, transparent 65%);
   transform: translateX(-140%);
   transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -651,16 +621,12 @@
   transform: translateX(140%);
 }
 
-/* ── Holo chrome surface — for cards, panels, dossier modules ─────────────
-   A reusable surface that reads as a slim glass/chrome container. Use on
-   cards inside catalog/research surfaces to replace plain dark boxes. */
+/* ── Card / panel surface — slim editorial container ─────────────────────── */
 
 .holo-surface {
-  background: linear-gradient(180deg, rgba(140, 200, 240, 0.04) 0%, rgba(100, 180, 220, 0.015) 100%);
-  border: 0.5px solid rgba(120, 200, 245, 0.18);
-  box-shadow:
-    inset 0 0.5px 0 rgba(180, 230, 255, 0.10),
-    0 1px 0 rgba(0, 0, 0, 0.35);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: 0 1px 2px rgba(26, 23, 20, 0.04);
   transition:
     border-color 220ms ease,
     background 220ms ease,
@@ -668,12 +634,8 @@
 }
 
 .holo-surface:hover {
-  border-color: rgba(140, 215, 255, 0.32);
-  background: linear-gradient(180deg, rgba(140, 200, 240, 0.06) 0%, rgba(100, 180, 220, 0.025) 100%);
-  box-shadow:
-    inset 0 0.5px 0 rgba(190, 235, 255, 0.16),
-    0 0 18px rgba(100, 200, 255, 0.10),
-    0 1px 0 rgba(0, 0, 0, 0.35);
+  border-color: var(--color-border-default);
+  box-shadow: 0 6px 18px -10px rgba(26, 23, 20, 0.18);
 }
 
 /* ── Holo warning — flickering red space-hologram register ───────────────
@@ -682,38 +644,10 @@
    blips + chromatic glow halo. Color tuned to a warm hologram red so it
    reads as warning, not error-state UI. */
 
+/* Editorial: hazard-hologram flicker retired — a quiet, legible warning. */
 .holo-text-warning {
-  color: rgb(255, 110, 110);
-  text-shadow:
-    0 0 2px rgba(255, 80, 80, 0.95),
-    0 0 6px rgba(255, 60, 60, 0.7),
-    0 0 14px rgba(255, 40, 40, 0.45),
-    0 0 26px rgba(255, 30, 30, 0.22);
-  animation: holo-flicker 3.8s steps(1, end) infinite;
-  will-change: opacity, text-shadow;
-}
-
-@keyframes holo-flicker {
-  /* Most of the time the glyph is fully present; brief, irregular dips
-     simulate hologram instability. */
-  0%, 100%   { opacity: 0.98; }
-  6%         { opacity: 0.55; }
-  6.5%       { opacity: 0.98; }
-  18%        { opacity: 0.98; }
-  18.5%      { opacity: 0.35; }
-  19%        { opacity: 0.98; }
-  37%        { opacity: 0.98; }
-  37.3%      { opacity: 0.7;  }
-  37.6%      { opacity: 0.98; }
-  54%        { opacity: 0.98; }
-  54.4%      { opacity: 0.25; }
-  54.7%      { opacity: 0.98; }
-  72%        { opacity: 0.98; }
-  72.3%      { opacity: 0.6;  }
-  72.6%      { opacity: 0.98; }
-  88%        { opacity: 0.98; }
-  88.4%      { opacity: 0.4;  }
-  88.7%      { opacity: 0.98; }
+  color: var(--color-status-error);
+  font-weight: var(--weight-medium);
 }
 
 /* ── Reduced-motion guard ───────────────────────────────────────────────── */
@@ -737,105 +671,24 @@
   }
 }
 
-/* ─── Top light-leaks ────────────────────────────────────────────────────
-   Soft shafts of the three brand colors (cyan / blue / orange) bleeding
-   down from the top of the viewport — light "peeking through" like a
-   church window. Sits behind all content (z-index:-1, above the black
-   base) so modules float above it. Slight hue, never bright; fades out
-   toward the lower third. Slow drift gives it a gentle flow. */
+/* ─── Top light-leaks — retired for the cream editorial system. ──────────── */
 .vsr-light-leaks {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 92vh;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(60% 50% at 20% -6%, rgba(122, 229, 255, 0.20), transparent 64%),
-    radial-gradient(58% 54% at 50% -8%, rgba(74, 149, 224, 0.18), transparent 66%),
-    radial-gradient(58% 50% at 82% -6%, rgba(255, 138, 46, 0.13), transparent 62%);
-  filter: blur(6px) saturate(116%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 98%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 40%, transparent 98%);
-  animation: vsr-leak-flow 30s ease-in-out infinite;
-}
-/* Faint diagonal shafts layered over the wash for the stained-glass beams. */
-.vsr-light-leaks::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(168deg, rgba(122, 229, 255, 0.06) 0%, transparent 26%),
-    linear-gradient(192deg, rgba(255, 138, 46, 0.045) 0%, transparent 24%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 80%);
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 80%);
-}
-@keyframes vsr-leak-flow {
-  0%, 100% { transform: translateX(-1.5%) scale(1.02); opacity: 0.9; }
-  50%      { transform: translateX(1.5%) scale(1.05);  opacity: 1; }
+  display: none;
 }
 
 /* ─── Module aura ────────────────────────────────────────────────────────
    For the large landing modules. A deeper dark-saber lift than the base
    surface, with a slow breathing glow so it reads as "vibrating" under
    the panel. Use on big feature boxes, not on every small card. */
+/* Editorial: breathing aura retired — modules rest on the flat editorial
+   shadow from .research-surface-* instead. */
 .module-aura {
-  animation: vsr-aura-breathe 7s ease-in-out infinite;
-}
-@keyframes vsr-aura-breathe {
-  0%, 100% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 2px 6px rgba(0, 0, 0, 0.6),
-      0 24px 64px -18px rgba(0, 0, 0, 0.92),
-      0 0 40px -4px rgba(64, 124, 206, 0.24),
-      0 0 80px -12px rgba(64, 124, 206, 0.14);
-  }
-  50% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 2px 6px rgba(0, 0, 0, 0.6),
-      0 26px 72px -18px rgba(0, 0, 0, 0.94),
-      0 0 54px 0 rgba(86, 150, 230, 0.36),
-      0 0 104px -8px rgba(86, 150, 230, 0.20);
-  }
+  animation: none;
 }
 
-/* Bottom-nav hint bubble — mostly stable, with intermittent chromatic
-   glitches (RGB split + micro jitter) to draw the eye to Research Supplies. */
+/* Editorial: bottom-nav hint glitch retired — quiet emphasis only. */
 .vsr-nav-hint-glitch {
-  animation: vsr-nav-hint-glitch 3.4s steps(1, end) infinite;
-}
-@keyframes vsr-nav-hint-glitch {
-  0%, 84%, 100% {
-    transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
-    opacity: 1;
-  }
-  85% {
-    transform: translate(-1px, 0.4px) skewX(-5deg);
-    text-shadow: 1.6px 0 rgba(255, 45, 85, 0.9), -1.6px 0 rgba(70, 255, 150, 0.9);
-    opacity: 0.92;
-  }
-  87% {
-    transform: translate(1px, -0.4px) skewX(4deg);
-    text-shadow: -1.6px 0 rgba(255, 45, 85, 0.9), 1.6px 0 rgba(70, 255, 150, 0.9);
-  }
-  88% {
-    transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
-  }
-  92% {
-    transform: translate(0.8px, 0);
-    text-shadow: 1px 0 rgba(255, 45, 85, 0.7), -1px 0 rgba(70, 255, 150, 0.7);
-    opacity: 0.85;
-  }
-  93% {
-    transform: translate(0, 0);
-    text-shadow: 0 0 7px rgba(90, 240, 150, 0.45);
-    opacity: 1;
-  }
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

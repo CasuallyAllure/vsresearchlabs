@@ -94,9 +94,9 @@ export function AdminSystemHealth() {
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
           System Health
         </p>
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-          <span className="font-light text-white/85">Is everything </span>
-          <span className="font-medium text-white">working.</span>
+        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+          <span className="font-light text-ink/85">Is everything </span>
+          <span className="font-medium text-ink">working.</span>
         </h2>
       </header>
 
@@ -154,12 +154,12 @@ export function AdminSystemHealth() {
           Build
         </p>
         <dl className="grid grid-cols-2 gap-[var(--space-3)] text-[12px]">
-          <dt className="text-white/45 text-[10px] uppercase tracking-[0.22em]">Environment</dt>
-          <dd className="font-mono text-white/85">{state.buildEnv}</dd>
-          <dt className="text-white/45 text-[10px] uppercase tracking-[0.22em]">Supabase project ref</dt>
-          <dd className="font-mono text-white/85">{SUPABASE_PROJECT_REF ?? '—'}</dd>
-          <dt className="text-white/45 text-[10px] uppercase tracking-[0.22em]">Frontend URL</dt>
-          <dd className="font-mono text-white/85 break-all">{typeof window !== 'undefined' ? window.location.origin : '—'}</dd>
+          <dt className="text-ink/45 text-[10px] uppercase tracking-[0.22em]">Environment</dt>
+          <dd className="font-mono text-ink/85">{state.buildEnv}</dd>
+          <dt className="text-ink/45 text-[10px] uppercase tracking-[0.22em]">Supabase project ref</dt>
+          <dd className="font-mono text-ink/85">{SUPABASE_PROJECT_REF ?? '—'}</dd>
+          <dt className="text-ink/45 text-[10px] uppercase tracking-[0.22em]">Frontend URL</dt>
+          <dd className="font-mono text-ink/85 break-all">{typeof window !== 'undefined' ? window.location.origin : '—'}</dd>
         </dl>
       </section>
 
@@ -167,9 +167,9 @@ export function AdminSystemHealth() {
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-3)]">
           External dashboards
         </p>
-        <ul className="text-[12.5px] text-white/75 space-y-[var(--space-2)]">
+        <ul className="text-[12.5px] text-ink/75 space-y-[var(--space-2)]">
           <li>
-            <strong className="text-white/55 text-[10px] uppercase tracking-[0.18em] mr-2">Edge Function logs</strong>
+            <strong className="text-ink/55 text-[10px] uppercase tracking-[0.18em] mr-2">Edge Function logs</strong>
             {SUPABASE_PROJECT_REF ? (
               <a
                 href={`https://supabase.com/dashboard/project/${SUPABASE_PROJECT_REF}/functions`}
@@ -182,7 +182,7 @@ export function AdminSystemHealth() {
             ) : 'configure VITE_SUPABASE_URL'}
           </li>
           <li>
-            <strong className="text-white/55 text-[10px] uppercase tracking-[0.18em] mr-2">Email delivery</strong>
+            <strong className="text-ink/55 text-[10px] uppercase tracking-[0.18em] mr-2">Email delivery</strong>
             <a
               href="https://resend.com/emails"
               target="_blank"
@@ -193,7 +193,7 @@ export function AdminSystemHealth() {
             </a>
           </li>
           <li>
-            <strong className="text-white/55 text-[10px] uppercase tracking-[0.18em] mr-2">Hosting / deploys</strong>
+            <strong className="text-ink/55 text-[10px] uppercase tracking-[0.18em] mr-2">Hosting / deploys</strong>
             <a
               href="https://dash.cloudflare.com/?to=/:account/pages/view/vsresearchlabs"
               target="_blank"
@@ -217,8 +217,8 @@ interface HealthCardProps {
 
 function HealthCard({ title, ok, detail }: HealthCardProps) {
   const dot =
-    ok === true  ? { bg: '#7CD992', glow: 'rgba(124,217,146,0.40)' } :
-    ok === false ? { bg: '#FF7A7A', glow: 'rgba(255,122,122,0.40)' } :
+    ok === true  ? { bg: '#2E7D5B', glow: 'rgba(124,217,146,0.40)' } :
+    ok === false ? { bg: '#B23A3A', glow: 'rgba(255,122,122,0.40)' } :
                    { bg: 'rgba(255,255,255,0.35)', glow: 'rgba(255,255,255,0.10)' };
 
   return (
@@ -233,8 +233,8 @@ function HealthCard({ title, ok, detail }: HealthCardProps) {
           }}
         />
         <div className="min-w-0">
-          <p className="text-[12.5px] text-white tracking-tight">{title}</p>
-          <p className="mt-1 text-[11px] text-white/55 leading-relaxed">{detail}</p>
+          <p className="text-[12.5px] text-ink tracking-tight">{title}</p>
+          <p className="mt-1 text-[11px] text-ink/55 leading-relaxed">{detail}</p>
         </div>
       </div>
     </div>

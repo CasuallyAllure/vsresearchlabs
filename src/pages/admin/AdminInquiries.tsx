@@ -116,9 +116,9 @@ export function AdminInquiries() {
           Inquiries
         </p>
         <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-            <span className="font-light text-white/85">Incoming </span>
-            <span className="font-medium text-white">requests.</span>
+          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+            <span className="font-light text-ink/85">Incoming </span>
+            <span className="font-medium text-ink">requests.</span>
           </h2>
           <div className="flex items-center gap-1.5 flex-wrap">
             {STATUS_FILTER_ORDER.map((s) => (
@@ -129,8 +129,8 @@ export function AdminInquiries() {
                 className={[
                   'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
                   statusFilter === s
-                    ? 'bg-white/[0.10] text-white border border-white/25'
-                    : 'border border-white/[0.08] text-white/55 hover:text-white/90',
+                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
+                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
                 ].join(' ')}
               >
                 {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
@@ -150,12 +150,12 @@ export function AdminInquiries() {
 
       {rows && rows.length === 0 && (
         <div className="research-surface-solid p-[var(--space-6)]">
-          <p className="text-[13px] text-white/55">No inquiries in this filter.</p>
+          <p className="text-[13px] text-ink/55">No inquiries in this filter.</p>
         </div>
       )}
 
       {rows && rows.length > 0 && (
-        <ul className="research-surface-solid divide-y divide-white/[0.04]">
+        <ul className="research-surface-solid divide-y divide-ink/[0.04]">
           {rows.map((row) => {
             const isExpanded = expanded === row.id;
             const items = itemsByInquiry[row.id] ?? [];
@@ -164,23 +164,23 @@ export function AdminInquiries() {
                 <button
                   type="button"
                   onClick={() => expand(row.id)}
-                  className="w-full px-[var(--space-5)] py-[var(--space-4)] flex items-start gap-[var(--space-4)] text-left hover:bg-white/[0.015] focus:outline-none focus-visible:bg-white/[0.02] transition-colors"
+                  className="w-full px-[var(--space-5)] py-[var(--space-4)] flex items-start gap-[var(--space-4)] text-left hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
                   aria-expanded={isExpanded}
                 >
-                  <span className="font-mono text-[10.5px] text-white/35 tabular-nums shrink-0 pt-1 w-[120px]">
+                  <span className="font-mono text-[10.5px] text-ink/35 tabular-nums shrink-0 pt-1 w-[120px]">
                     {formatTs(row.created_at)}
                   </span>
                   <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] shrink-0 pt-1 w-[170px] truncate">
                     {row.reference_id}
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[13px] text-white truncate">{row.name}</span>
-                    <span className="block text-[11px] text-white/45 truncate">
+                    <span className="block text-[13px] text-ink truncate">{row.name}</span>
+                    <span className="block text-[11px] text-ink/45 truncate">
                       {row.contact}
                       {row.organization && ` · ${row.organization}`}
                     </span>
                   </span>
-                  <span className="font-mono text-[11px] text-white/55 tabular-nums shrink-0 w-[80px] text-right">
+                  <span className="font-mono text-[11px] text-ink/55 tabular-nums shrink-0 w-[80px] text-right">
                     {row.item_count} {row.item_count === 1 ? 'unit' : 'units'}
                   </span>
                   <span className={`shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${statusChipStyles(row.status)}`}>
@@ -188,10 +188,10 @@ export function AdminInquiries() {
                   </span>
                 </button>
                 {isExpanded && (
-                  <div className="px-[var(--space-5)] pb-[var(--space-5)] border-t border-white/[0.04]">
+                  <div className="px-[var(--space-5)] pb-[var(--space-5)] border-t border-ink/[0.04]">
                     {row.notes && (
-                      <p className="mt-[var(--space-4)] text-[12.5px] text-white/70 leading-relaxed max-w-[72ch]">
-                        <span className="text-[10px] uppercase tracking-[0.22em] text-white/35 mr-2">Notes</span>
+                      <p className="mt-[var(--space-4)] text-[12.5px] text-ink/70 leading-relaxed max-w-[72ch]">
+                        <span className="text-[10px] uppercase tracking-[0.22em] text-ink/35 mr-2">Notes</span>
                         {row.notes}
                       </p>
                     )}
@@ -199,23 +199,23 @@ export function AdminInquiries() {
                       <div className="mt-[var(--space-4)] overflow-x-auto">
                         <table className="w-full min-w-[480px] border-collapse">
                           <thead>
-                            <tr className="border-y border-white/[0.06]">
-                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-white/40 font-normal pl-0">SKU</th>
-                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-white/40 font-normal">Item</th>
-                              <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.18em] text-white/40 font-normal w-12">Qty</th>
+                            <tr className="border-y border-ink/[0.06]">
+                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal pl-0">SKU</th>
+                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal">Item</th>
+                              <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal w-12">Qty</th>
                             </tr>
                           </thead>
                           <tbody>
                             {items.map((it) => (
-                              <tr key={it.id} className="border-b border-white/[0.04]">
+                              <tr key={it.id} className="border-b border-ink/[0.04]">
                                 <td className="py-[var(--space-2)] pl-0 font-mono text-[11px] text-holo-light/75">{it.sku}</td>
-                                <td className="py-[var(--space-2)] text-[12px] text-white/75">
+                                <td className="py-[var(--space-2)] text-[12px] text-ink/75">
                                   {it.product_name}
                                   {it.item_note && (
-                                    <div className="text-[10.5px] text-white/40 mt-0.5">Note: {it.item_note}</div>
+                                    <div className="text-[10.5px] text-ink/40 mt-0.5">Note: {it.item_note}</div>
                                   )}
                                 </td>
-                                <td className="py-[var(--space-2)] text-right font-mono tabular-nums text-[12px] text-white/70">{it.quantity}</td>
+                                <td className="py-[var(--space-2)] text-right font-mono tabular-nums text-[12px] text-ink/70">{it.quantity}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -227,7 +227,7 @@ export function AdminInquiries() {
                         type="button"
                         onClick={() => createOrder(row.id)}
                         disabled={creating === row.id || row.status === 'CLOSED'}
-                        className="rounded-full bg-white/[0.10] border border-white/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-white hover:bg-white/[0.15] hover:border-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {creating === row.id ? 'Creating…' : 'Create order'}
                       </button>
@@ -246,9 +246,9 @@ export function AdminInquiries() {
 function statusChipStyles(status: InquiryRow['status']): string {
   switch (status) {
     case 'OPEN':       return 'border-holo/40 text-holo-light/80 bg-holo/[0.08]';
-    case 'REVIEWING':  return 'border-white/25 text-white/75 bg-white/[0.05]';
-    case 'RESPONDED':  return 'border-white/15 text-white/55 bg-white/[0.02]';
-    case 'CLOSED':     return 'border-white/10 text-white/35 bg-transparent';
+    case 'REVIEWING':  return 'border-ink/25 text-ink/75 bg-ink/[0.05]';
+    case 'RESPONDED':  return 'border-ink/15 text-ink/55 bg-ink/[0.02]';
+    case 'CLOSED':     return 'border-ink/10 text-ink/35 bg-transparent';
   }
 }
 

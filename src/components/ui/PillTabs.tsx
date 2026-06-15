@@ -54,7 +54,7 @@ export function PillTabs({
       aria-label={ariaLabel}
       className={cn(
         'inline-flex items-center flex-wrap gap-1 p-1.5',
-        'bg-white/[0.04] backdrop-blur-sm border border-white/[0.09] rounded-xl',
+        'bg-ink/[0.04] backdrop-blur-sm border border-ink/[0.09] rounded-xl',
         className,
       )}
     >
@@ -74,13 +74,13 @@ export function PillTabs({
               'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
               isActive
                 ? 'bg-holo/[0.12] text-holo-light font-medium border border-holo/30'
-                : 'text-white/55 font-normal hover:text-holo-light border border-transparent',
+                : 'text-ink/55 font-normal hover:text-holo-light border border-transparent',
             )}
             style={
               isActive
                 ? {
                     boxShadow:
-                      '0 0 8px rgba(100, 200, 255, 0.28), inset 0 0 6px rgba(100, 200, 255, 0.08)',
+                      '0 0 8px rgba(52, 114, 122, 0.28), inset 0 0 6px rgba(52, 114, 122, 0.08)',
                   }
                 : undefined
             }

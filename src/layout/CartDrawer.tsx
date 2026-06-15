@@ -154,7 +154,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-black/65 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-ink/65 backdrop-blur-[2px] transition-opacity duration-300 ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -168,15 +168,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
-          backgroundColor: 'rgba(7, 10, 14, 0.96)',
-          borderLeft: '1px solid rgba(160, 200, 235, 0.18)',
-          boxShadow:
-            '0 0 0 1px rgba(160,200,235,0.06), -24px 0 60px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.04)',
+          backgroundColor: 'rgba(251, 249, 244, 0.97)',
+          borderLeft: '1px solid rgba(26, 23, 20, 0.12)',
+          boxShadow: '-24px 0 60px -20px rgba(26,23,20,0.25)',
           backdropFilter: 'blur(10px)',
         }}
       >
         {/* Header — identity + close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.06]">
           <div className="flex flex-col gap-0.5">
             <span className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-holo-light/70">
               {submit.kind === 'success'
@@ -185,7 +184,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 ? 'Buyer Details'
                 : 'Inquiry List'}
             </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/35">
+            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/35">
               {itemCount > 0
                 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending`
                 : submit.kind === 'success'
@@ -197,7 +196,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             type="button"
             onClick={onClose}
             aria-label="Close inquiry list"
-            className="-mr-2 p-2 text-white/55 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 rounded-sm"
+            className="-mr-2 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -212,26 +211,26 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <span
               aria-hidden="true"
               className="flex h-12 w-12 items-center justify-center rounded-full border"
-              style={{ borderColor: 'rgba(120,210,255,0.4)', boxShadow: '0 0 18px rgba(100,200,255,0.25)' }}
+              style={{ borderColor: 'rgba(52, 114, 122,0.4)', boxShadow: '0 0 18px rgba(52, 114, 122,0.25)' }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(150,220,255,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(52,114,122,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </span>
-            <p className="mt-5 text-[14px] tracking-tight text-white">Inquiry received.</p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-white/50 max-w-[30ch]">
+            <p className="mt-5 text-[14px] tracking-tight text-ink">Inquiry received.</p>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink/50 max-w-[30ch]">
               We'll email your invoice to{' '}
               <span className="text-holo-light">{submit.email}</span> shortly.
             </p>
             {submit.reference && (
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">
                 Ref · {submit.reference}
               </p>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="mt-8 rounded-full border border-white/15 px-6 py-2 text-[10px] uppercase tracking-[0.25em] text-white/80 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="mt-8 rounded-full border border-ink/15 px-6 py-2 text-[10px] uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             >
               Done
             </button>
@@ -239,14 +238,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         ) : view === 'form' ? (
           /* ── FORM ──────────────────────────────────────────────────── */
           <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto px-5 py-5">
-            <p className="text-[12px] leading-relaxed text-white/50">
+            <p className="text-[12px] leading-relaxed text-ink/50">
               Enter your details and we'll email an invoice for{' '}
               {itemCount} item{itemCount === 1 ? '' : 's'}.
             </p>
 
             <div className="mt-5 space-y-4">
               <div>
-                <label htmlFor="cart-name" className="block text-[10px] uppercase tracking-[0.2em] text-white/50 mb-1.5">
+                <label htmlFor="cart-name" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
                   Name
                 </label>
                 <input
@@ -255,12 +254,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoComplete="name"
-                  className="w-full rounded-sm border border-white/10 bg-black px-3 py-2.5 text-[13px] text-white placeholder-white/30 focus:border-white/40 focus:outline-none transition-colors"
+                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
                   placeholder="Full name"
                 />
               </div>
               <div>
-                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-white/50 mb-1.5">
+                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
                   Email
                 </label>
                 <input
@@ -269,7 +268,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
-                  className="w-full rounded-sm border border-white/10 bg-black px-3 py-2.5 text-[13px] text-white placeholder-white/30 focus:border-white/40 focus:outline-none transition-colors"
+                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
                   placeholder="you@example.com"
                 />
               </div>
@@ -285,7 +284,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <button
                 type="submit"
                 disabled={formInvalid || submit.kind === 'submitting'}
-                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
               >
                 <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
                 <span className="relative">
@@ -298,7 +297,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   setView('list');
                   setSubmit({ kind: 'idle' });
                 }}
-                className="mt-2 w-full text-center text-[10px] uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors focus:outline-none"
+                className="mt-2 w-full text-center text-[10px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink transition-colors focus:outline-none"
               >
                 ← Back to items
               </button>
@@ -310,10 +309,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="flex-1 overflow-y-auto px-2 py-3">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/30">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-ink/30">
                     No items
                   </p>
-                  <p className="mt-3 text-[12.5px] leading-relaxed text-white/45 max-w-[28ch]">
+                  <p className="mt-3 text-[12.5px] leading-relaxed text-ink/45 max-w-[28ch]">
                     Add inventory from any product page to start an inquiry.
                   </p>
                 </div>
@@ -325,9 +324,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     return (
                       <li
                         key={item.product.id}
-                        className="flex items-center gap-3 px-3 py-3 border-b border-white/[0.05] last:border-b-0"
+                        className="flex items-center gap-3 px-3 py-3 border-b border-ink/[0.05] last:border-b-0"
                       >
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[3px] border border-white/[0.09] bg-[#050505]">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[3px] border border-ink/[0.09] bg-display">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
@@ -336,29 +335,29 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[8px] uppercase tracking-widest text-white/20">
+                            <div className="flex h-full w-full items-center justify-center text-[8px] uppercase tracking-widest text-ink/20">
                               No img
                             </div>
                           )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[12.5px] tracking-tight text-white/85">
+                          <p className="truncate text-[12.5px] tracking-tight text-ink/85">
                             {item.product.name}
                           </p>
                           <p className="mt-0.5 truncate">
-                            <SKUCode value={item.product.sku} className="text-white/35" />
+                            <SKUCode value={item.product.sku} className="text-ink/35" />
                           </p>
                           <div className="mt-2 flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                               aria-label="Decrease quantity"
-                              className="flex h-6 w-6 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+                              className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                             >
                               −
                             </button>
-                            <span className="w-5 text-center text-[12.5px] tabular-nums text-white" aria-live="polite">
+                            <span className="w-5 text-center text-[12.5px] tabular-nums text-ink" aria-live="polite">
                               {item.quantity}
                             </span>
                             <button
@@ -366,7 +365,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                               disabled={atMax}
                               aria-label="Increase quantity"
-                              className="flex h-6 w-6 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+                              className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                             >
                               +
                             </button>
@@ -374,7 +373,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               type="button"
                               onClick={() => remove(item.product.id)}
                               aria-label={`Remove ${item.product.name}`}
-                              className="ml-auto text-[9px] uppercase tracking-[0.2em] text-white/35 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                              className="ml-auto text-[9px] uppercase tracking-[0.2em] text-ink/35 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                             >
                               Remove
                             </button>
@@ -388,12 +387,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             </div>
 
             {/* Footer — continue to the details step */}
-            <div className="border-t border-white/[0.06] px-5 py-3">
+            <div className="border-t border-ink/[0.06] px-5 py-3">
               <button
                 type="button"
                 onClick={() => setView('form')}
                 disabled={items.length === 0}
-                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-black disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
               >
                 <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
                 <span className="relative">Review &amp; Send Inquiry</span>

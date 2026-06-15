@@ -86,13 +86,13 @@ export function Research() {
   return (
     <section className="py-[var(--space-8)]">
       {/* Header — intelligence archive framing. Holo register. */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
+      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Research Intelligence Library
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-          <span className="font-light text-white/85">Compounds </span>
-          <span className="font-medium text-white">on record.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <span className="font-light text-ink/85">Compounds </span>
+          <span className="font-medium text-ink">on record.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-3)] max-w-[58ch] text-[13px] leading-relaxed">
           Every compound on record — mechanism, receptor activity,
@@ -109,7 +109,7 @@ export function Research() {
         </label>
         <div className="relative">
           <svg
-            className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-white/35 pointer-events-none"
+            className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/35 pointer-events-none"
             width="16"
             height="16"
             viewBox="0 0 24 24"
@@ -131,14 +131,14 @@ export function Research() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by compound, abbreviation, or family…"
-            className="w-full bg-white/[0.04] border border-white/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.18] transition-colors"
+            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/80 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             >
               <svg
                 width="16"
@@ -172,7 +172,7 @@ export function Research() {
       )}
 
       <p
-        className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-[var(--space-4)]"
+        className="text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-[var(--space-4)]"
         aria-live="polite"
         aria-atomic="true"
       >

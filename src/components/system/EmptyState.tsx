@@ -33,9 +33,9 @@ export function EmptyState({ label, meta, action, className }: EmptyStateProps) 
       role="status"
       className={cn('py-[var(--space-12)]', className)}
     >
-      <p className="text-sm text-white/50">{label}</p>
+      <p className="text-sm text-ink/50">{label}</p>
       {meta && (
-        <p className="mt-[var(--space-2)] text-[11px] font-mono tabular-nums text-white/30">
+        <p className="mt-[var(--space-2)] text-[11px] font-mono tabular-nums text-ink/30">
           {meta}
         </p>
       )}

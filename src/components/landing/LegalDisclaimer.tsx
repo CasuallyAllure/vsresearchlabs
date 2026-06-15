@@ -34,19 +34,19 @@
 export function LegalDisclaimer() {
   return (
     <section
-      className="-mx-[var(--space-6)] border-b border-white/[0.06]"
+      className="-mx-[var(--space-6)] border-b border-ink/[0.06]"
       aria-label="Legal disclosure"
     >
       <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-12)] sm:py-[var(--space-16)]">
         {/* Eyebrow — even quieter than other Landing eyebrows.
             The disclosure should not announce itself. */}
-        <p className="text-[10px] uppercase tracking-[0.3em] text-white/35 mb-[var(--space-5)]">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ink/35 mb-[var(--space-5)]">
           Disclosure
         </p>
 
         {/* Procedural body — five short paragraphs. Tight measure
             (max-w 80ch) for fine-print readability. */}
-        <div className="space-y-[var(--space-3)] max-w-[80ch] text-xs text-white/45 leading-relaxed">
+        <div className="space-y-[var(--space-3)] max-w-[80ch] text-xs text-ink/45 leading-relaxed">
           <p>
             All products listed on this site are sold strictly for in
             vitro research and laboratory reference use. Products are

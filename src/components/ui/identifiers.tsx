@@ -29,7 +29,7 @@ export function SKUCode({ value, className }: SKUCodeProps) {
   return (
     <span
       className={cn(
-        'font-mono tabular-nums uppercase tracking-[0.08em] text-white/50',
+        'font-mono tabular-nums uppercase tracking-[0.08em] text-ink/50',
         'text-[var(--type-identifier-sm)]',
         className,
       )}
@@ -50,7 +50,7 @@ export function BatchCode({ value, className }: BatchCodeProps) {
   return (
     <span
       className={cn(
-        'font-mono tabular-nums uppercase tracking-[0.08em] text-white/50',
+        'font-mono tabular-nums uppercase tracking-[0.08em] text-ink/50',
         'text-[var(--type-identifier-sm)]',
         className,
       )}
@@ -71,7 +71,7 @@ export function LotCode({ value, className }: LotCodeProps) {
   return (
     <span
       className={cn(
-        'font-mono tabular-nums uppercase tracking-[0.08em] text-white/50',
+        'font-mono tabular-nums uppercase tracking-[0.08em] text-ink/50',
         'text-[var(--type-identifier-sm)]',
         className,
       )}
@@ -93,7 +93,7 @@ export function DateStamp({ iso, className }: DateStampProps) {
   return (
     <span
       className={cn(
-        'font-mono tabular-nums text-white/45',
+        'font-mono tabular-nums text-ink/45',
         'text-[var(--type-identifier-sm)]',
         className,
       )}
@@ -119,8 +119,8 @@ export function ProcurementValue({ cents, className }: ProcurementValueProps) {
       className={cn(
         'font-mono tabular-nums',
         isInquiry
-          ? 'text-white/55 text-[var(--type-identifier-sm)] uppercase tracking-[0.15em]'
-          : 'text-white text-sm',
+          ? 'text-ink/55 text-[var(--type-identifier-sm)] uppercase tracking-[0.15em]'
+          : 'text-ink text-sm',
         className,
       )}
     >
@@ -143,8 +143,8 @@ const STATUS_DEFAULTS: Record<StatusVariant, string> = {
 const STATUS_CLASSES: Record<StatusVariant, string> = {
   available:   'text-[var(--color-status-success)]',
   limited:     'text-[var(--color-status-warning)]',
-  unavailable: 'text-white/35',
-  inquiry:     'text-white/55',
+  unavailable: 'text-ink/35',
+  inquiry:     'text-ink/55',
 };
 
 interface StatusFlagProps {

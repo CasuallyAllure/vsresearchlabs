@@ -55,8 +55,8 @@ function groupLabel(g: ManifestGroup): string {
 const MAX_QTY = 999;
 const ADDED_MS = 1400;
 
-const STOCK_GREEN = '#7CD992';
-const STOCK_RED = '#FF7A7A';
+const STOCK_GREEN = '#2E7D5B';
+const STOCK_RED = '#B23A3A';
 
 function manifestRowToProduct(row: ManifestRow): Product {
   const now = new Date().toISOString();
@@ -203,7 +203,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[3px]"
+        className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-[3px]"
       />
 
       <div
@@ -224,15 +224,15 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
           }}
         >
           {/* Header */}
-          <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-white/[0.06]">
+          <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
             <div className="flex items-start justify-between gap-[var(--space-4)]">
               <div className="min-w-0">
                 <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
                   Reference · Master List
                 </p>
-                <h2 className="text-[clamp(1.1rem,2.4vw,1.5rem)] leading-[1.15] tracking-[-0.01em] text-white">
-                  <span className="font-light text-white/85">Biopeptide </span>
-                  <span className="font-medium text-white">product list.</span>
+                <h2 className="text-[clamp(1.1rem,2.4vw,1.5rem)] leading-[1.15] tracking-[-0.01em] text-ink">
+                  <span className="font-light text-ink/85">Biopeptide </span>
+                  <span className="font-medium text-ink">product list.</span>
                 </h2>
                 <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[12px] leading-relaxed">
                   Review peptide names, mg options, and supporting
@@ -249,7 +249,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                 type="button"
                 onClick={onClose}
                 aria-label="Close inventory"
-                className="-mr-1 -mt-1 p-2 text-white/55 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 rounded-sm shrink-0"
+                className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm shrink-0"
               >
                 <svg
                   width="16"
@@ -276,10 +276,10 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                 aria-checked={inStockOnly}
                 onClick={() => setInStockOnly((v) => !v)}
                 className={[
-                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
+                  'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   inStockOnly
-                    ? 'text-white'
-                    : 'border-white/15 text-white/45 hover:text-white/75 hover:border-white/25',
+                    ? 'text-ink'
+                    : 'border-ink/15 text-ink/45 hover:text-ink/75 hover:border-ink/25',
                 ].join(' ')}
                 style={
                   inStockOnly
@@ -318,23 +318,23 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse">
               <thead className="sticky top-0 z-10" style={{ backgroundColor: 'rgb(18, 18, 18)' }}>
-                <tr className="border-b border-white/[0.10]">
-                  <th className="py-[var(--space-3)] pl-[var(--space-5)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-14">
+                <tr className="border-b border-ink/[0.10]">
+                  <th className="py-[var(--space-3)] pl-[var(--space-5)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-14">
                     #
                   </th>
-                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[150px]">
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[150px]">
                     Abbrev
                   </th>
-                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal">
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">
                     Product Model
                   </th>
-                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[110px]">
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[110px]">
                     Spec
                   </th>
-                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[60px]">
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[60px]">
                     Stock
                   </th>
-                  <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-5)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[200px]">
+                  <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-5)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[200px]">
                     Inquiry
                   </th>
                 </tr>
@@ -349,9 +349,9 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                   return (
                     <tr
                       key={`${row.serial}-${row.abbreviation}-${i}`}
-                      className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      className="border-b border-ink/[0.04] hover:bg-ink/[0.02] transition-colors"
                     >
-                      <td className="py-[var(--space-3)] pl-[var(--space-5)] pr-[var(--space-3)] align-middle font-mono text-[11px] tabular-nums text-white/35">
+                      <td className="py-[var(--space-3)] pl-[var(--space-5)] pr-[var(--space-3)] align-middle font-mono text-[11px] tabular-nums text-ink/35">
                         {String(row.serial).padStart(3, '0')}
                       </td>
                       <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle font-mono text-[11.5px] tracking-[0.04em] text-holo-light/80">
@@ -359,18 +359,18 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                       </td>
                       <td
                         className={`py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] ${
-                          continuesModel ? 'text-white/35' : 'text-white/85'
+                          continuesModel ? 'text-ink/35' : 'text-ink/85'
                         }`}
                       >
                         {continuesModel ? (
-                          <span className="font-mono text-white/20" aria-hidden="true">
+                          <span className="font-mono text-ink/20" aria-hidden="true">
                             ↳
                           </span>
                         ) : (
                           row.model
                         )}
                       </td>
-                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-white/70">
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-ink/70">
                         {row.specification}
                       </td>
                       <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle">
@@ -392,7 +392,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                         <div className="flex items-center justify-end gap-2">
                           {/* Qty stepper */}
                           <div
-                            className="flex items-center rounded-full border border-white/15"
+                            className="flex items-center rounded-full border border-ink/15"
                             style={{
                               backgroundColor: 'rgba(255,255,255,0.03)',
                               opacity: stocked ? 1 : 0.4,
@@ -403,12 +403,12 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                               onClick={() => setQty(row.serial, qty - 1)}
                               disabled={!stocked || qty <= 1}
                               aria-label="Decrease quantity"
-                              className="w-6 h-6 flex items-center justify-center text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 rounded-full"
+                              className="w-6 h-6 flex items-center justify-center text-ink/70 hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 rounded-full"
                             >
                               −
                             </button>
                             <span
-                              className="w-6 text-center text-[11.5px] tabular-nums text-white"
+                              className="w-6 text-center text-[11.5px] tabular-nums text-ink"
                               aria-live="polite"
                             >
                               {qty}
@@ -418,7 +418,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                               onClick={() => setQty(row.serial, qty + 1)}
                               disabled={!stocked || qty >= MAX_QTY}
                               aria-label="Increase quantity"
-                              className="w-6 h-6 flex items-center justify-center text-white/70 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 rounded-full"
+                              className="w-6 h-6 flex items-center justify-center text-ink/70 hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 rounded-full"
                             >
                               +
                             </button>
@@ -435,18 +435,18 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                             }
                             className={[
                               'h-6 px-3 rounded-full text-[10px] uppercase tracking-[0.16em] font-medium transition-colors',
-                              'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40',
+                              'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
                               !stocked
-                                ? 'bg-white/[0.04] border border-white/10 text-white/30 cursor-not-allowed'
+                                ? 'bg-ink/[0.04] border border-ink/10 text-ink/30 cursor-not-allowed'
                                 : wasAdded
                                   ? 'bg-holo/[0.18] border border-holo/40 text-holo-light'
-                                  : 'bg-white/[0.08] border border-white/15 text-white/80 hover:bg-holo/[0.10] hover:border-holo/30 hover:text-holo-light',
+                                  : 'bg-ink/[0.08] border border-ink/15 text-ink/80 hover:bg-holo/[0.10] hover:border-holo/30 hover:text-holo-light',
                             ].join(' ')}
                             style={
                               wasAdded
                                 ? {
                                     boxShadow:
-                                      '0 0 8px rgba(100, 200, 255, 0.28), inset 0 0 6px rgba(100, 200, 255, 0.08)',
+                                      '0 0 8px rgba(52, 114, 122, 0.28), inset 0 0 6px rgba(52, 114, 122, 0.08)',
                                   }
                                 : undefined
                             }
@@ -463,11 +463,11 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
           </div>
 
           {/* Footer */}
-          <footer className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-3)] border-t border-white/[0.06] flex items-center justify-between gap-[var(--space-3)] flex-wrap">
+          <footer className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-3)] border-t border-ink/[0.06] flex items-center justify-between gap-[var(--space-3)] flex-wrap">
             <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">
               For Research Purposes Only — Not for Human Use
             </p>
-            <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-white/45">
+            <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/45">
               <span className="flex items-center gap-1.5">
                 <span
                   className="inline-block h-[7px] w-[7px] rounded-full"

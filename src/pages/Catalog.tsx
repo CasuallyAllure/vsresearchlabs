@@ -92,14 +92,14 @@ export function Catalog() {
   return (
     <section className="py-[var(--space-8)]">
       {/* Header */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-3)]">
+      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-[var(--space-3)]">
           Catalog
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-light text-ink tracking-tight">
           Inventory
         </h1>
-        <p className="mt-[var(--space-3)] text-sm text-white/55 max-w-[52ch]">
+        <p className="mt-[var(--space-3)] text-sm text-ink/55 max-w-[52ch]">
           Full SKU list across all categories. Click any row to open compound
           intelligence. Add directly to inquiry.
         </p>
@@ -112,7 +112,7 @@ export function Catalog() {
         </label>
         <div className="relative">
           <svg
-            className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-white/35 pointer-events-none"
+            className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/35 pointer-events-none"
             width="16"
             height="16"
             viewBox="0 0 24 24"
@@ -134,14 +134,14 @@ export function Catalog() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, SKU, or description…"
-            className="w-full bg-white/[0.04] border border-white/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.18] transition-colors"
+            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/80 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             >
               <svg
                 width="16"
@@ -188,7 +188,7 @@ export function Catalog() {
 
       {/* Result count */}
       <p
-        className="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-[var(--space-4)]"
+        className="text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-[var(--space-4)]"
         aria-live="polite"
         aria-atomic="true"
       >

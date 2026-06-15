@@ -46,7 +46,7 @@ export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChip
       style={{ borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
       {humanTrials !== undefined && (
         <div className="flex items-center gap-2">
-          <span className="text-white/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>Human Trials</span>
+          <span className="text-ink/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>Human Trials</span>
           <span className="uppercase"
             style={{
               fontSize: '8px', letterSpacing: '0.14em', padding: '1px 5px', borderRadius: '2px',
@@ -60,9 +60,9 @@ export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChip
       )}
       {fdaStatus && (
         <div className="flex items-center gap-2">
-          <span className="text-white/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>FDA Status</span>
+          <span className="text-ink/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>FDA Status</span>
           <span
-            className={fdaIsWarning ? 'holo-text-warning font-semibold' : 'text-white/48'}
+            className={fdaIsWarning ? 'holo-text-warning font-semibold' : 'text-ink/48'}
             style={{ fontSize: '9px' }}
           >
             {fdaStatus}

@@ -99,7 +99,7 @@ function buildShipmentEmailHtml(args: {
       </h2>
       <p>Hi ${escapeHtml(args.buyerName || "there")},</p>
       <p>
-        Your order with Velari Systems Research Labs has been packed and
+        Your order with VS Research Labs has been packed and
         handed off to the carrier.
       </p>
       ${trackingBlock}
@@ -118,7 +118,7 @@ function buildShipmentEmailHtml(args: {
         If you have any questions about your shipment, please reply to this
         email and our team will be happy to assist.
       </p>
-      <p>Thank you for choosing Velari Systems Research Labs.</p>
+      <p>Thank you for choosing VS Research Labs.</p>
       <p style="margin-top:28px;color:#666;font-size:12px;">
         Velari Systems Research Labs<br/>
         Northern California Biopeptide Sciences

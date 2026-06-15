@@ -29,21 +29,21 @@ import { Link } from 'react-router-dom';
 export function InquiryCTAModule() {
   return (
     <section
-      className="-mx-[var(--space-6)] border-b border-white/[0.06]"
+      className="-mx-[var(--space-6)] border-b border-ink/[0.06]"
       aria-label="Open a procurement inquiry"
     >
       <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-16)] sm:py-[var(--space-20)]">
         {/* Eyebrow + heading band — same restrained tier used by the
             other Landing closing sections. */}
-        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 mb-[var(--space-4)]">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-[var(--space-4)]">
           Inquiry
         </p>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white tracking-tight leading-[1.1] max-w-[24ch] mb-[var(--space-6)]">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-ink tracking-tight leading-[1.1] max-w-[24ch] mb-[var(--space-6)]">
           Inquiries open.
         </h2>
 
         {/* Single context paragraph. Dry, anchored in prior waves. */}
-        <p className="text-base sm:text-lg text-white/65 leading-relaxed max-w-[60ch] mb-[var(--space-8)]">
+        <p className="text-base sm:text-lg text-ink/65 leading-relaxed max-w-[60ch] mb-[var(--space-8)]">
           Volume requests, custom dose tiers, and equipment
           configurations are quoted by inquiry. A response follows
           within one business day.
@@ -54,7 +54,7 @@ export function InquiryCTAModule() {
             primary-action affordance reads consistently across the app. */}
         <Link
           to="/contact"
-          className="inline-flex items-center justify-center px-[var(--space-8)] py-[var(--space-4)] rounded-full bg-gold text-black text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-black"
+          className="inline-flex items-center justify-center px-[var(--space-8)] py-[var(--space-4)] rounded-full bg-gold text-ink text-xs uppercase tracking-[0.25em] font-medium transition-colors duration-150 hover:bg-gold-light focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
         >
           Open a procurement inquiry
         </Link>

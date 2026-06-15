@@ -23,7 +23,7 @@
  *   - Mono is a first-class voice — the operational signature, indices,
  *     readouts, and codes. Gold is the single accent (live signals and
  *     the one primary CTA), held under ~10% of any surface.
- *   - Hairline grammar (`border-white/[0.1]`) separates modules; the
+ *   - Hairline grammar (`border-ink/[0.1]`) separates modules; the
  *     surface depth and the bay carry dimension, not glass.
  *   - One orchestrated page-load (op-reveal stagger); the bay self-draws.
  *     All motion is CSS, suppressed under reduced-motion.
@@ -55,7 +55,7 @@ interface ModuleRailProps {
 
 function ModuleRail({ index, label, meta }: ModuleRailProps) {
   return (
-    <div className="lg:col-span-3 lg:border-r lg:border-white/[0.1] lg:pr-[var(--space-8)]">
+    <div className="lg:col-span-3 lg:border-r lg:border-ink/[0.1] lg:pr-[var(--space-8)]">
       <div className="flex items-baseline gap-[var(--space-3)] lg:flex-col lg:items-start lg:gap-[var(--space-4)]">
         <span className="holo-text-display font-mono text-[13px] tabular-nums tracking-[0.1em]">
           {index}
@@ -98,7 +98,7 @@ function Module({ index, label, meta, children, aria, id }: ModuleProps) {
   return (
     <section
       id={id}
-      className="-mx-[var(--space-6)] border-b border-white/[0.1]"
+      className="-mx-[var(--space-6)] border-b border-ink/[0.1]"
       aria-label={aria}
       style={id ? { scrollMarginTop: '4rem' } : undefined}
     >
@@ -138,10 +138,10 @@ function RouteRow({
       className={[
         'research-surface-solid group flex items-center gap-[var(--space-5)]',
         'px-[var(--space-5)] py-[var(--space-5)]',
-        'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25',
       ].join(' ')}
     >
-      <div className="hidden h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-procurement)] border border-white/[0.08] bg-[var(--surface-specimen-bay)] sm:block">
+      <div className="hidden h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.08] bg-[var(--surface-specimen-bay)] sm:block">
         <img
           src={specimen}
           alt={specimenAlt}
@@ -149,28 +149,28 @@ function RouteRow({
           className="h-full w-full scale-[1.55] object-cover opacity-80 transition-opacity duration-150 group-hover:opacity-100"
         />
       </div>
-      <span className="font-mono text-[11px] tabular-nums text-white/30">
+      <span className="font-mono text-[11px] tabular-nums text-ink/30">
         {index}
       </span>
       <div className="min-w-0 flex-1">
-        <h3 className="text-base font-light tracking-tight text-white sm:text-lg">
+        <h3 className="text-base font-light tracking-tight text-ink sm:text-lg">
           {title}
         </h3>
-        <p className="mt-[var(--space-1-5)] text-[13px] leading-relaxed text-white/45">
+        <p className="mt-[var(--space-1-5)] text-[13px] leading-relaxed text-ink/45">
           {scope}
         </p>
       </div>
       <div className="hidden shrink-0 text-right md:block">
-        <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-white/45">
+        <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink/45">
           {readout}
         </p>
-        <p className="mt-[var(--space-1)] text-[10px] uppercase tracking-[0.24em] text-white/25">
+        <p className="mt-[var(--space-1)] text-[10px] uppercase tracking-[0.24em] text-ink/25">
           Indexed
         </p>
       </div>
       <span
         aria-hidden="true"
-        className="shrink-0 text-lg text-white/25 transition-colors duration-150 group-hover:text-holo-light"
+        className="shrink-0 text-lg text-ink/25 transition-colors duration-150 group-hover:text-holo-light"
       >
         →
       </span>
@@ -275,7 +275,7 @@ export function Landing() {
     <>
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
-        className="-mx-[var(--space-6)] border-b border-white/[0.1]"
+        className="-mx-[var(--space-6)] border-b border-ink/[0.1]"
         aria-label="Compound intelligence"
       >
         <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-12)] sm:pt-[var(--space-8)] sm:pb-[var(--space-16)]">
@@ -310,13 +310,10 @@ export function Landing() {
                 className="hero-whatsapp-cta group inline-flex items-center gap-2"
                 style={{
                   pointerEvents: 'auto',
-                  padding: '5px 11px 5px 9px',
+                  padding: '6px 14px 6px 11px',
                   borderRadius: '999px',
-                  background:
-                    'linear-gradient(90deg, rgba(170,225,255,0.95) 0%, rgba(255,255,255,1) 22%, rgba(170,220,250,0.92) 44%, rgba(255,255,255,1) 66%, rgba(170,225,255,0.95) 88%, rgba(220,240,255,1) 100%)',
-                  backgroundSize: '240% 100%',
-                  backgroundPosition: '0% 0%',
-                  color: 'rgb(15, 26, 46)',
+                  background: '#FBF9F4',
+                  color: '#1A1714',
                   fontFamily: 'Inter, system-ui, sans-serif',
                   fontSize: '9.5px',
                   fontWeight: 600,
@@ -324,9 +321,8 @@ export function Landing() {
                   textTransform: 'uppercase',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
-                  boxShadow:
-                    '0 0 0 0.5px rgba(200,235,255,0.85), 0 0 16px rgba(170,225,255,0.85), 0 0 34px rgba(120,200,245,0.65), 0 0 52px rgba(110,195,245,0.4), 0 4px 16px rgba(100,180,235,0.3), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(40,80,120,0.18)',
-                  animation: 'hero-whatsapp-anim 6s linear infinite',
+                  border: '1px solid rgba(26,23,20,0.16)',
+                  boxShadow: '0 1px 2px rgba(26,23,20,0.06)',
                 }}
               >
                 <svg
@@ -367,17 +363,17 @@ export function Landing() {
                   </defs>
 
                   {/* Project labels — silver mono micrograph */}
-                  <text x="6" y="9" fontFamily="monospace" fontSize="6" fill="rgba(205,220,235,0.75)" letterSpacing="0.22em">BAY BRIDGE · EAST SPAN</text>
-                  <text x="525" y="9" fontFamily="monospace" fontSize="6" fill="rgba(205,220,235,0.75)" letterSpacing="0.18em">OPENED 2013</text>
+                  <text x="6" y="9" fontFamily="monospace" fontSize="6" fill="rgba(26,23,20,0.5)" letterSpacing="0.22em">BAY BRIDGE · EAST SPAN</text>
+                  <text x="525" y="9" fontFamily="monospace" fontSize="6" fill="rgba(26,23,20,0.5)" letterSpacing="0.18em">OPENED 2013</text>
 
                   {/* Main cable — single self-anchored loop: deck → over tower
                       top → deck. Two Q segments meeting at the tower saddle. */}
-                  <path d="M 20,92 Q 215,60 410,14" fill="none" stroke="rgba(225,235,245,1)" strokeWidth="1.1" strokeLinecap="round" />
-                  <path d="M 410,14 Q 495,60 580,92" fill="none" stroke="rgba(225,235,245,1)" strokeWidth="1.1" strokeLinecap="round" />
+                  <path d="M 20,92 Q 215,60 410,14" fill="none" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
+                  <path d="M 410,14 Q 495,60 580,92" fill="none" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
 
                   {/* Suspender verticals — dense rod field, each top riding
                       the catenary cable (see BRIDGE_SUSPENDERS). */}
-                  <g stroke="rgba(180,200,220,0.55)" strokeWidth="0.4">
+                  <g stroke="rgba(26,23,20,0.3)" strokeWidth="0.4">
                     {BRIDGE_SUSPENDERS.map(({ x, yTop }) => (
                       <line key={`rod-${x}`} x1={x} y1={yTop} x2={x} y2={92} />
                     ))}
@@ -386,19 +382,19 @@ export function Landing() {
                   {/* Single tower — four-legged from the bridge's iconic
                       side view. Legs flare slightly at the base and
                       converge near the top, with cross-bracing visible. */}
-                  <g stroke="rgba(232,240,248,1)" strokeWidth="1.1" strokeLinecap="round">
+                  <g stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round">
                     {/* Outer pair (visible legs) */}
                     <line x1="404" y1="92" x2="408" y2="12" />
                     <line x1="416" y1="92" x2="412" y2="12" />
                     {/* Inner pair (back legs, slightly dimmer perspective) */}
                   </g>
-                  <g stroke="rgba(200,215,230,0.75)" strokeWidth="0.65" strokeLinecap="round">
+                  <g stroke="rgba(26,23,20,0.4)" strokeWidth="0.65" strokeLinecap="round">
                     <line x1="407" y1="92" x2="409" y2="12" />
                     <line x1="413" y1="92" x2="411" y2="12" />
                   </g>
 
                   {/* Tower cross-bracing — horizontal beams between the legs */}
-                  <g stroke="rgba(200,215,230,0.7)" strokeWidth="0.5">
+                  <g stroke="rgba(26,23,20,0.38)" strokeWidth="0.5">
                     <line x1="404.5" y1="20" x2="415.5" y2="20" />
                     <line x1="405" y1="32" x2="415" y2="32" />
                     <line x1="405.5" y1="44" x2="414.5" y2="44" />
@@ -407,7 +403,7 @@ export function Landing() {
                     <line x1="407" y1="80" x2="413" y2="80" />
                   </g>
                   {/* Internal X bracing (subtle) */}
-                  <g stroke="rgba(180,200,220,0.45)" strokeWidth="0.35">
+                  <g stroke="rgba(26,23,20,0.25)" strokeWidth="0.35">
                     <line x1="404.5" y1="20" x2="415" y2="32" />
                     <line x1="415.5" y1="20" x2="405" y2="32" />
                     <line x1="405" y1="32" x2="414.5" y2="44" />
@@ -422,25 +418,25 @@ export function Landing() {
 
                   {/* Saddle at tower top — small horizontal piece where the
                       main cable passes over. */}
-                  <line x1="406" y1="12" x2="414" y2="12" stroke="rgba(232,240,248,1)" strokeWidth="1.1" strokeLinecap="round" />
+                  <line x1="406" y1="12" x2="414" y2="12" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
 
                   {/* Roadway deck — single wide deck (East Span is single deck) */}
-                  <line x1="0" y1="92" x2="600" y2="92" stroke="rgba(220,232,242,0.95)" strokeWidth="0.85" />
-                  <line x1="0" y1="98" x2="600" y2="98" stroke="rgba(200,215,230,0.6)" strokeWidth="0.5" />
+                  <line x1="0" y1="92" x2="600" y2="92" stroke="rgba(26,23,20,0.5)" strokeWidth="0.85" />
+                  <line x1="0" y1="98" x2="600" y2="98" stroke="rgba(26,23,20,0.34)" strokeWidth="0.5" />
 
                   {/* Pier extending down from tower base into water */}
-                  <g stroke="rgba(200,215,230,0.65)" strokeWidth="0.6">
+                  <g stroke="rgba(26,23,20,0.36)" strokeWidth="0.6">
                     <line x1="406" y1="98" x2="406" y2="128" />
                     <line x1="414" y1="98" x2="414" y2="128" />
                     <line x1="404" y1="128" x2="416" y2="128" />
                   </g>
 
                   {/* Waterline */}
-                  <line x1="0" y1="132" x2="600" y2="132" stroke="rgba(180,200,220,0.35)" strokeWidth="0.3" strokeDasharray="3 4" />
+                  <line x1="0" y1="132" x2="600" y2="132" stroke="rgba(26,23,20,0.22)" strokeWidth="0.3" strokeDasharray="3 4" />
 
                   {/* Dimension marks */}
-                  <text x="295" y="14" fontFamily="monospace" fontSize="5" fill="rgba(205,220,235,0.65)" letterSpacing="0.1em">MAIN SPAN 1,263 FT</text>
-                  <text x="403" y="138" fontFamily="monospace" fontSize="5" fill="rgba(205,220,235,0.6)" letterSpacing="0.12em">SAS TOWER · 525 FT</text>
+                  <text x="295" y="14" fontFamily="monospace" fontSize="5" fill="rgba(26,23,20,0.45)" letterSpacing="0.1em">MAIN SPAN 1,263 FT</text>
+                  <text x="403" y="138" fontFamily="monospace" fontSize="5" fill="rgba(26,23,20,0.42)" letterSpacing="0.12em">SAS TOWER · 525 FT</text>
 
                   {/* ── Bay Lights ──────────────────────────────────────────
                       A luminous point trickles down each suspender cable,
@@ -462,7 +458,7 @@ export function Landing() {
                           x2={x}
                           y2={92}
                           pathLength={1}
-                          stroke="rgba(150,205,255,0.85)"
+                          stroke="rgba(52,114,122,0.85)"
                           strokeWidth={1.8}
                           strokeLinecap="round"
                           style={{ ['--op-delay' as string]: `${i * 80}ms` }}
@@ -478,7 +474,7 @@ export function Landing() {
                         x2={x}
                         y2={92}
                         pathLength={1}
-                        stroke="rgba(238,247,255,0.95)"
+                        stroke="rgba(98, 160, 166,0.95)"
                         strokeWidth={0.75}
                         strokeLinecap="round"
                         style={{ ['--op-delay' as string]: `${i * 80}ms` }}
@@ -494,49 +490,37 @@ export function Landing() {
                   positioned at the grid level above. */}
 
               <h1
-                className="op-reveal mt-[var(--space-4)] text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-white"
+                className="op-reveal mt-[var(--space-4)] text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-ink"
                 style={{ ['--op-delay' as string]: '90ms' }}
               >
-                <span className="font-light text-white/85">
+                <span className="font-light text-ink/85">
                   Bay Area biopeptide sciences.
                 </span>
                 <br />
-                <span className="font-medium text-white">Highest purity, on demand.</span>
+                <span className="font-medium text-ink">Highest purity, on demand.</span>
               </h1>
 
               <p
-                className="op-reveal mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed text-white/60"
+                className="op-reveal mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed text-ink/60"
                 style={{ ['--op-delay' as string]: '170ms' }}
               >
-                <strong
-                  className="font-semibold text-white"
-                  style={{ textShadow: '0 0 8px rgba(255,255,255,0.18)' }}
-                >
+                <strong className="font-semibold text-ink">
                   Velari Systems Research Labs
                 </strong>{' '}
                 is a Northern California research company specializing in{' '}
-                <span
-                  className="font-medium text-holo-light"
-                  style={{ textShadow: '0 0 6px rgba(100,200,255,0.4), 0 0 14px rgba(100,200,255,0.18)' }}
-                >
+                <span className="font-medium text-holo">
                   peptides, nootropics, and skincare-grade compounds
                 </span>
                 {' '}— all supplied at research-grade purity.{' '}
                 <SameDayDeliveryBadge />
                 {' '}and{' '}
-                <span
-                  className="font-medium text-holo-light"
-                  style={{ textShadow: '0 0 6px rgba(100,200,255,0.4)' }}
-                >
+                <span className="font-medium text-holo">
                   next-day
                 </span>
                 {' '}delivery available across the Bay Area on select orders.
                 {' '}But we're a research company first — so we share what we
                 know. Every compound here carries an{' '}
-                <span
-                  className="font-medium text-holo-light"
-                  style={{ textShadow: '0 0 6px rgba(100,200,255,0.4), 0 0 14px rgba(100,200,255,0.18)' }}
-                >
+                <span className="font-medium text-holo">
                   open research dossier
                 </span>
                 {' '}— mechanism, receptor data, and the published study
@@ -563,7 +547,7 @@ export function Landing() {
                       }
                     }
                   }}
-                  className="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-black transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  className="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
                 >
                   <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
                   <span className="relative">Begin Inquiry</span>
@@ -594,18 +578,22 @@ export function Landing() {
               style={{ ['--op-delay' as string]: '210ms' }}
             >
               <div
-                className="module-aura relative aspect-[5/4] w-full overflow-hidden"
+                className="module-aura relative aspect-[5/4] w-full overflow-hidden rounded-2xl"
                 style={{
-                  backgroundColor: '#070707',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: 'linear-gradient(155deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.32) 100%)',
+                  backdropFilter: 'blur(26px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(26px) saturate(150%)',
+                  border: '1px solid rgba(255,255,255,0.75)',
+                  boxShadow:
+                    '0 26px 64px -30px rgba(26,23,20,0.28), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(26,23,20,0.05)',
                 }}
-                aria-label="Compound visualization placeholder"
+                aria-label="Compound visualization"
               >
                 {/* Corner registration marks — scientific panel cue */}
-                <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 h-2.5 w-2.5 border-l border-t border-white/20" />
-                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-2 h-2.5 w-2.5 border-r border-t border-white/20" />
-                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-white/20" />
-                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-white/20" />
+                <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 h-2.5 w-2.5 border-l border-t border-ink/25" />
+                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-2 h-2.5 w-2.5 border-r border-t border-ink/25" />
+                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-ink/25" />
+                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-ink/25" />
 
                 {/* Top scrim — keeps the caption legible and fades slide
                     text out beneath it (above the carousel, below caption). */}
@@ -614,28 +602,21 @@ export function Landing() {
                   className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-24"
                   style={{
                     background:
-                      'linear-gradient(to bottom, rgba(7,7,7,0.92) 0%, rgba(7,7,7,0.6) 45%, transparent 100%)',
+                      'linear-gradient(to bottom, rgba(251,249,244,0.85) 0%, rgba(251,249,244,0.45) 45%, transparent 100%)',
                   }}
                 />
 
                 {/* Top-left caption — micrographic data block */}
                 <div className="absolute left-4 top-4 z-10 flex flex-col gap-1">
-                  <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-white/30">
+                  <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-ink/45">
                     Compound Visualization
                   </span>
-                  <span className="font-mono text-[8.5px] tabular-nums tracking-[0.18em] text-white/22">
+                  <span className="font-mono text-[8.5px] tabular-nums tracking-[0.18em] text-ink/40">
                     FIG-01
                   </span>
-                  <span className="mt-1 font-mono text-[8.5px] uppercase tracking-[0.2em] text-cyan-300/70">
+                  <span className="mt-1 font-mono text-[8.5px] uppercase tracking-[0.2em] text-holo">
                     <span className="font-bold">Compound of the Month:</span>{' '}
-                    <span
-                      className="font-bold"
-                      style={{
-                        color: '#FF8A2E',
-                        textShadow:
-                          '0 0 4px rgba(255,138,46,0.85), 0 0 10px rgba(255,138,46,0.55), 0 0 18px rgba(255,138,46,0.3)',
-                      }}
-                    >
+                    <span className="font-bold" style={{ color: '#8C6A2A' }}>
                       Retatrutide
                     </span>
                   </span>
@@ -650,10 +631,10 @@ export function Landing() {
                 >
                   <defs>
                     <pattern id="hero-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(120,200,255,0.05)" strokeWidth="0.4" />
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(52, 114, 122,0.05)" strokeWidth="0.4" />
                     </pattern>
                     <radialGradient id="hero-glow" cx="50%" cy="55%" r="55%">
-                      <stop offset="0%" stopColor="rgba(100,200,255,0.12)" />
+                      <stop offset="0%" stopColor="rgba(52, 114, 122,0.12)" />
                       <stop offset="100%" stopColor="rgba(0,0,0,0)" />
                     </radialGradient>
                   </defs>
@@ -673,13 +654,13 @@ export function Landing() {
                   className="hero-holo-scan pointer-events-none absolute inset-0"
                   style={{
                     background:
-                      'repeating-linear-gradient(to bottom, transparent 0px, rgba(120,200,255,0.05) 1px, transparent 2px, transparent 3px)',
+                      'repeating-linear-gradient(to bottom, transparent 0px, rgba(52, 114, 122,0.05) 1px, transparent 2px, transparent 3px)',
                     mixBlendMode: 'screen',
                   }}
                 />
 
                 {/* Bottom-right registration */}
-                <span className="absolute bottom-3 right-4 z-10 font-mono text-[8px] uppercase tracking-[0.2em] text-white/22">
+                <span className="absolute bottom-3 right-4 z-10 font-mono text-[8px] uppercase tracking-[0.2em] text-ink/40">
                   REV. A
                 </span>
 
@@ -764,20 +745,12 @@ export function Landing() {
             }
             .hero-whatsapp-cta:hover {
               transform: translateY(-0.5px);
-              box-shadow:
-                0 0 0 0.5px rgba(210, 240, 255, 0.95),
-                0 0 22px rgba(180, 230, 255, 0.85),
-                0 0 40px rgba(120, 200, 245, 0.6),
-                0 6px 20px rgba(100, 180, 235, 0.32),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8),
-                inset 0 -1px 0 rgba(40, 80, 120, 0.16) !important;
+              border-color: rgba(26, 23, 20, 0.3) !important;
+              box-shadow: 0 2px 8px rgba(26, 23, 20, 0.12) !important;
             }
             .hero-whatsapp-cta:focus-visible {
               outline: none;
-              box-shadow:
-                0 0 0 2px rgba(170, 225, 255, 0.95),
-                0 0 22px rgba(180, 230, 255, 0.85),
-                0 0 40px rgba(120, 200, 245, 0.6) !important;
+              box-shadow: 0 0 0 2px rgba(52, 114, 122, 0.5) !important;
             }
             @media (prefers-reduced-motion: reduce) {
               .hero-whatsapp-cta { animation: none !important; background-position: 50% 0% !important; }
@@ -785,27 +758,27 @@ export function Landing() {
             }
 
             /* Begin Inquiry — cool holo-mint, drawn from the compound
-               visualization palette (teal #4FE0C9 / mint #6CE8C0). */
+               brand palette (gold #B5904B / teal #34727A). */
             .hero-cta-gold {
-              background: linear-gradient(180deg, #A8F0DC 0%, #54DDC0 55%, #3FB89B 100%);
+              background: linear-gradient(180deg, #C7A463 0%, #B5904B 55%, #8C6A2A 100%);
               box-shadow:
-                0 0 0 0.5px rgba(168, 240, 220, 0.6),
-                0 0 12px rgba(79, 224, 201, 0.35),
-                0 3px 10px rgba(79, 224, 201, 0.22),
-                inset 0 0.5px 0 rgba(230, 255, 246, 0.6),
-                inset 0 -0.5px 0 rgba(10, 60, 50, 0.2);
+                0 0 0 0.5px rgba(199,164,99, 0.6),
+                0 0 12px rgba(181, 144, 75, 0.35),
+                0 3px 10px rgba(181, 144, 75, 0.22),
+                inset 0 0.5px 0 rgba(199, 164, 99, 0.6),
+                inset 0 -0.5px 0 rgba(26,23,20, 0.2);
             }
             .hero-cta-gold:hover {
               box-shadow:
-                0 0 0 0.5px rgba(190, 250, 230, 0.9),
-                0 0 22px rgba(108, 232, 192, 0.6),
-                0 5px 14px rgba(79, 224, 201, 0.35),
-                inset 0 0.5px 0 rgba(235, 255, 248, 0.7),
-                inset 0 -0.5px 0 rgba(10, 60, 50, 0.18);
+                0 0 0 0.5px rgba(199, 164, 99, 0.9),
+                0 0 22px rgba(199, 164, 99, 0.6),
+                0 5px 14px rgba(181, 144, 75, 0.35),
+                inset 0 0.5px 0 rgba(199, 164, 99, 0.7),
+                inset 0 -0.5px 0 rgba(26,23,20, 0.18);
               transform: translateY(-0.5px);
             }
             .hero-cta-gold-sheen {
-              background: linear-gradient(110deg, transparent 35%, rgba(240,255,250,0.55) 50%, transparent 65%);
+              background: linear-gradient(110deg, transparent 35%, rgba(199, 164, 99,0.55) 50%, transparent 65%);
               transform: translateX(-140%);
               transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
             }
@@ -818,25 +791,25 @@ export function Landing() {
               background: linear-gradient(180deg, rgba(20,50,92,0.88) 0%, rgba(12,32,62,0.82) 100%);
               -webkit-backdrop-filter: blur(5px);
               backdrop-filter: blur(5px);
-              border: 0.5px solid rgba(120, 210, 255, 0.4);
+              border: 0.5px solid rgba(52, 114, 122, 0.4);
               box-shadow:
-                inset 0 0 10px rgba(100, 200, 255, 0.08),
-                inset 0 0.5px 0 rgba(180, 230, 255, 0.22),
-                0 0 12px rgba(100, 200, 255, 0.2),
-                0 2px 10px rgba(100, 200, 255, 0.1);
+                inset 0 0 10px rgba(52, 114, 122, 0.08),
+                inset 0 0.5px 0 rgba(98, 160, 166, 0.22),
+                0 0 12px rgba(52, 114, 122, 0.2),
+                0 2px 10px rgba(52, 114, 122, 0.1);
             }
             .hero-cta-holo:hover {
-              border-color: rgba(160, 225, 255, 0.8);
-              background: linear-gradient(180deg, rgba(120,210,255,0.13) 0%, rgba(100,200,255,0.04) 100%);
+              border-color: rgba(98, 160, 166, 0.8);
+              background: linear-gradient(180deg, rgba(52, 114, 122,0.13) 0%, rgba(52, 114, 122,0.04) 100%);
               box-shadow:
-                inset 0 0 16px rgba(120, 210, 255, 0.18),
-                inset 0 0.5px 0 rgba(180, 230, 255, 0.35),
-                0 0 22px rgba(120, 210, 255, 0.45),
-                0 3px 14px rgba(100, 200, 255, 0.2);
+                inset 0 0 16px rgba(52, 114, 122, 0.18),
+                inset 0 0.5px 0 rgba(98, 160, 166, 0.35),
+                0 0 22px rgba(52, 114, 122, 0.45),
+                0 3px 14px rgba(52, 114, 122, 0.2);
               transform: translateY(-0.5px);
             }
             .hero-cta-holo-sheen {
-              background: linear-gradient(110deg, transparent 35%, rgba(180,235,255,0.35) 50%, transparent 65%);
+              background: linear-gradient(110deg, transparent 35%, rgba(98, 160, 166,0.35) 50%, transparent 65%);
               transform: translateX(-140%);
               transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
             }
@@ -866,10 +839,10 @@ export function Landing() {
           ['Lead', '3–21 D'],
         ]}
       >
-        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
+        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">
           Inventory-first. Inquiry-led.
         </h2>
-        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-white/60">
+        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-ink/60">
           Every SKU carries a documented family, dose tier, and
           procurement abbreviation. Pricing and availability are
           confirmed by inquiry, not by listing. No flash promotions, no
@@ -912,10 +885,10 @@ export function Landing() {
           ['Standard', 'ICH Q2'],
         ]}
       >
-        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
+        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">
           Batch-tracked research archive.
         </h2>
-        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-white/60">
+        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-ink/60">
           Certificates of analysis, purity reports, and calibration
           records are filed against the same batch identifiers used in
           the catalog. Documentation is referenced for reconciliation
@@ -932,12 +905,12 @@ export function Landing() {
         <div className="mt-[var(--space-8)]">
           <Link
             to="/documentation"
-            className="group inline-flex items-center gap-[var(--space-2)] text-[11px] uppercase tracking-[0.3em] text-white/55 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            className="group inline-flex items-center gap-[var(--space-2)] text-[11px] uppercase tracking-[0.3em] text-ink/55 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span>View all documentation</span>
             <span
               aria-hidden="true"
-              className="text-white/35 transition-[color,transform] duration-150 group-hover:translate-x-0.5 group-hover:text-holo"
+              className="text-ink/35 transition-[color,transform] duration-150 group-hover:translate-x-0.5 group-hover:text-holo"
             >
               →
             </span>
@@ -956,24 +929,24 @@ export function Landing() {
           ['Buyer', 'VERIFIED'],
         ]}
       >
-        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-white">
+        <h2 className="max-w-[24ch] text-[clamp(1.45rem,2.8vw,2.0rem)] font-light leading-[1.1] tracking-[-0.02em] text-ink">
           Procurement, as a sequence.
         </h2>
-        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-white/60">
+        <p className="mt-[var(--space-4)] max-w-[58ch] text-[13px] leading-relaxed text-ink/60">
           The path from inquiry to fulfilment is fixed and documented at
           every step. No funnel, no negotiation theatre, no surprise at
           release.
         </p>
 
         {/* Sequence strip */}
-        <ol className="mt-[var(--space-10)] grid grid-cols-1 border-t border-white/[0.1] sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-[var(--space-10)] grid grid-cols-1 border-t border-ink/[0.1] sm:grid-cols-2 lg:grid-cols-4">
           {SEQUENCE.map((step, i) => (
             <li
               key={step.code}
               className={[
-                'border-b border-white/[0.1] px-0 py-[var(--space-6)] sm:px-[var(--space-5)]',
+                'border-b border-ink/[0.1] px-0 py-[var(--space-6)] sm:px-[var(--space-5)]',
                 'sm:border-b-0 sm:border-t',
-                i % 2 === 0 ? 'sm:border-r sm:border-white/[0.1]' : '',
+                i % 2 === 0 ? 'sm:border-r sm:border-ink/[0.1]' : '',
                 'lg:border-r',
                 i === SEQUENCE.length - 1 ? 'lg:border-r-0' : '',
                 i === 0 ? 'sm:pl-0 lg:pl-0' : '',
@@ -983,11 +956,11 @@ export function Landing() {
                 <span className="holo-text-display font-mono text-[12px] tabular-nums">
                   {step.code}
                 </span>
-                <span className="text-[15px] font-light tracking-tight text-white">
+                <span className="text-[15px] font-light tracking-tight text-ink">
                   {step.title}
                 </span>
               </div>
-              <p className="mt-[var(--space-3)] max-w-[32ch] text-[13px] leading-relaxed text-white/55">
+              <p className="mt-[var(--space-3)] max-w-[32ch] text-[13px] leading-relaxed text-ink/55">
                 {step.body}
               </p>
             </li>
@@ -1005,7 +978,7 @@ export function Landing() {
                 <blockquote className="holo-text-body max-w-[34ch] text-[13px] font-light leading-relaxed">
                   {r.quote}
                 </blockquote>
-                <p className="mt-[var(--space-4)] text-[12px] text-white/65">
+                <p className="mt-[var(--space-4)] text-[12px] text-ink/65">
                   {r.name}
                 </p>
                 <p className="holo-text-caption mt-[var(--space-0-5)] text-[9.5px] uppercase tracking-[0.2em]">
@@ -1017,12 +990,12 @@ export function Landing() {
         </div>
 
         {/* Formal inquiry intake */}
-        <div className="mt-[var(--space-12)] flex flex-col gap-[var(--space-5)] border-t border-white/[0.1] pt-[var(--space-10)] sm:flex-row sm:items-end sm:justify-between">
+        <div className="mt-[var(--space-12)] flex flex-col gap-[var(--space-5)] border-t border-ink/[0.1] pt-[var(--space-10)] sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 className="text-[clamp(1.4rem,2.6vw,1.9rem)] font-light tracking-[-0.02em] text-white">
+            <h3 className="text-[clamp(1.4rem,2.6vw,1.9rem)] font-light tracking-[-0.02em] text-ink">
               Inquiries open.
             </h3>
-            <p className="mt-[var(--space-3)] max-w-[46ch] text-[14px] leading-relaxed text-white/50">
+            <p className="mt-[var(--space-3)] max-w-[46ch] text-[14px] leading-relaxed text-ink/50">
               Volume requests, custom dose tiers, and equipment
               configurations are quoted by inquiry. A response follows
               within one business day.
@@ -1030,7 +1003,7 @@ export function Landing() {
           </div>
           <Link
             to="/contact"
-            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-black transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Begin inquiry</span>

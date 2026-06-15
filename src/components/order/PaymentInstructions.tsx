@@ -17,52 +17,52 @@ interface PaymentInstructionsProps {
 export function PaymentInstructions({ orderNumber, amountCents }: PaymentInstructionsProps) {
   return (
     <div className="research-surface-solid p-[var(--space-6)] print:bg-white print:border-black/15">
-      <p className="text-[10px] uppercase tracking-[0.25em] text-white/40 print:text-black/50 mb-[var(--space-2)]">
+      <p className="text-[10px] uppercase tracking-[0.25em] text-ink/40 print:text-black/50 mb-[var(--space-2)]">
         How to pay
       </p>
-      <p className="text-sm text-white/80 print:text-black mb-[var(--space-4)]">
+      <p className="text-sm text-ink/80 print:text-black mb-[var(--space-4)]">
         Amount due:{' '}
-        <span className="font-mono font-semibold tabular-nums text-white print:text-black">
+        <span className="font-mono font-semibold tabular-nums text-ink print:text-black">
           {formatUsd(amountCents)}
         </span>
       </p>
 
-      <p className="text-[13px] leading-relaxed text-white/65 print:text-black/70 mb-[var(--space-4)]">
-        Send payment using <strong className="text-white print:text-black">one</strong> of the
+      <p className="text-[13px] leading-relaxed text-ink/65 print:text-black/70 mb-[var(--space-4)]">
+        Send payment using <strong className="text-ink print:text-black">one</strong> of the
         methods below. You{' '}
-        <strong className="text-white print:text-black">must send it as Friends &amp; Family</strong>{' '}
+        <strong className="text-ink print:text-black">must send it as Friends &amp; Family</strong>{' '}
         — any payment not sent as Friends &amp; Family will be{' '}
-        <strong className="text-white print:text-black">rejected</strong>.
+        <strong className="text-ink print:text-black">rejected</strong>.
       </p>
 
-      <dl className="border-t border-white/[0.08] print:border-black/15">
-        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-          <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">
+      <dl className="border-t border-ink/[0.08] print:border-black/15">
+        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+          <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">
             Zelle
           </dt>
-          <dd className="text-sm font-mono text-white/85 print:text-black text-right break-all">
+          <dd className="text-sm font-mono text-ink/85 print:text-black text-right break-all">
             {PAYMENT_CONFIG.zelle}
           </dd>
         </div>
-        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-white/[0.06] print:border-black/10">
-          <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 print:text-black/55 shrink-0">
+        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+          <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">
             PayPal
           </dt>
-          <dd className="text-sm font-mono text-white/85 print:text-black text-right break-all">
+          <dd className="text-sm font-mono text-ink/85 print:text-black text-right break-all">
             {PAYMENT_CONFIG.paypal}
-            <span className="block text-[11px] font-sans text-white/40 print:text-black/50">
+            <span className="block text-[11px] font-sans text-ink/40 print:text-black/50">
               Friends &amp; Family — not Goods &amp; Services
             </span>
           </dd>
         </div>
       </dl>
 
-      <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-white/80 print:text-black">
-        <strong className="text-white print:text-black">Important:</strong> put your order number{' '}
-        <span className="font-mono font-semibold text-white print:text-black">{orderNumber}</span>{' '}
+      <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80 print:text-black">
+        <strong className="text-ink print:text-black">Important:</strong> put your order number{' '}
+        <span className="font-mono font-semibold text-ink print:text-black">{orderNumber}</span>{' '}
         in the payment note.
       </p>
-      <p className="mt-[var(--space-2)] text-[13px] leading-relaxed text-white/55 print:text-black/70">
+      <p className="mt-[var(--space-2)] text-[13px] leading-relaxed text-ink/55 print:text-black/70">
         Once your payment is confirmed, your order will be processed and your products shipped.
       </p>
     </div>

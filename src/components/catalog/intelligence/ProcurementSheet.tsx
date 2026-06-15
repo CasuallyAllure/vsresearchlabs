@@ -60,14 +60,14 @@ export function ProcurementSheet({ product, variant = 'passport', maxRows }: Pro
   if (variant === 'full') {
     return (
       <div className="research-surface-elevated overflow-hidden">
-        <dl className="border-t border-white/[0.06]">
+        <dl className="border-t border-ink/[0.06]">
           {rows.map((r) => (
             <div
               key={r.label}
-              className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] px-[var(--space-4)] border-b border-white/[0.06]"
+              className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] px-[var(--space-4)] border-b border-ink/[0.06]"
             >
-              <dt className="text-[11px] uppercase tracking-[0.2em] text-white/40 shrink-0">{r.label}</dt>
-              <dd className="text-sm text-white/70 text-right font-mono tabular-nums">{r.value}</dd>
+              <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">{r.label}</dt>
+              <dd className="text-sm text-ink/70 text-right font-mono tabular-nums">{r.value}</dd>
             </div>
           ))}
         </dl>

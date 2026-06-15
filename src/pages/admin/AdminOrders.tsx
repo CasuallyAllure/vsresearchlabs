@@ -79,9 +79,9 @@ export function AdminOrders() {
           Orders
         </p>
         <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-            <span className="font-light text-white/85">Order </span>
-            <span className="font-medium text-white">pipeline.</span>
+          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+            <span className="font-light text-ink/85">Order </span>
+            <span className="font-medium text-ink">pipeline.</span>
           </h2>
           <div className="flex items-center gap-1.5 flex-wrap">
             {STATUS_FILTERS.map((s) => (
@@ -92,8 +92,8 @@ export function AdminOrders() {
                 className={[
                   'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
                   filter === s
-                    ? 'bg-white/[0.10] text-white border border-white/25'
-                    : 'border border-white/[0.08] text-white/55 hover:text-white/90',
+                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
+                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
                 ].join(' ')}
               >
                 {filterLabel(s)}
@@ -111,35 +111,35 @@ export function AdminOrders() {
 
       {rows && rows.length === 0 && (
         <div className="research-surface-solid p-[var(--space-6)]">
-          <p className="text-[13px] text-white/55">
+          <p className="text-[13px] text-ink/55">
             No orders in this filter. New orders are created from the Inquiries tab.
           </p>
         </div>
       )}
 
       {rows && rows.length > 0 && (
-        <ul className="research-surface-solid divide-y divide-white/[0.04]">
+        <ul className="research-surface-solid divide-y divide-ink/[0.04]">
           {rows.map((row) => (
             <li key={row.id}>
               <Link
                 to={`/admin/orders/${row.id}`}
-                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-white/[0.015] transition-colors focus:outline-none focus-visible:bg-white/[0.02]"
+                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-ink/[0.015] transition-colors focus:outline-none focus-visible:bg-ink/[0.02]"
               >
                 <div className="flex items-start gap-[var(--space-4)]">
-                  <span className="font-mono text-[10.5px] text-white/35 tabular-nums shrink-0 pt-1 w-[120px]">
+                  <span className="font-mono text-[10.5px] text-ink/35 tabular-nums shrink-0 pt-1 w-[120px]">
                     {formatTs(row.created_at)}
                   </span>
                   <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] shrink-0 pt-1 w-[170px] truncate">
                     {row.order_number}
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[13px] text-white truncate">{row.buyer_name}</span>
-                    <span className="block text-[11px] text-white/45 truncate">
+                    <span className="block text-[13px] text-ink truncate">{row.buyer_name}</span>
+                    <span className="block text-[11px] text-ink/45 truncate">
                       {row.buyer_contact}
                       {row.buyer_organization && ` · ${row.buyer_organization}`}
                     </span>
                   </span>
-                  <span className="font-mono text-[11.5px] text-white/75 tabular-nums shrink-0 w-[100px] text-right">
+                  <span className="font-mono text-[11.5px] text-ink/75 tabular-nums shrink-0 w-[100px] text-right">
                     {formatCents(row.invoice_amount_cents)}
                   </span>
                   <OrderStatusChip status={row.status} />
@@ -172,10 +172,10 @@ function formatCents(cents: number | null): string {
 export function OrderStatusChip({ status }: { status: OrderStatus }) {
   let cls = '';
   switch (status) {
-    case 'pending_invoice': cls = 'border-white/25 text-white/80 bg-white/[0.05]'; break;
+    case 'pending_invoice': cls = 'border-ink/25 text-ink/80 bg-ink/[0.05]'; break;
     case 'invoice_sent':    cls = 'border-holo/40 text-holo-light/80 bg-holo/[0.08]'; break;
-    case 'paid':            cls = 'border-[#7CD992]/40 text-[#7CD992]/90 bg-[#7CD992]/[0.06]'; break;
-    case 'fulfilled':       cls = 'border-white/15 text-white/55 bg-white/[0.02]'; break;
+    case 'paid':            cls = 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]'; break;
+    case 'fulfilled':       cls = 'border-ink/15 text-ink/55 bg-ink/[0.02]'; break;
     case 'cancelled':       cls = 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]'; break;
     case 'refunded':        cls = 'border-red-400/30 text-red-300/65 bg-red-400/[0.04]'; break;
   }

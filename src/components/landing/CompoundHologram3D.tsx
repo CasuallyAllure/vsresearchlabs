@@ -70,25 +70,25 @@ const ELEMENTS: Record<string, { name: string; z: number; mass: number; eneg: nu
 };
 
 const ELEMENT_STYLE: Record<string, { color: string; emissive: string }> = {
-  C: { color: '#5EE6E8', emissive: '#1F7878' }, // teal
-  N: { color: '#6AA8FF', emissive: '#274C9C' }, // blue
-  O: { color: '#FF8A9B', emissive: '#9C3A48' }, // coral (oxygen)
+  C: { color: '#34727A', emissive: '#1F7878' }, // teal
+  N: { color: '#34727A', emissive: '#274C9C' }, // blue
+  O: { color: '#C7A463', emissive: '#9C3A48' }, // coral (oxygen)
   S: { color: '#E8D6A8', emissive: '#9C7C3E' }, // gold
-  P: { color: '#FFB066', emissive: '#9C5A20' }, // orange
+  P: { color: '#C7A463', emissive: '#9C5A20' }, // orange
 };
 const ELEMENT_FALLBACK = { color: '#8FD4FF', emissive: '#2A6A9C' };
 
 // Procedural-helix palette (fallback only)
 const ATOM_PALETTE = [
-  { color: '#64C8FF', emissive: '#2A7AB8' },
-  { color: '#4FE0C9', emissive: '#1F7A6A' },
-  { color: '#8AD4FF', emissive: '#3A7AB8' },
-  { color: '#6CE8C0', emissive: '#2A7A60' },
-  { color: '#7BD9F0', emissive: '#2A6A78' },
-  { color: '#5EE6E8', emissive: '#1F7878' },
+  { color: '#34727A', emissive: '#1E444A' },
+  { color: '#62A0A6', emissive: '#1E444A' },
+  { color: '#34727A', emissive: '#1E444A' },
+  { color: '#C7A463', emissive: '#8C6A2A' },
+  { color: '#62A0A6', emissive: '#1E444A' },
+  { color: '#34727A', emissive: '#1E444A' },
 ] as const;
 const ACCENT_ATOM = { color: '#E8D6A8', emissive: '#9C7C3E' };
-const BOND_COLOR = '#5EDDF6';
+const BOND_COLOR = '#34727A';
 const ACCENT_BOND_COLOR = '#C4A35A';
 
 const RES_NAMES: Record<string, string> = {
@@ -254,8 +254,8 @@ function BondMesh({
 
 function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolean; placement: { right: boolean; top: boolean } }) {
   const accent = scan.accent;
-  const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(110,240,224,0.9)';
-  const glow = accent ? 'rgba(196,163,90,0.30)' : 'rgba(94,221,246,0.30)';
+  const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(181,144,75,0.9)';
+  const glow = accent ? 'rgba(196,163,90,0.30)' : 'rgba(52, 114, 122,0.30)';
   const tint = accent ? '#F2D98A' : '#8FF4E8';
 
   // Open the card toward screen-centre so it never bleeds off an edge,
@@ -273,7 +273,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
         <circle cx="0" cy="0" r="2" fill={tint} />
       </svg>
 
-      <div className={`holo-scouter-card${reduced ? '' : ' holo-live'}`} style={{ borderColor: edge, boxShadow: `0 0 0 1px ${glow}, 0 5px 18px rgba(0,0,0,0.6), 0 0 22px ${glow}`, ...pos }}>
+      <div className={`holo-scouter-card${reduced ? '' : ' holo-live'}`} style={{ borderColor: edge, boxShadow: `0 0 0 1px ${glow}, 0 5px 18px rgba(26,23,20,0.22), 0 0 22px ${glow}`, ...pos }}>
         <i className="holo-cnr tl" style={{ borderColor: edge }} />
         <i className="holo-cnr tr" style={{ borderColor: edge }} />
         <i className="holo-cnr bl" style={{ borderColor: edge }} />
@@ -284,7 +284,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
             <span className={reduced ? '' : 'holo-blink'} style={{ width: 5, height: 5, borderRadius: '50%', background: tint, boxShadow: `0 0 6px ${tint}` }} />
             LOCKED
           </span>
-          <span style={{ color: 'rgba(255,255,255,0.35)' }}>{scan.kind === 'atom' ? 'ATOM' : 'BOND'}</span>
+          <span style={{ color: 'rgba(26,23,20,0.35)' }}>{scan.kind === 'atom' ? 'ATOM' : 'BOND'}</span>
         </div>
 
         {scan.kind === 'atom' ? (
@@ -463,10 +463,10 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
           }}
         >
           <ambientLight intensity={0.45} color="#3A8CB8" />
-          <pointLight position={[3, 4, 5]} intensity={1.6} color="#64C8FF" />
-          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#A8E5FF" />
+          <pointLight position={[3, 4, 5]} intensity={1.6} color="#34727A" />
+          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#62A0A6" />
           <pointLight position={[0, 4, -3]} intensity={0.5} color="#C4A35A" />
-          <pointLight position={[2, -3, -2]} intensity={0.4} color="#4FE0C9" />
+          <pointLight position={[2, -3, -2]} intensity={0.4} color="#62A0A6" />
 
           <MolecularScene
             structure={resolved}
@@ -498,9 +498,9 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-scouter-card {
           position: absolute;
           width: 150px; padding: 6px 8px 7px;
-          background: linear-gradient(180deg, rgba(8,17,23,0.95), rgba(5,10,14,0.97));
+          background: linear-gradient(180deg, rgba(251,249,244,0.85), rgba(244,239,230,0.9));
           border: 1px solid; border-radius: 7px; overflow: hidden;
-          -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
         }
         .holo-live { animation: holoPop 170ms cubic-bezier(0.2,0.9,0.25,1) both, holoFlicker 6s linear 200ms infinite; }
         @keyframes holoPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
@@ -513,7 +513,7 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         }
         .holo-crt {
           position: absolute; inset: 0; pointer-events: none; border-radius: 8px;
-          background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 1.6px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0.22) 3px);
+          background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 1.6px, rgba(26,23,20,0.05) 2px, rgba(26,23,20,0.05) 3px);
           opacity: 0.5; animation: holoCrt 3.4s ease-in-out infinite;
         }
         @keyframes holoCrt { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.58; } }
@@ -532,11 +532,11 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-head { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
         .holo-sym { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid; border-radius: 6px; font-size: 12px; font-weight: 700; }
         .holo-title { position: relative; z-index: 1; font-size: 10.5px; font-weight: 600; color: #fff; line-height: 1.12; }
-        .holo-sub { position: relative; z-index: 1; font-size: 7px; letter-spacing: 0.03em; color: rgba(255,255,255,0.5); font-variant-numeric: tabular-nums; margin-top: 1px; }
+        .holo-sub { position: relative; z-index: 1; font-size: 7px; letter-spacing: 0.03em; color: rgba(26,23,20,0.5); font-variant-numeric: tabular-nums; margin-top: 1px; }
         .holo-kv { position: relative; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 3px; }
-        .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(255,255,255,0.4); flex-shrink: 0; }
-        .holo-val { font-size: 8.5px; color: rgba(255,255,255,0.85); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
-        .holo-src { position: relative; z-index: 1; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 6.5px; letter-spacing: 0.12em; opacity: 0.85; }
+        .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(26,23,20,0.4); flex-shrink: 0; }
+        .holo-val { font-size: 8.5px; color: rgba(26,23,20,0.85); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
+        .holo-src { position: relative; z-index: 1; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(26,23,20,0.1); font-size: 6.5px; letter-spacing: 0.12em; opacity: 0.85; }
         @media (prefers-reduced-motion: reduce) {
           .holo-live, .holo-crt, .holo-sweep, .holo-blink, .holo-reticle { animation: none !important; }
         }

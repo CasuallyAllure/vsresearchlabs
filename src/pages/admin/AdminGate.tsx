@@ -24,9 +24,9 @@ export function AdminGate({ children }: { children: ReactNode }) {
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Admin
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-4)]">
-          <span className="font-light text-white/85">Backend </span>
-          <span className="font-medium text-white">not configured.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)]">
+          <span className="font-light text-ink/85">Backend </span>
+          <span className="font-medium text-ink">not configured.</span>
         </h1>
         <p className="holo-text-body text-[13px] leading-relaxed">
           Set <code className="font-mono text-holo-light">VITE_SUPABASE_URL</code> and{' '}
@@ -78,9 +78,9 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
       <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
         Admin · Restricted
       </p>
-      <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-3)]">
-        <span className="font-light text-white/85">Sign </span>
-        <span className="font-medium text-white">in.</span>
+      <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-3)]">
+        <span className="font-light text-ink/85">Sign </span>
+        <span className="font-medium text-ink">in.</span>
       </h1>
       <p className="holo-text-body text-[13px] leading-relaxed mb-[var(--space-8)]">
         This area is for internal operations. Accounts are provisioned
@@ -90,7 +90,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
       <form onSubmit={handleSubmit} noValidate>
         <label
           htmlFor="admin-email"
-          className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]"
+          className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]"
         >
           Email
         </label>
@@ -101,13 +101,13 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors mb-[var(--space-5)]"
+          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors mb-[var(--space-5)]"
           placeholder="you@vsresearchlabs.com"
         />
 
         <label
           htmlFor="admin-password"
-          className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]"
+          className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]"
         >
           Password
         </label>
@@ -118,7 +118,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors"
+          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
         />
 
         {error && (
@@ -133,7 +133,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
         <button
           type="submit"
           disabled={submitting || email.length === 0 || password.length === 0}
-          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-black disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
         >
           <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
           <span className="relative">{submitting ? 'Signing in…' : 'Sign in'}</span>

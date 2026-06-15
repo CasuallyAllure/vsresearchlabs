@@ -8,7 +8,7 @@ import { CLASSIFICATION_LABELS, CLASSIFICATION_DEFINITIONS } from '../lib/compou
 import { inStockByKey } from '../lib/stock';
 
 const ALL_TAB = '__all__';
-const STOCK_GREEN = '#7CD992';
+const STOCK_GREEN = '#2E7D5B';
 
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
@@ -48,15 +48,15 @@ export function BiopeptideResearchSupplies() {
 
   return (
     <section className="py-[var(--space-8)]">
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-white/[0.06]">
+      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
         <div className="flex flex-col gap-[var(--space-5)] sm:flex-row sm:items-end sm:justify-between sm:gap-[var(--space-6)]">
           <div className="min-w-0">
             <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
               Research Supplies · Biopeptide
             </p>
-            <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white">
-              <span className="font-light text-white/85">Biopeptide </span>
-              <span className="font-medium text-white">research supplies.</span>
+            <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+              <span className="font-light text-ink/85">Biopeptide </span>
+              <span className="font-medium text-ink">research supplies.</span>
             </h1>
             <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
               Lyophilized peptides sourced for research-grade consistency.
@@ -66,7 +66,7 @@ export function BiopeptideResearchSupplies() {
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
-            className="inv-metal-pill cta-holo group relative inline-flex shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full px-[11px] py-[6px] text-[9px] uppercase tracking-[0.18em] transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 sm:self-end sm:mb-[var(--space-6)] sm:mr-[calc(var(--space-16)*2+var(--space-6))]"
+            className="inv-metal-pill cta-holo group relative inline-flex shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full px-[11px] py-[6px] text-[9px] uppercase tracking-[0.18em] transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 sm:self-end sm:mb-[var(--space-6)] sm:mr-[calc(var(--space-16)*2+var(--space-6))]"
           >
             <span aria-hidden="true" className="cta-holo-sheen pointer-events-none absolute inset-0" />
             <span className="inv-metal-text relative font-medium">View full inventory</span>
@@ -83,10 +83,10 @@ export function BiopeptideResearchSupplies() {
           aria-checked={inStockOnly}
           onClick={() => setInStockOnly((v) => !v)}
           className={[
-            'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35',
+            'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
             inStockOnly
-              ? 'text-white'
-              : 'border-white/15 text-white/45 hover:text-white/75 hover:border-white/25',
+              ? 'text-ink'
+              : 'border-ink/15 text-ink/45 hover:text-ink/75 hover:border-ink/25',
           ].join(' ')}
           style={
             inStockOnly
@@ -161,7 +161,7 @@ export function BiopeptideResearchSupplies() {
           box-shadow:
             0 0 0 0.5px rgba(225,229,236,0.30),
             0 0 22px rgba(226,231,241,0.50),
-            0 0 46px rgba(196,206,217,0.30),
+            0 0 46px rgba(26,23,20,0.30),
             inset 0 1px 0 rgba(255,255,255,0.40),
             inset 0 -1px 0 rgba(0,0,0,0.40) !important;
         }

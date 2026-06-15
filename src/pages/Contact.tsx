@@ -20,9 +20,9 @@ export function Contact() {
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Open Inquiries
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-white mb-[var(--space-6)]">
-          <span className="font-light text-white/85">Open </span>
-          <span className="font-medium text-white">channels.</span>
+        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-6)]">
+          <span className="font-light text-ink/85">Open </span>
+          <span className="font-medium text-ink">channels.</span>
         </h1>
         <p className="holo-text-body text-[13px] leading-relaxed">
           Procurement questions outside the catalog, documentation
@@ -32,40 +32,40 @@ export function Contact() {
         </p>
       </header>
 
-      <dl className="border-t border-white/[0.06] max-w-[60ch]">
-        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-white/[0.06]">
-          <dt className="text-[11px] uppercase tracking-[0.25em] text-white/40 pt-1">
+      <dl className="border-t border-ink/[0.06] max-w-[60ch]">
+        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-ink/[0.06]">
+          <dt className="text-[11px] uppercase tracking-[0.25em] text-ink/40 pt-1">
             Email
           </dt>
           <dd>
             <a
               href="mailto:inquiries@vsresearchlabs.com"
-              className="text-base text-white underline underline-offset-4 decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
+              className="text-base text-ink underline underline-offset-4 decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
             >
               inquiries@vsresearchlabs.com
             </a>
           </dd>
         </div>
 
-        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-white/[0.06]">
-          <dt className="text-[11px] uppercase tracking-[0.25em] text-white/40 pt-1">
+        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-ink/[0.06]">
+          <dt className="text-[11px] uppercase tracking-[0.25em] text-ink/40 pt-1">
             Phone
           </dt>
           <dd>
             <a
               href="tel:+18005550100"
-              className="text-base text-white underline underline-offset-4 tabular-nums decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
+              className="text-base text-ink underline underline-offset-4 tabular-nums decoration-white/15 hover:decoration-white/40 transition-colors focus:outline-none focus-visible:decoration-white/55"
             >
               +1 (800) 555-0100
             </a>
           </dd>
         </div>
 
-        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-white/[0.06]">
-          <dt className="text-[11px] uppercase tracking-[0.25em] text-white/40 pt-1">
+        <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] gap-[var(--space-6)] py-[var(--space-5)] border-b border-ink/[0.06]">
+          <dt className="text-[11px] uppercase tracking-[0.25em] text-ink/40 pt-1">
             Address
           </dt>
-          <dd className="text-sm text-white/70 leading-relaxed">
+          <dd className="text-sm text-ink/70 leading-relaxed">
             VS Research Labs
             <br />
             Research Operations

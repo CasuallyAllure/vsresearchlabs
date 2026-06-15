@@ -31,10 +31,10 @@ export function ErrorState({ message, action, className }: ErrorStateProps) {
       role="alert"
       className={cn('py-[var(--space-8)]', className)}
     >
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/30 mb-[var(--space-2)]">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-ink/30 mb-[var(--space-2)]">
         System Notice
       </p>
-      <p className="text-sm text-white/55">{message}</p>
+      <p className="text-sm text-ink/55">{message}</p>
       {action && (
         <div className="mt-[var(--space-4)]">{action}</div>
       )}

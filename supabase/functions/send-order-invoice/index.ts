@@ -71,7 +71,7 @@ function buildInvoiceEmailHtml(args: {
         Order Received — Payment Instructions
       </h2>
       <p>Hi ${escapeHtml(args.buyerName || "there")},</p>
-      <p>Thank you for your inquiry with Velari Systems Research Labs.</p>
+      <p>Thank you for your inquiry with VS Research Labs.</p>
       <p>
         Your order request has been received and is currently being prepared for
         processing. To complete your order, payment of
@@ -105,7 +105,7 @@ function buildInvoiceEmailHtml(args: {
         instructions, please reply to this email and our team will be happy to
         assist.
       </p>
-      <p>Thank you for choosing Velari Systems Research Labs.</p>
+      <p>Thank you for choosing VS Research Labs.</p>
       <p style="margin-top:28px;color:#666;font-size:12px;">
         Velari Systems Research Labs<br/>
         Northern California Biopeptide Sciences

@@ -117,16 +117,16 @@ export function AdminInventory() {
           Inventory
         </p>
         <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-white">
-            <span className="font-light text-white/85">Stock </span>
-            <span className="font-medium text-white">on hand.</span>
+          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+            <span className="font-light text-ink/85">Stock </span>
+            <span className="font-medium text-ink">on hand.</span>
           </h2>
           <input
             type="search"
             placeholder="Filter by SKU or name"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full sm:w-[280px] px-[var(--space-4)] py-[var(--space-2)] bg-black border border-white/10 rounded-sm text-[12px] text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full sm:w-[280px] px-[var(--space-4)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30 transition-colors"
           />
         </div>
       </header>
@@ -154,46 +154,46 @@ export function AdminInventory() {
         <div className="research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.10]">
-                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[180px]">
+              <tr className="border-b border-ink/[0.10]">
+                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[180px]">
                   SKU
                 </th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal">
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">
                   Product
                 </th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[100px]">
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">
                   On hand
                 </th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[160px]">
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[160px]">
                   Updated
                 </th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-white/45 font-normal w-[110px]">
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[110px]">
                   Action
                 </th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((row) => (
-                <tr key={row.sku} className="border-b border-white/[0.04] hover:bg-white/[0.015] transition-colors">
+                <tr key={row.sku} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
                   <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11.5px] text-holo-light/80">
                     {row.sku}
                   </td>
-                  <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-white/80">
+                  <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
                     {displayNameFor(row.sku)}
                   </td>
                   <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[12px] tabular-nums">
-                    <span className={row.on_hand === 0 ? 'text-red-300/85' : 'text-white'}>
+                    <span className={row.on_hand === 0 ? 'text-red-300/85' : 'text-ink'}>
                       {row.on_hand}
                     </span>
                   </td>
-                  <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle font-mono text-[10.5px] text-white/45 tabular-nums">
+                  <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle font-mono text-[10.5px] text-ink/45 tabular-nums">
                     {formatTs(row.updated_at)}
                   </td>
                   <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle text-right">
                     <button
                       type="button"
                       onClick={() => setAdjustingSku(row.sku)}
-                      className="rounded-full border border-white/15 bg-white/[0.04] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] text-white/80 hover:text-holo-light hover:border-holo/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+                      className="rounded-full border border-ink/15 bg-ink/[0.04] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] text-ink/80 hover:text-holo-light hover:border-holo/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                     >
                       Adjust
                     </button>
@@ -202,7 +202,7 @@ export function AdminInventory() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-[var(--space-6)] text-center text-[12px] text-white/40">
+                  <td colSpan={5} className="py-[var(--space-6)] text-center text-[12px] text-ink/40">
                     No matches for "{query}"
                   </td>
                 </tr>
@@ -267,7 +267,7 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[3px]"
+        className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-[3px]"
       />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <form
@@ -277,19 +277,19 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
             Adjust stock
           </p>
-          <h3 className="text-[clamp(1.1rem,2vw,1.3rem)] text-white font-light tracking-tight mb-[var(--space-1)]">
+          <h3 className="text-[clamp(1.1rem,2vw,1.3rem)] text-ink font-light tracking-tight mb-[var(--space-1)]">
             {displayNameFor(row.sku)}
           </h3>
           <p className="font-mono text-[10.5px] text-holo-light/70 tracking-[0.04em] mb-[var(--space-5)]">
             {row.sku}
           </p>
 
-          <div className="flex items-baseline justify-between border-y border-white/[0.06] py-[var(--space-3)] mb-[var(--space-5)]">
-            <span className="text-[11px] uppercase tracking-[0.22em] text-white/45">Current</span>
-            <span className="font-mono text-[15px] tabular-nums text-white">{row.on_hand}</span>
+          <div className="flex items-baseline justify-between border-y border-ink/[0.06] py-[var(--space-3)] mb-[var(--space-5)]">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Current</span>
+            <span className="font-mono text-[15px] tabular-nums text-ink">{row.on_hand}</span>
           </div>
 
-          <label htmlFor="adj-delta" className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]">
+          <label htmlFor="adj-delta" className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]">
             Delta (+ adds, − removes)
           </label>
           <input
@@ -299,22 +299,22 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
             value={delta}
             onChange={(e) => setDelta(e.target.value)}
             placeholder="e.g. 50 or -3"
-            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors mb-[var(--space-3)]"
+            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors mb-[var(--space-3)]"
           />
           {valid && (
-            <p className="text-[11px] text-white/55 mb-[var(--space-5)]">
-              Projected on-hand: <span className="font-mono tabular-nums text-white">{projected}</span>
+            <p className="text-[11px] text-ink/55 mb-[var(--space-5)]">
+              Projected on-hand: <span className="font-mono tabular-nums text-ink">{projected}</span>
             </p>
           )}
 
-          <label htmlFor="adj-reason" className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]">
+          <label htmlFor="adj-reason" className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]">
             Reason
           </label>
           <select
             id="adj-reason"
             value={reason}
             onChange={(e) => setReason(e.target.value as AdjustReason)}
-            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white focus:outline-none focus:border-white/40 transition-colors mb-[var(--space-5)]"
+            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink focus:outline-none focus:border-ink/40 transition-colors mb-[var(--space-5)]"
           >
             {REASON_ORDER.map((r) => (
               <option key={r} value={r}>
@@ -323,7 +323,7 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
             ))}
           </select>
 
-          <label htmlFor="adj-notes" className="block text-[11px] uppercase tracking-[0.22em] text-white/50 mb-[var(--space-2)]">
+          <label htmlFor="adj-notes" className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]">
             Notes (optional)
           </label>
           <textarea
@@ -332,7 +332,7 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Lot number, supplier, etc."
-            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-black border border-white/10 rounded-sm text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 transition-colors resize-y"
+            className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors resize-y"
           />
 
           {error && (
@@ -345,14 +345,14 @@ function AdjustStockModal({ row, onClose, onSuccess }: AdjustStockModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-white/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-white/70 hover:text-white hover:border-white/30 transition-colors"
+              className="rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-ink/70 hover:text-ink hover:border-ink/30 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!valid || submitting}
-              className="rounded-full bg-white/[0.10] border border-white/30 px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-white hover:bg-white/[0.15] hover:border-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? 'Applying…' : 'Apply'}
             </button>

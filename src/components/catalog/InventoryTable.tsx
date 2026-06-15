@@ -67,7 +67,7 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 }
 
 const TH_CLASS =
-  'text-left text-[11px] uppercase tracking-[0.2em] text-white/45 font-medium px-[var(--space-4)] py-[var(--space-3)]';
+  'text-left text-[11px] uppercase tracking-[0.2em] text-ink/45 font-medium px-[var(--space-4)] py-[var(--space-3)]';
 
 export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
   const navigate = useNavigate();
@@ -107,7 +107,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
     >
       <table className="w-full text-sm table-fixed">
         <caption className="sr-only">Inventory catalog</caption>
-        <thead className="sticky top-[56px] z-10 bg-black border-b border-white/[0.06]">
+        <thead className="sticky top-[56px] z-10 bg-base-700 border-b border-ink/[0.06]">
           <tr>
             <th scope="col" className={`${TH_CLASS} w-[200px]`}>SKU</th>
             <th scope="col" className={TH_CLASS}>Product</th>
@@ -132,11 +132,11 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                 className={[
                   'group transition-colors cursor-pointer',
                   'hover:bg-[var(--surface-product-hover)]',
-                  isLast ? '' : 'border-b border-white/[0.06]',
+                  isLast ? '' : 'border-b border-ink/[0.06]',
                 ].join(' ')}
               >
                 {/* SKU */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] tabular-nums text-white/65 text-xs whitespace-nowrap truncate">
+                <td className="px-[var(--space-4)] py-[var(--space-3)] tabular-nums text-ink/65 text-xs whitespace-nowrap truncate">
                   {product.sku}
                 </td>
 
@@ -148,7 +148,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                     <Link
                       to={`/product/${product.id}`}
                       onClick={onInspect ? (e) => { e.preventDefault(); e.stopPropagation(); onInspect(product.id); } : undefined}
-                      className="text-white font-medium truncate group-hover:text-gold transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 focus-visible:text-gold"
+                      className="text-ink font-medium truncate group-hover:text-gold transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 focus-visible:text-gold"
                     >
                       {family}
                     </Link>
@@ -156,13 +156,13 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                 </td>
 
                 {/* Family / class — derived from category */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] text-white/55 text-xs whitespace-nowrap truncate">
+                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/55 text-xs whitespace-nowrap truncate">
                   {categoryLabel(product.category)}
                 </td>
 
                 {/* Spec — dose or spec headline */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] text-white/65 text-xs truncate">
-                  {dose || <span className="text-white/30">—</span>}
+                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/65 text-xs truncate">
+                  {dose || <span className="text-ink/30">—</span>}
                 </td>
 
                 {/* Inquiry */}
@@ -177,10 +177,10 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                     }
                     className={[
                       'h-7 w-7 rounded-full border inline-flex items-center justify-center transition-colors',
-                      'focus:outline-none focus-visible:ring-1 focus-visible:ring-white/50',
+                      'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/50',
                       isAdded
                         ? 'bg-gold/15 border-gold/40 text-gold'
-                        : 'bg-white/[0.04] border-white/[0.09] text-white/65 hover:bg-white/[0.08] hover:text-white',
+                        : 'bg-ink/[0.04] border-ink/[0.09] text-ink/65 hover:bg-ink/[0.08] hover:text-ink',
                     ].join(' ')}
                   >
                     {isAdded ? (
@@ -243,7 +243,7 @@ export function InventoryTableSkeleton({ rowCount = 8 }: { rowCount?: number }) 
     >
       <table className="w-full text-sm table-fixed">
         <caption className="sr-only">Inventory catalog — loading</caption>
-        <thead className="sticky top-[56px] z-10 bg-black border-b border-white/[0.06]">
+        <thead className="sticky top-[56px] z-10 bg-base-700 border-b border-ink/[0.06]">
           <tr>
             <th className={`${TH_CLASS} w-[200px]`}>SKU</th>
             <th className={TH_CLASS}>Product</th>
@@ -256,22 +256,22 @@ export function InventoryTableSkeleton({ rowCount = 8 }: { rowCount?: number }) 
           {Array.from({ length: rowCount }).map((_, i) => (
             <tr
               key={i}
-              className={i === rowCount - 1 ? '' : 'border-b border-white/[0.06]'}
+              className={i === rowCount - 1 ? '' : 'border-b border-ink/[0.06]'}
             >
               <td className="px-[var(--space-4)] py-[var(--space-3)]">
-                <div className="h-3 bg-white/[0.06] rounded animate-pulse w-32" />
+                <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-32" />
               </td>
               <td className="px-[var(--space-4)] py-[var(--space-3)]">
-                <div className="h-3 bg-white/[0.06] rounded animate-pulse w-40" />
+                <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-40" />
               </td>
               <td className="px-[var(--space-4)] py-[var(--space-3)]">
-                <div className="h-3 bg-white/[0.06] rounded animate-pulse w-20" />
+                <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-20" />
               </td>
               <td className="px-[var(--space-4)] py-[var(--space-3)]">
-                <div className="h-3 bg-white/[0.06] rounded animate-pulse w-16" />
+                <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-16" />
               </td>
               <td className="px-[var(--space-4)] py-[var(--space-3)] text-right">
-                <div className="h-7 w-7 rounded-full bg-white/[0.06] animate-pulse inline-block" />
+                <div className="h-7 w-7 rounded-full bg-ink/[0.06] animate-pulse inline-block" />
               </td>
             </tr>
           ))}

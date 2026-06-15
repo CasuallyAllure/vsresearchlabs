@@ -27,8 +27,8 @@ import { tierPriceCents, formatPrice } from '../../lib/pricing';
 import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
 
-const STOCK_GREEN = '#7CD992';
-const STOCK_RED = '#FF7A7A';
+const STOCK_GREEN = '#2E7D5B';
+const STOCK_RED = '#B23A3A';
 
 interface ProductCardProps {
   product: Product;
@@ -87,11 +87,11 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
   ) : null;
 
   const imageBlock = (
-    <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#050505]">
+    <div className="relative aspect-[4/3] w-full overflow-hidden bg-display">
       {imageUrl ? (
         <img src={imageUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
       ) : (
-        <div className="h-full w-full flex items-center justify-center text-white/20 text-xs uppercase tracking-widest">
+        <div className="h-full w-full flex items-center justify-center text-ink/20 text-xs uppercase tracking-widest">
           No image
         </div>
       )}
@@ -101,20 +101,20 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
 
   const identity = (
     <>
-      <p className="text-[10px] uppercase tracking-[0.25em] text-white/40">
+      <p className="text-[10px] uppercase tracking-[0.25em] text-ink/40">
         {product.family}
       </p>
       <div className="flex items-center gap-2 min-w-0">
         <AbbreviationChip value={product.abbreviation} />
-        <h3 className="text-sm font-medium text-white truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
+        <h3 className="text-sm font-medium text-ink truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
           {product.name}
         </h3>
       </div>
-      <p className="text-[11px] tracking-wide text-white/40 truncate">
-        <span className="text-white/55 tabular-nums">{product.sku}</span>
+      <p className="text-[11px] tracking-wide text-ink/40 truncate">
+        <span className="text-ink/55 tabular-nums">{product.sku}</span>
         {product.shortDescription && (
           <>
-            <span className="mx-1.5 text-white/25" aria-hidden="true">·</span>
+            <span className="mx-1.5 text-ink/25" aria-hidden="true">·</span>
             <span>{product.shortDescription}</span>
           </>
         )}
@@ -127,7 +127,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
     const head = (
       <>
         {imageBlock}
-        <div className="border-t border-white/[0.06] px-4 pt-3 pb-2 space-y-1.5">
+        <div className="border-t border-ink/[0.06] px-4 pt-3 pb-2 space-y-1.5">
           {identity}
         </div>
       </>
@@ -138,14 +138,14 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
           <button
             type="button"
             onClick={() => onInspect(product.id)}
-            className="block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
+            className="block w-full text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
           >
             {head}
           </button>
         ) : (
           <Link
             to={`/product/${product.id}`}
-            className="block focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
+            className="block focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
           >
             {head}
           </Link>
@@ -155,7 +155,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         <div className="px-4 pb-3 pt-1.5">
           {variants.length > 0 && (
             <>
-              <p className="mb-1.5 text-[8px] uppercase tracking-[0.22em] text-white/30">
+              <p className="mb-1.5 text-[8px] uppercase tracking-[0.22em] text-ink/30">
                 Tier
               </p>
               <TierStrip
@@ -167,20 +167,20 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               />
             </>
           )}
-          <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/[0.05] pt-2.5">
-            <span className="font-mono tabular-nums leading-none text-white/90" style={{ fontSize: '12.5px' }}>
+          <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-ink/[0.05] pt-2.5">
+            <span className="font-mono tabular-nums leading-none text-ink/90" style={{ fontSize: '12.5px' }}>
               {formatPrice(priceCents)}
             </span>
             <button
               type="button"
               onClick={handleAdd}
               aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-              className="rounded-full uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
+              className="rounded-full uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
               style={{
                 padding: '5px 11px',
                 fontSize: '8.5px',
-                backgroundColor: added ? 'rgba(100,200,255,0.14)' : 'rgba(255,255,255,0.07)',
-                border: added ? '1px solid rgba(120,210,255,0.40)' : '1px solid rgba(255,255,255,0.14)',
+                backgroundColor: added ? 'rgba(52, 114, 122,0.14)' : 'rgba(255,255,255,0.07)',
+                border: added ? '1px solid rgba(52, 114, 122,0.40)' : '1px solid rgba(255,255,255,0.14)',
                 color: added ? '#9BD8FF' : 'rgba(255,255,255,0.78)',
               }}
             >
@@ -197,11 +197,11 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
     <Link
       to={`/product/${product.id}`}
       onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}
-      className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25"
+      className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
     >
       <div className="research-surface-solid overflow-hidden group">
         {imageBlock}
-        <div className="border-t border-white/[0.06] px-4 py-3 space-y-1.5">
+        <div className="border-t border-ink/[0.06] px-4 py-3 space-y-1.5">
           {identity}
           {variants.length > 0 && (
             <TierStrip variants={variants} activeDose={activeDose} className="pt-0.5" />
@@ -221,11 +221,11 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
 export function ProductCardSkeleton() {
   return (
     <div className="research-surface-solid overflow-hidden" aria-hidden="true">
-      <div className="aspect-[4/3] w-full bg-[#050505] animate-pulse" />
-      <div className="border-t border-white/[0.06] px-4 py-3 space-y-2">
-        <div className="h-3 bg-white/[0.06] rounded animate-pulse w-1/3" />
-        <div className="h-3 bg-white/[0.06] rounded animate-pulse w-3/4" />
-        <div className="h-3 bg-white/[0.06] rounded animate-pulse w-1/2" />
+      <div className="aspect-[4/3] w-full bg-display animate-pulse" />
+      <div className="border-t border-ink/[0.06] px-4 py-3 space-y-2">
+        <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-1/3" />
+        <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-3/4" />
+        <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-1/2" />
       </div>
     </div>
   );

@@ -172,7 +172,7 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
     <>
       {/* Backdrop */}
       <div aria-hidden="true" onClick={handleClose} className="fixed inset-0 z-50"
-        style={{ backgroundColor: 'rgba(0,0,0,0.82)', animation: closing ? 'cio-bd-out 200ms linear forwards' : 'cio-bd 180ms linear forwards' }} />
+        style={{ backgroundColor: 'rgba(26,23,20,0.45)', animation: closing ? 'cio-bd-out 200ms linear forwards' : 'cio-bd 180ms linear forwards' }} />
 
       {/* Centering wrapper */}
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-10 pointer-events-none">
@@ -186,9 +186,9 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
           style={{
             maxWidth: '1080px',
             height: 'min(calc(100dvh - 40px), 860px)',
-            backgroundColor: '#0d0d0d',
-            border: '1px solid rgba(255,255,255,0.10)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 40px 120px rgba(0,0,0,0.85)',
+            backgroundColor: '#FBF9F4',
+            border: '1px solid rgba(26,23,20,0.10)',
+            boxShadow: 'inset 0 1px 0 rgba(26,23,20,0.04), 0 40px 120px rgba(26,23,20,0.22)',
             animation: closing ? 'cio-panel-out 230ms cubic-bezier(0.23, 1, 0.32, 1) forwards' : 'cio-panel 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
           }}
         >
@@ -205,38 +205,38 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
             {/* Left passport — no specimen bay (moved to visual zone above) */}
             <div className="hidden lg:flex flex-col overflow-hidden shrink-0"
-              style={{ width: '300px', backgroundColor: '#090909', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+              style={{ width: '300px', backgroundColor: '#F4EFE6', borderRight: '1px solid rgba(26,23,20,0.07)' }}>
 
               {/* Passport header */}
               <div className="flex items-center justify-between px-4 py-2.5 shrink-0"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                <span className="text-white/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
+                <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                   {ci.classificationLabel || 'Compound'}
                 </span>
                 <button type="button" onClick={handleClose} aria-label="Close compound intelligence"
-                  className="h-6 w-6 flex items-center justify-center text-white/28 hover:text-white/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25 rounded-sm">
+                  className="h-6 w-6 flex items-center justify-center text-ink/28 hover:text-ink/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm">
                   <CloseIcon />
                 </button>
               </div>
 
               {/* Compound identity */}
-              <div className="px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
                 <div className="flex items-center gap-2 min-w-0 mb-2">
                   <AbbreviationChip value={ci.abbreviation} />
                 </div>
-                <h2 className="text-white font-medium leading-tight" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
+                <h2 className="text-ink font-medium leading-tight" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
                   {ci.substance}
                 </h2>
                 {(ci.casNumber || ci.molecularWeight) && (
                   <div className="mt-2 space-y-0.5">
                     {ci.casNumber && (
-                      <p className="font-mono text-white/40 tabular-nums" style={{ fontSize: '10px' }}>
-                        CAS <span className="text-white/55">{ci.casNumber}</span>
+                      <p className="font-mono text-ink/40 tabular-nums" style={{ fontSize: '10px' }}>
+                        CAS <span className="text-ink/55">{ci.casNumber}</span>
                       </p>
                     )}
                     {ci.molecularWeight && (
-                      <p className="font-mono text-white/40 tabular-nums" style={{ fontSize: '10px' }}>
-                        MW&nbsp;&nbsp;<span className="text-white/55">{ci.molecularWeight}</span>
+                      <p className="font-mono text-ink/40 tabular-nums" style={{ fontSize: '10px' }}>
+                        MW&nbsp;&nbsp;<span className="text-ink/55">{ci.molecularWeight}</span>
                       </p>
                     )}
                   </div>
@@ -245,7 +245,7 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
               {/* Passport key stats */}
               {passportStats.length > 0 && (
-                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
                   <div className="grid grid-cols-2 gap-1">
                     {passportStats.map((s) => (
                       <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />
@@ -256,12 +256,12 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
               {/* Tier selector + live price */}
               {ci.tiers.length > 0 && (
-                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
                   <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-white/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                    <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                       Tier
                     </span>
-                    <span className="text-white font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                    <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                       {formatPrice(priceCents)}
                     </span>
                   </div>
@@ -277,20 +277,20 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
               <div className="flex-1" />
 
               {/* Desktop CTA */}
-              <div className="shrink-0 px-4 pb-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="shrink-0 px-4 pb-4 pt-3" style={{ borderTop: '1px solid rgba(26,23,20,0.07)' }}>
                 <div className="flex items-center gap-2 mb-2">
                   <QuantityStepper quantity={quantity} onChange={setQuantity} />
                   {/* Add to inquiry */}
                   <button type="button" onClick={handleAddToInquiry}
-                    className="flex-1 h-8 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
-                    style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.16)', transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out' }}
-                    onMouseEnter={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.14)'; el.style.borderColor = 'rgba(255,255,255,0.24)'; }}
-                    onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.09)'; el.style.borderColor = 'rgba(255,255,255,0.16)'; }}>
+                    className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                    style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.09)', border: '1px solid rgba(26,23,20,0.16)', transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out' }}
+                    onMouseEnter={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.14)'; el.style.borderColor = 'rgba(26,23,20,0.24)'; }}
+                    onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.09)'; el.style.borderColor = 'rgba(26,23,20,0.16)'; }}>
                     Add to Inquiry
                   </button>
                 </div>
                 {(activeTier || quantity > 1 || priceCents != null) && (
-                  <p className="text-white/30 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
+                  <p className="text-ink/30 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
                     {[
                       activeTier?.dose,
                       quantity > 1
@@ -300,7 +300,7 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                   </p>
                 )}
                 <Link to={`/product/${product.id}`} onClick={onClose}
-                  className="w-full flex items-center justify-center gap-1.5 h-6 text-white/30 hover:text-white/70 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25 rounded-sm"
+                  className="w-full flex items-center justify-center gap-1.5 h-6 text-ink/30 hover:text-ink/70 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm"
                   style={{ fontSize: '10px', letterSpacing: '0.05em' }}>
                   View full record <ArrowUpRightIcon />
                 </Link>
@@ -312,20 +312,20 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
               {/* Sticky header */}
               <div className="flex items-center justify-between gap-4 px-4 py-3 shrink-0"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="lg:hidden shrink-0"><AbbreviationChip value={ci.abbreviation} /></span>
                   <div className="min-w-0">
-                    <h3 className="text-white font-medium truncate" style={{ fontSize: '13px', letterSpacing: '-0.005em' }}>{ci.substance}</h3>
-                    <p className="text-white/28 font-mono tabular-nums mt-0.5 truncate" style={{ fontSize: '9px', letterSpacing: '0.18em' }}>
+                    <h3 className="text-ink font-medium truncate" style={{ fontSize: '13px', letterSpacing: '-0.005em' }}>{ci.substance}</h3>
+                    <p className="text-ink/28 font-mono tabular-nums mt-0.5 truncate" style={{ fontSize: '9px', letterSpacing: '0.18em' }}>
                       {ci.sku}
-                      {ci.classificationLabel && <span className="ml-2 text-white/16">·</span>}
+                      {ci.classificationLabel && <span className="ml-2 text-ink/16">·</span>}
                       {ci.classificationLabel && <span className="ml-2 uppercase" style={{ letterSpacing: '0.14em' }}>{ci.classificationLabel}</span>}
                     </p>
                   </div>
                 </div>
                 <button type="button" onClick={handleClose} aria-label="Close"
-                  className="lg:hidden h-7 w-7 flex items-center justify-center text-white/28 hover:text-white/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/25 rounded-sm shrink-0">
+                  className="lg:hidden h-7 w-7 flex items-center justify-center text-ink/28 hover:text-ink/78 active:scale-[0.92] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm shrink-0">
                   <CloseIcon />
                 </button>
               </div>
@@ -337,22 +337,22 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                     before any technical module. The one friendly,
                     colorized read; everything below it is the detail. */}
                 {ci.summary && (
-                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-white/35 uppercase mb-2" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+                    <p className="text-ink/35 uppercase mb-2" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                       Summary
                     </p>
                     <SummaryText
                       text={ci.summary}
-                      className="text-[13px] leading-relaxed text-white/70"
+                      className="text-[13px] leading-relaxed text-ink/70"
                     />
                   </div>
                 )}
 
                 {/* Mobile identity block */}
-                <div className="lg:hidden px-4 py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
+                <div className="lg:hidden px-4 py-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.055)' }}>
                   <div className="flex flex-wrap gap-x-3.5 gap-y-1 mb-3">
-                    {ci.casNumber && <span className="font-mono text-white/38 tabular-nums" style={{ fontSize: '10px' }}>CAS {ci.casNumber}</span>}
-                    {ci.molecularWeight && <span className="font-mono text-white/38 tabular-nums" style={{ fontSize: '10px' }}>MW {ci.molecularWeight}</span>}
+                    {ci.casNumber && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>CAS {ci.casNumber}</span>}
+                    {ci.molecularWeight && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>MW {ci.molecularWeight}</span>}
                   </div>
                   {passportStats.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
@@ -362,10 +362,10 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
                   {ci.tiers.length > 0 && (
                     <div className="mt-3">
                       <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-white/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
+                        <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                           Tier
                         </span>
-                        <span className="text-white font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                        <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                           {formatPrice(priceCents)}
                         </span>
                       </div>
@@ -410,15 +410,15 @@ export function CompoundIntelligenceOverlay({ product, onClose }: CompoundIntell
 
               {/* Mobile action bar */}
               <div className="lg:hidden shrink-0 flex items-center gap-2.5 px-4 py-3.5"
-                style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                style={{ borderTop: '1px solid rgba(26,23,20,0.07)' }}>
                 <QuantityStepper quantity={quantity} onChange={setQuantity} />
                 <button type="button" onClick={handleAddToInquiry}
-                  className="flex-1 h-8 text-white font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35"
-                  style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                  style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.09)', border: '1px solid rgba(26,23,20,0.15)' }}>
                   Add to Inquiry
                 </button>
                 <Link to={`/product/${product.id}`} onClick={onClose}
-                  className="h-8 px-3 inline-flex items-center gap-1 text-white/36 hover:text-white/76 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/35 rounded-sm shrink-0"
+                  className="h-8 px-3 inline-flex items-center gap-1 text-ink/36 hover:text-ink/76 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 rounded-sm shrink-0"
                   style={{ fontSize: '10px', letterSpacing: '0.04em' }}>
                   Record <ArrowUpRightIcon />
                 </Link>

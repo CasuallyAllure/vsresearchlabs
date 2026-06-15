@@ -24,6 +24,7 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { Logo } from '../components/brand/Logo';
 
 interface NavLinkDef {
   to: string;
@@ -126,32 +127,29 @@ function NavItem({ item, pathname, onClick, indent }: NavItemProps) {
           'group relative flex items-center gap-3 py-2.5 rounded-[3px] transition-colors',
           'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
           indent ? 'pl-8 pr-3' : 'px-3',
-          isActive ? 'bg-holo/[0.08]' : 'hover:bg-white/[0.03]',
+          isActive ? 'bg-holo/[0.08]' : 'hover:bg-ink/[0.03]',
         ].join(' ')}
       >
         {isActive && (
           <span
             aria-hidden="true"
             className="absolute left-0 top-2 bottom-2 w-[2px] rounded-r-sm"
-            style={{
-              backgroundColor: 'rgba(140,210,255,0.8)',
-              boxShadow: '0 0 8px rgba(100,200,255,0.65)',
-            }}
+            style={{ backgroundColor: 'var(--color-accent-teal)' }}
           />
         )}
         <span
-          className={`shrink-0 ${isActive ? 'text-holo-light' : 'text-white/55 group-hover:text-white/80'} transition-colors`}
+          className={`shrink-0 ${isActive ? 'text-holo-light' : 'text-ink/55 group-hover:text-ink/80'} transition-colors`}
         >
           {item.icon}
         </span>
         <span className="flex flex-col min-w-0">
           <span
-            className={`text-[12.5px] tracking-tight ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'} transition-colors`}
+            className={`text-[12.5px] tracking-tight ${isActive ? 'text-ink' : 'text-ink/80 group-hover:text-ink'} transition-colors`}
           >
             {item.label}
           </span>
           {item.caption && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/35 mt-0.5 truncate">
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5 truncate">
               {item.caption}
             </span>
           )}
@@ -198,7 +196,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-50 bg-black/65 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-ink/45 backdrop-blur-[2px] transition-opacity duration-300 ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -212,27 +210,29 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
-          backgroundColor: 'rgba(7, 10, 14, 0.96)',
-          borderRight: '1px solid rgba(160, 200, 235, 0.18)',
-          boxShadow: '0 0 0 1px rgba(160,200,235,0.06), 24px 0 60px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.04)',
+          backgroundColor: 'rgba(251, 249, 244, 0.97)',
+          borderRight: '1px solid rgba(26, 23, 20, 0.12)',
+          boxShadow: '24px 0 60px -20px rgba(26,23,20,0.25)',
           backdropFilter: 'blur(10px)',
         }}
       >
         {/* Drawer header — identity + close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-holo-light/70">
-              VS Research Labs
-            </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-white/35">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.08]">
+          <Link
+            to="/"
+            onClick={onClose}
+            className="flex flex-col gap-1.5 min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+          >
+            <Logo variant="lockup" markSize={24} wordSize={12.5} showTagline={false} to={null} ariaLabel="VS Research Labs" />
+            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/40 pl-[34px]">
               Bay Area · California
             </span>
-          </div>
+          </Link>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="-mr-2 p-2 text-white/55 hover:text-white transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/30 rounded-sm"
+            className="-mr-2 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -243,7 +243,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
 
         {/* Nav body — primary destinations */}
         <nav aria-label="Primary" className="px-2 py-3">
-          <p className="px-3 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-white/30">
+          <p className="px-3 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
             Navigate
           </p>
           <ul className="flex flex-col">
@@ -258,7 +258,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </ul>
 
           {/* Research Supplies — hierarchical group with 3 children */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-white/30">
+          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
             Research Supplies
           </p>
           <ul className="flex flex-col">
@@ -284,7 +284,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </ul>
 
           {/* Equipment + ops — flat tail */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-white/30">
+          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
             Operational
           </p>
           <ul className="flex flex-col">
@@ -299,7 +299,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </ul>
 
           {/* Inquiry — separate group */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-white/30">
+          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
             Inquiry
           </p>
           <ul>
@@ -308,21 +308,21 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                 to="/cart"
                 onClick={onClose}
                 aria-current={location.pathname === '/cart' ? 'page' : undefined}
-                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-[3px] hover:bg-white/[0.03] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-[3px] hover:bg-ink/[0.03] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
               >
-                <span className="shrink-0 text-white/55 group-hover:text-gold transition-colors">
+                <span className="shrink-0 text-ink/55 group-hover:text-gold transition-colors">
                   {CartIcon}
                 </span>
                 <span className="flex flex-col min-w-0 flex-1">
-                  <span className="text-[12.5px] tracking-tight text-white/85 group-hover:text-white transition-colors">
+                  <span className="text-[12.5px] tracking-tight text-ink/85 group-hover:text-ink transition-colors">
                     Inquiry List
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/35 mt-0.5">
+                  <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
                     {itemCount > 0 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending` : 'Empty'}
                   </span>
                 </span>
                 {itemCount > 0 && (
-                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 bg-gold rounded-sm text-[10px] font-medium text-black flex items-center justify-center tabular-nums">
+                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 bg-gold rounded-sm text-[10px] font-medium text-ink flex items-center justify-center tabular-nums">
                     {itemCount}
                   </span>
                 )}
@@ -332,14 +332,14 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         </nav>
 
         {/* Drawer footer — quiet legal/meta + admin sign-in */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-white/[0.05] flex items-center justify-between gap-3">
-          <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-white/30 leading-snug">
+        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-ink/[0.07] flex items-center justify-between gap-3">
+          <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-ink/35 leading-snug">
             For research use only<br />Not for human use
           </p>
           <Link
             to="/admin"
             onClick={onClose}
-            className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/40 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm px-2 py-1 -mr-1 shrink-0"
+            className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink/45 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm px-2 py-1 -mr-1 shrink-0"
           >
             Admin →
           </Link>
