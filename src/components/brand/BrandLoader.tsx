@@ -16,16 +16,20 @@
  * three-point configuration and the rAF loop doesn't start.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface BrandLoaderProps {
-  /** Whether the loader is visible. */
+  /** Whether the loader is visible. When flipped to false the loader fades
+   *  out over FADE_OUT_MS before unmounting, so the parent gets a clean
+   *  crossfade into whatever sits underneath. */
   active: boolean;
 }
 
 const PERIOD_MS = 2800;       // one full ∞ loop
 const ORBIT_HALF_WIDTH = 38;  // a — half the width of the figure-eight
 const DOT_RADIUS = 4.5;
+const FADE_IN_MS = 220;
+const FADE_OUT_MS = 520;
 
 // Three bodies, brand-aligned colors.
 const BODY_COLORS = ['#1A1714', '#34727A', 'rgba(26,23,20,0.42)'];
@@ -34,8 +38,28 @@ export function BrandLoader({ active }: BrandLoaderProps) {
   const dotsRef = useRef<(SVGCircleElement | null)[]>([null, null, null]);
   const rafRef = useRef<number | null>(null);
 
+  // Internal mount + exit state so the loader can play its fade-out
+  // after `active` flips to false instead of just unmounting.
+  const [mounted, setMounted] = useState(active);
+  const [exiting, setExiting] = useState(false);
+
   useEffect(() => {
-    if (!active) return;
+    if (active) {
+      setMounted(true);
+      setExiting(false);
+      return;
+    }
+    if (!mounted) return;
+    setExiting(true);
+    const t = setTimeout(() => {
+      setMounted(false);
+      setExiting(false);
+    }, FADE_OUT_MS);
+    return () => clearTimeout(t);
+  }, [active, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
 
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
@@ -77,9 +101,9 @@ export function BrandLoader({ active }: BrandLoaderProps) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [active]);
+  }, [mounted]);
 
-  if (!active) return null;
+  if (!mounted) return null;
 
   return (
     <div
@@ -97,13 +121,19 @@ export function BrandLoader({ active }: BrandLoaderProps) {
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
         pointerEvents: 'none',
-        animation: 'vsrl-loader-fade-in 180ms ease-out',
+        animation: exiting
+          ? `vsrl-loader-fade-out ${FADE_OUT_MS}ms ease-in forwards`
+          : `vsrl-loader-fade-in ${FADE_IN_MS}ms ease-out`,
       }}
     >
       <style>{`
         @keyframes vsrl-loader-fade-in {
           from { opacity: 0; }
-          to { opacity: 1; }
+          to   { opacity: 1; }
+        }
+        @keyframes vsrl-loader-fade-out {
+          from { opacity: 1; }
+          to   { opacity: 0; }
         }
       `}</style>
       <span

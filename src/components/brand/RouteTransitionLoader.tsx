@@ -17,7 +17,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BrandLoader } from './BrandLoader';
 
-const INITIAL_SHOW_MS = 650;
+// Initial = first paint of the app. We hold long enough for the three-body
+// orbit to complete one full ∞ cycle (PERIOD_MS = 2800) so users see the
+// motion settle, then BrandLoader's internal fade-out (520ms) crossfades
+// into whatever's underneath — usually the DisclaimerGate.
+const INITIAL_SHOW_MS = 2200;
 const TRANSITION_SHOW_MS = 380;
 
 export function RouteTransitionLoader() {
