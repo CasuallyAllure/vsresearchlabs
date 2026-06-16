@@ -74,6 +74,11 @@ export function Research() {
     });
   }, [compounds, query, classFilter]);
 
+  const suggestions = useMemo(
+    () => compounds.map((p) => ({ id: p.id, label: p.name })),
+    [compounds],
+  );
+
   const inspectedProduct = useMemo(
     () => (inspectedId ? compounds.find((p) => p.id === inspectedId) ?? null : null),
     [inspectedId, compounds],
@@ -86,88 +91,32 @@ export function Research() {
   return (
     <section className="py-[var(--space-8)]">
       {/* Header — intelligence archive framing. Holo register. */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+      <header className="mb-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+        <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Research Intelligence Library
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+        <h1 className="text-[clamp(1.5rem,2.8vw,2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
           <span className="font-light text-ink/85">Compounds </span>
           <span className="font-medium text-ink">on record.</span>
         </h1>
-        <p className="holo-text-body mt-[var(--space-3)] max-w-[58ch] text-[13px] leading-relaxed">
-          Every compound on record — mechanism, receptor activity,
-          signaling pathway, published studies, regulatory posture.
-          Sourced and citable. Open any compound to read its full
-          intelligence dossier.
+        <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[13px] leading-relaxed">
+          Every compound on record — mechanism, receptor activity, signaling
+          pathway, published studies, regulatory posture. Open any compound to
+          read its full intelligence dossier.
         </p>
       </header>
 
-      {/* Search */}
-      <div className="mb-[var(--space-4)]">
-        <label className="sr-only" htmlFor="research-search">
-          Search compounds
-        </label>
-        <div className="relative">
-          <svg
-            className="absolute left-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/35 pointer-events-none"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            id="research-search"
-            type="search"
-            inputMode="search"
-            autoComplete="off"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by compound, abbreviation, or family…"
-            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              aria-label="Clear search"
-              className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/80 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Pharmacological classification filter */}
-      {classificationTabs.length > 1 && (
-        <ClassificationFilter
-          tabs={classificationTabs}
-          value={classFilter}
-          onChange={setClassFilter}
-          allLayman="Every compound on record. Pick a category to focus the library, or read what each class does in plain terms — swipe right for the technical detail."
-        />
-      )}
+      {/* Smart search + classification filter (one compact bar) */}
+      <ClassificationFilter
+        tabs={classificationTabs}
+        value={classFilter}
+        onChange={setClassFilter}
+        allLayman="Every compound on record. Pick a category to focus the library, or read what each class does in plain terms — swipe right for the technical detail."
+        search={query}
+        onSearch={setQuery}
+        suggestions={suggestions}
+        searchPlaceholder="Search compounds, abbreviation, family…"
+      />
 
       <p
         className="text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-[var(--space-4)]"

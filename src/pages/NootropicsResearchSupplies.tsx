@@ -10,6 +10,7 @@ const ALL_TAB = '__all__';
 export function NootropicsResearchSupplies() {
   const { products, loading, error } = useProducts('nootropics-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
+  const [search, setSearch] = useState('');
   const [inspectedId, setInspectedId] = useState<string | null>(null);
 
   const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
@@ -27,10 +28,22 @@ export function NootropicsResearchSupplies() {
     return tabs;
   }, [products]);
 
+  const suggestions = useMemo(
+    () => products.map((p) => ({ id: p.id, label: p.name })),
+    [products],
+  );
+
   const filtered = useMemo(() => {
-    if (classFilter === ALL_TAB) return products;
-    return products.filter((p) => p.researchClassification === classFilter);
-  }, [products, classFilter]);
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
+      if (q.length > 0) {
+        const hay = `${p.name} ${p.sku} ${p.abbreviation ?? ''} ${p.family ?? ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [products, classFilter, search]);
 
   const inspectedProduct = useMemo(
     () => (inspectedId ? products.find((p) => p.id === inspectedId) ?? null : null),
@@ -39,26 +52,30 @@ export function NootropicsResearchSupplies() {
 
   return (
     <section className="py-[var(--space-8)]">
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+      <header className="mb-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+        <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Research Supplies · Nootropics
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+        <h1 className="text-[clamp(1.5rem,2.8vw,2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
           <span className="font-light text-ink/85">Nootropics </span>
           <span className="font-medium text-ink">research supplies.</span>
         </h1>
-        <p className="holo-text-body mt-[var(--space-3)] max-w-[52ch] text-[13px] leading-relaxed">
+        <p className="holo-text-body mt-[var(--space-2)] max-w-[52ch] text-[13px] leading-relaxed">
           Neuroactive compounds for cognition, plasticity, and
           neuroprotection research models. Catalog expanding.
         </p>
       </header>
 
-      {classificationTabs.length > 1 && (
+      {products.length > 0 && (
         <ClassificationFilter
           tabs={classificationTabs}
           value={classFilter}
           onChange={setClassFilter}
           allLayman="The full nootropics catalog — tap a category to filter the list and read what it does in plain terms. Swipe right for the technical detail."
+          search={search}
+          onSearch={setSearch}
+          suggestions={suggestions}
+          searchPlaceholder="Search nootropics…"
         />
       )}
 
