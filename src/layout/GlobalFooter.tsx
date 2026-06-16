@@ -22,17 +22,17 @@ export function GlobalFooter() {
       className="border-t border-ink/[0.08] pb-14 lg:pb-0"
       role="contentinfo"
     >
-      <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-8)]">
-        <div className="flex flex-col gap-[var(--space-4)] sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-[var(--space-3)]">
-            <Logo variant="lockup" markSize={26} wordSize={14} showTagline={false} />
-            <p className="text-[11px] uppercase tracking-[0.25em] text-ink/40">
-              Research procurement · For Research Purposes Only
+      <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-4)]">
+        <div className="flex flex-col items-center gap-[var(--space-2)] sm:flex-row sm:items-center sm:justify-between">
+          <Logo variant="lockup" markSize={18} wordSize={11} showTagline={false} />
+          <div className="flex flex-col items-center gap-0.5 sm:items-end">
+            <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-ink/45 tabular-nums">
+              © {new Date().getFullYear()} Velari Systems Research Labs · All rights reserved
+            </p>
+            <p className="text-[8.5px] uppercase tracking-[0.26em] text-ink/30">
+              For Research Use Only — Not for human or veterinary consumption
             </p>
           </div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink/35 tabular-nums sm:text-right">
-            © {new Date().getFullYear()} Velari Systems Research Labs
-          </p>
         </div>
       </div>
     </footer>
