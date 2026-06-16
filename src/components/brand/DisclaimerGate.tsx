@@ -19,8 +19,16 @@
  */
 
 import { useEffect, useState } from 'react';
+import { DnaVMark } from './DnaVMark';
 
 const STORAGE_KEY = 'vsrl_disclaimer_accepted_v1';
+
+// Card geometry constants — used to position the card so the DNA mark's
+// center lands at the viewport center (matching the BrandLoader behind
+// it for a seamless crossfade).
+const CARD_PADDING_TOP = 28;     // matches inline padding in card style
+const MARK_SIZE = 64;            // DnaVMark size in the gate
+const MARK_HALF = MARK_SIZE / 2; // distance from mark top to its center
 
 export function DisclaimerGate() {
   const [open, setOpen] = useState(false);
@@ -68,10 +76,6 @@ export function DisclaimerGate() {
         position: 'fixed',
         inset: 0,
         zIndex: 9000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
         background: 'rgba(26, 23, 20, 0.55)',
         backdropFilter: 'blur(10px) saturate(120%)',
         WebkitBackdropFilter: 'blur(10px) saturate(120%)',
@@ -95,10 +99,23 @@ export function DisclaimerGate() {
 
       <div
         style={{
-          position: 'relative',
-          width: '100%',
+          // Anchor the card so the DNA mark's CENTER (which sits at
+          // CARD_PADDING_TOP + MARK_HALF from the card's top edge) lines
+          // up with the viewport's vertical center. That way the gate's
+          // mark visually inherits the loader's mark position for a
+          // seamless crossfade.
+          position: 'absolute',
+          top: `calc(50% - ${CARD_PADDING_TOP + MARK_HALF}px)`,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'calc(100% - 40px)',
           maxWidth: 460,
-          padding: '28px 26px 24px',
+          // Don't allow the card to extend below the viewport — let the
+          // content scroll internally on short screens.
+          maxHeight: `calc(100% - (50% - ${CARD_PADDING_TOP + MARK_HALF}px) - 20px)`,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: `${CARD_PADDING_TOP}px 26px 24px`,
           background:
             'linear-gradient(135deg, rgba(251,249,244,0.88) 0%, rgba(251,249,244,0.66) 100%)',
           border: '1px solid rgba(255,255,255,0.45)',
@@ -107,7 +124,6 @@ export function DisclaimerGate() {
             '0 24px 60px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.65), 0 0 0 1px rgba(52,114,122,0.10)',
           backdropFilter: 'blur(16px) saturate(150%)',
           WebkitBackdropFilter: 'blur(16px) saturate(150%)',
-          overflow: 'hidden',
           animation: 'vsrl-dgate-rise 340ms cubic-bezier(0.22, 0.61, 0.36, 1)',
         }}
       >
@@ -139,7 +155,11 @@ export function DisclaimerGate() {
           }}
         />
 
-        {/* DNA logo */}
+        {/* DNA logo — live mark (vector-crisp at any size). Sits at the
+            top of the card content, so the card's top edge offset above
+            (CARD_PADDING_TOP + MARK_HALF) lands this mark's center at
+            viewport center. Same component the loader uses, so the
+            loader → gate crossfade reads as one seal settling. */}
         <div
           style={{
             position: 'relative',
@@ -148,13 +168,7 @@ export function DisclaimerGate() {
             marginBottom: '10px',
           }}
         >
-          <img
-            src="/brand/vs-dna-s-full-colour.png"
-            alt="VS Research Labs"
-            width={56}
-            height={56}
-            style={{ width: 56, height: 56 }}
-          />
+          <DnaVMark size={MARK_SIZE} static />
         </div>
 
         {/* Eyebrow */}
