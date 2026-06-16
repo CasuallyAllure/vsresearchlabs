@@ -207,7 +207,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Primary navigation"
-        className={`fixed top-0 left-0 z-[60] h-full w-[320px] max-w-[88vw] sm:w-[360px] transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 z-[60] h-[100dvh] w-[320px] max-w-[88vw] sm:w-[360px] flex flex-col transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
@@ -243,7 +243,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         </div>
 
         {/* Nav body — primary destinations */}
-        <nav aria-label="Primary" className="px-2 py-3">
+        <nav aria-label="Primary" className="px-2 py-3 flex-1 min-h-0 overflow-y-auto">
           <p className="px-3 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
             Navigate
           </p>
@@ -332,8 +332,13 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </ul>
         </nav>
 
-        {/* Drawer footer — quiet legal/meta + admin sign-in */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-ink/[0.07] flex items-center justify-between gap-3">
+        {/* Drawer footer — quiet legal/meta + admin sign-in. Real flex child
+            (not absolutely positioned) so it never overlaps the Inquiry List
+            badge above it. */}
+        <div
+          className="shrink-0 px-5 py-3 border-t border-ink/[0.07] flex items-center justify-between gap-3"
+          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+        >
           <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-ink/35 leading-snug">
             For research use only<br />Not for human use
           </p>
