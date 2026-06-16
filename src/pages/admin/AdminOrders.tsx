@@ -1,22 +1,18 @@
 /**
  * AdminOrders
  *
- * Order pipeline. Compact status filter (one scrollable line) + a dense row
- * per order carrying its own quick-action menu so the next pipeline step
- * (mark paid → ship → delivered, or cancel) is one tap away without opening
- * the detail page. Tapping the row body still opens AdminOrderDetail.
- *
- * Quick actions move status only (via the same SECURITY DEFINER RPCs the
- * detail page uses). Tracking entry + the customer emails (invoice / shipment
- * / delivered-discount) still live on the detail page, where the tracking
- * number is captured.
+ * Order pipeline. Compact header (title + sort + status + date filters on one
+ * line). Each row opens the order as a floating module — the same <OrderView>
+ * that serves the full /admin/orders/:id page — so the whole lifecycle (invoice
+ * → paid → ship → deliver, notes, printable invoice) is handled right here
+ * without leaving the list.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { OrderView } from './OrderView';
 
 type OrderStatus =
   | 'pending_invoice'
@@ -104,6 +100,7 @@ export function AdminOrders() {
   const [customTo, setCustomTo] = useState('');
   const [sort, setSort] = useState<SortValue>('recent');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,173 +188,71 @@ export function AdminOrders() {
       {sortedRows && sortedRows.length > 0 && (
         <ul className="research-surface-solid divide-y divide-ink/[0.04]">
           {sortedRows.map((row) => (
-            <li key={row.id} className="flex items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] hover:bg-ink/[0.012] transition-colors sm:px-[var(--space-5)]">
-              {/* Main info — opens the detail page */}
-              <Link
-                to={`/admin/orders/${row.id}`}
-                className="flex min-w-0 flex-1 flex-col justify-center gap-1 focus:outline-none"
+            <li key={row.id}>
+              <button
+                type="button"
+                onClick={() => setOpenId(row.id)}
+                className="flex w-full items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-left transition-colors hover:bg-ink/[0.012] focus:outline-none focus-visible:bg-ink/[0.02] sm:px-[var(--space-5)]"
               >
-                <div className="flex items-center gap-2">
-                  <span className="truncate font-mono text-[11px] tracking-[0.04em] text-holo-light/80">
-                    {row.order_number}
+                <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate font-mono text-[11px] tracking-[0.04em] text-holo-light/80">{row.order_number}</span>
+                    <OrderStatusChip status={row.status} deliveredAt={row.delivered_at} />
                   </span>
-                  <OrderStatusChip status={row.status} deliveredAt={row.delivered_at} />
-                </div>
-                <span className="truncate text-[13px] text-ink">{row.buyer_name}</span>
-                <span className="truncate text-[11px] text-ink/45">
-                  {row.buyer_contact}
-                  {row.buyer_organization && ` · ${row.buyer_organization}`}
+                  <span className="truncate text-[13px] text-ink">{row.buyer_name}</span>
+                  <span className="truncate text-[11px] text-ink/45">
+                    {row.buyer_contact}
+                    {row.buyer_organization && ` · ${row.buyer_organization}`}
+                  </span>
                 </span>
-              </Link>
-
-              {/* Amount + date + quick actions — symmetric right rail */}
-              <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 text-right">
-                <span className="font-mono text-[12px] tabular-nums text-ink/80">
-                  {formatCents(row.invoice_amount_cents)}
+                <span className="flex shrink-0 flex-col items-end justify-center gap-1 text-right">
+                  <span className="font-mono text-[12px] tabular-nums text-ink/80">{formatCents(row.invoice_amount_cents)}</span>
+                  <span className="hidden font-mono text-[10px] tabular-nums text-ink/35 sm:block">{formatTs(row.created_at)}</span>
                 </span>
-                <span className="hidden font-mono text-[10px] tabular-nums text-ink/35 sm:block">
-                  {formatTs(row.created_at)}
-                </span>
-                <OrderRowActions row={row} onDone={reload} />
-              </div>
+              </button>
             </li>
           ))}
         </ul>
+      )}
+
+      {openId && (
+        <OrderModal id={openId} onClose={() => setOpenId(null)} onChanged={reload} />
       )}
     </AdminLayout>
   );
 }
 
-/* ── Per-row pipeline quick actions ──────────────────────────────────────── */
+/* ── Order modal — the floating module over the list ─────────────────────── */
 
-interface ActionItem {
-  label: string;
-  onSelect: () => void;
-  danger?: boolean;
-}
-
-function OrderRowActions({ row, onDone }: { row: OrderRow; onDone: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
-
+function OrderModal({ id, onClose, onChanged }: { id: string; onClose: () => void; onChanged: () => void }) {
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
-
-  function toggle() {
-    if (open) return setOpen(false);
-    const r = btnRef.current?.getBoundingClientRect();
-    if (r) setPos({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) });
-    setOpen(true);
-  }
-
-  async function run(rpc: () => PromiseLike<{ error: { message: string } | null }>, confirmMsg?: string) {
-    setOpen(false);
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-    if (!supabase) return;
-    setBusy(true);
-    setErr(null);
-    const { error } = await rpc();
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-    onDone();
-  }
-
-  // Context-valid transitions for this order's current status.
-  const items: ActionItem[] = [];
-  if (supabase) {
-    switch (row.status) {
-      case 'pending_invoice':
-        items.push({ label: 'Open to invoice →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
-        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
-        break;
-      case 'invoice_sent':
-        items.push({ label: 'Mark paid', onSelect: () => run(() => supabase!.rpc('mark_order_paid', { p_order_id: row.id })) });
-        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
-        break;
-      case 'paid':
-        items.push({ label: 'Mark shipped', onSelect: () => run(() => supabase!.rpc('confirm_order_fulfilled', { p_order_id: row.id, p_tracking_number: null, p_carrier: null }), 'Mark shipped? This deducts stock for each line. Add tracking + email the buyer from the detail page.') });
-        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
-        break;
-      case 'fulfilled':
-        if (!row.delivered_at) {
-          items.push({ label: 'Mark delivered', onSelect: () => run(() => supabase!.rpc('mark_order_delivered', { p_order_id: row.id })) });
-        }
-        items.push({ label: 'Tracking / details →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
-        break;
-      default:
-        items.push({ label: 'Open details →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
-    }
-  }
+  }, [onClose]);
 
   return (
-    <div className="relative">
-      <button
-        ref={btnRef}
-        type="button"
-        onClick={toggle}
-        disabled={busy}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="inline-flex items-center gap-1 rounded-full border border-ink/15 bg-ink/[0.03] px-2.5 py-1 text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
-      >
-        {busy ? '…' : 'Manage'}
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-
-      {err && <p className="absolute right-0 top-full mt-1 w-[180px] text-right text-[10px] text-red-400">{err}</p>}
-
-      {open && pos && (
-        <>
-          <button
-            type="button"
-            aria-hidden="true"
-            tabIndex={-1}
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[120] cursor-default"
-          />
-          <div
-            role="menu"
-            className="fixed z-[121] min-w-[180px] overflow-hidden rounded-[8px] border border-ink/[0.12] bg-display shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)]"
-            style={{ top: pos.top, right: pos.right }}
-          >
-            {items.map((it) => (
-              <button
-                key={it.label}
-                type="button"
-                role="menuitem"
-                onClick={it.onSelect}
-                className={[
-                  'block w-full px-3.5 py-2.5 text-left text-[11.5px] transition-colors',
-                  it.danger
-                    ? 'text-red-400/85 hover:bg-red-400/[0.06]'
-                    : 'text-ink/80 hover:bg-ink/[0.04] hover:text-ink',
-                ].join(' ')}
-              >
-                {it.label}
-              </button>
-            ))}
+    <>
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-ink/60 backdrop-blur-[3px]" />
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[211] flex items-start justify-center p-3 pointer-events-none sm:p-8">
+        <div className="pointer-events-auto flex max-h-[88vh] w-full max-w-[760px] flex-col research-surface-solid">
+          <div className="flex items-center justify-end border-b border-ink/[0.08] px-[var(--space-4)] py-[var(--space-2)]">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
+            >
+              Close
+            </button>
           </div>
-        </>
-      )}
-    </div>
+          <div className="no-scrollbar flex-1 overflow-y-auto">
+            <OrderView orderId={id} onChanged={onChanged} />
+          </div>
+        </div>
+      </div>
+    </>
   );
-}
-
-function cancelReason(): string {
-  const r = window.prompt('Reason for cancellation (optional):') ?? '';
-  return r.trim() || 'Cancelled by admin';
 }
 
 function formatTs(iso: string): string {

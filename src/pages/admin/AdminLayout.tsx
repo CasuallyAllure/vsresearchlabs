@@ -13,6 +13,9 @@ import { AdminFilterBar } from './AdminFilterBar';
 
 interface AdminLayoutProps {
   children: ReactNode;
+  /** Optional back button shown to the LEFT of the sub-tab control. */
+  backTo?: string;
+  backLabel?: string;
 }
 
 interface SubTab {
@@ -79,7 +82,7 @@ const AREAS: Area[] = [
   },
 ];
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, backTo, backLabel = 'Back' }: AdminLayoutProps) {
   const { user, signOut } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -132,29 +135,40 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </button>
       </header>
 
-      {/* Sub-tab strip — a centered segmented control tucked under the top line */}
-      {showSubtabs && (
-        <nav aria-label={`${activeArea.label} views`} className="mb-[var(--space-6)] flex justify-center">
-          <div className="inline-flex items-center gap-0.5 rounded-full border border-ink/[0.12] bg-ink/[0.03] p-[3px]">
-            {activeArea.subtabs.map((t) => {
-              const on = t.match(path);
-              return (
-                <Link
-                  key={t.to}
-                  to={t.to}
-                  aria-current={on ? 'page' : undefined}
-                  className={[
-                    'rounded-full px-[var(--space-4)] py-[5px] text-[10px] uppercase tracking-[0.18em] transition-colors',
-                    on
-                      ? 'bg-display text-ink shadow-[0_1px_3px_-1px_rgba(26,23,20,0.25)]'
-                      : 'text-ink/45 hover:text-ink',
-                  ].join(' ')}
-                >
-                  {t.label}
-                </Link>
-              );
-            })}
-          </div>
+      {/* Sub-tab strip — a centered segmented control tucked under the top line,
+          with an optional back button pinned to its left. */}
+      {(showSubtabs || backTo) && (
+        <nav aria-label={`${activeArea.label} views`} className="relative mb-[var(--space-6)] flex items-center justify-center">
+          {backTo && (
+            <Link
+              to={backTo}
+              className="absolute left-0 inline-flex items-center gap-1 rounded-full border border-ink/15 bg-ink/[0.03] px-[var(--space-3)] py-[5px] text-[10px] uppercase tracking-[0.18em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink"
+            >
+              <span aria-hidden="true">←</span> {backLabel}
+            </Link>
+          )}
+          {showSubtabs && (
+            <div className="inline-flex items-center gap-0.5 rounded-full border border-ink/[0.12] bg-ink/[0.03] p-[3px]">
+              {activeArea.subtabs.map((t) => {
+                const on = t.match(path);
+                return (
+                  <Link
+                    key={t.to}
+                    to={t.to}
+                    aria-current={on ? 'page' : undefined}
+                    className={[
+                      'rounded-full px-[var(--space-4)] py-[5px] text-[10px] uppercase tracking-[0.18em] transition-colors',
+                      on
+                        ? 'bg-display text-ink shadow-[0_1px_3px_-1px_rgba(26,23,20,0.25)]'
+                        : 'text-ink/45 hover:text-ink',
+                    ].join(' ')}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
       )}
 
