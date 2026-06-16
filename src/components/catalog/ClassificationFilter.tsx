@@ -15,6 +15,9 @@ import { useEffect, useRef, useState } from 'react';
 import { CLASSIFICATION_LAYMAN, CLASSIFICATION_DEFINITIONS } from '../../lib/compoundIntelligence';
 import type { ResearchClassification } from '../../types';
 
+// Match the gallery-tile stock pip colors exactly.
+const STOCK_RED = '#B23A3A';
+
 interface Tab {
   id: string;
   label: string;
@@ -205,18 +208,21 @@ export function ClassificationFilter({
             role="switch"
             aria-checked={inStock.on}
             onClick={inStock.toggle}
-            className={[
-              'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[9px] uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-              inStock.on ? 'text-ink' : 'border-ink/15 text-ink/50 hover:text-ink/80 hover:border-ink/25',
-            ].join(' ')}
-            style={inStock.on ? { borderColor: `${stockColor}80`, backgroundColor: `${stockColor}18`, boxShadow: `0 0 10px ${stockColor}33` } : undefined}
+            title={inStock.on ? 'Showing in-stock only — tap to show all' : 'Showing all — tap for in-stock only'}
+            className="group inline-flex shrink-0 items-center gap-1.5 rounded-full px-1.5 py-1 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
           >
+            {/* Mirrors the stock pip on the gallery tiles exactly */}
             <span
               aria-hidden="true"
-              className="inline-block h-[6px] w-[6px] rounded-full"
-              style={{ backgroundColor: inStock.on ? stockColor : 'rgba(26,23,20,0.25)', boxShadow: inStock.on ? `0 0 5px ${stockColor}aa` : undefined }}
+              className="inline-block h-[7px] w-[7px] rounded-full transition-all"
+              style={{
+                backgroundColor: inStock.on ? stockColor : STOCK_RED,
+                boxShadow: `0 0 4px ${inStock.on ? stockColor : STOCK_RED}aa, inset 0 0 0 0.5px rgba(255,255,255,0.3)`,
+              }}
             />
-            In stock
+            <span className={`text-[10px] uppercase tracking-[0.14em] transition-colors ${inStock.on ? 'text-ink/80' : 'text-ink/45 group-hover:text-ink/70'}`}>
+              {inStock.on ? 'In stock' : 'All'}
+            </span>
           </button>
         )}
       </div>
