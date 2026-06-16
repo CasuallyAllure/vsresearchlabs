@@ -30,13 +30,17 @@
  */
 
 import { Link } from 'react-router-dom';
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
 import { CompoundIntelligenceHero } from '../components/landing/CompoundIntelligenceHero';
-import { HeroHoloCarousel } from '../components/landing/HeroHoloCarousel';
+// Heavy (three.js + R3F + drei) — split into its own chunk so it streams in
+// after the page paints instead of blocking the initial bundle.
+const HeroHoloCarousel = lazy(() =>
+  import('../components/landing/HeroHoloCarousel').then((m) => ({ default: m.HeroHoloCarousel })),
+);
 import { IntroModal } from '../components/landing/IntroModal';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
@@ -666,7 +670,17 @@ export function Landing() {
                     Slide 2 mechanism brief, Slide 3 lead clinical study.
                     Frame chrome (caption / corners / REV / scanlines)
                     stays static across all slides. */}
-                <HeroHoloCarousel />
+                <Suspense
+                  fallback={
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ink/30">
+                        Initializing structure…
+                      </span>
+                    </div>
+                  }
+                >
+                  <HeroHoloCarousel />
+                </Suspense>
 
                 {/* Scanline overlay — period 90s holo cue */}
                 <div
