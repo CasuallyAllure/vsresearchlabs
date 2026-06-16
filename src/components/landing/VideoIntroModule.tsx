@@ -6,19 +6,28 @@
  * the header), changing as you swipe: "What are biopeptides" → "Our research" →
  * "For research only". Arrows + dots make the carousel obvious; swipe still works.
  *
- * Videos are placeholders today — the well shows the DNA-S logo on cream until a
- * real videoUrl is dropped into the matching TABS entry.
+ * Self-hosted, drop-in videos. Each slide auto-looks for two files by its id:
+ *
+ *   public/media/intro/<id>.jpg   ← poster (small, crisp on phone)
+ *   public/media/intro/<id>.mp4   ← the video
+ *
+ * The poster gates everything: if the .jpg loads, the slide shows the poster
+ * with a play button and the .mp4 only downloads when tapped (light). If the
+ * poster isn't there yet, the slide falls back to the DNA "coming soon" plate —
+ * so the page never looks broken before the files exist. No code change needed
+ * to go live: just drop the two files in. See public/media/intro/README.md for
+ * the recommended encoding (keep it small — 720p H.264, a few MB).
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+const mediaSrc = (id: string, ext: 'mp4' | 'jpg') => `/media/intro/${id}.${ext}`;
 
 interface VideoTab {
   id: string;
   title: string;        // top title (Cormorant), changes per slide
   subtitle: string;     // editorial line under the title
   body: string;         // supporting copy under the video
-  videoUrl?: string;
-  poster?: string;
 }
 
 const TABS: VideoTab[] = [
@@ -54,12 +63,15 @@ const TABS: VideoTab[] = [
 
 export function VideoIntroModule() {
   const [active, setActive] = useState(0);
+  const [posterOk, setPosterOk] = useState<Record<string, boolean>>({});
+  const [playing, setPlaying] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
   const tab = TABS[active];
   const count = TABS.length;
 
   const go = useCallback((i: number) => {
+    setPlaying(null); // stop any playing video when navigating
     setActive(((i % count) + count) % count); // wrap around
   }, [count]);
 
@@ -135,22 +147,56 @@ export function VideoIntroModule() {
           className="relative w-full overflow-hidden rounded-md bg-display border border-ink/[0.08] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           style={{ aspectRatio: '16 / 9' }}
         >
-          {tab.videoUrl ? (
+          {playing === tab.id && posterOk[tab.id] ? (
+            // Tapped: load + play the mp4 (only fetched now — keeps the page light).
             <video
               key={tab.id}
-              src={tab.videoUrl}
-              poster={tab.poster}
+              src={mediaSrc(tab.id, 'mp4')}
+              poster={mediaSrc(tab.id, 'jpg')}
               controls
+              autoPlay
               playsInline
-              preload="metadata"
-              className="absolute inset-0 h-full w-full object-cover"
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover bg-display"
             />
+          ) : posterOk[tab.id] ? (
+            // Poster present: crisp still + play button; mp4 not fetched yet.
+            <button
+              type="button"
+              onClick={() => setPlaying(tab.id)}
+              aria-label={`Play: ${tab.title}`}
+              className="group absolute inset-0 h-full w-full"
+            >
+              <img src={mediaSrc(tab.id, 'jpg')} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <span className="absolute inset-0 flex items-center justify-center bg-ink/10 transition-colors group-hover:bg-ink/20">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
+                  </svg>
+                </span>
+              </span>
+            </button>
           ) : (
+            // No poster yet → clean "coming soon" plate (never looks broken).
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-3)] text-ink/55">
               <img src="/brand/vs-dna-s-full-colour.png" alt="" width="64" height="64" style={{ width: 64, height: 64 }} />
               <p className="text-[10px] uppercase tracking-[0.3em] text-ink/40">Coming soon</p>
             </div>
           )}
+        </div>
+
+        {/* Hidden probes: a poster that loads flips its slide from "coming soon"
+            to the real player. Drop <id>.jpg + <id>.mp4 into public/media/intro/. */}
+        <div className="hidden" aria-hidden="true">
+          {TABS.map((t) => (
+            <img
+              key={t.id}
+              src={mediaSrc(t.id, 'jpg')}
+              alt=""
+              onLoad={() => setPosterOk((p) => (p[t.id] ? p : { ...p, [t.id]: true }))}
+              onError={() => setPosterOk((p) => (p[t.id] === false ? p : { ...p, [t.id]: false }))}
+            />
+          ))}
         </div>
         <CarouselArrow side="right" onClick={() => go(active + 1)} />
       </div>
