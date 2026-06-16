@@ -20,6 +20,7 @@
 
 import { useState } from 'react';
 import { MolecularLatticeFallback } from './MolecularLatticeFallback';
+import { pubchemImageUrl } from '../../../lib/pubchem';
 
 interface MolecularStructurePanelProps {
   substance: string;
@@ -30,7 +31,8 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  const pubchemUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(substance)}/PNG?record_type=2d&image_size=large`;
+  // Prefer a curated CID (peptides like Retatrutide 404 by name), else by name.
+  const pubchemUrl = pubchemImageUrl(substance);
 
   return (
     <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: '#F4EFE6' }}>
