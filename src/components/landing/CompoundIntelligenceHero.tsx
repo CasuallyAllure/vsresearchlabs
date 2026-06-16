@@ -187,7 +187,7 @@ function SlidePanel({
 }) {
   const add = useCart((s) => s.add);
   return (
-    <div className="grid h-full grid-cols-1 grid-rows-[164px_1fr] md:grid-cols-5 md:grid-rows-none">
+    <div className="grid h-full grid-cols-1 grid-rows-[132px_1fr] md:grid-cols-5 md:grid-rows-none">
       {/* Specimen plate — generated vial + real PubChem structure, side by side.
           Identifier rides a header strip so it never lands on the artwork. */}
       <div className="relative flex min-h-0 min-w-0 flex-col border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
@@ -220,7 +220,7 @@ function SlidePanel({
       </div>
 
       {/* Intelligence — the product. Image supports it. */}
-      <div className="flex min-w-0 flex-col overflow-y-auto p-5 sm:p-6 md:col-span-3">
+      <div className="flex min-w-0 flex-col overflow-y-auto p-4 sm:p-5 md:col-span-3">
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden
@@ -228,10 +228,10 @@ function SlidePanel({
           />
           <Eyebrow>{ci.classificationLabel}</Eyebrow>
         </div>
-        <h3 className="holo-text-display mt-3 break-words text-[clamp(1.35rem,2.6vw,1.85rem)] font-light leading-[1.1] tracking-[-0.02em]">
+        <h3 className="holo-text-display mt-2 break-words text-[clamp(1.25rem,2.4vw,1.7rem)] font-light leading-[1.08] tracking-[-0.02em]">
           {ci.substance}
         </h3>
-        <p className="holo-text-citation mt-2 font-mono text-[11px] tracking-[0.06em]">
+        <p className="holo-text-citation mt-1 font-mono text-[11px] tracking-[0.06em]">
           {ci.family} · {ci.abbreviation}
         </p>
 
@@ -239,13 +239,13 @@ function SlidePanel({
         {ci.summary && (
           <SummaryText
             text={ci.summary}
-            className="mt-4 text-[12.5px] leading-relaxed text-ink/70"
+            className="mt-2.5 text-[12px] leading-relaxed text-ink/70"
           />
         )}
 
         {/* Regulatory posture — visible without swiping */}
         {(ci.humanTrials !== undefined || ci.fdaStatus) && (
-          <div className="mt-4">
+          <div className="mt-2.5">
             <RegulatoryChipCluster
               humanTrials={ci.humanTrials}
               fdaStatus={ci.fdaStatus}
@@ -253,14 +253,14 @@ function SlidePanel({
           </div>
         )}
 
-        <div className="mt-3 min-w-0">
+        <div className="mt-2.5 min-w-0">
           <Eyebrow>Receptor activation</Eyebrow>
-          <div className="mt-1.5 h-[104px] w-full min-w-0">
+          <div className="mt-1 h-[84px] w-full min-w-0">
             <ReceptorMap ci={ci} />
           </div>
         </div>
 
-        <div className="mt-4 min-w-0">
+        <div className="mt-2.5 min-w-0">
           {ci.casNumber && <IdentityRow label="CAS" value={ci.casNumber} />}
           {ci.molecularWeight && (
             <IdentityRow label="Mol. weight" value={ci.molecularWeight} />
@@ -270,7 +270,7 @@ function SlidePanel({
           )}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={() => add(product)}
@@ -653,10 +653,10 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="module-aura flex h-[452px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[500px] lg:h-[548px]"
+        className="module-aura flex h-[428px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[470px] lg:h-[512px]"
       >
         {/* Header bar */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-3 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-2.5 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:inline">
@@ -729,7 +729,7 @@ export function CompoundIntelligenceHero() {
                 aria-selected={on}
                 type="button"
                 onClick={() => go(i)}
-                className="group relative flex-1 px-3 py-2.5 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
+                className="group relative flex-1 px-3 py-2 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
               >
                 <span className="font-mono text-[9.5px] tabular-nums text-ink/30">
                   0{i + 1}
@@ -778,7 +778,7 @@ export function CompoundIntelligenceHero() {
         </div>
 
         {/* Footer control bar */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-t border-ink/[0.08] px-4 py-3 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-t border-ink/[0.08] px-4 py-2.5 sm:px-5">
           <div className="flex items-center gap-3">
             <span className="font-mono text-[11px] tabular-nums text-ink/55">
               0{active + 1}{' '}
