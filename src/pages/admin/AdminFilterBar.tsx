@@ -74,9 +74,11 @@ export function AdminFilterBar<T extends string>({
               : 'flex w-full items-center gap-2 rounded-[10px] border border-ink/[0.12] bg-base-800/70 py-2 pl-3 pr-2.5 text-left transition-colors hover:border-ink/25 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30'
           }
         >
-          <span className={`shrink-0 font-mono uppercase tracking-[0.22em] text-ink/40 ${dense ? 'text-[8.5px]' : 'text-[9px]'}`}>
-            {label}
-          </span>
+          {label && (
+            <span className={`shrink-0 font-mono uppercase tracking-[0.22em] text-ink/40 ${dense ? 'text-[8.5px]' : 'text-[9px]'}`}>
+              {label}
+            </span>
+          )}
           <span className={`min-w-0 truncate uppercase tracking-[0.14em] text-ink ${dense ? 'text-[10px]' : 'flex-1 text-[11px]'}`}>
             {current?.label ?? '—'}
           </span>
@@ -97,11 +99,11 @@ export function AdminFilterBar<T extends string>({
               aria-hidden="true"
               tabIndex={-1}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-[120] cursor-default"
+              className="fixed inset-0 z-[200] cursor-default"
             />
             <ul
               role="listbox"
-              className={`no-scrollbar absolute top-full z-[121] mt-1.5 max-h-[60vh] overflow-y-auto rounded-[10px] border border-ink/[0.12] bg-display py-1 shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)] ${dense ? 'left-0 min-w-[200px]' : 'left-0 right-0'}`}
+              className={`no-scrollbar absolute top-full z-[201] mt-1.5 max-h-[60vh] overflow-y-auto rounded-[10px] border border-ink/[0.12] bg-display py-1 shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)] ${dense ? 'left-0 min-w-[200px]' : 'left-0 right-0'}`}
             >
               {options.map((o) => {
                 const on = o.value === value;

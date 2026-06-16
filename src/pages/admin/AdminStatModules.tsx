@@ -1,22 +1,23 @@
 /**
  * AdminStatModules
  *
- * The dashboard *is* this row of smart modules. Every dataset behind a tile
- * is loaded up front, so each tile carries real figures — count, money in
- * play, the oldest thing waiting — not just a bare number. Tapping a tile
- * floats a panel in front of the page (it never navigates away) pre-filled
- * with the records the tile summarizes, and you drill all the way in right
- * there:
+ * The dashboard, reduced to the four things worth watching:
  *
- *   • Open inquiries     → expand a row for its line items + notes, then
- *                          Create order — without leaving the dashboard.
- *   • Awaiting invoice / Paid · awaiting ship / Fulfilled this month →
- *                          expand for buyer, timeline and line items, with
- *                          the safe one-tap status actions inline.
- *   • SKUs in stock      → on-hand per SKU, low-stock surfaced.
+ *   1. Orders          — the whole live pipeline (awaiting invoice → invoice
+ *                        sent → paid/awaiting ship) in one module. No more
+ *                        separate stat boxes per stage.
+ *   2. Open inquiries  — incoming requests/messages to triage into orders.
+ *   3. Inventory       — SKUs in stock, low stock surfaced.
+ *   4. Sales this month— what's actually shipped + delivered this month.
  *
- * Tiles and panels read the exact same in-memory data, so they can never
- * disagree. Any inline action re-pulls everything and the figures move.
+ * Every dataset loads up front so each tile carries real figures (money in
+ * play, counts per stage, oldest waiting) — not a lone number. Tapping a tile
+ * floats a panel in front of the page (it never navigates away), pre-filled,
+ * with inline drill-in and the safe one-tap actions. Tiles and panels read the
+ * same in-memory data, and any inline action re-pulls everything.
+ *
+ * The deep, bespoke "how orders should look" surface is intentionally left to
+ * the full Orders tab — this module just lets you see + advance them here.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -77,14 +78,13 @@ interface OrderRow {
 interface SkuRow { sku: string; on_hand: number }
 
 interface DashData {
-  inquiries: InquiryRow[];
-  pending: OrderRow[];
-  paid: OrderRow[];
-  fulfilled: OrderRow[];
-  skus: SkuRow[];
+  openOrders: OrderRow[];     // pending_invoice | invoice_sent | paid
+  inquiries: InquiryRow[];    // OPEN
+  skus: SkuRow[];             // on_hand > 0
+  monthSales: OrderRow[];     // fulfilled this month
 }
 
-type ModuleKey = 'inquiries' | 'pending' | 'paid' | 'fulfilled' | 'skus';
+type ModuleKey = 'orders' | 'inquiries' | 'inventory' | 'month';
 
 /* ── Loader ───────────────────────────────────────────────────────────────── */
 
@@ -97,6 +97,7 @@ function monthStartISO(): string {
 
 const ORDER_COLS =
   'id, order_number, status, buyer_name, buyer_contact, invoice_amount_cents, delivered_at, tracking_number, carrier, created_at, fulfilled_at';
+const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
 
 export function AdminStatModules() {
   const [data, setData] = useState<DashData | null>(null);
@@ -104,32 +105,28 @@ export function AdminStatModules() {
   const [active, setActive] = useState<ModuleKey | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Inline async load (keeps setState off the synchronous effect path);
-  // re-runs whenever an inline action bumps refreshKey, so the figures move.
   useEffect(() => {
     let cancelled = false;
     async function load() {
       if (!supabase) { setError('Backend not configured.'); return; }
       try {
         const since = monthStartISO();
-        const [inq, pend, paid, ful, skus] = await Promise.all([
+        const [openOrders, inq, skus, month] = await Promise.all([
+          supabase.from('orders').select(ORDER_COLS).in('status', OPEN_STATUSES).order('created_at', { ascending: false }).limit(300),
           supabase.from('inquiries')
             .select('id, reference_id, created_at, name, contact, organization, notes, item_count')
             .eq('status', 'OPEN').order('created_at', { ascending: false }).limit(200),
-          supabase.from('orders').select(ORDER_COLS).eq('status', 'pending_invoice').order('created_at', { ascending: false }).limit(200),
-          supabase.from('orders').select(ORDER_COLS).eq('status', 'paid').order('created_at', { ascending: false }).limit(200),
-          supabase.from('orders').select(ORDER_COLS).eq('status', 'fulfilled').gte('fulfilled_at', since).order('fulfilled_at', { ascending: false }).limit(200),
           supabase.from('product_stock').select('sku, on_hand').gt('on_hand', 0).order('on_hand', { ascending: false }).limit(1000),
+          supabase.from('orders').select(ORDER_COLS).eq('status', 'fulfilled').gte('fulfilled_at', since).order('fulfilled_at', { ascending: false }).limit(300),
         ]);
         if (cancelled) return;
-        const firstErr = inq.error || pend.error || paid.error || ful.error || skus.error;
+        const firstErr = openOrders.error || inq.error || skus.error || month.error;
         if (firstErr) { setError(firstErr.message); return; }
         setData({
+          openOrders: (openOrders.data ?? []) as OrderRow[],
           inquiries: (inq.data ?? []) as InquiryRow[],
-          pending: (pend.data ?? []) as OrderRow[],
-          paid: (paid.data ?? []) as OrderRow[],
-          fulfilled: (ful.data ?? []) as OrderRow[],
           skus: (skus.data ?? []) as SkuRow[],
+          monthSales: (month.data ?? []) as OrderRow[],
         });
       } catch (e: unknown) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load dashboard.');
@@ -141,11 +138,24 @@ export function AdminStatModules() {
 
   const reload = useCallback(() => setRefreshKey((k) => k + 1), []);
 
+  const countStatus = (rows: OrderRow[] | undefined, s: OrderStatus) =>
+    (rows ?? []).filter((r) => r.status === s).length;
+
   return (
     <>
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
 
-      <div className="grid grid-cols-2 gap-[var(--space-3)] sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-[var(--space-3)] lg:grid-cols-4">
+        <Tile
+          label="Orders"
+          value={data?.openOrders.length}
+          emphasis
+          meta={data ? [
+            `${money(sum(data.openOrders, (r) => r.invoice_amount_cents ?? 0))} in pipeline`,
+            `${countStatus(data.openOrders, 'pending_invoice')} to invoice · ${countStatus(data.openOrders, 'paid')} to ship`,
+          ] : undefined}
+          onOpen={() => setActive('orders')}
+        />
         <Tile
           label="Open inquiries"
           value={data?.inquiries.length}
@@ -153,29 +163,16 @@ export function AdminStatModules() {
           onOpen={() => setActive('inquiries')}
         />
         <Tile
-          label="Awaiting invoice"
-          value={data?.pending.length}
-          meta={data ? [`${money(sum(data.pending, (r) => r.invoice_amount_cents ?? 0))} to bill`, oldestAge(data.pending)] : undefined}
-          onOpen={() => setActive('pending')}
-        />
-        <Tile
-          label="Paid · awaiting ship"
-          value={data?.paid.length}
-          emphasis
-          meta={data ? [`${money(sum(data.paid, (r) => r.invoice_amount_cents ?? 0))} to ship`, oldestAge(data.paid)] : undefined}
-          onOpen={() => setActive('paid')}
-        />
-        <Tile
-          label="Fulfilled this month"
-          value={data?.fulfilled.length}
-          meta={data ? [`${money(sum(data.fulfilled, (r) => r.invoice_amount_cents ?? 0))} shipped`, `${data.fulfilled.filter((r) => r.delivered_at).length} delivered`] : undefined}
-          onOpen={() => setActive('fulfilled')}
-        />
-        <Tile
-          label="SKUs in stock"
+          label="Inventory"
           value={data?.skus.length}
-          meta={data ? [`${sum(data.skus, (r) => r.on_hand)} units`, `${data.skus.filter((r) => r.on_hand <= 5).length} low (≤5)`] : undefined}
-          onOpen={() => setActive('skus')}
+          meta={data ? [`${sum(data.skus, (r) => r.on_hand)} units in stock`, `${data.skus.filter((r) => r.on_hand <= 5).length} low (≤5)`] : undefined}
+          onOpen={() => setActive('inventory')}
+        />
+        <Tile
+          label="Sales this month"
+          value={data ? money(sum(data.monthSales, (r) => r.invoice_amount_cents ?? 0)) : undefined}
+          meta={data ? [`${data.monthSales.length} ${data.monthSales.length === 1 ? 'order' : 'orders'} shipped`, `${data.monthSales.filter((r) => r.delivered_at).length} delivered`] : undefined}
+          onOpen={() => setActive('month')}
         />
       </div>
 
@@ -190,7 +187,7 @@ export function AdminStatModules() {
 
 function Tile({
   label, value, meta, emphasis, onOpen,
-}: { label: string; value: number | undefined; meta?: string[]; emphasis?: boolean; onOpen: () => void }) {
+}: { label: string; value: string | number | undefined; meta?: string[]; emphasis?: boolean; onOpen: () => void }) {
   return (
     <button
       type="button"
@@ -231,11 +228,10 @@ function Tile({
 /* ── Modal shell ──────────────────────────────────────────────────────────── */
 
 const MODULE_TITLES: Record<ModuleKey, string> = {
+  orders: 'Orders',
   inquiries: 'Open inquiries',
-  pending: 'Awaiting invoice',
-  paid: 'Paid · awaiting ship',
-  fulfilled: 'Fulfilled this month',
-  skus: 'SKUs in stock',
+  inventory: 'Inventory',
+  month: 'Sales this month',
 };
 
 function ModuleModal({
@@ -248,16 +244,15 @@ function ModuleModal({
   }, [onClose]);
 
   const count =
+    moduleKey === 'orders' ? data.openOrders.length :
     moduleKey === 'inquiries' ? data.inquiries.length :
-    moduleKey === 'pending' ? data.pending.length :
-    moduleKey === 'paid' ? data.paid.length :
-    moduleKey === 'fulfilled' ? data.fulfilled.length :
-    data.skus.length;
+    moduleKey === 'inventory' ? data.skus.length :
+    data.monthSales.length;
 
   return (
     <>
-      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-[3px]" />
-      <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-start justify-center p-4 pointer-events-none sm:p-8">
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-ink/60 backdrop-blur-[3px]" />
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[211] flex items-start justify-center p-4 pointer-events-none sm:p-8">
         <div className="pointer-events-auto flex max-h-[84vh] w-full max-w-[720px] flex-col research-surface-solid">
           <header className="flex items-center justify-between gap-[var(--space-4)] border-b border-ink/[0.08] px-[var(--space-6)] py-[var(--space-4)]">
             <div className="flex items-baseline gap-[var(--space-3)]">
@@ -274,11 +269,10 @@ function ModuleModal({
             </button>
           </header>
           <div className="no-scrollbar flex-1 overflow-y-auto">
+            {moduleKey === 'orders' && <OrdersDetail rows={data.openOrders} onReload={onReload} onClose={onClose} emptyHint="No open orders in the pipeline." />}
             {moduleKey === 'inquiries' && <InquiriesDetail rows={data.inquiries} onClose={onClose} />}
-            {moduleKey === 'pending' && <OrdersDetail rows={data.pending} onReload={onReload} onClose={onClose} emptyHint="No orders waiting on an invoice." />}
-            {moduleKey === 'paid' && <OrdersDetail rows={data.paid} onReload={onReload} onClose={onClose} emptyHint="Nothing paid and waiting to ship." />}
-            {moduleKey === 'fulfilled' && <OrdersDetail rows={data.fulfilled} onReload={onReload} onClose={onClose} emptyHint="No orders shipped yet this month." />}
-            {moduleKey === 'skus' && <SkusDetail rows={data.skus} onClose={onClose} />}
+            {moduleKey === 'inventory' && <SkusDetail rows={data.skus} onClose={onClose} />}
+            {moduleKey === 'month' && <OrdersDetail rows={data.monthSales} onReload={onReload} onClose={onClose} emptyHint="No sales yet this month." />}
           </div>
         </div>
       </div>
@@ -461,6 +455,11 @@ function OrdersDetail({
                   )}
 
                   <div className="mt-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-2)]">
+                    {row.status === 'invoice_sent' && (
+                      <PrimaryAction onClick={() => run(row.id, () => supabase!.rpc('mark_order_paid', { p_order_id: row.id }))} disabled={isBusy}>
+                        {isBusy ? 'Working…' : 'Mark paid'}
+                      </PrimaryAction>
+                    )}
                     {row.status === 'paid' && (
                       <PrimaryAction
                         onClick={() => run(row.id, () => supabase!.rpc('confirm_order_fulfilled', { p_order_id: row.id, p_tracking_number: null, p_carrier: null }),
@@ -475,7 +474,7 @@ function OrdersDetail({
                         {isBusy ? 'Working…' : 'Mark delivered'}
                       </PrimaryAction>
                     )}
-                    {(row.status === 'pending_invoice' || row.status === 'paid') && (
+                    {(row.status === 'pending_invoice' || row.status === 'invoice_sent' || row.status === 'paid') && (
                       <GhostAction
                         danger
                         onClick={() => run(row.id, () => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: (window.prompt('Reason for cancellation (optional):') ?? '').trim() || 'Cancelled by admin' }), 'Cancel this order?')}
@@ -499,7 +498,7 @@ function OrdersDetail({
   );
 }
 
-/* ── SKUs detail ──────────────────────────────────────────────────────────── */
+/* ── Inventory detail ─────────────────────────────────────────────────────── */
 
 function SkusDetail({ rows, onClose }: { rows: SkuRow[]; onClose: () => void }) {
   const navigate = useNavigate();

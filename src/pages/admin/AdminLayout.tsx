@@ -91,18 +91,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="py-[var(--space-5)]">
-      {/* Thin command bar — brand · section nav · identity · sign out, all on ONE line */}
-      <header className="no-scrollbar mb-[var(--space-4)] flex items-center gap-[var(--space-2)] overflow-x-auto border-b border-ink/[0.06] pb-[var(--space-2)]">
-        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.2em]">
-          <span className="text-ink/70">VS Research Labs</span>
+      {/* Thin command bar — brand · section nav · identity · sign out, fits one line (no scroll) */}
+      <header className="mb-[var(--space-4)] flex items-center gap-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-2)]">
+        {/* Brand — short on phones, full on wider screens */}
+        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[8.5px] uppercase tracking-[0.16em] sm:text-[9px] sm:tracking-[0.2em]">
+          <span className="text-ink/70">
+            <span className="sm:hidden">VSR</span>
+            <span className="hidden sm:inline">VS Research Labs</span>
+          </span>
           <span aria-hidden="true" className="text-ink/25">/</span>
           <span className="text-ink/40">Admin</span>
         </span>
 
-        {/* Section nav — compact area dropdown */}
-        <nav aria-label="Admin areas" className="shrink-0">
+        {/* Section nav — compact area dropdown (no redundant "Section" label) */}
+        <nav aria-label="Admin areas" className="min-w-0 shrink">
           <AdminFilterBar
-            label="Section"
+            label=""
             options={AREAS.map((a) => ({ value: a.key, label: a.label }))}
             value={activeArea.key}
             onChange={(key) => {
@@ -115,14 +119,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Identity + sign out, pushed to the right — same line */}
         {user && (
-          <span className="ml-auto hidden shrink-0 whitespace-nowrap font-mono text-[10px] tabular-nums text-ink/40 md:inline">
+          <span className="ml-auto hidden min-w-0 shrink truncate whitespace-nowrap font-mono text-[10px] tabular-nums text-ink/40 lg:inline">
             {user.email}
           </span>
         )}
         <button
           type="button"
           onClick={() => signOut()}
-          className="shrink-0 whitespace-nowrap rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 max-md:ml-auto"
+          className="shrink-0 whitespace-nowrap rounded-full border border-ink/15 px-2.5 py-[3px] text-[8.5px] uppercase tracking-[0.16em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 sm:text-[9px] sm:tracking-[0.2em] max-lg:ml-auto"
         >
           Sign out
         </button>
