@@ -42,10 +42,10 @@ interface OrderRow {
 type FilterValue = OrderStatus | 'ALL' | 'OPEN';
 
 const FILTER_OPTIONS: Array<{ value: FilterValue; label: string }> = [
-  { value: 'OPEN', label: 'Open pipeline' },
+  { value: 'OPEN', label: 'Open' },
   { value: 'ALL', label: 'All' },
-  { value: 'pending_invoice', label: 'Pending invoice' },
-  { value: 'invoice_sent', label: 'Invoice sent' },
+  { value: 'pending_invoice', label: 'To invoice' },
+  { value: 'invoice_sent', label: 'Sent' },
   { value: 'paid', label: 'Paid' },
   { value: 'fulfilled', label: 'Shipped' },
   { value: 'cancelled', label: 'Cancelled' },
@@ -53,10 +53,32 @@ const FILTER_OPTIONS: Array<{ value: FilterValue; label: string }> = [
 
 const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
 
+type DateValue = 'all' | 'today' | '7d' | '30d' | 'month';
+
+const DATE_OPTIONS: Array<{ value: DateValue; label: string }> = [
+  { value: 'all', label: 'Any date' },
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: '7 days' },
+  { value: '30d', label: '30 days' },
+  { value: 'month', label: 'This month' },
+];
+
+/** ISO cutoff for a date filter, or null for "any date". */
+function dateCutoff(v: DateValue): string | null {
+  if (v === 'all') return null;
+  const d = new Date();
+  if (v === 'today') d.setHours(0, 0, 0, 0);
+  else if (v === '7d') d.setDate(d.getDate() - 7);
+  else if (v === '30d') d.setDate(d.getDate() - 30);
+  else if (v === 'month') { d.setDate(1); d.setHours(0, 0, 0, 0); }
+  return d.toISOString();
+}
+
 export function AdminOrders() {
   const [rows, setRows] = useState<OrderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>('OPEN');
+  const [dateFilter, setDateFilter] = useState<DateValue>('all');
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -73,6 +95,8 @@ export function AdminOrders() {
         .limit(200);
       if (filter === 'OPEN') q = q.in('status', OPEN_STATUSES);
       else if (filter !== 'ALL') q = q.eq('status', filter);
+      const cutoff = dateCutoff(dateFilter);
+      if (cutoff) q = q.gte('created_at', cutoff);
       const { data, error } = await q;
       if (cancelled) return;
       if (error) setError(error.message);
@@ -82,22 +106,20 @@ export function AdminOrders() {
     return () => {
       cancelled = true;
     };
-  }, [filter, refreshKey]);
+  }, [filter, dateFilter, refreshKey]);
 
   const reload = () => setRefreshKey((k) => k + 1);
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
+      <header className="mb-[var(--space-6)] flex items-center gap-[var(--space-2)]">
+        <h2 className="shrink-0 text-[clamp(1.05rem,2.4vw,1.6rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
           Orders
         </h2>
-        <AdminFilterBar
-          options={FILTER_OPTIONS}
-          value={filter}
-          onChange={setFilter}
-          dense
-        />
+        <div className="ml-auto flex min-w-0 items-center gap-[var(--space-2)]">
+          <AdminFilterBar options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
+          <AdminFilterBar options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense />
+        </div>
       </header>
 
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
