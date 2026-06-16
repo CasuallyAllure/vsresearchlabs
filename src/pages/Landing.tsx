@@ -30,7 +30,8 @@
  */
 
 import { Link } from 'react-router-dom';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
@@ -123,6 +124,8 @@ interface RouteRowProps {
   specimen: string;
   specimenAlt: string;
   last?: boolean;
+  /** When set, the row opens this handler (a modal) instead of navigating. */
+  onClick?: () => void;
 }
 
 function RouteRow({
@@ -133,16 +136,16 @@ function RouteRow({
   readout,
   specimen,
   specimenAlt,
+  onClick,
 }: RouteRowProps) {
-  return (
-    <Link
-      to={to}
-      className={[
-        'research-surface-solid group flex items-center gap-[var(--space-5)]',
-        'px-[var(--space-5)] py-[var(--space-5)]',
-        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25',
-      ].join(' ')}
-    >
+  const cls = [
+    'research-surface-solid group flex items-center gap-[var(--space-5)]',
+    'px-[var(--space-5)] py-[var(--space-5)]',
+    'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25',
+  ].join(' ');
+
+  const inner = (
+    <>
       <div className="hidden h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.08] bg-[var(--surface-specimen-bay)] sm:block">
         <img
           src={specimen}
@@ -176,6 +179,19 @@ function RouteRow({
       >
         →
       </span>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`w-full text-left ${cls}`}>
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <Link to={to} className={cls}>
+      {inner}
     </Link>
   );
 }
@@ -273,10 +289,12 @@ const BRIDGE_SUSPENDERS: ReadonlyArray<{ x: number; yTop: number }> = [
 ];
 
 export function Landing() {
+  const [suppliesOpen, setSuppliesOpen] = useState(false);
   return (
     <>
       {/* Floating intro — appears on first entry, must be dismissed. */}
       <IntroModal />
+      <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
@@ -856,6 +874,7 @@ export function Landing() {
         <div className="mt-[var(--space-10)] flex flex-col gap-[var(--space-4)]">
           <RouteRow
             to="/research-supplies"
+            onClick={() => setSuppliesOpen(true)}
             index="RS"
             title="Research Supplies"
             scope="Compounds organized by research domain: biopeptide, nootropics, skincare."
@@ -897,26 +916,28 @@ export function Landing() {
           and procurement audit, not advertised.
         </p>
 
-        <div className="mt-[var(--space-10)]">
-          <DocumentGallery
-            documents={documents.slice(0, 3)}
-            cardHref="/documentation"
-          />
-        </div>
-
-        <div className="mt-[var(--space-8)]">
-          <Link
-            to="/documentation"
-            className="group inline-flex items-center gap-[var(--space-2)] text-[11px] uppercase tracking-[0.3em] text-ink/55 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+        {/* Placeholder archive — blurred behind a "to be updated" seal so we
+            never present filler certificates as real records. */}
+        <div className="mt-[var(--space-10)] relative">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none select-none blur-[7px] opacity-45 saturate-[0.6]"
           >
-            <span>View all documentation</span>
-            <span
-              aria-hidden="true"
-              className="text-ink/35 transition-[color,transform] duration-150 group-hover:translate-x-0.5 group-hover:text-holo"
-            >
-              →
-            </span>
-          </Link>
+            <DocumentGallery
+              documents={documents.slice(0, 3)}
+              cardHref="/documentation"
+            />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center px-[var(--space-4)]">
+            <div className="rounded-full border border-ink/15 bg-base-800/85 px-[var(--space-6)] py-[var(--space-3)] backdrop-blur-sm text-center">
+              <span className="block font-mono text-[10px] uppercase tracking-[0.28em] text-ink/60">
+                Archive in preparation
+              </span>
+              <span className="mt-1 block text-[11px] text-ink/40">
+                Live certificates &amp; batch records — to be updated.
+              </span>
+            </div>
+          </div>
         </div>
       </Module>
 
