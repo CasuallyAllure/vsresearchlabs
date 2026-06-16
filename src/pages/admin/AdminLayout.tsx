@@ -138,13 +138,17 @@ export function AdminLayout({ children, backTo, backLabel = 'Back' }: AdminLayou
       {/* Sub-tab strip — a centered segmented control tucked under the top line,
           with an optional back button pinned to its left. */}
       {(showSubtabs || backTo) && (
-        <nav aria-label={`${activeArea.label} views`} className="relative mb-[var(--space-6)] flex items-center justify-center">
+        <nav aria-label={`${activeArea.label} views`} className="mb-[var(--space-6)] flex items-center justify-center gap-[var(--space-2)]">
           {backTo && (
             <Link
               to={backTo}
-              className="absolute left-0 inline-flex items-center gap-1 rounded-full border border-ink/15 bg-ink/[0.03] px-[var(--space-3)] py-[5px] text-[10px] uppercase tracking-[0.18em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink"
+              aria-label={backLabel}
+              title={backLabel}
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-ink/[0.03] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink"
             >
-              <span aria-hidden="true">←</span> {backLabel}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
             </Link>
           )}
           {showSubtabs && (

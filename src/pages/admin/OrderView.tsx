@@ -2,29 +2,37 @@
  * OrderView
  *
  * One order, rendered like an invoice — used both inside a modal (clicked
- * from the Orders list) and as the full page at /admin/orders/:id. It's the
- * single source of truth for "how an order looks".
+ * from the Orders list) and as the full page at /admin/orders/:id. Single
+ * source of truth for "how an order looks".
  *
- * Layout mirrors a real invoice: order # + date tucked to the corners, the
- * buyer on the left, amounts on the right, then the line items with unit +
- * line totals and a subtotal/shipping/total footer.
+ * Layout mirrors a real invoice: a compact order # + date header, buyer on the
+ * left / amounts on the right (equal columns), an itemized list with unit +
+ * line totals, then a subtotal/shipping/total footer.
  *
- * The old stack of action cards is replaced by a Salesforce-style status bar:
- * Order received → Invoice sent → Payment received → Shipped → Delivered. Each
- * stage fills as the order advances; the current stage exposes its one action,
- * plus a notes field, a "report an issue" revert, and a context re-notify.
- * Every advance / revert / note appends to the order_events timeline (which
- * also prints on the invoice).
+ * The lifecycle is a Salesforce-style status bar: Order received → Invoice
+ * sent → Payment received → Shipped → Delivered. The current stage's segment
+ * carries everything you need right there — an inline notes box, a "← back a
+ * step" control, the forward action, and a context re-notify. Cancel is the one
+ * separate button. Every advance / revert / note appends to the order_events
+ * timeline (which also prints on the invoice).
  *
  * View / print invoice → a branded, print-to-PDF document. Send to client →
- * re-sends the current invoice email (a copy to ourselves + the customer
- * confirm-payment link land in the backend pass).
+ * re-sends the current invoice email.
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { OrderStatusChip } from './AdminOrders';
 import { CARRIERS } from '../../lib/tracking';
+import productsData from '../../data/products.json';
+import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
+
+/** SKU → catalog list price (cents), used as a unit-price fallback when an
+ *  order line has no stored price yet. */
+const catalogPrice = new Map<string, number>();
+for (const p of [...productsData, ...generatedCompounds] as Array<{ sku?: string; priceCents?: number | null }>) {
+  if (p.sku && typeof p.priceCents === 'number') catalogPrice.set(p.sku, p.priceCents);
+}
 
 type OrderStatus =
   | 'pending_invoice' | 'invoice_sent' | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
@@ -79,6 +87,11 @@ interface OrderEvent {
 const ORDER_SELECT =
   'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at';
 
+/** Effective unit price: stored line price, else the catalog list price. */
+function unitOf(l: OrderLine): number | null {
+  return l.unit_price_cents ?? catalogPrice.get(l.sku) ?? null;
+}
+
 /* ── Stage model ──────────────────────────────────────────────────────────── */
 
 type StageKey = 'received' | 'invoiced' | 'paid' | 'shipped' | 'delivered';
@@ -115,7 +128,6 @@ export function OrderView({
   const [showInvoice, setShowInvoice] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Inline async load (keeps setState off the synchronous effect path).
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -128,7 +140,6 @@ export function OrderView({
       if (o.error) { setError(o.error.message); return; }
       setOrder(o.data as OrderRecord);
       setLines((l.data ?? []) as OrderLine[]);
-      // Events are best-effort — the table may not be migrated yet.
       const ev = await supabase.from('order_events')
         .select('id, stage, kind, note, created_at').eq('order_id', orderId)
         .order('created_at', { ascending: true });
@@ -143,11 +154,9 @@ export function OrderView({
 
   const logEvent = useCallback(async (stage: StageKey | null, kind: string, note: string | null) => {
     if (!supabase) return;
-    // Best-effort; ignore "table missing" until the migration is applied.
     await supabase.from('order_events').insert({ order_id: orderId, stage, kind, note });
   }, [orderId]);
 
-  // Run an RPC, log an event, refresh.
   const run = useCallback(async (
     rpc: () => PromiseLike<{ error: { message: string } | null }>,
     ev: { stage: StageKey | null; kind: string; note: string | null },
@@ -171,31 +180,31 @@ export function OrderView({
 
   const reached = reachedMap(order);
   const terminal = order.status === 'cancelled' || order.status === 'refunded';
-  const lineTotal = (l: OrderLine) => (l.unit_price_cents ?? 0) * l.quantity;
-  const computedSub = order.subtotal_cents ?? lines.reduce((a, l) => a + lineTotal(l), 0);
+  const lineTotal = (l: OrderLine) => { const u = unitOf(l); return u == null ? null : u * l.quantity; };
+  const computedSub = order.subtotal_cents ?? lines.reduce((a, l) => a + (lineTotal(l) ?? 0), 0);
   const shipping = order.shipping_cents ?? 0;
   const total = order.invoice_amount_cents ?? (computedSub + shipping);
 
   return (
     <div className="px-[var(--space-6)] py-[var(--space-5)]">
-      {/* Invoice-style header */}
-      <div className="flex items-start justify-between gap-[var(--space-4)] border-b border-ink/[0.10] pb-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[9px] uppercase tracking-[0.3em] text-ink/40">Order</p>
-          <p className="mt-0.5 font-mono text-[15px] tracking-[0.04em] text-ink">{order.order_number}</p>
+      {/* Invoice header — compact */}
+      <div className="flex items-center justify-between gap-[var(--space-3)] border-b border-ink/[0.10] pb-[var(--space-3)]">
+        <div className="flex items-baseline gap-[var(--space-2)]">
+          <span className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/40">Order</span>
+          <span className="font-mono text-[12.5px] tracking-[0.04em] text-ink">{order.order_number}</span>
         </div>
-        <div className="text-right">
+        <div className="flex items-center gap-[var(--space-2)]">
+          <span className="font-mono text-[10px] tabular-nums text-ink/40">{fmtDate(order.created_at)}</span>
           <OrderStatusChip status={order.status} deliveredAt={order.delivered_at} />
-          <p className="mt-1 font-mono text-[10px] tabular-nums text-ink/45">{fmtDate(order.created_at)}</p>
         </div>
       </div>
 
-      {/* Bill-to left · amounts right */}
-      <div className="grid grid-cols-1 gap-[var(--space-4)] py-[var(--space-4)] sm:grid-cols-2">
-        <div>
+      {/* Bill to (left) · amounts (right) — equal columns */}
+      <div className="flex justify-between gap-[var(--space-6)] py-[var(--space-4)]">
+        <div className="min-w-0 flex-1">
           <p className="holo-text-caption mb-1 text-[9px] uppercase tracking-[0.24em] text-ink/40">Bill to</p>
           <p className="text-[13px] text-ink">{order.buyer_name}</p>
-          <p className="text-[11.5px] text-ink/55">{order.buyer_contact}</p>
+          <p className="break-words text-[11.5px] text-ink/55">{order.buyer_contact}</p>
           {order.buyer_organization && <p className="text-[11.5px] text-ink/55">{order.buyer_organization}</p>}
           {(order.ship_street || order.ship_city) && (
             <p className="mt-1 text-[11px] leading-relaxed text-ink/50">
@@ -205,7 +214,7 @@ export function OrderView({
             </p>
           )}
         </div>
-        <div className="sm:text-right">
+        <div className="flex-1 text-right">
           <dl className="ml-auto inline-grid grid-cols-[auto_auto] gap-x-[var(--space-4)] gap-y-1 text-[12px]">
             <dt className="text-ink/45">Subtotal</dt>
             <dd className="text-right font-mono tabular-nums text-ink/80">{fmtUSD(computedSub)}</dd>
@@ -218,7 +227,8 @@ export function OrderView({
         </div>
       </div>
 
-      {/* Line items */}
+      {/* Itemized */}
+      <p className="holo-text-caption mb-[var(--space-2)] text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
       <div className="overflow-x-auto rounded-sm border border-ink/[0.08]">
         <table className="w-full min-w-[460px] border-collapse">
           <thead>
@@ -231,18 +241,22 @@ export function OrderView({
             </tr>
           </thead>
           <tbody>
-            {lines.map((l) => (
-              <tr key={l.id} className="border-b border-ink/[0.05] last:border-0">
-                <td className="px-[var(--space-3)] py-[var(--space-2)] font-mono text-[11px] text-holo-light/80">{l.sku}</td>
-                <td className="px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink/80">
-                  {l.product_name}
-                  {l.item_note && <span className="ml-1.5 text-[10.5px] text-ink/40">({l.item_note})</span>}
-                </td>
-                <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{l.quantity}</td>
-                <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[11.5px] tabular-nums text-ink/55">{l.unit_price_cents == null ? '—' : fmtUSD(l.unit_price_cents)}</td>
-                <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{l.unit_price_cents == null ? '—' : fmtUSD(lineTotal(l))}</td>
-              </tr>
-            ))}
+            {lines.map((l) => {
+              const u = unitOf(l);
+              const lt = lineTotal(l);
+              return (
+                <tr key={l.id} className="border-b border-ink/[0.05] last:border-0">
+                  <td className="px-[var(--space-3)] py-[var(--space-2)] font-mono text-[11px] text-holo-light/80">{l.sku}</td>
+                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink/80">
+                    {l.product_name}
+                    {l.item_note && <span className="ml-1.5 text-[10.5px] text-ink/40">({l.item_note})</span>}
+                  </td>
+                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{l.quantity}</td>
+                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[11.5px] tabular-nums text-ink/55">{u == null ? '—' : fmtUSD(u)}</td>
+                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{lt == null ? '—' : fmtUSD(lt)}</td>
+                </tr>
+              );
+            })}
             {lines.length === 0 && (
               <tr><td colSpan={5} className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</td></tr>
             )}
@@ -250,24 +264,11 @@ export function OrderView({
         </table>
       </div>
 
-      {/* Invoice actions */}
-      <div className="mt-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-2)]">
-        <button
-          type="button"
-          onClick={() => setShowInvoice(true)}
-          className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
-        >
-          View / print invoice
-        </button>
+      {/* Invoice actions — small pills */}
+      <div className="mt-[var(--space-3)] flex flex-wrap items-center gap-[var(--space-2)]">
+        <SmallPill onClick={() => setShowInvoice(true)}>View / print invoice</SmallPill>
         {order.invoice_amount_cents != null && (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => sendToClient()}
-            className="rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40"
-          >
-            Send to client
-          </button>
+          <SmallPill onClick={sendToClient} disabled={busy}>Send to client</SmallPill>
         )}
       </div>
 
@@ -287,7 +288,7 @@ export function OrderView({
                 { stage: null, kind: 'revert', note: 'Revived from terminal state' },
                 'Revive this order to the start of the pipeline?',
               )}
-              className="mt-[var(--space-3)] rounded-full border border-ink/20 px-[var(--space-4)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] text-ink/70 hover:border-ink/35 hover:text-ink disabled:opacity-40"
+              className="mt-[var(--space-3)] rounded-full border border-ink/20 px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/70 hover:border-ink/35 hover:text-ink disabled:opacity-40"
             >
               Revive order
             </button>
@@ -311,7 +312,10 @@ export function OrderView({
             </ol>
 
             <div className="mt-[var(--space-5)]">
-              <StageActions order={order} busy={busy} run={run} reload={reload} onChanged={onChanged} setActionError={setActionError} />
+              <StageActions
+                order={order} busy={busy} run={run} reload={reload}
+                logEvent={logEvent} onChanged={onChanged} setActionError={setActionError}
+              />
             </div>
           </>
         )}
@@ -319,8 +323,21 @@ export function OrderView({
         {actionError && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{actionError}</p>}
       </section>
 
-      {/* ── Notes timeline ─────────────────────────────────────────────────── */}
-      <NotesTimeline events={events} onSave={async (text) => { await logEvent(currentStageKey(order), 'note', text); reload(); }} busy={busy} />
+      {/* ── History (read-only) ────────────────────────────────────────────── */}
+      {events.length > 0 && (
+        <section className="mt-[var(--space-7)]">
+          <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">History</p>
+          <ol className="space-y-[var(--space-2)]">
+            {events.map((e) => (
+              <li key={e.id} className="flex gap-[var(--space-3)] text-[12px]">
+                <span className="w-[120px] shrink-0 font-mono text-[10px] tabular-nums text-ink/35">{fmtDate(e.created_at)}</span>
+                <span className={`w-[52px] shrink-0 text-[9px] uppercase tracking-[0.14em] ${e.kind === 'revert' ? 'text-red-400/70' : e.kind === 'advance' ? 'text-holo' : 'text-ink/40'}`}>{e.kind}</span>
+                <span className="min-w-0 flex-1 text-ink/75">{e.note}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {showInvoice && (
         <PrintableInvoice
@@ -345,25 +362,126 @@ export function OrderView({
   }
 }
 
-/* ── Stage actions (the one action for the current stage + revert) ────────── */
+/* ── Stage actions — back / forward + inline notes, all in one segment ─────── */
 
 function StageActions({
-  order, busy, run, reload, onChanged, setActionError,
+  order, busy, run, reload, logEvent, onChanged, setActionError,
 }: {
   order: OrderRecord;
   busy: boolean;
   run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null }, confirmMsg?: string) => Promise<boolean>;
-  reload: () => Promise<void> | void;
+  reload: () => void;
+  logEvent: (stage: StageKey | null, kind: string, note: string | null) => Promise<void>;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
 }) {
   const reached = reachedMap(order);
-
-  // Local inputs for the invoice + shipping stages.
   const [subUsd, setSubUsd] = useState(order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2) : '');
   const [shipUsd, setShipUsd] = useState(order.shipping_cents != null ? (order.shipping_cents / 100).toFixed(2) : '');
   const [tracking, setTracking] = useState(order.tracking_number ?? '');
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
+  const [note, setNote] = useState('');
+
+  const canBack = order.status !== 'pending_invoice';
+  const reNotifyFn: 'send-order-invoice' | 'send-receipt' = reached.paid ? 'send-receipt' : 'send-order-invoice';
+
+  // Stage meta + the single forward action.
+  let title: string; let detail: string;
+  let inputs: React.ReactNode = null;
+  let forward: { label: string; act: () => Promise<void> } | null = null;
+
+  if (!reached.invoiced) {
+    title = 'Confirm received → send invoice';
+    detail = 'Set the amounts and email the buyer a branded invoice with payment instructions.';
+    inputs = (
+      <div className="mb-[var(--space-3)] grid grid-cols-2 gap-[var(--space-3)]">
+        <MoneyInput label="Subtotal" value={subUsd} onChange={setSubUsd} />
+        <MoneyInput label="Shipping" value={shipUsd} onChange={setShipUsd} />
+      </div>
+    );
+    forward = { label: 'Send invoice', act: sendInvoice };
+  } else if (!reached.paid) {
+    title = 'Awaiting payment';
+    detail = 'Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.';
+    forward = { label: 'Payment received', act: () => advance(() => supabase!.rpc('mark_order_paid', { p_order_id: order.id }), 'paid', 'Payment received') };
+  } else if (!reached.shipped) {
+    title = 'Processing — ready to ship';
+    detail = 'Marking shipped deducts stock for every line and emails the buyer. Add tracking if you have it.';
+    inputs = (
+      <div className="mb-[var(--space-3)] grid grid-cols-[110px_1fr] gap-[var(--space-3)]">
+        <label className="block">
+          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Carrier</span>
+          <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className={fieldCls}>
+            {CARRIERS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
+          <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number" className={fieldCls} />
+        </label>
+      </div>
+    );
+    forward = {
+      label: 'Mark shipped',
+      act: () => advance(
+        () => supabase!.rpc('confirm_order_fulfilled', { p_order_id: order.id, p_tracking_number: tracking.trim() || null, p_carrier: tracking.trim() ? carrier : null }),
+        'shipped',
+        tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped',
+        'Mark shipped? This deducts stock for every line.',
+      ),
+    };
+  } else if (!reached.delivered) {
+    title = 'Shipped — awaiting delivery';
+    detail = 'Mark delivered once the carrier confirms; this emails the buyer their PAID receipt.';
+    forward = { label: 'Mark delivered', act: () => advance(() => supabase!.rpc('mark_order_delivered', { p_order_id: order.id }), 'delivered', 'Delivered') };
+  } else {
+    title = 'Complete';
+    detail = 'Delivered and closed. Use the note box for any after-the-fact record.';
+  }
+
+  return (
+    <div className="space-y-[var(--space-3)]">
+      <div className="research-surface-solid p-[var(--space-4)]">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-ink/75">{title}</p>
+        <p className="mt-1 mb-[var(--space-3)] text-[11.5px] leading-relaxed text-ink/45">{detail}</p>
+
+        {inputs}
+
+        {/* Inline note — attaches to whichever control you press */}
+        <textarea
+          rows={2}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Note for this step (e.g. PayPal bounced — asked buyer to re-send). Attaches to back / forward, or save on its own."
+          className={`${fieldCls} mb-[var(--space-3)] resize-y`}
+        />
+
+        {/* Back · forward · re-notify · save-note — small pills in one lane */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {canBack && (
+            <Pill onClick={stepBack} disabled={busy}>← Back a step</Pill>
+          )}
+          {forward && (
+            <Pill primary onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
+          )}
+          <Pill onClick={() => resend(reNotifyFn)} disabled={busy}>
+            {reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
+          </Pill>
+          <Pill onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
+        </div>
+      </div>
+
+      {/* Cancel — the one separate, unique control */}
+      <div>
+        <Pill danger onClick={cancel} disabled={busy}>Cancel order</Pill>
+      </div>
+    </div>
+  );
+
+  async function advance(rpc: () => PromiseLike<{ error: { message: string } | null }>, stage: StageKey, defaultNote: string, confirmMsg?: string) {
+    const ok = await run(rpc, { stage, kind: 'advance', note: note.trim() || defaultNote }, confirmMsg);
+    if (ok) setNote('');
+  }
 
   async function sendInvoice() {
     if (!supabase) return;
@@ -376,123 +494,41 @@ function StageActions({
         p_invoice_amount_cents: subC + shipC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
         p_subtotal_cents: subC, p_shipping_cents: shipC,
       }),
-      { stage: 'invoiced', kind: 'advance', note: `Invoice sent · ${fmtUSD(subC + shipC)}` },
+      { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(subC + shipC)}` },
     );
-    if (ok && supabase) {
+    if (ok) {
+      setNote('');
       const { error } = await supabase.functions.invoke('send-order-invoice', { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
       if (error) setActionError(`Invoice marked sent, but the email failed: ${error.message}`);
-      await reload(); onChanged?.();
+      onChanged?.();
     }
   }
 
-  // The single "advance" action for the current stage.
-  let advance: React.ReactNode = null;
-
-  if (!reached.invoiced) {
-    advance = (
-      <StageCard title="Confirm received → send invoice" detail="Set the amounts and email the buyer a branded invoice with payment instructions.">
-        <div className="mb-[var(--space-3)] grid grid-cols-2 gap-[var(--space-3)]">
-          <MoneyInput label="Subtotal" value={subUsd} onChange={setSubUsd} />
-          <MoneyInput label="Shipping" value={shipUsd} onChange={setShipUsd} />
-        </div>
-        <PrimaryBtn onClick={sendInvoice} disabled={busy}>{busy ? 'Sending…' : 'Send invoice'}</PrimaryBtn>
-      </StageCard>
+  async function stepBack() {
+    const ok = await run(
+      () => supabase!.rpc('revert_order_status', { p_order_id: order.id, p_reason: note.trim() || 'Stepped back a stage' }),
+      { stage: null, kind: 'revert', note: note.trim() || 'Stepped back a stage' },
+      'Step this order back one stage? A note is recorded.',
     );
-  } else if (!reached.paid) {
-    advance = (
-      <StageCard title="Awaiting payment" detail="Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.">
-        <div className="flex flex-wrap gap-[var(--space-2)]">
-          <PrimaryBtn
-            onClick={() => run(() => supabase!.rpc('mark_order_paid', { p_order_id: order.id }), { stage: 'paid', kind: 'advance', note: 'Payment received' })}
-            disabled={busy}
-          >
-            {busy ? 'Working…' : 'Payment received'}
-          </PrimaryBtn>
-          <GhostBtn
-            onClick={() => resend('send-order-invoice')}
-            disabled={busy}
-          >
-            Re-notify (resend invoice)
-          </GhostBtn>
-        </div>
-      </StageCard>
-    );
-  } else if (!reached.shipped) {
-    advance = (
-      <StageCard title="Processing — ready to ship" detail="Marking shipped deducts stock for every line and emails the buyer. Add tracking if you have it.">
-        <div className="mb-[var(--space-3)] grid grid-cols-[110px_1fr] gap-[var(--space-3)]">
-          <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Carrier</span>
-            <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className={fieldCls}>
-              {CARRIERS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
-            <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number" className={fieldCls} />
-          </label>
-        </div>
-        <PrimaryBtn
-          onClick={() => run(
-            () => supabase!.rpc('confirm_order_fulfilled', { p_order_id: order.id, p_tracking_number: tracking.trim() || null, p_carrier: tracking.trim() ? carrier : null }),
-            { stage: 'shipped', kind: 'advance', note: tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped' },
-            'Mark shipped? This deducts stock for every line.',
-          )}
-          disabled={busy}
-        >
-          {busy ? 'Working…' : 'Mark shipped'}
-        </PrimaryBtn>
-      </StageCard>
-    );
-  } else if (!reached.delivered) {
-    advance = (
-      <StageCard title="Shipped — awaiting delivery" detail="Mark delivered once the carrier confirms; this emails the buyer their PAID receipt.">
-        <PrimaryBtn
-          onClick={() => run(() => supabase!.rpc('mark_order_delivered', { p_order_id: order.id }), { stage: 'delivered', kind: 'advance', note: 'Delivered' })}
-          disabled={busy}
-        >
-          {busy ? 'Working…' : 'Mark delivered'}
-        </PrimaryBtn>
-      </StageCard>
-    );
-  } else {
-    advance = (
-      <StageCard title="Complete" detail="Delivered and closed. Resend the receipt below if the buyer needs another copy.">
-        <GhostBtn onClick={() => resend('send-receipt')} disabled={busy}>Resend receipt</GhostBtn>
-      </StageCard>
-    );
+    if (ok) setNote('');
   }
 
-  return (
-    <div className="space-y-[var(--space-3)]">
-      {advance}
-      {/* Always available: report an issue (revert a step) + cancel */}
-      <div className="flex flex-wrap items-center gap-[var(--space-2)]">
-        <GhostBtn
-          danger
-          onClick={() => run(
-            () => supabase!.rpc('revert_order_status', { p_order_id: order.id, p_reason: promptReason('What happened? (e.g. payment reversed)') }),
-            { stage: null, kind: 'revert', note: 'Reverted a step' },
-            'Step this order back one stage? A flag + note is recorded.',
-          )}
-          disabled={busy}
-        >
-          ⚠ Report an issue / revert a step
-        </GhostBtn>
-        <GhostBtn
-          danger
-          onClick={() => run(
-            () => supabase!.rpc('cancel_order', { p_order_id: order.id, p_reason: promptReason('Reason for cancellation:') }),
-            { stage: null, kind: 'system', note: 'Order cancelled' },
-            'Cancel this order?',
-          )}
-          disabled={busy}
-        >
-          Cancel order
-        </GhostBtn>
-      </div>
-    </div>
-  );
+  async function cancel() {
+    const ok = await run(
+      () => supabase!.rpc('cancel_order', { p_order_id: order.id, p_reason: note.trim() || promptReason('Reason for cancellation:') }),
+      { stage: null, kind: 'system', note: note.trim() || 'Order cancelled' },
+      'Cancel this order?',
+    );
+    if (ok) setNote('');
+  }
+
+  async function saveNote() {
+    const t = note.trim();
+    if (!t) return;
+    await logEvent(currentStageKey(order), 'note', t);
+    setNote('');
+    reload();
+  }
 
   async function resend(fn: 'send-order-invoice' | 'send-receipt') {
     if (!supabase) return;
@@ -500,55 +536,6 @@ function StageActions({
     const { error } = await supabase.functions.invoke(fn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
     if (error) setActionError(`Couldn't send: ${error.message}`);
   }
-}
-
-/* ── Notes timeline ───────────────────────────────────────────────────────── */
-
-function NotesTimeline({
-  events, onSave, busy,
-}: { events: OrderEvent[]; onSave: (text: string) => Promise<void>; busy: boolean }) {
-  const [text, setText] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  async function save() {
-    const t = text.trim();
-    if (!t) return;
-    setSaving(true);
-    await onSave(t);
-    setSaving(false);
-    setText('');
-  }
-
-  return (
-    <section className="mt-[var(--space-7)]">
-      <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">Notes &amp; history</p>
-
-      {events.length > 0 ? (
-        <ol className="mb-[var(--space-4)] space-y-[var(--space-2)]">
-          {events.map((e) => (
-            <li key={e.id} className="flex gap-[var(--space-3)] text-[12px]">
-              <span className="w-[120px] shrink-0 font-mono text-[10px] tabular-nums text-ink/35">{fmtDate(e.created_at)}</span>
-              <span className={`shrink-0 text-[9px] uppercase tracking-[0.16em] ${e.kind === 'revert' ? 'text-red-400/70' : e.kind === 'advance' ? 'text-holo' : 'text-ink/40'}`}>{e.kind}</span>
-              <span className="min-w-0 flex-1 text-ink/75">{e.note}{e.stage && <span className="ml-1.5 text-ink/35">· {e.stage}</span>}</span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="mb-[var(--space-3)] text-[11.5px] text-ink/40">No events yet. Notes you save here are stamped to the order and print on the invoice.</p>
-      )}
-
-      <div className="flex items-end gap-[var(--space-2)]">
-        <textarea
-          rows={2}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Add a note (e.g. PayPal payment bounced — asked buyer to re-send)…"
-          className={`${fieldCls} flex-1 resize-y`}
-        />
-        <PrimaryBtn onClick={save} disabled={saving || busy || !text.trim()}>{saving ? 'Saving…' : 'Save note'}</PrimaryBtn>
-      </div>
-    </section>
-  );
 }
 
 /* ── Printable branded invoice ────────────────────────────────────────────── */
@@ -567,13 +554,11 @@ function PrintableInvoice({
 
   return (
     <>
-      {/* Print isolation: only .print-doc is visible when printing. */}
       <style>{`@media print { body * { visibility: hidden !important; } .print-doc, .print-doc * { visibility: visible !important; } .print-doc { position: absolute !important; inset: 0 !important; margin: 0 !important; box-shadow: none !important; } .no-print { display: none !important; } }`}</style>
 
       <div className="fixed inset-0 z-[300] overflow-y-auto bg-ink/60 backdrop-blur-[3px]" onClick={onClose} />
       <div className="fixed inset-0 z-[301] overflow-y-auto p-4 sm:p-8 pointer-events-none">
         <div className="print-doc pointer-events-auto mx-auto max-w-[760px] bg-white text-[#1A1714] shadow-[0_24px_60px_-20px_rgba(26,23,20,0.5)]">
-          {/* toolbar (not printed) */}
           <div className="no-print flex items-center justify-between gap-3 border-b border-ink/10 px-6 py-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">Invoice preview</span>
             <div className="flex items-center gap-2">
@@ -582,7 +567,6 @@ function PrintableInvoice({
             </div>
           </div>
 
-          {/* document body */}
           <div className="px-8 py-8 sm:px-10 sm:py-10">
             <div className="flex items-start justify-between gap-6 border-b border-[#1A1714]/10 pb-6">
               <div className="flex items-center gap-3">
@@ -631,15 +615,18 @@ function PrintableInvoice({
                 </tr>
               </thead>
               <tbody>
-                {lines.map((l) => (
-                  <tr key={l.id} className="border-b border-[#1A1714]/[0.08]">
-                    <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
-                    <td className="py-2 pr-3 text-[12px] text-[#1A1714]">{l.product_name}</td>
-                    <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
-                    <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">{l.unit_price_cents == null ? '—' : fmtUSD(l.unit_price_cents)}</td>
-                    <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.unit_price_cents == null ? '—' : fmtUSD(l.unit_price_cents * l.quantity)}</td>
-                  </tr>
-                ))}
+                {lines.map((l) => {
+                  const u = unitOf(l);
+                  return (
+                    <tr key={l.id} className="border-b border-[#1A1714]/[0.08]">
+                      <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
+                      <td className="py-2 pr-3 text-[12px] text-[#1A1714]">{l.product_name}</td>
+                      <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
+                      <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">{u == null ? '—' : fmtUSD(u)}</td>
+                      <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{u == null ? '—' : fmtUSD(u * l.quantity)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
@@ -689,32 +676,25 @@ function MoneyInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function StageCard({ title, detail, children }: { title: string; detail: string; children: React.ReactNode }) {
-  return (
-    <div className="research-surface-solid p-[var(--space-4)]">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-ink/75">{title}</p>
-      <p className="mt-1 mb-[var(--space-3)] text-[11.5px] leading-relaxed text-ink/45">{detail}</p>
-      {children}
-    </div>
-  );
-}
-
-function PrimaryBtn({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+/** Small uniform pill used across the order controls. */
+function Pill({ onClick, disabled, primary, danger, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; danger?: boolean; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className="rounded-full border border-ink/30 bg-ink/[0.10] px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-ink transition-colors hover:border-ink/40 hover:bg-ink/[0.15] disabled:opacity-40 disabled:cursor-not-allowed">
+      className={[
+        'rounded-full border px-[var(--space-3)] py-[5px] text-[9px] uppercase tracking-[0.16em] transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+        danger ? 'border-red-400/35 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
+          : primary ? 'border-ink/30 bg-ink/[0.10] font-medium text-ink hover:border-ink/40 hover:bg-ink/[0.15]'
+          : 'border-ink/15 text-ink/70 hover:border-ink/30 hover:text-ink',
+      ].join(' ')}>
       {children}
     </button>
   );
 }
 
-function GhostBtn({ onClick, disabled, danger, children }: { onClick: () => void; disabled?: boolean; danger?: boolean; children: React.ReactNode }) {
+function SmallPill({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className={[
-        'rounded-full border px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
-        danger ? 'border-red-400/35 text-red-400/80 hover:border-red-400/55 hover:text-red-300' : 'border-ink/15 text-ink/70 hover:border-ink/30 hover:text-ink',
-      ].join(' ')}>
+      className="rounded-full border border-ink/15 bg-ink/[0.03] px-[var(--space-3)] py-[5px] text-[9px] uppercase tracking-[0.16em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40">
       {children}
     </button>
   );
@@ -729,7 +709,6 @@ function nextStage(reached: Record<StageKey, boolean>): StageKey {
 
 function currentStageKey(o: OrderRecord): StageKey {
   const r = reachedMap(o);
-  // The last reached stage is "where we are".
   let last: StageKey = 'received';
   for (const s of STAGES) if (r[s.key]) last = s.key;
   return last;
