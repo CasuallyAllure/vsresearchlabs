@@ -98,11 +98,11 @@ export function ClassificationFilter({
       : [];
 
   return (
-    <div className="mb-[var(--space-4)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-2)]">
-      {/* One compact row: search · category · in-stock */}
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mb-[var(--space-3)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-2)]">
+      {/* One line, no wrap: search (shrinks) · category · in-stock dot */}
+      <div className="flex items-center gap-1.5">
         {onSearch && (
-          <div ref={searchRef} className="relative min-w-[160px] flex-1">
+          <div ref={searchRef} className="relative min-w-0 flex-1">
             <svg
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/35"
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -155,15 +155,13 @@ export function ClassificationFilter({
           </div>
         )}
 
-        {/* Category + in-stock — grouped so they stay on one line together */}
-        <div className="flex items-center gap-2 shrink-0">
-        <div ref={catRef} className="relative">
+        <div ref={catRef} className="relative shrink-0">
           <button
             type="button"
             aria-haspopup="listbox"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="flex min-w-[140px] items-center justify-between gap-2 rounded-lg border border-ink/15 bg-base-700 px-3 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            className="flex min-w-[92px] items-center justify-between gap-1.5 rounded-lg border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span className="truncate font-medium">{currentLabel}</span>
             <span aria-hidden="true" className={`shrink-0 text-[10px] text-ink/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
@@ -207,7 +205,7 @@ export function ClassificationFilter({
             aria-checked={inStock.on}
             onClick={inStock.toggle}
             title={inStock.on ? 'Showing in-stock only — tap to show all' : 'Tap to show in-stock only'}
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.14em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             style={
               inStock.on
                 ? { borderColor: `${stockColor}99`, color: stockColor, backgroundColor: `${stockColor}14`, boxShadow: `0 0 9px ${stockColor}55` }
@@ -225,7 +223,6 @@ export function ClassificationFilter({
             In stock
           </button>
         )}
-        </div>
       </div>
 
       {/* Description — compact, wraps, with plain/technical swap */}

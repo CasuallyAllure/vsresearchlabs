@@ -52,7 +52,7 @@ export function NootropicsResearchSupplies() {
 
   return (
     <section className="py-[var(--space-8)]">
-      <header className="mb-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+      <header className="mb-[var(--space-3)]">
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Research Supplies · Nootropics
         </p>
