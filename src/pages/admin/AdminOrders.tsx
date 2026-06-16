@@ -88,20 +88,15 @@ export function AdminOrders() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            Orders
-          </p>
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Order </span>
-            <span className="font-medium text-ink">pipeline.</span>
-          </h2>
-        </div>
+      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
+          Orders
+        </h2>
         <AdminFilterBar
           options={FILTER_OPTIONS}
           value={filter}
           onChange={setFilter}
+          dense
         />
       </header>
 

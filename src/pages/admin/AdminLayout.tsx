@@ -92,7 +92,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="py-[var(--space-5)]">
       {/* Thin command bar — brand · section nav · identity · sign out, fits one line (no scroll) */}
-      <header className="mb-[var(--space-4)] flex items-center gap-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-2)]">
+      <header className="mb-[var(--space-3)] flex items-center gap-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-2)]">
         {/* Brand — short on phones, full on wider screens */}
         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[8.5px] uppercase tracking-[0.16em] sm:text-[9px] sm:tracking-[0.2em]">
           <span className="text-ink/70">
@@ -132,32 +132,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </button>
       </header>
 
-      {/* Sub-tab strip — the views inside the active area */}
+      {/* Sub-tab strip — a centered segmented control tucked under the top line */}
       {showSubtabs && (
-        <nav
-          aria-label={`${activeArea.label} views`}
-          className="mb-[var(--space-6)] flex flex-wrap items-center gap-x-[var(--space-1)] gap-y-[var(--space-2)]"
-        >
-          {activeArea.subtabs.map((t, i) => {
-            const on = t.match(path);
-            return (
-              <span key={t.to} className="flex items-center">
-                {i > 0 && <span aria-hidden="true" className="px-1 text-ink/20">·</span>}
+        <nav aria-label={`${activeArea.label} views`} className="mb-[var(--space-6)] flex justify-center">
+          <div className="inline-flex items-center gap-0.5 rounded-full border border-ink/[0.12] bg-ink/[0.03] p-[3px]">
+            {activeArea.subtabs.map((t) => {
+              const on = t.match(path);
+              return (
                 <Link
+                  key={t.to}
                   to={t.to}
                   aria-current={on ? 'page' : undefined}
                   className={[
-                    'rounded-full px-[var(--space-3)] py-[3px] text-[10px] uppercase tracking-[0.18em] transition-colors',
+                    'rounded-full px-[var(--space-4)] py-[5px] text-[10px] uppercase tracking-[0.18em] transition-colors',
                     on
-                      ? 'bg-ink/[0.06] text-ink'
+                      ? 'bg-display text-ink shadow-[0_1px_3px_-1px_rgba(26,23,20,0.25)]'
                       : 'text-ink/45 hover:text-ink',
                   ].join(' ')}
                 >
                   {t.label}
                 </Link>
-              </span>
-            );
-          })}
+              );
+            })}
+          </div>
         </nav>
       )}
 
