@@ -16,20 +16,25 @@ import { useId, useState } from 'react';
 interface DnaVMarkProps {
   size?: number;
   className?: string;
+  /** When true, the mark is non-interactive — no click-to-pause, no
+   *  cursor, no button semantics. Use inside loaders / decorative
+   *  contexts where the mark should always be spinning. */
+  static?: boolean;
 }
 
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
-export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
+export function DnaVMark({ size = 60, className = '', static: isStatic = false }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
   const [spinning, setSpinning] = useState(true);
+  const isRunning = isStatic ? true : spinning;
 
   const bodyStyle = (delay: string) => ({
     transformBox: 'view-box' as const,
     transformOrigin: ORBIT,
-    animationPlayState: spinning ? ('running' as const) : ('paused' as const),
+    animationPlayState: isRunning ? ('running' as const) : ('paused' as const),
     animationDelay: delay,
   });
 
@@ -40,14 +45,20 @@ export function DnaVMark({ size = 60, className = '' }: DnaVMarkProps) {
       height={size}
       viewBox="0 0 100 100"
       fill="none"
-      role="button"
-      aria-label={spinning ? 'VS Research Labs — bodies orbiting (click to pause)' : 'VS Research Labs — orbit paused (click to resume)'}
-      style={{ cursor: 'pointer' }}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSpinning((s) => !s);
-      }}
+      {...(isStatic
+        ? { 'aria-hidden': true }
+        : {
+            role: 'button',
+            'aria-label': spinning
+              ? 'VS Research Labs — bodies orbiting (click to pause)'
+              : 'VS Research Labs — orbit paused (click to resume)',
+            style: { cursor: 'pointer' },
+            onClick: (e: React.MouseEvent<SVGSVGElement>) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSpinning((s) => !s);
+            },
+          })}
     >
       <defs>
         <linearGradient id={grad} gradientUnits="userSpaceOnUse" x1="66" y1="20" x2="66" y2="55">

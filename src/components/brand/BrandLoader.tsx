@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { DnaVMark } from './DnaVMark';
 
 export interface BrandLoaderProps {
   /** Whether the loader is visible. When flipped to false the loader fades
@@ -148,20 +149,19 @@ export function BrandLoader({ active }: BrandLoaderProps) {
         Loading
       </span>
       <div style={{ position: 'relative', width: 140, height: 140 }}>
-        <img
-          src="/brand/vs-dna-s-full-colour.png"
-          alt=""
-          aria-hidden="true"
+        <div
           style={{
             position: 'absolute',
             top: '50%',
             left: '50%',
-            width: 48,
-            height: 48,
             transform: 'translate(-50%, -50%)',
-            opacity: 0.96,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
+        >
+          <DnaVMark size={72} static />
+        </div>
         <svg
           viewBox="-70 -70 140 140"
           style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
