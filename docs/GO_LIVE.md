@@ -15,6 +15,85 @@ buffer if any of these services are new to you.
 
 ---
 
+## ⚡ Already live? Apply the latest changes (~5 commands)
+
+Use this when the site is already running and you just need to ship the
+backend work from recent sessions. The frontend is already deployed via
+Cloudflare on every push — **nothing here touches the frontend.** This is
+"Motion 1": make the order module + bot protection actually live.
+
+If a command says you're not linked, run once and retry:
+
+```bash
+supabase link --project-ref ufaajzfuppohbxebftwp
+```
+
+### Step 1 — Turnstile secret (bot protection)
+
+Set the Cloudflare Turnstile **secret** — it must come from the **same
+widget** as your `VITE_TURNSTILE_SITE_KEY`, or verification rejects every
+visitor:
+
+```bash
+supabase secrets set TURNSTILE_SECRET=<secret-from-the-same-widget>
+```
+
+> `VITE_TURNSTILE_SITE_KEY` is baked in at **build time**, so it only
+> applies to a Cloudflare build that ran *after* you set it. If unsure,
+> trigger a fresh deploy (any push, or Cloudflare Pages → Retry deployment).
+
+### Step 2 — Apply database migrations
+
+```bash
+supabase db push
+```
+
+It lists every unapplied migration and asks to confirm — say **yes**.
+Pending from recent sessions includes:
+
+- `007`–`013` — compound video, bulk import, media bucket, invoice
+  breakdown, variant pricing, order tracking, order receipt + revert
+- `014_order_events` — append-only order notes/history timeline
+- `015_order_line_edits` — admin write access to edit itemized lines
+- `016_client_order_invoice` — public TrackOrder invoice totals + itemized
+
+### Step 3 — Deploy the edge functions
+
+Simplest — deploy them all:
+
+```bash
+supabase functions deploy
+```
+
+What it covers (and why they need a redeploy): `send-order-invoice`
+(now renders the optional "Order Notes" card for send-with-notes),
+`resolve-video` (clip thumbnails), `send-receipt`, `send-contact`,
+`place-order`, `send-inquiry` (Turnstile secret + code), plus
+`send-shipment-notification` / `send-delivered-notification`.
+
+### Step 4 — Verify it all works
+
+- **Bot protection:** submit the Contact form — still goes through, now
+  actually verified server-side.
+- **Order notes:** open an order → save a note → reload → it persists
+  (this is migration `014`; before it, notes only showed for the session).
+- **Edit itemized:** order → Itemized → **Edit** → change/add/remove a
+  line → **Save itemized** — saves without a "needs migration 015" error.
+- **Send with notes:** order → Send to client / Re-notify → **Send with
+  notes** → the email arrives with an "Order Notes" card.
+- **Receipt:** mark a test order delivered → branded paid receipt emails;
+  "View / Resend receipt" works on the order.
+- **Clip thumbnails:** Admin → Catalog · Inventory → Clip → paste a
+  TikTok link → Fetch → a thumbnail appears (resolve-video + media bucket).
+- **Public tracking:** `/track` with order# + ZIP shows totals + paid
+  flag; order# + ZIP reveals itemized lines (migration `016`).
+
+**Done when:** every line above checks. That's Motion 1 complete — the
+order module is live, correct-to-deploy, and bot-protected. (Pricing
+truth, customer pay-confirm link, and cc-to-self are later motions.)
+
+---
+
 ## Prerequisites — accounts you need
 
 Skip any you already have. Use the same email for all of them — easier
