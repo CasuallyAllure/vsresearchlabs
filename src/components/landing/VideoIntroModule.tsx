@@ -1,31 +1,31 @@
 /**
  * VideoIntroModule
  *
- * Three-tab video intro shown near the top of the landing page. Each tab
- * has a 16:9 video well, a headline, and a short body. Buyer can switch
- * tabs by tapping the pills OR by swiping horizontally on the video.
+ * Three-slide intro carousel (shown in the IntroModal on first entry). No tab
+ * pills — the slide's title sits up top in the Cormorant wordmark face (same as
+ * the header), changing as you swipe: "What are biopeptides" → "Our research" →
+ * "For research only". Arrows + dots make the carousel obvious; swipe still works.
  *
- * Today the videos are placeholders — the well shows the DNA-S logo on
- * cream until a real videoUrl is provided. Drop a hosted video URL into
- * the corresponding tab in TABS and it'll start playing inline.
+ * Videos are placeholders today — the well shows the DNA-S logo on cream until a
+ * real videoUrl is dropped into the matching TABS entry.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface VideoTab {
   id: string;
-  label: string;        // pill text
-  headline: string;     // bold line under the video
-  body: string;         // 2–3 sentence supporting copy
-  videoUrl?: string;    // optional hosted mp4/webm URL
-  poster?: string;      // optional poster image URL
+  title: string;        // top title (Cormorant), changes per slide
+  subtitle: string;     // editorial line under the title
+  body: string;         // supporting copy under the video
+  videoUrl?: string;
+  poster?: string;
 }
 
 const TABS: VideoTab[] = [
   {
     id: 'what-are',
-    label: 'What are biopeptides',
-    headline: 'They are already inside you.',
+    title: 'What are biopeptides',
+    subtitle: 'Naturally occurring in your body.',
     body:
       'Biopeptides are short chains of amino acids — the same signaling molecules ' +
       'your body already produces to coordinate repair, growth, metabolism, and ' +
@@ -34,8 +34,8 @@ const TABS: VideoTab[] = [
   },
   {
     id: 'why-vsrl',
-    label: 'Our research',
-    headline: 'Why we built VS Research Labs.',
+    title: 'Our research',
+    subtitle: 'Why we built VS Research Labs.',
     body:
       'A short note from the lab. Replace this copy with the voiceover script ' +
       'or talking points for the second video — what we focus on, what we ' +
@@ -43,8 +43,8 @@ const TABS: VideoTab[] = [
   },
   {
     id: 'b2b-only',
-    label: 'For research only',
-    headline: 'Research and B2B partners only.',
+    title: 'For research only',
+    subtitle: 'Research and B2B partners only.',
     body:
       'Every compound in our catalog is sold strictly for research and laboratory ' +
       'use. We work primarily with research labs, biotechs, and academic partners. ' +
@@ -57,10 +57,11 @@ export function VideoIntroModule() {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const tab = TABS[active];
+  const count = TABS.length;
 
   const go = useCallback((i: number) => {
-    setActive(Math.max(0, Math.min(TABS.length - 1, i)));
-  }, []);
+    setActive(((i % count) + count) % count); // wrap around
+  }, [count]);
 
   // Touch swipe — directional lock so vertical scroll still works.
   const startX = useRef<number | null>(null);
@@ -87,7 +88,6 @@ export function VideoIntroModule() {
     startY.current = null;
   }
 
-  // Keyboard nav when the module is focused
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -101,107 +101,108 @@ export function VideoIntroModule() {
 
   return (
     <section
-      aria-labelledby="video-intro-headline"
-      className="research-surface-solid p-[var(--space-5)] sm:p-[var(--space-6)] mb-[var(--space-10)] mx-auto max-w-[920px]"
+      aria-roledescription="carousel"
+      aria-label="Introduction"
+      className="research-surface-solid p-[var(--space-5)] sm:p-[var(--space-7)] mb-[var(--space-8)] mx-auto max-w-[920px]"
     >
-      {/* Tab pills */}
-      <div role="tablist" aria-label="Intro videos" className="flex flex-wrap gap-1.5 mb-[var(--space-4)]">
-        {TABS.map((t, i) => {
-          const on = i === active;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              aria-controls={`video-panel-${t.id}`}
-              onClick={() => go(i)}
-              className={[
-                'rounded-full px-[var(--space-3)] sm:px-[var(--space-4)] py-[var(--space-2)] text-[10.5px] sm:text-[11px] uppercase tracking-[0.2em] transition-colors',
-                'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
-                on
-                  ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                  : 'border border-ink/[0.10] text-ink/55 hover:text-ink/85 hover:border-ink/25',
-              ].join(' ')}
-            >
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Video well — 16:9 with poster placeholder */}
-      <div
-        ref={trackRef}
-        tabIndex={0}
-        role="tabpanel"
-        id={`video-panel-${tab.id}`}
-        aria-label={tab.label}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        className="relative w-full overflow-hidden rounded-md bg-display border border-ink/[0.08] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
-        style={{ aspectRatio: '16 / 9' }}
-      >
-        {tab.videoUrl ? (
-          <video
-            key={tab.id}
-            src={tab.videoUrl}
-            poster={tab.poster}
-            controls
-            playsInline
-            preload="metadata"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-3)] text-ink/55">
-            <img
-              src="/brand/vs-dna-s-full-colour.png"
-              alt=""
-              width="64"
-              height="64"
-              style={{ width: 64, height: 64 }}
-            />
-            <p className="text-[10px] uppercase tracking-[0.3em] text-ink/40">Coming soon</p>
-          </div>
-        )}
-      </div>
-
-      {/* Headline + body */}
-      <div className="mt-[var(--space-5)]">
-        <h2
-          id="video-intro-headline"
-          className="text-[clamp(1.1rem,2.4vw,1.45rem)] leading-[1.2] tracking-[-0.01em] text-ink mb-[var(--space-2)]"
-        >
-          <span className="font-light text-ink/85">{tab.headline.split('.')[0]}.</span>
-          {tab.headline.split('.').slice(1).join('.') && (
-            <span className="font-medium text-ink"> {tab.headline.split('.').slice(1).join('.').trim()}</span>
-          )}
-        </h2>
-        <p className="text-[13.5px] sm:text-[14px] text-ink/70 leading-relaxed max-w-[68ch]">
-          {tab.body}
+      {/* Title — Cormorant wordmark face, changes per slide */}
+      <header className="text-center mb-[var(--space-5)]">
+        <p className="font-mono text-[10px] tracking-[0.3em] text-ink/35 mb-[var(--space-3)]">
+          {String(active + 1).padStart(2, '0')} <span className="text-ink/20">/</span> {String(count).padStart(2, '0')}
         </p>
+        <h2
+          key={tab.id}
+          className="font-serif font-medium uppercase tracking-[0.06em] leading-[1.05] text-ink text-[clamp(1.5rem,4.5vw,2.4rem)]"
+        >
+          {tab.title}
+        </h2>
+        <p className="font-serif italic text-ink/60 text-[clamp(1.05rem,2.6vw,1.35rem)] leading-snug mt-[var(--space-2)]">
+          {tab.subtitle}
+        </p>
+      </header>
+
+      {/* Carousel: arrows flank the video well */}
+      <div className="relative">
+        <CarouselArrow side="left" onClick={() => go(active - 1)} />
+        <div
+          ref={trackRef}
+          tabIndex={0}
+          role="group"
+          aria-label={`${tab.title} (${active + 1} of ${count})`}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className="relative w-full overflow-hidden rounded-md bg-display border border-ink/[0.08] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+          style={{ aspectRatio: '16 / 9' }}
+        >
+          {tab.videoUrl ? (
+            <video
+              key={tab.id}
+              src={tab.videoUrl}
+              poster={tab.poster}
+              controls
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-3)] text-ink/55">
+              <img src="/brand/vs-dna-s-full-colour.png" alt="" width="64" height="64" style={{ width: 64, height: 64 }} />
+              <p className="text-[10px] uppercase tracking-[0.3em] text-ink/40">Coming soon</p>
+            </div>
+          )}
+        </div>
+        <CarouselArrow side="right" onClick={() => go(active + 1)} />
       </div>
 
-      {/* Dot indicators (mobile cue for swipe) */}
-      <div className="mt-[var(--space-4)] flex items-center justify-center gap-1.5">
+      {/* Body */}
+      <p className="mt-[var(--space-5)] text-center text-[13.5px] sm:text-[14px] text-ink/70 leading-relaxed max-w-[64ch] mx-auto">
+        {tab.body}
+      </p>
+
+      {/* Dots */}
+      <div className="mt-[var(--space-5)] flex items-center justify-center gap-2">
         {TABS.map((t, i) => {
           const on = i === active;
           return (
             <button
               key={t.id}
               type="button"
-              aria-label={`Go to ${t.label}`}
+              aria-label={`Go to ${t.title}`}
+              aria-current={on ? 'true' : undefined}
               onClick={() => go(i)}
-              className="h-1.5 w-1.5 rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+              className="rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
               style={{
-                backgroundColor: on ? 'rgba(26,23,20,0.7)' : 'rgba(26,23,20,0.15)',
-                transform: on ? 'scale(1.15)' : 'scale(1)',
+                width: on ? 22 : 7,
+                height: 7,
+                backgroundColor: on ? 'rgba(26,23,20,0.7)' : 'rgba(26,23,20,0.18)',
               }}
             />
           );
         })}
       </div>
     </section>
+  );
+}
+
+function CarouselArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
+  const isLeft = side === 'left';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={isLeft ? 'Previous' : 'Next'}
+      className={`absolute top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 bg-base-800/85 text-ink/70 backdrop-blur hover:text-ink hover:border-ink/35 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 ${
+        isLeft ? 'left-1.5 sm:-left-3' : 'right-1.5 sm:-right-3'
+      }`}
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        {isLeft ? (
+          <path d="M9 1.5 3.5 7 9 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        ) : (
+          <path d="M5 1.5 10.5 7 5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        )}
+      </svg>
+    </button>
   );
 }
