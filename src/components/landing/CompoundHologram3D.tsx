@@ -214,12 +214,12 @@ function AtomMesh({
     <group position={atom.pos}>
       <mesh>
         <sphereGeometry args={[coreRadius, dense ? 12 : 20, dense ? 12 : 20]} />
-        <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : groupHot ? 1.85 : 1.1} roughness={0.3} metalness={0.15} />
+        <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : groupHot ? 2.2 : 1.1} roughness={0.3} metalness={0.15} />
       </mesh>
       {/* Halo doubles as the (larger) hover target. */}
       <mesh onPointerOver={enter} onPointerOut={leave}>
         <sphereGeometry args={[haloRadius, 10, 10]} />
-        <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : groupHot ? Math.min(0.4, haloOpacity * 1.85) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
+        <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : groupHot ? Math.min(0.46, haloOpacity * 2.2) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -258,12 +258,12 @@ function BondMesh({
     <group position={position} quaternion={quaternion}>
       <mesh>
         <cylinderGeometry args={[coreR, coreR, length, 7]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hot ? 2.6 : groupHot ? 2.1 : 1.4} roughness={0.4} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hot ? 2.6 : groupHot ? 2.4 : 1.4} roughness={0.4} />
       </mesh>
       {!dense && (
         <mesh>
           <cylinderGeometry args={[0.05, 0.05, length, 9]} />
-          <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : groupHot ? 0.34 : 0.22} blending={AdditiveBlending} depthWrite={false} />
+          <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : groupHot ? 0.42 : 0.22} blending={AdditiveBlending} depthWrite={false} />
         </mesh>
       )}
       <mesh onPointerOver={enter} onPointerOut={leave}>
@@ -280,7 +280,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
   const accent = scan.accent;
   const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(181,144,75,0.9)';
   const glow = accent ? 'rgba(196,163,90,0.30)' : 'rgba(52, 114, 122,0.30)';
-  const tint = accent ? '#F2D98A' : '#8FF4E8';
+  const tint = accent ? '#9A7B3A' : '#2D6168';
 
   // Open the card toward screen-centre so it never bleeds off an edge,
   // hugging the atom with a small offset.
@@ -320,8 +320,13 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
                 <div className="holo-sub">Z {scan.z} · {scan.mass.toFixed(2)} u · χ {scan.eneg.toFixed(2)}</div>
               </div>
             </div>
+            {scan.residue && (
+              <div className="holo-seg">
+                <span className="holo-seg-lbl">SEGMENT</span>
+                <span className="holo-seg-val">{scan.residue}</span>
+              </div>
+            )}
             <div className="holo-kv"><span className="holo-lbl">ROLE</span><span className="holo-val">{scan.role}</span></div>
-            {scan.residue && <div className="holo-kv"><span className="holo-lbl">RESIDUE</span><span className="holo-val">{scan.residue}</span></div>}
           </>
         ) : (
           <>
@@ -578,7 +583,10 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-status { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; font-size: 6.5px; letter-spacing: 0.18em; margin-bottom: 5px; }
         .holo-head { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
         .holo-sym { flex-shrink: 0; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid; border-radius: 6px; font-size: 12px; font-weight: 700; }
-        .holo-title { position: relative; z-index: 1; font-size: 10.5px; font-weight: 600; color: #fff; line-height: 1.12; }
+        .holo-title { position: relative; z-index: 1; font-size: 10.5px; font-weight: 600; color: rgba(26,23,20,0.92); line-height: 1.12; }
+        .holo-seg { position: relative; z-index: 1; margin: 5px 0 3px; padding: 4px 6px; border-radius: 5px; background: rgba(52,114,122,0.12); border: 1px solid rgba(52,114,122,0.30); }
+        .holo-seg-lbl { display: block; font-size: 6px; letter-spacing: 0.18em; color: rgba(26,23,20,0.45); margin-bottom: 1px; }
+        .holo-seg-val { display: block; font-size: 9px; font-weight: 600; color: rgba(26,23,20,0.9); line-height: 1.22; }
         .holo-sub { position: relative; z-index: 1; font-size: 7px; letter-spacing: 0.03em; color: rgba(26,23,20,0.5); font-variant-numeric: tabular-nums; margin-top: 1px; }
         .holo-kv { position: relative; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 3px; }
         .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(26,23,20,0.4); flex-shrink: 0; }
