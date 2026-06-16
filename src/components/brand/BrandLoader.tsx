@@ -2,15 +2,13 @@
  * BrandLoader
  *
  * Full-screen brand loader shown during route transitions and the initial
- * page load. Just the DnaVMark — no outer body layer. The mark enters
- * large (about 2.6× its resting size) and shrinks down to its resting
- * size over 1.6s with an ease-out curve, then holds for a beat before
- * the parent fade-out begins. The mark's own bodies continue orbiting
- * the whole time at the brand tempo (7s / 11s / 15s).
+ * page load. The mark itself (V monogram, S strand, orbital rings) sits
+ * still, crisp, centered. Only the three bodies animate on entry —
+ * starting at ~3.4× their orbital radius and spiraling inward to their
+ * resting orbits over 1.6s while continuing to revolve at brand tempo.
  *
- * Respects prefers-reduced-motion: shrink animation is skipped and the
- * mark renders at its resting size immediately. The mark's body
- * animations have their own reduced-motion handling inside DnaVMark.
+ * The mark is rendered via DnaVMark with bodyEntryMs=1600; the entry
+ * animation lives inside DnaVMark and respects prefers-reduced-motion.
  */
 
 import { useEffect, useState } from 'react';
@@ -76,18 +74,6 @@ export function BrandLoader({ active }: BrandLoaderProps) {
           from { opacity: 1; }
           to   { opacity: 0; }
         }
-        @keyframes vsrl-loader-shrink {
-          from { transform: scale(2.6); }
-          to   { transform: scale(1);   }
-        }
-        .vsrl-loader-shrink {
-          animation: vsrl-loader-shrink 1600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-          transform-origin: center;
-          will-change: transform;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .vsrl-loader-shrink { animation: none !important; }
-        }
       `}</style>
       <span
         style={{
@@ -102,14 +88,13 @@ export function BrandLoader({ active }: BrandLoaderProps) {
       </span>
 
       <div
-        className="vsrl-loader-shrink"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <DnaVMark size={96} static />
+        <DnaVMark size={96} static bodyEntryMs={1600} />
       </div>
     </div>
   );

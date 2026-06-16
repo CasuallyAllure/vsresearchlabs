@@ -20,12 +20,17 @@ interface DnaVMarkProps {
    *  cursor, no button semantics. Use inside loaders / decorative
    *  contexts where the mark should always be spinning. */
   static?: boolean;
+  /** When set, the three bodies enter from a wider orbital radius and
+   *  spiral inward to their resting orbits over this duration (ms).
+   *  The mark itself (monogram, strand, rings) stays still and crisp —
+   *  only the body positions animate. Runs once. */
+  bodyEntryMs?: number;
 }
 
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
-export function DnaVMark({ size = 60, className = '', static: isStatic = false }: DnaVMarkProps) {
+export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
   const [spinning, setSpinning] = useState(true);
@@ -45,6 +50,7 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false }
       height={size}
       viewBox="0 0 100 100"
       fill="none"
+      overflow="visible"
       {...(isStatic
         ? { 'aria-hidden': true }
         : {
@@ -94,10 +100,26 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false }
         </g>
       </g>
 
-      {/* Three bodies — root-level (view-box coords) so they orbit a shared center. */}
-      <circle className="vsbody vsbody-1" cx="69.4" cy="9.9" r="1.86" fill="#1A1714" opacity="0.5" style={bodyStyle('0s')} />
-      <circle className="vsbody vsbody-2" cx="49" cy="39.3" r="2.82" fill="#34727A" opacity="0.9" style={bodyStyle('-1.2s')} />
-      <circle className="vsbody vsbody-3" cx="83.2" cy="27.3" r="4.2" fill="#B5904B" opacity="1" style={bodyStyle('-0.6s')} />
+      {/* Three bodies — wrapped so they can optionally enter from a wider
+          orbital radius and spiral inward. The wrapper scales the bodies'
+          positions around the shared orbit center; the mark itself (V,
+          strand, rings) is outside the wrapper so it never moves. */}
+      <g
+        className={bodyEntryMs ? 'dna-bodies-enter' : undefined}
+        style={
+          bodyEntryMs
+            ? {
+                transformBox: 'view-box',
+                transformOrigin: ORBIT,
+                animationDuration: `${bodyEntryMs}ms`,
+              }
+            : undefined
+        }
+      >
+        <circle className="vsbody vsbody-1" cx="69.4" cy="9.9" r="1.86" fill="#1A1714" opacity="0.5" style={bodyStyle('0s')} />
+        <circle className="vsbody vsbody-2" cx="49" cy="39.3" r="2.82" fill="#34727A" opacity="0.9" style={bodyStyle('-1.2s')} />
+        <circle className="vsbody vsbody-3" cx="83.2" cy="27.3" r="4.2" fill="#B5904B" opacity="1" style={bodyStyle('-0.6s')} />
+      </g>
 
       <style>{`
         .dna-v-mark .vsbody-1 { animation: vsbody-cw  7s  linear infinite; }
@@ -105,8 +127,19 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false }
         .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }
         @keyframes vsbody-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes vsbody-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        .dna-v-mark .dna-bodies-enter {
+          animation-name: dna-bodies-enter-spread;
+          animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+          animation-fill-mode: forwards;
+          animation-iteration-count: 1;
+        }
+        @keyframes dna-bodies-enter-spread {
+          from { transform: scale(3.4); }
+          to   { transform: scale(1);   }
+        }
         @media (prefers-reduced-motion: reduce) {
           .dna-v-mark .vsbody { animation: none !important; }
+          .dna-v-mark .dna-bodies-enter { animation: none !important; }
         }
       `}</style>
     </svg>
