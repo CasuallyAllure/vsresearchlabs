@@ -128,7 +128,7 @@ export function HeroHoloCarousel() {
             {key === 'effects' && <SlideEffects effects={effects} />}
             {key === 'mechanism' && <SlideMechanism ci={ci} />}
             {key === 'clinical' && leadStudy && (
-              <SlideClinical study={leadStudy} studies={ci.studies} compound={ci.substance} />
+              <SlideClinical study={leadStudy} studies={ci.studies} />
             )}
           </div>
         ))}
@@ -447,11 +447,9 @@ const shortSource = (s: string) => SOURCE_SHORT[s] ?? s;
 function SlideClinical({
   study,
   studies,
-  compound,
 }: {
   study: ProductStudy;
   studies: ProductStudy[];
-  compound: string;
 }) {
   const lead = study.notes?.[0];
   const links = studies.filter((s) => s.url).slice(0, 4);
