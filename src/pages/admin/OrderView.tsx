@@ -138,6 +138,8 @@ export function OrderView({
   const [showSend, setShowSend] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [eventsUnavailable, setEventsUnavailable] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editWarn, setEditWarn] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,6 +211,8 @@ export function OrderView({
   const total = order.invoice_amount_cents ?? (computedSub + shipping);
   // A total below subtotal+shipping is an applied discount — surface it.
   const discount = Math.max(0, computedSub + shipping - total);
+  // Compiled track-record for "send with notes".
+  const orderNotesText = events.map((e) => `${fmtDateShort(e.created_at)} — ${e.note ?? ''}`).join('\n');
 
   return (
     <div className="px-[var(--space-6)] py-[var(--space-5)]">
@@ -252,30 +256,51 @@ export function OrderView({
       </div>
 
       {/* Itemized — compact rows that fit without horizontal scroll */}
-      <p className="holo-text-caption mb-[var(--space-2)] text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
-      <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
-        {lines.map((l) => {
-          const u = unitOf(l);
-          const lt = lineTotal(l);
-          return (
-            <li key={l.id} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
-              <div className="min-w-0">
-                <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
-                <p className="truncate font-mono text-[10px] text-holo-light/70">
-                  {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
-                </p>
-              </div>
-              <div className="shrink-0 text-right font-mono tabular-nums">
-                <p className="text-[10.5px] text-ink/50">{l.quantity} × {u == null ? '—' : fmtUSD(u)}</p>
-                <p className="text-[12.5px] text-ink/85">{lt == null ? '—' : fmtUSD(lt)}</p>
-              </div>
-            </li>
-          );
-        })}
-        {lines.length === 0 && (
-          <li className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</li>
+      {editWarn && (
+        <p className="mb-[var(--space-2)] rounded-sm border border-[#B5904B]/45 bg-[#B5904B]/[0.08] px-[var(--space-3)] py-[var(--space-2)] text-[11px] leading-relaxed text-ink/80">
+          {editWarn}
+        </p>
+      )}
+      <div className="mb-[var(--space-2)] flex items-center justify-between">
+        <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
+        {!editing && (
+          <button type="button" onClick={() => setEditing(true)} className="text-[10px] uppercase tracking-[0.16em] text-holo transition-colors hover:text-holo-light">
+            Edit
+          </button>
         )}
-      </ul>
+      </div>
+      {editing ? (
+        <ItemizedEditor
+          orderId={order.id}
+          initial={lines}
+          onCancel={() => setEditing(false)}
+          onSaved={handleItemsSaved}
+        />
+      ) : (
+        <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
+          {lines.map((l) => {
+            const u = unitOf(l);
+            const lt = lineTotal(l);
+            return (
+              <li key={l.id} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
+                  <p className="truncate font-mono text-[10px] text-holo-light/70">
+                    {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right font-mono tabular-nums">
+                  <p className="text-[10.5px] text-ink/50">{l.quantity} × {u == null ? '—' : fmtUSD(u)}</p>
+                  <p className="text-[12.5px] text-ink/85">{lt == null ? '—' : fmtUSD(lt)}</p>
+                </div>
+              </li>
+            );
+          })}
+          {lines.length === 0 && (
+            <li className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</li>
+          )}
+        </ul>
+      )}
 
       {/* Invoice actions — small pills */}
       <div className="mt-[var(--space-3)] flex flex-wrap items-center gap-[var(--space-2)]">
@@ -327,7 +352,7 @@ export function OrderView({
             <div className="mt-[var(--space-5)]">
               <StageActions
                 order={order} busy={busy} run={run} onAddEvent={addEvent}
-                onChanged={onChanged} setActionError={setActionError}
+                orderNotesText={orderNotesText} onChanged={onChanged} setActionError={setActionError}
               />
             </div>
           </>
@@ -371,34 +396,52 @@ export function OrderView({
         <SendNoteModal
           title="Send invoice to client"
           busy={busy}
+          orderNotes={orderNotesText}
           onCancel={() => setShowSend(false)}
-          onSend={async (note) => { await sendToClient(note); setShowSend(false); }}
+          onSend={async (opts) => { await sendToClient(opts); setShowSend(false); }}
         />
       )}
     </div>
   );
 
-  async function sendToClient(note: string) {
+  async function sendToClient(opts: { includeNotes: boolean; note: string }) {
     if (!supabase || !order) return;
     setBusy(true); setActionError(null);
+    const extra = opts.note.trim();
+    const compiled = opts.includeNotes ? [orderNotesText, extra].filter(Boolean).join('\n') : undefined;
     const { error } = await supabase.functions.invoke('send-order-invoice', {
-      body: { order_id: order.id, invoice_url: order.invoice_url ?? '' },
+      body: { order_id: order.id, invoice_url: order.invoice_url ?? '', notes: compiled || undefined },
     });
     setBusy(false);
     if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
-    await addEvent(currentStageKey(order), 'system', note.trim() ? `Invoice sent to client — ${note.trim()}` : 'Invoice sent to client');
+    await addEvent(currentStageKey(order), 'system', `Invoice sent to client${opts.includeNotes ? ' with notes' : ''}${extra ? ` — ${extra}` : ''}`);
+  }
+
+  async function handleItemsSaved(summary: string) {
+    if (!order) return;
+    setEditing(false);
+    await addEvent(currentStageKey(order), 'system', summary);
+    if (order.invoiced_at) {
+      const warn = '⚠ Itemized changed after the invoice was sent — re-send the invoice so the buyer’s copy matches.';
+      setEditWarn(warn);
+      await addEvent(currentStageKey(order), 'system', warn);
+    } else {
+      setEditWarn(null);
+    }
+    reload();
   }
 }
 
 /* ── Stage actions — back / forward + inline notes, all in one segment ─────── */
 
 function StageActions({
-  order, busy, run, onAddEvent, onChanged, setActionError,
+  order, busy, run, onAddEvent, orderNotesText, onChanged, setActionError,
 }: {
   order: OrderRecord;
   busy: boolean;
   run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null }, confirmMsg?: string) => Promise<boolean>;
   onAddEvent: (stage: StageKey | null, kind: string, note: string) => Promise<void>;
+  orderNotesText: string;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
 }) {
@@ -488,32 +531,30 @@ function StageActions({
           className={`${fieldCls} mb-[var(--space-3)] resize-y`}
         />
 
-        {/* Back · forward · re-notify · save-note — small pills in one lane */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          {canBack && (
-            <Pill onClick={stepBack} disabled={busy}>← Back a step</Pill>
-          )}
+        {/* Every control in one tight lane, color-coded by intent:
+            forward = advance (green) · back = caution (amber) · cancel = danger (red). */}
+        <div className="flex flex-wrap items-center gap-1">
           {forward && (
-            <Pill primary onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
+            <Pill advance onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
+          )}
+          {canBack && (
+            <Pill warn onClick={stepBack} disabled={busy}>← Back a step</Pill>
           )}
           <Pill onClick={() => setShowReNotify(true)} disabled={busy}>
             {reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
           </Pill>
           <Pill onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
+          <Pill danger onClick={cancel} disabled={busy}>Cancel order</Pill>
         </div>
-      </div>
-
-      {/* Cancel — the one separate, unique control */}
-      <div>
-        <Pill danger onClick={cancel} disabled={busy}>Cancel order</Pill>
       </div>
 
       {showReNotify && (
         <SendNoteModal
           title={reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
           busy={busy}
+          orderNotes={orderNotesText}
           onCancel={() => setShowReNotify(false)}
-          onSend={async (n) => { await reNotify(n); setShowReNotify(false); }}
+          onSend={async (opts) => { await reNotify(opts); setShowReNotify(false); }}
         />
       )}
     </div>
@@ -572,13 +613,15 @@ function StageActions({
     setNote('');
   }
 
-  async function reNotify(n: string) {
+  async function reNotify(opts: { includeNotes: boolean; note: string }) {
     if (!supabase) return;
     setActionError(null);
-    const { error } = await supabase.functions.invoke(reNotifyFn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
+    const extra = opts.note.trim();
+    const compiled = opts.includeNotes ? [orderNotesText, extra].filter(Boolean).join('\n') : undefined;
+    const { error } = await supabase.functions.invoke(reNotifyFn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '', notes: compiled || undefined } });
     if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
     const kindLabel = reNotifyFn === 'send-receipt' ? 'receipt' : 'invoice';
-    await onAddEvent(currentStageKey(order), 'system', n.trim() ? `Re-notified (${kindLabel}) — ${n.trim()}` : `Re-notified (${kindLabel})`);
+    await onAddEvent(currentStageKey(order), 'system', `Re-notified (${kindLabel})${opts.includeNotes ? ' with notes' : ''}${extra ? ` — ${extra}` : ''}`);
   }
 }
 
@@ -723,12 +766,14 @@ function HeaderLine({ label, children }: { label: string; children: React.ReactN
   );
 }
 
-/** Optional-note dialog for any client-facing send (send to client / re-notify).
- *  The note is recorded on the order + printed in the invoice history. */
+/** Client-facing send dialog (send to client / re-notify). Choose to include
+ *  the order's note track-record in the email — or send a clean copy. Anything
+ *  typed here is added on top and recorded on the order. */
 function SendNoteModal({
-  title, busy, onCancel, onSend,
-}: { title: string; busy: boolean; onCancel: () => void; onSend: (note: string) => void }) {
+  title, busy, orderNotes, onCancel, onSend,
+}: { title: string; busy: boolean; orderNotes: string; onCancel: () => void; onSend: (opts: { includeNotes: boolean; note: string }) => void }) {
   const [note, setNote] = useState('');
+  const noteCount = orderNotes.trim() ? orderNotes.trim().split('\n').filter(Boolean).length : 0;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
     document.addEventListener('keydown', onKey);
@@ -739,25 +784,149 @@ function SendNoteModal({
     <>
       <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[300] bg-ink/60 backdrop-blur-[3px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[301] flex items-start justify-center p-4 pointer-events-none sm:p-8">
-        <div className="pointer-events-auto w-full max-w-[420px] research-surface-solid p-[var(--space-5)]">
+        <div className="pointer-events-auto w-full max-w-[440px] research-surface-solid p-[var(--space-5)]">
           <p className="holo-text-caption mb-[var(--space-1)] text-[10px] uppercase tracking-[0.3em]">{title}</p>
           <p className="mb-[var(--space-3)] text-[11.5px] leading-relaxed text-ink/45">
-            Add a note for the client, or send without one. The note is recorded on the order and appears in the printed invoice history.
+            Include the order's note history so the client sees the full track record, or send a clean copy. Anything you add below is appended and recorded on the order.
           </p>
           <textarea
             rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Optional note (e.g. updated total reflects the 10% loyalty discount)…"
+            placeholder="Optional note to add (e.g. updated total reflects the 10% loyalty discount)…"
             className={`${fieldCls} resize-y`}
           />
-          <div className="mt-[var(--space-4)] flex items-center justify-end gap-[var(--space-2)]">
+          {noteCount > 0 && (
+            <p className="mt-[var(--space-2)] text-[10.5px] text-ink/45">{noteCount} note{noteCount === 1 ? '' : 's'} on record will be included with “Send with notes”.</p>
+          )}
+          <div className="mt-[var(--space-4)] flex flex-wrap items-center justify-end gap-[var(--space-2)]">
             <Pill onClick={onCancel} disabled={busy}>Cancel</Pill>
-            <Pill primary onClick={() => onSend(note)} disabled={busy}>{busy ? 'Sending…' : 'Send'}</Pill>
+            <Pill onClick={() => onSend({ includeNotes: false, note })} disabled={busy}>Send without notes</Pill>
+            <Pill primary onClick={() => onSend({ includeNotes: true, note })} disabled={busy}>
+              {busy ? 'Sending…' : `Send with notes${noteCount ? ` (${noteCount})` : ''}`}
+            </Pill>
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+/* ── Itemized editor — add / change / remove order lines ──────────────────── */
+
+interface DraftRow { key: string; id?: string; sku: string; product_name: string; quantity: string; unitUsd: string }
+
+function ItemizedEditor({
+  orderId, initial, onCancel, onSaved,
+}: { orderId: string; initial: OrderLine[]; onCancel: () => void; onSaved: (summary: string) => void }) {
+  const [rows, setRows] = useState<DraftRow[]>(
+    initial.map((l, i) => ({
+      key: `e${i}`, id: l.id, sku: l.sku, product_name: l.product_name,
+      quantity: String(l.quantity),
+      unitUsd: l.unit_price_cents != null ? (l.unit_price_cents / 100).toFixed(2) : '',
+    })),
+  );
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  function update(key: string, patch: Partial<DraftRow>) {
+    setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  }
+  function remove(key: string) { setRows((rs) => rs.filter((r) => r.key !== key)); }
+  function add() {
+    setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', quantity: '1', unitUsd: '' }]);
+  }
+  // Auto-fill name + price from the catalog when a known SKU is entered.
+  function onSkuChange(key: string, sku: string) {
+    const patch: Partial<DraftRow> = { sku };
+    const p = productBySku.get(sku);
+    const row = rows.find((r) => r.key === key);
+    if (p) {
+      if (row && !row.product_name) patch.product_name = p.name;
+      if (row && !row.unitUsd) {
+        const c = tierPriceCents(p, p.name || '');
+        if (c != null) patch.unitUsd = (c / 100).toFixed(2);
+      }
+    }
+    update(key, patch);
+  }
+
+  async function save() {
+    if (!supabase) return;
+    // Validate
+    for (const r of rows) {
+      const q = parseInt(r.quantity, 10);
+      if (!r.sku.trim() || !r.product_name.trim()) { setErr('Every line needs a SKU and a name.'); return; }
+      if (!Number.isFinite(q) || q < 1 || q > 9999) { setErr('Quantity must be 1–9999.'); return; }
+    }
+    setSaving(true); setErr(null);
+    const keptIds = rows.filter((r) => r.id).map((r) => r.id!) ;
+    const toDelete = initial.filter((l) => !keptIds.includes(l.id)).map((l) => l.id);
+    try {
+      if (toDelete.length) {
+        const { error } = await supabase.from('order_lines').delete().in('id', toDelete);
+        if (error) throw error;
+      }
+      for (const r of rows) {
+        const payload = {
+          sku: r.sku.trim(), product_name: r.product_name.trim(),
+          quantity: parseInt(r.quantity, 10),
+          unit_price_cents: r.unitUsd.trim() === '' ? null : Math.round(parseFloat(r.unitUsd) * 100),
+        };
+        if (r.id) {
+          const { error } = await supabase.from('order_lines').update(payload).eq('id', r.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('order_lines').insert({ order_id: orderId, ...payload });
+          if (error) throw error;
+        }
+      }
+      setSaving(false);
+      onSaved(`Itemized edited — ${rows.length} item${rows.length === 1 ? '' : 's'}`);
+    } catch (e: unknown) {
+      setSaving(false);
+      const msg = e instanceof Error ? e.message : 'Save failed.';
+      setErr(/permission|policy|row-level/i.test(msg) ? 'Editing needs migration 015 applied (admin write access to order lines).' : msg);
+    }
+  }
+
+  return (
+    <div className="rounded-sm border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
+      <datalist id="catalog-skus">
+        {Array.from(productBySku.keys()).map((s) => <option key={s} value={s} />)}
+      </datalist>
+      <div className="space-y-[var(--space-2)]">
+        {rows.map((r) => (
+          <div key={r.key} className="grid grid-cols-[1fr_auto] items-start gap-[var(--space-2)] border-b border-ink/[0.05] pb-[var(--space-2)]">
+            <div className="min-w-0 space-y-1">
+              <input list="catalog-skus" value={r.sku} onChange={(e) => onSkuChange(r.key, e.target.value)} placeholder="SKU" className={`${fieldCls} font-mono text-[11px]`} />
+              <input value={r.product_name} onChange={(e) => update(r.key, { product_name: e.target.value })} placeholder="Item name" className={fieldCls} />
+            </div>
+            <div className="flex items-start gap-[var(--space-2)]">
+              <label className="block w-[56px]">
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
+                <input type="number" min="1" max="9999" value={r.quantity} onChange={(e) => update(r.key, { quantity: e.target.value })} className={`${fieldCls} text-right`} />
+              </label>
+              <label className="block w-[80px]">
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
+                <input type="number" step="0.01" min="0" value={r.unitUsd} onChange={(e) => update(r.key, { unitUsd: e.target.value })} placeholder="—" className={`${fieldCls} text-right`} />
+              </label>
+              <button type="button" onClick={() => remove(r.key)} aria-label="Remove" className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300">×</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button type="button" onClick={add} className="mt-[var(--space-2)] text-[10px] uppercase tracking-[0.16em] text-holo hover:text-holo-light">+ Add item</button>
+
+      {err && <p role="alert" className="mt-[var(--space-2)] text-[11px] text-red-400">{err}</p>}
+
+      <div className="mt-[var(--space-3)] flex items-center justify-end gap-[var(--space-2)]">
+        <Pill onClick={onCancel} disabled={saving}>Cancel</Pill>
+        <Pill primary onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save itemized'}</Pill>
+      </div>
+      <p className="mt-[var(--space-2)] text-[10px] text-ink/35">Saving updates the order lines and records a note. If the invoice was already sent, you'll be reminded to re-send it.</p>
+    </div>
   );
 }
 
@@ -771,12 +940,14 @@ function MoneyInput({ label, value, onChange }: { label: string; value: string; 
 }
 
 /** Small uniform pill used across the order controls. */
-function Pill({ onClick, disabled, primary, danger, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; danger?: boolean; children: React.ReactNode }) {
+function Pill({ onClick, disabled, primary, advance, warn, danger, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; advance?: boolean; warn?: boolean; danger?: boolean; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
       className={[
-        'rounded-full border px-[var(--space-3)] py-[5px] text-[9px] uppercase tracking-[0.16em] transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+        'rounded-full border px-2.5 py-[3px] text-[8.5px] uppercase tracking-[0.14em] transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
         danger ? 'border-red-400/35 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
+          : advance ? 'border-[#2E7D5B]/45 bg-[#2E7D5B]/[0.10] font-medium text-[#2E7D5B] hover:border-[#2E7D5B]/65 hover:bg-[#2E7D5B]/[0.16]'
+          : warn ? 'border-[#B5904B]/50 bg-[#B5904B]/[0.07] text-[#9A7833] hover:border-[#B5904B]/70 hover:bg-[#B5904B]/[0.12]'
           : primary ? 'border-ink/30 bg-ink/[0.10] font-medium text-ink hover:border-ink/40 hover:bg-ink/[0.15]'
           : 'border-ink/15 text-ink/70 hover:border-ink/30 hover:text-ink',
       ].join(' ')}>

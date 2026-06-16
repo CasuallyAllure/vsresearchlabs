@@ -34,6 +34,8 @@ const CORS_HEADERS = {
 interface InvoicePayload {
   order_id: string;
   invoice_url?: string;
+  /** Optional order track-record / notes to render in the email (admin opt-in). */
+  notes?: string;
 }
 
 interface OrderLine {
@@ -85,11 +87,18 @@ interface OrderRow {
   created_at: string;
 }
 
-function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[] }): string {
-  const { order, lines } = args;
+function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string }): string {
+  const { order, lines, notes } = args;
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
+
+  const notesBlock = notes && notes.trim()
+    ? `<div style="background:#FBF9F4;border:1px solid rgba(26,23,20,0.10);border-radius:12px;padding:22px 24px;margin-top:16px;">
+        <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;font-weight:700;margin-bottom:10px;">Order Notes</div>
+        <div style="font-size:13px;color:#1A1714;line-height:1.7;">${escapeHtml(notes.trim()).replace(/\n/g, "<br/>")}</div>
+      </div>`
+    : "";
 
   const shipBlock = [
     order.ship_street,
@@ -178,6 +187,8 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[] }): string
       </table>
     </div>
 
+    ${notesBlock}
+
     <!-- Payment instructions card -->
     <div style="background:#FBF9F4;border:1px solid rgba(52,114,122,0.35);border-radius:12px;padding:22px 24px;margin-top:16px;">
       <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:10px;">Payment Instructions</div>
@@ -248,7 +259,7 @@ Deno.serve(async (req: Request) => {
     .select("sku, product_name, quantity, unit_price_cents, item_note")
     .eq("order_id", order.id);
 
-  const html = buildInvoiceHtml({ order: order as OrderRow, lines: (lines ?? []) as OrderLine[] });
+  const html = buildInvoiceHtml({ order: order as OrderRow, lines: (lines ?? []) as OrderLine[], notes: payload.notes });
   const subject = `Invoice ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · VS Research Labs`;
   const result = await sendResendEmail({ to: order.buyer_contact, subject, html });
 
