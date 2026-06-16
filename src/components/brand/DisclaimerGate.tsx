@@ -23,16 +23,11 @@ import { DnaVMark } from './DnaVMark';
 
 const STORAGE_KEY = 'vsrl_disclaimer_accepted_v1';
 
-// Card geometry constants. The card is positioned so the DNA mark sits
-// close to viewport center (matching the BrandLoader behind it) but
-// nudged down by CARD_DROP_PX so the overall popup doesn't feel high
-// on mobile — visual balance of the card mass beats perfect mark
-// alignment.
+// Card geometry. The gate is a normal centered modal — flex-centered in the
+// viewport so it always lands in the middle of the screen on every device,
+// scrolling internally on short screens.
 const CARD_PADDING_TOP = 28;     // matches inline padding in card style
 const MARK_SIZE = 64;            // DnaVMark size in the gate
-const MARK_HALF = MARK_SIZE / 2; // distance from mark top to its center
-const CARD_DROP_PX = 80;         // shift the whole card this many px below center-mark anchor
-const CARD_RIGHT_PX = 12;        // nudge card this many px right of dead-center
 
 export function DisclaimerGate() {
   const [open, setOpen] = useState(false);
@@ -80,6 +75,10 @@ export function DisclaimerGate() {
         position: 'fixed',
         inset: 0,
         zIndex: 9000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
         background: 'rgba(26, 23, 20, 0.55)',
         backdropFilter: 'blur(10px) saturate(120%)',
         WebkitBackdropFilter: 'blur(10px) saturate(120%)',
@@ -103,20 +102,12 @@ export function DisclaimerGate() {
 
       <div
         style={{
-          // Anchor the card so the DNA mark's CENTER (which sits at
-          // CARD_PADDING_TOP + MARK_HALF from the card's top edge) lines
-          // up with the viewport's vertical center. That way the gate's
-          // mark visually inherits the loader's mark position for a
-          // seamless crossfade.
-          position: 'absolute',
-          top: `calc(50% - ${CARD_PADDING_TOP + MARK_HALF - CARD_DROP_PX}px)`,
-          left: '50%',
-          transform: `translateX(calc(-50% + ${CARD_RIGHT_PX}px))`,
-          width: 'calc(100% - 40px)',
+          // Centered modal: the flex parent handles centering; the card just
+          // caps its height to the viewport and scrolls internally if needed.
+          position: 'relative',
+          width: '100%',
           maxWidth: 460,
-          // Don't allow the card to extend below the viewport — let the
-          // content scroll internally on short screens.
-          maxHeight: `calc(100% - (50% - ${CARD_PADDING_TOP + MARK_HALF - CARD_DROP_PX}px) - 20px)`,
+          maxHeight: 'calc(100vh - 40px)',
           overflowY: 'auto',
           overflowX: 'hidden',
           padding: `${CARD_PADDING_TOP}px 26px 24px`,
