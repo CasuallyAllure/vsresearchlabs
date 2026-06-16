@@ -65,22 +65,6 @@ export interface OrderLookupResult {
   placed_at: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
-  /** Invoice breakdown — null until the invoice is sent. */
-  subtotal_cents: number | null;
-  shipping_cents: number | null;
-  total_cents: number | null;
-  payment_method: string | null;
-  /** True once payment has cleared — flips the document from invoice → receipt. */
-  paid: boolean;
-}
-
-/** One line item of an order, returned by the order-number-gated detail read. */
-export interface OrderLineResult {
-  sku: string;
-  product_name: string;
-  quantity: number;
-  unit_price_cents: number | null;
-  item_note: string | null;
 }
 
 /** Customer-facing label + one-line explanation + a 0–4 step index for a bar. */
