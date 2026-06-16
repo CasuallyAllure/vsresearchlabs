@@ -91,9 +91,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="py-[var(--space-5)]">
-      {/* Thin command bar — brand · section nav · identity · sign out, one line */}
-      <header className="mb-[var(--space-4)] flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-3)]">
-        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.24em] text-ink/55">
+      {/* Thin command bar — brand · section nav · identity · sign out, all on ONE line */}
+      <header className="no-scrollbar mb-[var(--space-4)] flex items-center gap-[var(--space-2)] overflow-x-auto border-b border-ink/[0.06] pb-[var(--space-2)]">
+        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.2em]">
           <span className="text-ink/70">VS Research Labs</span>
           <span aria-hidden="true" className="text-ink/25">/</span>
           <span className="text-ink/40">Admin</span>
@@ -113,21 +113,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           />
         </nav>
 
-        {/* Identity + sign out, pushed to the right */}
-        <div className="ml-auto flex min-w-0 items-center gap-[var(--space-3)]">
-          {user && (
-            <span className="hidden min-w-0 truncate font-mono text-[10px] tabular-nums text-ink/40 sm:inline">
-              {user.email}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => signOut()}
-            className="shrink-0 rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
-          >
-            Sign out
-          </button>
-        </div>
+        {/* Identity + sign out, pushed to the right — same line */}
+        {user && (
+          <span className="ml-auto hidden shrink-0 whitespace-nowrap font-mono text-[10px] tabular-nums text-ink/40 md:inline">
+            {user.email}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => signOut()}
+          className="shrink-0 whitespace-nowrap rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 max-md:ml-auto"
+        >
+          Sign out
+        </button>
       </header>
 
       {/* Sub-tab strip — the views inside the active area */}

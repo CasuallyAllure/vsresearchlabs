@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense, type ComponentType } from 'react';
 import { GlobalSurface } from './layout/GlobalSurface';
 import { GlobalHeader } from './layout/GlobalHeader';
@@ -35,7 +35,6 @@ const Documentation = lazyPage(() => import('./pages/Documentation'), 'Documenta
 const DocumentDetail = lazyPage(() => import('./pages/DocumentDetail'), 'DocumentDetail');
 const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
 
-const AdminList = lazyPage(() => import('./pages/admin/AdminList'), 'AdminList');
 const AdminEdit = lazyPage(() => import('./pages/admin/AdminEdit'), 'AdminEdit');
 const AdminDashboard = lazyPage(() => import('./pages/admin/AdminDashboard'), 'AdminDashboard');
 const AdminInventory = lazyPage(() => import('./pages/admin/AdminInventory'), 'AdminInventory');
@@ -102,7 +101,7 @@ export default function App() {
                 <Route path="/admin/audit-log" element={<AdminGate><AdminAuditLog /></AdminGate>} />
                 <Route path="/admin/system-health" element={<AdminGate><AdminSystemHealth /></AdminGate>} />
                 <Route path="/admin/reports" element={<AdminGate><AdminReports /></AdminGate>} />
-                <Route path="/admin/products" element={<AdminGate><AdminList /></AdminGate>} />
+                <Route path="/admin/products" element={<Navigate to="/admin/inventory" replace />} />
                 <Route path="/admin/new" element={<AdminGate><AdminEdit /></AdminGate>} />
                 <Route path="/admin/:id/edit" element={<AdminGate><AdminEdit /></AdminGate>} />
                 <Route path="*" element={<NotFound />} />

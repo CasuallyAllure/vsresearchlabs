@@ -14,17 +14,41 @@
  * audit_log row. The frontend catalog reads the override view, so
  * changes propagate the next time the public app re-fetches the
  * overrides store (boot, or on demand).
+ *
+ * This is also the single home for catalog management — the old separate
+ * "Catalog" tab is folded in here. The toolbar carries the catalog-level
+ * actions (new product, JSON import/export, reset to seed) plus the
+ * one-click stock seed that hydrates product_stock from the catalog +
+ * biopeptide manifest. Per-row "Edit" jumps to the product editor for any
+ * SKU that maps to a catalog product.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import productsData from '../../data/products.json';
 import manifestData from '../../data/biopeptideManifest.json';
 import type { Product } from '../../types';
+import { useProducts, useProductAdmin } from '../../hooks/useProducts';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
 
 const products = productsData as unknown as Product[];
+
+const DEFAULT_SEED_QTY = 0;
+
+/** Lightweight runtime guard for a JSON catalog import — enough to refuse
+ *  obviously bad payloads without full schema validation. */
+function isProductLike(value: unknown): value is Product {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.id === 'string' &&
+    typeof v.name === 'string' &&
+    typeof v.category === 'string' &&
+    typeof v.sku === 'string'
+  );
+}
 
 interface ManifestRow {
   serial: number;
@@ -92,6 +116,27 @@ export function AdminInventory() {
   const [clippingSku, setClippingSku] = useState<string | null>(null);
   const [busySku, setBusySku] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // Catalog-level state (folded in from the old Catalog tab).
+  const { products: catalogProducts } = useProducts();
+  const { setAll, resetToSeed } = useProductAdmin();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [catalogMsg, setCatalogMsg] = useState<
+    { kind: 'idle' } | { kind: 'ok'; text: string } | { kind: 'err'; text: string }
+  >({ kind: 'idle' });
+  const [seedState, setSeedState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'running'; processed: number; total: number }
+    | { kind: 'done'; inserted: number; skipped: number }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' });
+
+  // SKU → catalog product id, so a row can deep-link to the metadata editor.
+  const idBySku = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const p of catalogProducts) if (p.sku) m.set(p.sku, p.id);
+    return m;
+  }, [catalogProducts]);
 
   useEffect(() => {
     let cancelled = false;
@@ -172,17 +217,137 @@ export function AdminInventory() {
     setRefreshCounter((c) => c + 1);
   }
 
+  // ── Catalog tools (folded in from the old Catalog tab) ────────────────────
+
+  function collectSeedSkus(): string[] {
+    const set = new Set<string>();
+    for (const p of products) if (p.sku) set.add(p.sku);
+    for (const row of manifest) {
+      set.add(`VSR-RS-${row.abbreviation.replace(/\s+/g, '')}`);
+    }
+    return Array.from(set);
+  }
+
+  async function handleSeed() {
+    if (!supabase) return;
+    const skus = collectSeedSkus();
+    setSeedState({ kind: 'running', processed: 0, total: skus.length });
+    let inserted = 0;
+    let skipped = 0;
+    for (let i = 0; i < skus.length; i++) {
+      const sku = skus[i];
+      const { data, error } = await supabase.rpc('seed_stock_row', {
+        p_sku: sku,
+        p_initial: DEFAULT_SEED_QTY,
+      });
+      if (error) {
+        setSeedState({ kind: 'error', message: `${sku}: ${error.message}` });
+        return;
+      }
+      if (data === true) inserted += 1;
+      else skipped += 1;
+      setSeedState({ kind: 'running', processed: i + 1, total: skus.length });
+    }
+    setSeedState({ kind: 'done', inserted, skipped });
+    setRefreshCounter((c) => c + 1);
+  }
+
+  function handleExport() {
+    const json = JSON.stringify(catalogProducts, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `vsresearchlabs-catalog-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onerror = () => setCatalogMsg({ kind: 'err', text: 'Failed to read file.' });
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result ?? ''));
+        if (!Array.isArray(parsed) || !parsed.every(isProductLike)) {
+          setCatalogMsg({ kind: 'err', text: 'Import must be a JSON array of products with id, name, category, sku.' });
+          return;
+        }
+        if (!window.confirm(`Import ${parsed.length} product(s)? This replaces the current catalog definitions.`)) return;
+        setAll(parsed as Product[]);
+        setCatalogMsg({ kind: 'ok', text: `Imported ${parsed.length} product${parsed.length === 1 ? '' : 's'}.` });
+      } catch (err) {
+        setCatalogMsg({ kind: 'err', text: err instanceof Error ? err.message : 'Invalid JSON.' });
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function handleReset() {
+    if (!window.confirm('Discard all local catalog edits and reload the shipped seed? Live stock in Supabase is untouched.')) return;
+    resetToSeed();
+    setCatalogMsg({ kind: 'ok', text: 'Catalog reset to shipped seed.' });
+  }
+
   return (
     <AdminLayout>
       <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            Inventory
-          </p>
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Stock &amp; </span>
-            <span className="font-medium text-ink">listing control.</span>
-          </h2>
+        <div className="flex flex-wrap items-end justify-between gap-[var(--space-4)]">
+          <div>
+            <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+              Catalog · Inventory
+            </p>
+            <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+              <span className="font-light text-ink/85">Stock, pricing &amp; </span>
+              <span className="font-medium text-ink">listing control.</span>
+            </h2>
+          </div>
+
+          {/* Catalog tools — folded in from the old Catalog tab */}
+          <div className="flex flex-col items-end gap-[var(--space-2)]">
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              <Link
+                to="/admin/new"
+                className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
+              >
+                + New product
+              </Link>
+              <ToolButton onClick={handleSeed} disabled={seedState.kind === 'running'}>
+                {seedState.kind === 'running' ? `Seeding ${seedState.processed}/${seedState.total}…` : 'Seed stock'}
+              </ToolButton>
+              <ToolButton onClick={() => fileInputRef.current?.click()}>Import JSON</ToolButton>
+              <ToolButton onClick={handleExport}>Export JSON</ToolButton>
+              <ToolButton onClick={handleReset} danger>Reset to seed</ToolButton>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImportFile}
+                className="hidden"
+                aria-hidden="true"
+              />
+            </div>
+            {seedState.kind === 'done' && (
+              <p className="text-[10px] font-mono tabular-nums text-ink/50">
+                Seed: inserted {seedState.inserted} · skipped {seedState.skipped}
+              </p>
+            )}
+            {seedState.kind === 'error' && (
+              <p role="alert" className="text-[10px] text-red-400">{seedState.message}</p>
+            )}
+            {catalogMsg.kind === 'ok' && (
+              <p className="text-[10px] uppercase tracking-[0.16em] text-[#2E7D5B]">{catalogMsg.text}</p>
+            )}
+            {catalogMsg.kind === 'err' && (
+              <p role="alert" className="text-[10px] text-red-400">{catalogMsg.text}</p>
+            )}
+          </div>
         </div>
         <AdminFilterBar
           options={[
@@ -230,7 +395,7 @@ export function AdminInventory() {
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[80px]">On hand</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Price</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Status</th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[330px]">Actions</th>
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[380px]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -270,6 +435,15 @@ export function AdminInventory() {
                     </td>
                     <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
                       <div className="flex items-center justify-end gap-1.5">
+                        {idBySku.has(row.sku) && (
+                          <Link
+                            to={`/admin/${idBySku.get(row.sku)}/edit`}
+                            title="Edit product details"
+                            className="rounded-full border border-ink/15 bg-ink/[0.03] px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                          >
+                            Edit
+                          </Link>
+                        )}
                         <ActionButton onClick={() => setAdjustingSku(row.sku)} disabled={busy || status === 'deleted'} title="Adjust stock">
                           Stock
                         </ActionButton>
@@ -341,6 +515,33 @@ function StatusChip({ status }: { status: 'active' | 'hidden' | 'deleted' }) {
     <span className={`inline-block text-[9.5px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${cls}`}>
       {status}
     </span>
+  );
+}
+
+function ToolButton({
+  children, onClick, disabled, danger,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={[
+        'rounded-full border px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] transition-colors',
+        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+        'disabled:opacity-40 disabled:cursor-not-allowed',
+        danger
+          ? 'border-red-400/30 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
+          : 'border-ink/15 text-ink/75 hover:border-ink/30 hover:text-ink',
+      ].join(' ')}
+    >
+      {children}
+    </button>
   );
 }
 
