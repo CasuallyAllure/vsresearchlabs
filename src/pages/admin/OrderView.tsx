@@ -26,12 +26,14 @@ import { OrderStatusChip } from './AdminOrders';
 import { CARRIERS } from '../../lib/tracking';
 import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
+import type { Product } from '../../types';
+import { tierPriceCents } from '../../lib/pricing';
 
-/** SKU → catalog list price (cents), used as a unit-price fallback when an
- *  order line has no stored price yet. */
-const catalogPrice = new Map<string, number>();
-for (const p of [...productsData, ...generatedCompounds] as Array<{ sku?: string; priceCents?: number | null }>) {
-  if (p.sku && typeof p.priceCents === 'number') catalogPrice.set(p.sku, p.priceCents);
+/** SKU → catalog product, for resolving a unit price when an order line has no
+ *  stored price yet (variant-aware: the dose in the item name drives the tier). */
+const productBySku = new Map<string, Product>();
+for (const p of [...productsData, ...generatedCompounds] as unknown as Product[]) {
+  if (p.sku) productBySku.set(p.sku, p);
 }
 
 type OrderStatus =
@@ -87,9 +89,16 @@ interface OrderEvent {
 const ORDER_SELECT =
   'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at';
 
-/** Effective unit price: stored line price, else the catalog list price. */
+/** Effective unit price: the stored line price, else the catalog tier price
+ *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
 function unitOf(l: OrderLine): number | null {
-  return l.unit_price_cents ?? catalogPrice.get(l.sku) ?? null;
+  if (l.unit_price_cents != null) return l.unit_price_cents;
+  const p = productBySku.get(l.sku);
+  if (p) {
+    const c = tierPriceCents(p, l.item_note || l.product_name || '');
+    if (c != null) return c;
+  }
+  return null;
 }
 
 /* ── Stage model ──────────────────────────────────────────────────────────── */
@@ -126,6 +135,7 @@ export function OrderView({
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [showInvoice, setShowInvoice] = useState(false);
+  const [showSend, setShowSend] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -184,19 +194,16 @@ export function OrderView({
   const computedSub = order.subtotal_cents ?? lines.reduce((a, l) => a + (lineTotal(l) ?? 0), 0);
   const shipping = order.shipping_cents ?? 0;
   const total = order.invoice_amount_cents ?? (computedSub + shipping);
+  // A total below subtotal+shipping is an applied discount — surface it.
+  const discount = Math.max(0, computedSub + shipping - total);
 
   return (
     <div className="px-[var(--space-6)] py-[var(--space-5)]">
-      {/* Invoice header — compact */}
-      <div className="flex items-center justify-between gap-[var(--space-3)] border-b border-ink/[0.10] pb-[var(--space-3)]">
-        <div className="flex items-baseline gap-[var(--space-2)]">
-          <span className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/40">Order</span>
-          <span className="font-mono text-[12.5px] tracking-[0.04em] text-ink">{order.order_number}</span>
-        </div>
-        <div className="flex items-center gap-[var(--space-2)]">
-          <span className="font-mono text-[10px] tabular-nums text-ink/40">{fmtDate(order.created_at)}</span>
-          <OrderStatusChip status={order.status} deliveredAt={order.delivered_at} />
-        </div>
+      {/* Invoice header — stacked label/value lines */}
+      <div className="space-y-1 border-b border-ink/[0.10] pb-[var(--space-3)]">
+        <HeaderLine label="Order"><span className="font-mono text-[12.5px] tracking-[0.04em] text-ink">{order.order_number}</span></HeaderLine>
+        <HeaderLine label="Date"><span className="font-mono text-[11px] tabular-nums text-ink/60">{fmtDate(order.created_at)}</span></HeaderLine>
+        <HeaderLine label="Status"><OrderStatusChip status={order.status} deliveredAt={order.delivered_at} /></HeaderLine>
       </div>
 
       {/* Bill to (left) · amounts (right) — equal columns */}
@@ -220,6 +227,10 @@ export function OrderView({
             <dd className="text-right font-mono tabular-nums text-ink/80">{fmtUSD(computedSub)}</dd>
             <dt className="text-ink/45">Shipping</dt>
             <dd className="text-right font-mono tabular-nums text-ink/80">{fmtUSD(shipping)}</dd>
+            {discount > 0 && (<>
+              <dt className="text-holo/80">Discount</dt>
+              <dd className="text-right font-mono tabular-nums text-holo/80">−{fmtUSD(discount)}</dd>
+            </>)}
             <dt className="border-t border-ink/10 pt-1 text-ink/70">Total</dt>
             <dd className="border-t border-ink/10 pt-1 text-right font-mono text-[14px] tabular-nums text-ink">{fmtUSD(total)}</dd>
           </dl>
@@ -268,12 +279,12 @@ export function OrderView({
       <div className="mt-[var(--space-3)] flex flex-wrap items-center gap-[var(--space-2)]">
         <SmallPill onClick={() => setShowInvoice(true)}>View / print invoice</SmallPill>
         {order.invoice_amount_cents != null && (
-          <SmallPill onClick={sendToClient} disabled={busy}>Send to client</SmallPill>
+          <SmallPill onClick={() => setShowSend(true)} disabled={busy}>Send to client</SmallPill>
         )}
       </div>
 
       {/* ── Status bar ─────────────────────────────────────────────────────── */}
-      <section className="mt-[var(--space-7)]">
+      <section className="mt-[var(--space-8)] border-t border-ink/[0.06] pt-[var(--space-5)]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">Status</p>
 
         {terminal ? (
@@ -342,14 +353,23 @@ export function OrderView({
       {showInvoice && (
         <PrintableInvoice
           order={order} lines={lines} events={events}
-          computedSub={computedSub} shipping={shipping} total={total}
+          computedSub={computedSub} shipping={shipping} discount={discount} total={total}
           onClose={() => setShowInvoice(false)}
+        />
+      )}
+
+      {showSend && (
+        <SendNoteModal
+          title="Send invoice to client"
+          busy={busy}
+          onCancel={() => setShowSend(false)}
+          onSend={async (note) => { await sendToClient(note); setShowSend(false); }}
         />
       )}
     </div>
   );
 
-  async function sendToClient() {
+  async function sendToClient(note: string) {
     if (!supabase || !order) return;
     setBusy(true); setActionError(null);
     const { error } = await supabase.functions.invoke('send-order-invoice', {
@@ -357,7 +377,7 @@ export function OrderView({
     });
     setBusy(false);
     if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
-    await logEvent(currentStageKey(order), 'system', 'Invoice re-sent to client');
+    await logEvent(currentStageKey(order), 'system', note.trim() ? `Invoice sent to client — ${note.trim()}` : 'Invoice sent to client');
     reload();
   }
 }
@@ -376,11 +396,15 @@ function StageActions({
   setActionError: (m: string | null) => void;
 }) {
   const reached = reachedMap(order);
+  const initialDiscount = order.subtotal_cents != null && order.invoice_amount_cents != null
+    ? Math.max(0, (order.subtotal_cents + (order.shipping_cents ?? 0)) - order.invoice_amount_cents) : 0;
   const [subUsd, setSubUsd] = useState(order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2) : '');
   const [shipUsd, setShipUsd] = useState(order.shipping_cents != null ? (order.shipping_cents / 100).toFixed(2) : '');
+  const [discUsd, setDiscUsd] = useState(initialDiscount > 0 ? (initialDiscount / 100).toFixed(2) : '');
   const [tracking, setTracking] = useState(order.tracking_number ?? '');
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
   const [note, setNote] = useState('');
+  const [showReNotify, setShowReNotify] = useState(false);
 
   const canBack = order.status !== 'pending_invoice';
   const reNotifyFn: 'send-order-invoice' | 'send-receipt' = reached.paid ? 'send-receipt' : 'send-order-invoice';
@@ -394,9 +418,10 @@ function StageActions({
     title = 'Confirm received → send invoice';
     detail = 'Set the amounts and email the buyer a branded invoice with payment instructions.';
     inputs = (
-      <div className="mb-[var(--space-3)] grid grid-cols-2 gap-[var(--space-3)]">
+      <div className="mb-[var(--space-3)] grid grid-cols-3 gap-[var(--space-3)]">
         <MoneyInput label="Subtotal" value={subUsd} onChange={setSubUsd} />
         <MoneyInput label="Shipping" value={shipUsd} onChange={setShipUsd} />
+        <MoneyInput label="Discount" value={discUsd} onChange={setDiscUsd} />
       </div>
     );
     forward = { label: 'Send invoice', act: sendInvoice };
@@ -464,7 +489,7 @@ function StageActions({
           {forward && (
             <Pill primary onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
           )}
-          <Pill onClick={() => resend(reNotifyFn)} disabled={busy}>
+          <Pill onClick={() => setShowReNotify(true)} disabled={busy}>
             {reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
           </Pill>
           <Pill onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
@@ -475,6 +500,15 @@ function StageActions({
       <div>
         <Pill danger onClick={cancel} disabled={busy}>Cancel order</Pill>
       </div>
+
+      {showReNotify && (
+        <SendNoteModal
+          title={reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
+          busy={busy}
+          onCancel={() => setShowReNotify(false)}
+          onSend={async (n) => { await reNotify(n); setShowReNotify(false); }}
+        />
+      )}
     </div>
   );
 
@@ -488,13 +522,15 @@ function StageActions({
     const subC = Math.round(parseFloat(subUsd) * 100);
     if (!Number.isFinite(subC) || subC < 0) { setActionError('Enter a valid subtotal.'); return; }
     const shipC = Number.isFinite(Math.round(parseFloat(shipUsd) * 100)) ? Math.round(parseFloat(shipUsd) * 100) : 0;
+    const discC = Number.isFinite(Math.round(parseFloat(discUsd) * 100)) ? Math.max(0, Math.round(parseFloat(discUsd) * 100)) : 0;
+    const totalC = Math.max(0, subC + shipC - discC);
     const ok = await run(
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
-        p_invoice_amount_cents: subC + shipC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
+        p_invoice_amount_cents: totalC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
         p_subtotal_cents: subC, p_shipping_cents: shipC,
       }),
-      { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(subC + shipC)}` },
+      { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}${discC > 0 ? ` (−${fmtUSD(discC)} discount)` : ''}` },
     );
     if (ok) {
       setNote('');
@@ -530,21 +566,24 @@ function StageActions({
     reload();
   }
 
-  async function resend(fn: 'send-order-invoice' | 'send-receipt') {
+  async function reNotify(n: string) {
     if (!supabase) return;
     setActionError(null);
-    const { error } = await supabase.functions.invoke(fn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
-    if (error) setActionError(`Couldn't send: ${error.message}`);
+    const { error } = await supabase.functions.invoke(reNotifyFn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
+    if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
+    const kindLabel = reNotifyFn === 'send-receipt' ? 'receipt' : 'invoice';
+    await logEvent(currentStageKey(order), 'system', n.trim() ? `Re-notified (${kindLabel}) — ${n.trim()}` : `Re-notified (${kindLabel})`);
+    reload();
   }
 }
 
 /* ── Printable branded invoice ────────────────────────────────────────────── */
 
 function PrintableInvoice({
-  order, lines, events, computedSub, shipping, total, onClose,
+  order, lines, events, computedSub, shipping, discount, total, onClose,
 }: {
   order: OrderRecord; lines: OrderLine[]; events: OrderEvent[];
-  computedSub: number; shipping: number; total: number; onClose: () => void;
+  computedSub: number; shipping: number; discount: number; total: number; onClose: () => void;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -634,6 +673,9 @@ function PrintableInvoice({
               <dl className="grid grid-cols-[auto_auto] gap-x-8 gap-y-1 text-[12px]">
                 <dt className="text-[#6B635A]">Subtotal</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(computedSub)}</dd>
                 <dt className="text-[#6B635A]">Shipping</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(shipping)}</dd>
+                {discount > 0 && (<>
+                  <dt className="text-[#34727A]">Discount</dt><dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(discount)}</dd>
+                </>)}
                 <dt className="border-t border-[#1A1714]/15 pt-1 text-[#1A1714]">Total</dt><dd className="border-t border-[#1A1714]/15 pt-1 text-right font-mono text-[15px] tabular-nums text-[#1A1714]">{fmtUSD(total)}</dd>
               </dl>
             </div>
@@ -666,6 +708,53 @@ function PrintableInvoice({
 
 const fieldCls =
   'w-full rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none';
+
+function HeaderLine({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-[var(--space-3)]">
+      <span className="w-[48px] shrink-0 font-mono text-[9px] uppercase tracking-[0.22em] text-ink/40">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+/** Optional-note dialog for any client-facing send (send to client / re-notify).
+ *  The note is recorded on the order + printed in the invoice history. */
+function SendNoteModal({
+  title, busy, onCancel, onSend,
+}: { title: string; busy: boolean; onCancel: () => void; onSend: (note: string) => void }) {
+  const [note, setNote] = useState('');
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  return (
+    <>
+      <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[300] bg-ink/60 backdrop-blur-[3px]" />
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[301] flex items-start justify-center p-4 pointer-events-none sm:p-8">
+        <div className="pointer-events-auto w-full max-w-[420px] research-surface-solid p-[var(--space-5)]">
+          <p className="holo-text-caption mb-[var(--space-1)] text-[10px] uppercase tracking-[0.3em]">{title}</p>
+          <p className="mb-[var(--space-3)] text-[11.5px] leading-relaxed text-ink/45">
+            Add a note for the client, or send without one. The note is recorded on the order and appears in the printed invoice history.
+          </p>
+          <textarea
+            rows={3}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Optional note (e.g. updated total reflects the 10% loyalty discount)…"
+            className={`${fieldCls} resize-y`}
+          />
+          <div className="mt-[var(--space-4)] flex items-center justify-end gap-[var(--space-2)]">
+            <Pill onClick={onCancel} disabled={busy}>Cancel</Pill>
+            <Pill primary onClick={() => onSend(note)} disabled={busy}>{busy ? 'Sending…' : 'Send'}</Pill>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 function MoneyInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
