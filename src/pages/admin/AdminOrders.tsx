@@ -12,7 +12,7 @@
  * number is captured.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
@@ -53,7 +53,7 @@ const FILTER_OPTIONS: Array<{ value: FilterValue; label: string }> = [
 
 const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
 
-type DateValue = 'all' | 'today' | '7d' | '30d' | 'month';
+type DateValue = 'all' | 'today' | '7d' | '30d' | 'month' | 'custom';
 
 const DATE_OPTIONS: Array<{ value: DateValue; label: string }> = [
   { value: 'all', label: 'Any date' },
@@ -61,11 +61,12 @@ const DATE_OPTIONS: Array<{ value: DateValue; label: string }> = [
   { value: '7d', label: '7 days' },
   { value: '30d', label: '30 days' },
   { value: 'month', label: 'This month' },
+  { value: 'custom', label: 'Custom…' },
 ];
 
-/** ISO cutoff for a date filter, or null for "any date". */
+/** ISO cutoff for a preset date filter, or null for "any date" / "custom". */
 function dateCutoff(v: DateValue): string | null {
-  if (v === 'all') return null;
+  if (v === 'all' || v === 'custom') return null;
   const d = new Date();
   if (v === 'today') d.setHours(0, 0, 0, 0);
   else if (v === '7d') d.setDate(d.getDate() - 7);
@@ -74,11 +75,34 @@ function dateCutoff(v: DateValue): string | null {
   return d.toISOString();
 }
 
+type SortValue = 'recent' | 'oldest' | 'price_high' | 'price_low';
+
+const SORT_OPTIONS: Array<{ value: SortValue; label: string }> = [
+  { value: 'recent', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_high', label: 'Price ↓' },
+  { value: 'price_low', label: 'Price ↑' },
+];
+
+function sortRows(rows: OrderRow[], sort: SortValue): OrderRow[] {
+  const copy = [...rows];
+  switch (sort) {
+    case 'recent':     copy.sort((a, b) => b.created_at.localeCompare(a.created_at)); break;
+    case 'oldest':     copy.sort((a, b) => a.created_at.localeCompare(b.created_at)); break;
+    case 'price_high': copy.sort((a, b) => (b.invoice_amount_cents ?? -1) - (a.invoice_amount_cents ?? -1)); break;
+    case 'price_low':  copy.sort((a, b) => (a.invoice_amount_cents ?? Infinity) - (b.invoice_amount_cents ?? Infinity)); break;
+  }
+  return copy;
+}
+
 export function AdminOrders() {
   const [rows, setRows] = useState<OrderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterValue>('OPEN');
   const [dateFilter, setDateFilter] = useState<DateValue>('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [sort, setSort] = useState<SortValue>('recent');
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -95,8 +119,13 @@ export function AdminOrders() {
         .limit(200);
       if (filter === 'OPEN') q = q.in('status', OPEN_STATUSES);
       else if (filter !== 'ALL') q = q.eq('status', filter);
-      const cutoff = dateCutoff(dateFilter);
-      if (cutoff) q = q.gte('created_at', cutoff);
+      if (dateFilter === 'custom') {
+        if (customFrom) q = q.gte('created_at', new Date(`${customFrom}T00:00:00`).toISOString());
+        if (customTo) q = q.lte('created_at', new Date(`${customTo}T23:59:59`).toISOString());
+      } else {
+        const cutoff = dateCutoff(dateFilter);
+        if (cutoff) q = q.gte('created_at', cutoff);
+      }
       const { data, error } = await q;
       if (cancelled) return;
       if (error) setError(error.message);
@@ -106,20 +135,43 @@ export function AdminOrders() {
     return () => {
       cancelled = true;
     };
-  }, [filter, dateFilter, refreshKey]);
+  }, [filter, dateFilter, customFrom, customTo, refreshKey]);
+
+  const sortedRows = useMemo(() => (rows ? sortRows(rows, sort) : null), [rows, sort]);
 
   const reload = () => setRefreshKey((k) => k + 1);
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex items-center gap-[var(--space-2)]">
-        <h2 className="shrink-0 text-[clamp(1.05rem,2.4vw,1.6rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
-          Orders
-        </h2>
-        <div className="ml-auto flex min-w-0 items-center gap-[var(--space-2)]">
-          <AdminFilterBar options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
-          <AdminFilterBar options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense />
+      <header className="mb-[var(--space-5)] flex flex-col gap-[var(--space-2)]">
+        <div className="flex items-center gap-[var(--space-2)]">
+          <h2 className="shrink-0 text-[clamp(0.95rem,2vw,1.3rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
+            Orders
+          </h2>
+          <div className="ml-auto flex min-w-0 items-center gap-1.5">
+            <AdminFilterBar label="" options={SORT_OPTIONS} value={sort} onChange={setSort} dense />
+            <AdminFilterBar label="" options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
+            <AdminFilterBar label="" options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense />
+          </div>
         </div>
+        {dateFilter === 'custom' && (
+          <div className="flex flex-wrap items-center justify-end gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/45">
+            <span>From</span>
+            <input
+              type="date"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="rounded-sm border border-ink/15 bg-base-700 px-2 py-1 text-[11px] tracking-normal text-ink focus:border-ink/40 focus:outline-none"
+            />
+            <span>to</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="rounded-sm border border-ink/15 bg-base-700 px-2 py-1 text-[11px] tracking-normal text-ink focus:border-ink/40 focus:outline-none"
+            />
+          </div>
+        )}
       </header>
 
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
@@ -136,9 +188,9 @@ export function AdminOrders() {
         </div>
       )}
 
-      {rows && rows.length > 0 && (
+      {sortedRows && sortedRows.length > 0 && (
         <ul className="research-surface-solid divide-y divide-ink/[0.04]">
-          {rows.map((row) => (
+          {sortedRows.map((row) => (
             <li key={row.id} className="flex items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] hover:bg-ink/[0.012] transition-colors sm:px-[var(--space-5)]">
               {/* Main info — opens the detail page */}
               <Link
