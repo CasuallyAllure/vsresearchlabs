@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Turnstile } from '../components/security/Turnstile';
 
 type Topic = 'general' | 'procurement' | 'documentation' | 'partnership' | 'media' | 'other';
 
@@ -44,6 +45,7 @@ export function Contact() {
   const [message, setMessage]   = useState('');
   const [referrer, setReferrer] = useState('');
   const [submit, setSubmit]     = useState<SubmitState>({ kind: 'idle' });
+  const [tsToken, setTsToken]   = useState<string | null>(null);
   const [touched, setTouched]   = useState<{ name: boolean; email: boolean; message: boolean }>({
     name: false, email: false, message: false,
   });
@@ -54,7 +56,7 @@ export function Contact() {
   const showNameError    = touched.name    && nameEmpty;
   const showEmailError   = touched.email   && emailInvalid;
   const showMessageError = touched.message && messageShort;
-  const formInvalid = nameEmpty || emailInvalid || messageShort;
+  const formInvalid = nameEmpty || emailInvalid || messageShort || !tsToken;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,6 +79,7 @@ export function Contact() {
         topic,
         message:      message.trim(),
         referrer:     referrer.trim() || undefined,
+        turnstile_token: tsToken ?? undefined,
       },
     });
 
@@ -270,10 +273,12 @@ export function Contact() {
           </p>
         )}
 
+        <Turnstile onToken={setTsToken} />
+
         <div className="pt-[var(--space-2)]">
           <button
             type="submit"
-            disabled={submit.kind === 'submitting'}
+            disabled={formInvalid || submit.kind === 'submitting'}
             className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-ink/[0.12] border border-ink/35 px-[var(--space-8)] py-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] font-medium text-ink hover:bg-ink/[0.18] hover:border-ink/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
           >
             {submit.kind === 'submitting' ? 'Sending…' : 'Send message'}

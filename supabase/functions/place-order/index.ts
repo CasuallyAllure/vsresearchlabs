@@ -35,6 +35,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -393,6 +394,13 @@ Deno.serve(async (req: Request) => {
   let payload: OrderPayload;
   try { payload = (await req.json()) as OrderPayload; }
   catch { return jsonResponse({ error: "Invalid JSON body." }, 400); }
+
+  // Bot check (no-op until TURNSTILE_SECRET is set).
+  const ts = await verifyTurnstile(
+    (payload as { turnstile_token?: string }).turnstile_token,
+    clientIp(req),
+  );
+  if (!ts.ok) return jsonResponse({ error: ts.reason ?? "Verification failed." }, 403);
 
   const name         = (payload.name ?? "").trim();
   const contact      = (payload.contact ?? "").trim();

@@ -27,6 +27,7 @@
  */
 
 import { useState } from 'react';
+import { Turnstile } from '../components/security/Turnstile';
 import { Link } from 'react-router-dom';
 import { BrandStamp } from '../components/brand/BrandStamp';
 import { useCart } from '../hooks/useCart';
@@ -69,6 +70,7 @@ export function CartPage() {
   const [shipState, setShipState] = useState('');
   const [shipZip, setShipZip] = useState('');
   const [notes, setNotes] = useState('');
+  const [tsToken, setTsToken] = useState<string | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
   const [record, setRecord] = useState<InquiryRecord | null>(null);
   const [order, setOrder] = useState<OrderResult | null>(null);
@@ -89,7 +91,7 @@ export function CartPage() {
   const showNameError = touched.name && nameEmpty;
   const showContactError = touched.contact && contactEmpty;
 
-  const formInvalid = nameEmpty || contactEmpty || items.length === 0;
+  const formInvalid = nameEmpty || contactEmpty || !tsToken || items.length === 0;
 
   function toggleNote(productId: string) {
     setNotesOpen((prev) => ({ ...prev, [productId]: !prev[productId] }));
@@ -134,6 +136,7 @@ export function CartPage() {
       ship_state:   shipState.trim() || undefined,
       ship_zip:     shipZip.trim() || undefined,
       ship_country: 'US',
+      turnstile_token: tsToken ?? undefined,
       items: items.map((i) => ({
         product: {
           id:       i.product.id,
@@ -203,6 +206,7 @@ export function CartPage() {
     clear();
     setName('');
     setContact('');
+    setTsToken(null);
     setOrganization('');
     setNotes('');
     setRecord(generatedRecord);
@@ -856,6 +860,10 @@ export function CartPage() {
             {submit.message}
           </p>
         )}
+
+        <div className="mt-[var(--space-4)]">
+          <Turnstile onToken={setTsToken} />
+        </div>
 
         <button
           type="submit"

@@ -33,6 +33,7 @@ import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { tierPriceCents } from '../lib/pricing';
 import { deriveProductDose } from '../types';
+import { Turnstile } from '../components/security/Turnstile';
 
 const MAX_QTY = 999;
 
@@ -64,6 +65,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [stateRegion, setStateRegion] = useState('');
   const [zip, setZip] = useState('');
   const [human, setHuman] = useState(false);
+  const [tsToken, setTsToken] = useState<string | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
 
   // ESC closes
@@ -108,6 +110,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     stateRegion.trim().length === 0 ||
     zip.trim().length === 0 ||
     !human ||
+    !tsToken ||
     items.length === 0;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,6 +135,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       ship_state: stateRegion.trim(),
       ship_zip: zip.trim(),
       ship_country: 'US',
+      turnstile_token: tsToken ?? undefined,
       items: items.map((i) => ({
         product: {
           id: i.product.id,
@@ -175,6 +179,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     setStateRegion('');
     setZip('');
     setHuman(false);
+    setTsToken(null);
     setSubmit({ kind: 'success', email: sentEmail, reference });
   }
 
@@ -396,6 +401,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 {submit.message}
               </p>
             )}
+
+            <div className="mt-4">
+              <Turnstile onToken={setTsToken} />
+            </div>
 
             <div className="mt-auto pt-4">
               <button
