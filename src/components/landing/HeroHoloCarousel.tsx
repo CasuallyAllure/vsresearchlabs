@@ -128,7 +128,7 @@ export function HeroHoloCarousel() {
             {key === 'effects' && <SlideEffects effects={effects} />}
             {key === 'mechanism' && <SlideMechanism ci={ci} />}
             {key === 'clinical' && leadStudy && (
-              <SlideClinical study={leadStudy} compound={ci.substance} />
+              <SlideClinical study={leadStudy} studies={ci.studies} compound={ci.substance} />
             )}
           </div>
         ))}
@@ -437,36 +437,71 @@ function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
 
 /* ── Slide 4 — Clinical Observation ───────────────────────────────────── */
 
+const SOURCE_SHORT: Record<string, string> = {
+  'New England Journal of Medicine': 'NEJM',
+  'The Lancet': 'Lancet',
+  'Cell Metabolism': 'Cell Metab',
+};
+const shortSource = (s: string) => SOURCE_SHORT[s] ?? s;
+
 function SlideClinical({
   study,
+  studies,
   compound,
 }: {
   study: ProductStudy;
+  studies: ProductStudy[];
   compound: string;
 }) {
   const lead = study.notes?.[0];
+  const links = studies.filter((s) => s.url).slice(0, 4);
   return (
     <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="max-w-[42ch]">
-        <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
-          {study.phase ? `Clinical · ${study.phase}` : 'Clinical Observation'}
+        <p className="mb-2.5 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
+          Known studies
         </p>
         <p className="text-center text-[11px] leading-snug holo-text-body break-words">
-          {study.title}
+          {study.url ? (
+            <a
+              href={study.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-holo-light focus:outline-none"
+            >
+              {study.title}
+              <span aria-hidden className="ml-1 align-middle text-holo/60">↗</span>
+            </a>
+          ) : (
+            study.title
+          )}
         </p>
         {lead && (
-          <div className="mt-4 border-t border-holo/15 pt-3">
-            <p className="mb-1.5 text-center text-[10.5px] uppercase tracking-[0.22em] holo-text-caption">
-              Observed
+          <div className="mt-3 border-t border-holo/15 pt-2.5">
+            <p className="mb-1 text-center text-[9px] uppercase tracking-[0.22em] holo-text-caption">
+              Observed{study.phase ? ` · ${study.phase}` : ''}
             </p>
             <p className="text-[12px] leading-relaxed holo-text-display holo-text-pulse break-words">
               {lead}
             </p>
           </div>
         )}
-        <p className="mt-4 text-center font-mono text-[8.5px] uppercase tracking-[0.22em] holo-text-citation">
-          {study.source} · {study.year} · {compound}
-        </p>
+        {links.length > 0 && (
+          <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5">
+            {links.map((s, i) => (
+              <a
+                key={i}
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-holo/30 bg-holo/[0.06] px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.08em] holo-text-caption transition-colors hover:border-holo/55 hover:text-holo-light"
+              >
+                {shortSource(s.source)}{s.phase ? ` · ${s.phase}` : ''}
+                <span aria-hidden className="text-holo/50">↗</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
