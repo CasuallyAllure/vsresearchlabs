@@ -28,6 +28,7 @@ import type { Product, ProductStudy, StudyModel } from '../../types';
 import {
   getCompoundIntelligence,
   type CompoundIntelligence,
+  type ReceptorTargetView,
 } from '../../lib/compoundIntelligence';
 import { CompoundHologram3D, type CompoundStructure } from './CompoundHologram3D';
 import retatrutideStructure from '../../data/structures/retatrutide.json';
@@ -121,6 +122,7 @@ export function HeroHoloCarousel() {
               <SlideHologram
                 fdaStatus={ci.fdaStatus}
                 humanTrials={ci.humanTrials}
+                receptors={ci.receptorTargets}
               />
             )}
             {key === 'effects' && <SlideEffects effects={effects} />}
@@ -278,11 +280,31 @@ function pickEffects(ci: CompoundIntelligence): EffectRow[] {
 interface SlideHologramProps {
   fdaStatus?: string;
   humanTrials?: boolean;
+  receptors?: ReceptorTargetView[];
 }
 
-function SlideHologram({ fdaStatus, humanTrials }: SlideHologramProps = {}) {
+/** Agonist class implied by the count of distinct receptor targets —
+ *  derived from real receptor data, not asserted. */
+const AGONIST_CLASS: Record<number, string> = {
+  1: 'Agonist',
+  2: 'Dual Agonist',
+  3: 'Triple Agonist',
+};
+
+function SlideHologram({
+  fdaStatus,
+  humanTrials,
+  receptors = [],
+}: SlideHologramProps = {}) {
   const reg = parseFdaInfo(fdaStatus);
-  const showRegulatory = !!fdaStatus || humanTrials !== undefined;
+  // Compact receptor identity, e.g. "GIP·GLP-1·GCG" (strip the trailing R).
+  const receptorTokens = receptors.map((t) => t.receptor.replace(/-?R$/i, ''));
+  const agonistClass = AGONIST_CLASS[receptors.length];
+  const identity = agonistClass
+    ? [receptorTokens.join('·'), agonistClass].filter(Boolean).join(' ')
+    : null;
+  const showStatus =
+    !!identity || !!fdaStatus || humanTrials !== undefined;
   return (
     <div className="absolute inset-0">
       {/* 3D compound visualization — see CompoundHologram3D.tsx for the
@@ -292,33 +314,57 @@ function SlideHologram({ fdaStatus, humanTrials }: SlideHologramProps = {}) {
           the rendering technology. */}
       <CompoundHologram3D structure={retatrutideStructure as unknown as CompoundStructure} />
 
-      {/* Regulatory overlay — bottom-left of slide 1 only. Phase and FDA
-          status pulled from the canonical fdaStatus string. */}
-      {showRegulatory && (
-        <div className="absolute bottom-10 left-4 z-20 flex flex-col gap-1 pointer-events-none sm:left-6">
-          <p className="font-mono text-[8px] uppercase tracking-[0.3em] holo-text-caption">
-            Regulatory
-          </p>
-          {reg.phase && (
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] holo-text-display holo-text-pulse">
-              {reg.phase}
-            </p>
-          )}
-          <p
-            className={
-              reg.approved
-                ? 'font-mono text-[10px] uppercase tracking-[0.2em] holo-text-display'
-                : 'font-mono text-[10px] uppercase tracking-[0.2em] holo-text-warning font-semibold'
-            }
-          >
-            {reg.label}
-          </p>
-          {humanTrials !== undefined && (
-            <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] holo-text-citation">
-              Human Trials · {humanTrials ? 'Confirmed' : 'None Known'}
-            </p>
-          )}
-        </div>
+      {/* Status strip — a single thin lower-third line (slide 1 only),
+          sitting just above the carousel dots. Class is derived from the
+          receptor count; phase / FDA status from the canonical
+          fdaStatus string. Nothing fabricated. */}
+      {showStatus && (
+        <>
+          {/* Bottom scrim — keeps the strip legible over the structure. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-16"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(251,249,244,0.5) 0%, rgba(251,249,244,0.16) 55%, transparent 100%)',
+            }}
+          />
+          <div className="absolute inset-x-4 bottom-8 z-20 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pointer-events-none font-mono text-[8px] uppercase tracking-[0.18em]">
+            {identity && (
+              <span className="holo-text-display font-semibold tracking-[0.16em]">
+                {identity}
+              </span>
+            )}
+            {reg.phase && (
+              <>
+                <span aria-hidden="true" className="holo-text-caption">·</span>
+                <span className="holo-text-caption">{reg.phase}</span>
+              </>
+            )}
+            {!!fdaStatus && (
+              <>
+                <span aria-hidden="true" className="holo-text-caption">·</span>
+                <span
+                  className={
+                    reg.approved
+                      ? 'holo-text-display'
+                      : 'holo-text-warning font-semibold'
+                  }
+                >
+                  {reg.label}
+                </span>
+              </>
+            )}
+            {humanTrials !== undefined && (
+              <>
+                <span aria-hidden="true" className="holo-text-caption">·</span>
+                <span className="holo-text-citation">
+                  Human Trials {humanTrials ? 'Confirmed' : 'None Known'}
+                </span>
+              </>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
@@ -328,7 +374,7 @@ function SlideHologram({ fdaStatus, humanTrials }: SlideHologramProps = {}) {
 
 function SlideEffects({ effects }: { effects: EffectRow[] }) {
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-24">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
       <div className="w-full max-w-[44ch]">
         <p className="mb-4 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Summary · Effects
@@ -364,7 +410,7 @@ function SlideEffects({ effects }: { effects: EffectRow[] }) {
 
 function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-12">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
       <div className="max-w-[40ch] text-center">
         <p className="mb-3 font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Mechanism · Brief
@@ -400,7 +446,7 @@ function SlideClinical({
 }) {
   const lead = study.notes?.[0];
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-10 pt-24 sm:items-center sm:px-10 sm:pt-12">
+    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
       <div className="max-w-[42ch]">
         <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           {study.phase ? `Clinical · ${study.phase}` : 'Clinical Observation'}

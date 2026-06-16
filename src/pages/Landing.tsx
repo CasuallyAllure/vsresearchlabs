@@ -617,30 +617,26 @@ export function Landing() {
                 <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-ink/25" />
                 <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-ink/25" />
 
-                {/* Top scrim — keeps the caption legible and fades slide
-                    text out beneath it (above the carousel, below caption). */}
+                {/* Top scrim — thin band that keeps the title strip legible
+                    over the structure without eating into slide content. */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-24"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-12"
                   style={{
                     background:
-                      'linear-gradient(to bottom, rgba(251,249,244,0.85) 0%, rgba(251,249,244,0.45) 45%, transparent 100%)',
+                      'linear-gradient(to bottom, rgba(251,249,244,0.9) 0%, rgba(251,249,244,0.4) 55%, transparent 100%)',
                   }}
                 />
 
-                {/* Top-left caption — micrographic data block */}
-                <div className="absolute left-4 top-4 z-10 flex flex-col gap-1">
-                  <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-ink/45">
-                    Compound Visualization
-                  </span>
-                  <span className="font-mono text-[8.5px] tabular-nums tracking-[0.18em] text-ink/40">
-                    FIG-01
-                  </span>
-                  <span className="mt-1 font-mono text-[8.5px] uppercase tracking-[0.2em] text-holo">
-                    <span className="font-bold">Compound of the Month:</span>{' '}
-                    <span className="font-bold" style={{ color: '#8C6A2A' }}>
-                      Retatrutide
-                    </span>
+                {/* Top title strip — single thin label line (lower-third /
+                    chyron style), static across all slides. */}
+                <div className="absolute inset-x-4 top-3 z-10 flex items-center gap-2 font-mono text-[8.5px] uppercase tracking-[0.2em]">
+                  <span className="tabular-nums text-ink/40">FIG-01</span>
+                  <span aria-hidden="true" className="text-ink/25">·</span>
+                  <span className="text-ink/45">Compound of the Month</span>
+                  <span aria-hidden="true" className="text-ink/25">·</span>
+                  <span className="font-bold tracking-[0.18em]" style={{ color: '#8C6A2A' }}>
+                    Retatrutide
                   </span>
                 </div>
 
@@ -691,9 +687,11 @@ export function Landing() {
                   }}
                 />
 
-                {/* Bottom-right registration */}
+                {/* Bottom-right registration — provenance of the rendered
+                    structure (real cryo-EM coordinates), not a drawing
+                    revision. See data/structures/retatrutide.json. */}
                 <span className="absolute bottom-3 right-4 z-10 font-mono text-[8px] uppercase tracking-[0.2em] text-ink/40">
-                  REV. A
+                  PDB 8YW3
                 </span>
 
                 {/* Holographic animation styles — scoped to this frame */}
