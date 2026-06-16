@@ -6,9 +6,10 @@
  * on the right with sign-out. Children render below.
  */
 
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAdminAuth } from '../../lib/adminAuth';
+import { AdminFilterBar } from './AdminFilterBar';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -31,68 +32,51 @@ const TABS: Array<{ to: string; label: string; match?: (p: string) => boolean }>
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, signOut } = useAdminAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const activeTab = TABS.find((t) =>
+    t.match ? t.match(location.pathname) : location.pathname === t.to,
+  );
+  const currentTo = activeTab?.to ?? '/admin';
 
   return (
     <div className="py-[var(--space-6)]">
-      {/* Top bar */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-4)] border-b border-ink/[0.06] flex items-start justify-between gap-[var(--space-4)] flex-wrap">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            VS Research Labs · Operations
-          </p>
-          <h1 className="text-[clamp(1.2rem,2.4vw,1.6rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Admin </span>
-            <span className="font-medium text-ink">console.</span>
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-[var(--space-3)] text-[11px]">
-          {user && (
-            <span className="font-mono text-ink/45 tabular-nums">
-              {user.email}
-            </span>
-          )}
+      {/* Top bar — title + signed-in identity on one line */}
+      <header className="mb-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+          VS Research Labs · Operations
+        </p>
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <div className="flex min-w-0 flex-1 items-baseline gap-[var(--space-3)]">
+            <h1 className="shrink-0 text-[clamp(1.2rem,2.4vw,1.6rem)] leading-[1.1] tracking-[-0.01em] text-ink">
+              <span className="font-light text-ink/85">Admin </span>
+              <span className="font-medium text-ink">console.</span>
+            </h1>
+            {user && (
+              <span className="min-w-0 truncate font-mono text-[11px] tabular-nums text-ink/45">
+                {user.email}
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => signOut()}
-            className="rounded-full border border-ink/15 px-[var(--space-4)] py-[var(--space-2)] uppercase tracking-[0.2em] text-[10px] text-ink/65 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+            className="shrink-0 rounded-full border border-ink/15 px-[var(--space-4)] py-[var(--space-2)] uppercase tracking-[0.2em] text-[10px] text-ink/65 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           >
             Sign out
           </button>
         </div>
       </header>
 
-      {/* Tab nav — single scrollable line, compact pills (no wrap) */}
-      <nav aria-label="Admin sections" className="mb-[var(--space-6)] border-b border-ink/[0.06] pb-[var(--space-3)]">
-        <ul className="no-scrollbar -mx-[var(--space-1)] flex items-center gap-1.5 overflow-x-auto px-[var(--space-1)]">
-          {TABS.map((tab) => {
-            const active = tab.match
-              ? tab.match(location.pathname)
-              : location.pathname === tab.to;
-            return (
-              <li key={tab.to} className="shrink-0">
-                <NavLink
-                  to={tab.to}
-                  end={tab.to === '/admin'}
-                  className={[
-                    'inline-flex items-center whitespace-nowrap rounded-full px-[var(--space-3)] py-[var(--space-1-5)] text-[10px] uppercase tracking-[0.16em] transition-colors',
-                    'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
-                    active
-                      ? 'bg-ink/[0.10] text-ink border border-ink/20'
-                      : 'text-ink/55 hover:text-ink/90 border border-ink/[0.08]',
-                  ].join(' ')}
-                  style={
-                    active
-                      ? { boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.10)' }
-                      : undefined
-                  }
-                >
-                  {tab.label}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Section nav — a dropdown, not a pill row */}
+      <nav aria-label="Admin sections" className="mb-[var(--space-6)]">
+        <AdminFilterBar
+          label="Section"
+          options={TABS.map((t) => ({ value: t.to, label: t.label }))}
+          value={currentTo}
+          onChange={(to) => navigate(to)}
+          widthClass="sm:w-[240px]"
+        />
       </nav>
 
       <div>{children}</div>
