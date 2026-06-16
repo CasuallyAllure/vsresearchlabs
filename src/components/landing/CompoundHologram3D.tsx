@@ -592,6 +592,17 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(26,23,20,0.4); flex-shrink: 0; }
         .holo-val { font-size: 8.5px; color: rgba(26,23,20,0.85); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
         .holo-src { position: relative; z-index: 1; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(26,23,20,0.1); font-size: 6.5px; letter-spacing: 0.12em; opacity: 0.85; }
+        @media (max-width: 640px) {
+          /* Scale the readout down to stay proportional to the smaller model. */
+          .holo-scouter-card { width: 122px; padding: 5px 6px 6px; border-radius: 6px; }
+          .holo-sym { width: 18px; height: 18px; font-size: 10px; border-radius: 5px; }
+          .holo-title { font-size: 9px; }
+          .holo-sub { font-size: 6.5px; }
+          .holo-seg { padding: 3px 5px; }
+          .holo-seg-val { font-size: 8px; }
+          .holo-val { font-size: 7.5px; }
+          .holo-src { font-size: 6px; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .holo-live, .holo-crt, .holo-sweep, .holo-blink, .holo-reticle { animation: none !important; }
         }
