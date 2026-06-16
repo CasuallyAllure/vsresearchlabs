@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
+import { AdminFilterBar } from './AdminFilterBar';
 
 interface InquiryRow {
   id: string;
@@ -111,33 +112,24 @@ export function AdminInquiries() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          Inquiries
-        </p>
-        <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
+      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
+        <div>
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+            Inquiries
+          </p>
           <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
             <span className="font-light text-ink/85">Incoming </span>
             <span className="font-medium text-ink">requests.</span>
           </h2>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {STATUS_FILTER_ORDER.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStatusFilter(s)}
-                className={[
-                  'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
-                  statusFilter === s
-                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
-                ].join(' ')}
-              >
-                {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
-              </button>
-            ))}
-          </div>
         </div>
+        <AdminFilterBar
+          options={STATUS_FILTER_ORDER.map((s) => ({
+            value: s,
+            label: s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase(),
+          }))}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
       </header>
 
       {error && (

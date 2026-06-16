@@ -1,14 +1,22 @@
 /**
  * AdminOrders
  *
- * Order list. Status chip + buyer + total + last-updated. Click a row
- * to open AdminOrderDetail.
+ * Order pipeline. Compact status filter (one scrollable line) + a dense row
+ * per order carrying its own quick-action menu so the next pipeline step
+ * (mark paid → ship → delivered, or cancel) is one tap away without opening
+ * the detail page. Tapping the row body still opens AdminOrderDetail.
+ *
+ * Quick actions move status only (via the same SECURITY DEFINER RPCs the
+ * detail page uses). Tracking entry + the customer emails (invoice / shipment
+ * / delivered-discount) still live on the detail page, where the tracking
+ * number is captured.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
+import { AdminFilterBar } from './AdminFilterBar';
 
 type OrderStatus =
   | 'pending_invoice'
@@ -31,14 +39,16 @@ interface OrderRow {
   updated_at: string;
 }
 
-const STATUS_FILTERS: Array<OrderStatus | 'ALL' | 'OPEN'> = [
-  'OPEN',
-  'ALL',
-  'pending_invoice',
-  'invoice_sent',
-  'paid',
-  'fulfilled',
-  'cancelled',
+type FilterValue = OrderStatus | 'ALL' | 'OPEN';
+
+const FILTER_OPTIONS: Array<{ value: FilterValue; label: string }> = [
+  { value: 'OPEN', label: 'Open pipeline' },
+  { value: 'ALL', label: 'All' },
+  { value: 'pending_invoice', label: 'Pending invoice' },
+  { value: 'invoice_sent', label: 'Invoice sent' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'fulfilled', label: 'Shipped' },
+  { value: 'cancelled', label: 'Cancelled' },
 ];
 
 const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
@@ -46,7 +56,8 @@ const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid']
 export function AdminOrders() {
   const [rows, setRows] = useState<OrderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<(typeof STATUS_FILTERS)[number]>('OPEN');
+  const [filter, setFilter] = useState<FilterValue>('OPEN');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,37 +82,27 @@ export function AdminOrders() {
     return () => {
       cancelled = true;
     };
-  }, [filter]);
+  }, [filter, refreshKey]);
+
+  const reload = () => setRefreshKey((k) => k + 1);
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          Orders
-        </p>
-        <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
+      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
+        <div>
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+            Orders
+          </p>
           <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
             <span className="font-light text-ink/85">Order </span>
             <span className="font-medium text-ink">pipeline.</span>
           </h2>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {STATUS_FILTERS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setFilter(s)}
-                className={[
-                  'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
-                  filter === s
-                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
-                ].join(' ')}
-              >
-                {filterLabel(s)}
-              </button>
-            ))}
-          </div>
         </div>
+        <AdminFilterBar
+          options={FILTER_OPTIONS}
+          value={filter}
+          onChange={setFilter}
+        />
       </header>
 
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
@@ -121,31 +122,35 @@ export function AdminOrders() {
       {rows && rows.length > 0 && (
         <ul className="research-surface-solid divide-y divide-ink/[0.04]">
           {rows.map((row) => (
-            <li key={row.id}>
+            <li key={row.id} className="flex items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] hover:bg-ink/[0.012] transition-colors sm:px-[var(--space-5)]">
+              {/* Main info — opens the detail page */}
               <Link
                 to={`/admin/orders/${row.id}`}
-                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-ink/[0.015] transition-colors focus:outline-none focus-visible:bg-ink/[0.02]"
+                className="flex min-w-0 flex-1 flex-col justify-center gap-1 focus:outline-none"
               >
-                <div className="flex items-start gap-[var(--space-4)]">
-                  <span className="font-mono text-[10.5px] text-ink/35 tabular-nums shrink-0 pt-1 w-[120px]">
-                    {formatTs(row.created_at)}
-                  </span>
-                  <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] shrink-0 pt-1 w-[170px] truncate">
+                <div className="flex items-center gap-2">
+                  <span className="truncate font-mono text-[11px] tracking-[0.04em] text-holo-light/80">
                     {row.order_number}
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[13px] text-ink truncate">{row.buyer_name}</span>
-                    <span className="block text-[11px] text-ink/45 truncate">
-                      {row.buyer_contact}
-                      {row.buyer_organization && ` · ${row.buyer_organization}`}
-                    </span>
-                  </span>
-                  <span className="font-mono text-[11.5px] text-ink/75 tabular-nums shrink-0 w-[100px] text-right">
-                    {formatCents(row.invoice_amount_cents)}
                   </span>
                   <OrderStatusChip status={row.status} deliveredAt={row.delivered_at} />
                 </div>
+                <span className="truncate text-[13px] text-ink">{row.buyer_name}</span>
+                <span className="truncate text-[11px] text-ink/45">
+                  {row.buyer_contact}
+                  {row.buyer_organization && ` · ${row.buyer_organization}`}
+                </span>
               </Link>
+
+              {/* Amount + date + quick actions — symmetric right rail */}
+              <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 text-right">
+                <span className="font-mono text-[12px] tabular-nums text-ink/80">
+                  {formatCents(row.invoice_amount_cents)}
+                </span>
+                <span className="hidden font-mono text-[10px] tabular-nums text-ink/35 sm:block">
+                  {formatTs(row.created_at)}
+                </span>
+                <OrderRowActions row={row} onDone={reload} />
+              </div>
             </li>
           ))}
         </ul>
@@ -154,10 +159,129 @@ export function AdminOrders() {
   );
 }
 
-function filterLabel(s: OrderStatus | 'ALL' | 'OPEN'): string {
-  if (s === 'OPEN') return 'Open pipeline';
-  if (s === 'ALL') return 'All';
-  return s.replace(/_/g, ' ');
+/* ── Per-row pipeline quick actions ──────────────────────────────────────── */
+
+interface ActionItem {
+  label: string;
+  onSelect: () => void;
+  danger?: boolean;
+}
+
+function OrderRowActions({ row, onDone }: { row: OrderRow; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+
+  function toggle() {
+    if (open) return setOpen(false);
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setPos({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) });
+    setOpen(true);
+  }
+
+  async function run(rpc: () => PromiseLike<{ error: { message: string } | null }>, confirmMsg?: string) {
+    setOpen(false);
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    if (!supabase) return;
+    setBusy(true);
+    setErr(null);
+    const { error } = await rpc();
+    setBusy(false);
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    onDone();
+  }
+
+  // Context-valid transitions for this order's current status.
+  const items: ActionItem[] = [];
+  if (supabase) {
+    switch (row.status) {
+      case 'pending_invoice':
+        items.push({ label: 'Open to invoice →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
+        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
+        break;
+      case 'invoice_sent':
+        items.push({ label: 'Mark paid', onSelect: () => run(() => supabase!.rpc('mark_order_paid', { p_order_id: row.id })) });
+        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
+        break;
+      case 'paid':
+        items.push({ label: 'Mark shipped', onSelect: () => run(() => supabase!.rpc('confirm_order_fulfilled', { p_order_id: row.id, p_tracking_number: null, p_carrier: null }), 'Mark shipped? This deducts stock for each line. Add tracking + email the buyer from the detail page.') });
+        items.push({ label: 'Cancel order', danger: true, onSelect: () => run(() => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: cancelReason() }), 'Cancel this order?') });
+        break;
+      case 'fulfilled':
+        if (!row.delivered_at) {
+          items.push({ label: 'Mark delivered', onSelect: () => run(() => supabase!.rpc('mark_order_delivered', { p_order_id: row.id })) });
+        }
+        items.push({ label: 'Tracking / details →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
+        break;
+      default:
+        items.push({ label: 'Open details →', onSelect: () => { window.location.href = `/admin/orders/${row.id}`; } });
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={toggle}
+        disabled={busy}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1 rounded-full border border-ink/15 bg-ink/[0.03] px-2.5 py-1 text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+      >
+        {busy ? '…' : 'Manage'}
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {err && <p className="absolute right-0 top-full mt-1 w-[180px] text-right text-[10px] text-red-400">{err}</p>}
+
+      {open && pos && (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[120] cursor-default"
+          />
+          <div
+            role="menu"
+            className="fixed z-[121] min-w-[180px] overflow-hidden rounded-[8px] border border-ink/[0.12] bg-display shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)]"
+            style={{ top: pos.top, right: pos.right }}
+          >
+            {items.map((it) => (
+              <button
+                key={it.label}
+                type="button"
+                role="menuitem"
+                onClick={it.onSelect}
+                className={[
+                  'block w-full px-3.5 py-2.5 text-left text-[11.5px] transition-colors',
+                  it.danger
+                    ? 'text-red-400/85 hover:bg-red-400/[0.06]'
+                    : 'text-ink/80 hover:bg-ink/[0.04] hover:text-ink',
+                ].join(' ')}
+              >
+                {it.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function cancelReason(): string {
+  const r = window.prompt('Reason for cancellation (optional):') ?? '';
+  return r.trim() || 'Cancelled by admin';
 }
 
 function formatTs(iso: string): string {

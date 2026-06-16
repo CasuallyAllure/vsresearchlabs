@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
+import { AdminFilterBar } from './AdminFilterBar';
 
 interface CustomerRow {
   id: string;
@@ -75,40 +76,30 @@ export function AdminCustomers() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          Customers
-        </p>
-        <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
+      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
+        <div>
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+            Customers
+          </p>
           <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
             <span className="font-light text-ink/85">Directory </span>
             <span className="font-medium text-ink">on file.</span>
           </h2>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {STATUS_FILTERS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStatusFilter(s)}
-                className={[
-                  'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
-                  statusFilter === s
-                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
-                ].join(' ')}
-              >
-                {s}
-              </button>
-            ))}
+        </div>
+        <AdminFilterBar
+          options={STATUS_FILTERS.map((s) => ({ value: s, label: s }))}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          trailing={
             <input
               type="search"
               placeholder="Name / email / org"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="ml-[var(--space-2)] w-[220px] px-[var(--space-3)] py-[var(--space-1)] bg-base-700 border border-ink/10 rounded-full text-[11px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
+              className="w-full sm:w-[220px] px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
             />
-          </div>
-        </div>
+          }
+        />
       </header>
 
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}

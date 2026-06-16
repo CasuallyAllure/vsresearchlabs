@@ -47,3 +47,12 @@ body {
   background: rgba(26, 23, 20, 0.3);
 }
 
+/* Hide the scrollbar on horizontal-scroll strips (compact filter bars). */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+

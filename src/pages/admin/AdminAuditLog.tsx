@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
+import { AdminFilterBar } from './AdminFilterBar';
 
 interface AuditRow {
   id: string;
@@ -65,40 +66,30 @@ export function AdminAuditLog() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          Audit Log
-        </p>
-        <div className="flex items-end justify-between gap-[var(--space-4)] flex-wrap">
+      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
+        <div>
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
+            Audit Log
+          </p>
           <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
             <span className="font-light text-ink/85">Who did </span>
             <span className="font-medium text-ink">what when.</span>
           </h2>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {ENTITY_FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setEntityFilter(f)}
-                className={[
-                  'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
-                  entityFilter === f
-                    ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                    : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
-                ].join(' ')}
-              >
-                {f}
-              </button>
-            ))}
+        </div>
+        <AdminFilterBar
+          options={ENTITY_FILTERS.map((f) => ({ value: f, label: f }))}
+          value={entityFilter}
+          onChange={setEntityFilter}
+          trailing={
             <input
               type="search"
               placeholder="Filter by actor email"
               value={actorFilter}
               onChange={(e) => setActorFilter(e.target.value)}
-              className="ml-[var(--space-2)] w-[200px] px-[var(--space-3)] py-[var(--space-1)] bg-base-700 border border-ink/10 rounded-full text-[11px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
+              className="w-full sm:w-[200px] px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
             />
-          </div>
-        </div>
+          }
+        />
       </header>
 
       {error && (
