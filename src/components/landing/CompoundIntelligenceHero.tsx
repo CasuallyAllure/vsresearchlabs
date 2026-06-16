@@ -411,16 +411,12 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
     });
 
   return (
-    <div className="h-full min-w-0 overflow-y-auto p-5 sm:p-7">
+    <div className="h-full min-w-0 overflow-y-auto px-5 pt-3 pb-6 sm:px-7 sm:pt-4">
       <Eyebrow>Compound intelligence dossier</Eyebrow>
-      <p className="mt-2 break-words text-[13px] text-ink/45">
-        Shared intelligence record. Identical source to the compound
-        overlay and future compound pages.
-      </p>
       {/* Grid replaces CSS multi-column for explicit width control. Each
           column carries `min-w-0` via ModuleBlock so internal flex/grid
           rows can shrink and wrap inside the column boundary. */}
-      <div className="mt-5 grid grid-cols-1 gap-x-10 gap-y-0 md:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-x-10 gap-y-0 md:grid-cols-2">
         {blocks.map((b, i) => (
           <ModuleBlock
             key={b.key}
@@ -442,7 +438,19 @@ function StudyEntry({ study }: { study: ProductStudy }) {
     <li className="border-t border-ink/[0.06] py-5 first:border-t-0">
       <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-6 gap-y-2">
         <h4 className="holo-text-display min-w-0 flex-1 break-words text-[13px] font-light leading-snug tracking-[-0.01em]">
-          {study.title}
+          {study.url ? (
+            <a
+              href={study.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/t inline text-ink transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            >
+              {study.title}
+              <span aria-hidden className="ml-1 align-middle text-[11px] text-holo/50 transition-colors group-hover/t:text-holo-light">↗</span>
+            </a>
+          ) : (
+            study.title
+          )}
         </h4>
         <span className="shrink-0 rounded-[2px] border border-ink/12 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-ink/55">
           {study.phase ?? MODEL_LABEL[study.model]}
@@ -475,10 +483,10 @@ function StudyEntry({ study }: { study: ProductStudy }) {
           href={study.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group mt-3 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-holo/65 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+          className="group mt-3 inline-flex items-center gap-1.5 rounded-full border border-holo/25 bg-holo/[0.05] px-2.5 py-1 text-[10px] tracking-[0.1em] text-holo/80 transition-colors hover:border-holo/50 hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
         >
-          <span>View publication</span>
-          <span aria-hidden className="text-holo/45 transition-colors group-hover:text-holo-light">↗</span>
+          <span>Read at {study.source}</span>
+          <span aria-hidden className="text-holo/50 transition-colors group-hover:text-holo-light">↗</span>
         </a>
       )}
     </li>
@@ -487,11 +495,11 @@ function StudyEntry({ study }: { study: ProductStudy }) {
 
 function SlideStudies({ ci }: { ci: CompoundIntelligence }) {
   return (
-    <div className="h-full min-w-0 overflow-y-auto p-5 sm:p-7">
-      <Eyebrow>Research media &amp; known studies</Eyebrow>
+    <div className="h-full min-w-0 overflow-y-auto px-5 pt-3 pb-6 sm:px-7 sm:pt-4">
+      <Eyebrow>Known studies</Eyebrow>
 
       {/* Regulatory band */}
-      <div className="mt-4 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-procurement)] border border-holo/15 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-procurement)] border border-holo/15 sm:grid-cols-2">
         <div className="bg-holo/[0.025] px-4 py-3">
           <p className="holo-text-caption text-[9.5px] uppercase tracking-[0.24em]">
             FDA status
