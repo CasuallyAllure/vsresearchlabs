@@ -22,6 +22,11 @@ export interface BrandLoaderProps {
 
 const FADE_IN_MS = 220;
 const FADE_OUT_MS = 520;
+// Shift the loader's mark this many px UP from viewport center so it sits
+// in the upper half of the screen — paired with DisclaimerGate's
+// CARD_DROP_PX so the loader logo and the gate module visually "meet in
+// the middle" of the viewport.
+const MARK_LIFT_PX = 30;
 
 export function BrandLoader({ active }: BrandLoaderProps) {
   const [mounted, setMounted] = useState(active);
@@ -92,6 +97,7 @@ export function BrandLoader({ active }: BrandLoaderProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          transform: `translateY(-${MARK_LIFT_PX}px)`,
         }}
       >
         <DnaVMark size={96} static bodyEntryMs={1600} />

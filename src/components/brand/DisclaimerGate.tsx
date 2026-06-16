@@ -31,7 +31,7 @@ const STORAGE_KEY = 'vsrl_disclaimer_accepted_v1';
 const CARD_PADDING_TOP = 28;     // matches inline padding in card style
 const MARK_SIZE = 64;            // DnaVMark size in the gate
 const MARK_HALF = MARK_SIZE / 2; // distance from mark top to its center
-const CARD_DROP_PX = 50;         // shift the whole card this many px below center-mark anchor
+const CARD_DROP_PX = 80;         // shift the whole card this many px below center-mark anchor
 const CARD_RIGHT_PX = 12;        // nudge card this many px right of dead-center
 
 export function DisclaimerGate() {
