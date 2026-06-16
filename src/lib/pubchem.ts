@@ -13,10 +13,21 @@
  * then add a lowercased-name → CID entry below.
  */
 
-/** Lowercased substance name → verified PubChem CID. Extend as needed. */
+/** Lowercased substance name → verified PubChem CID. Extend as needed.
+ *  Every entry below was checked against the CID's PubChem Title so we never
+ *  render the wrong molecule (the by-name search happily returns impurities
+ *  and analogs — e.g. searching "Retatrutide" top-hits an impurity). Most of
+ *  the catalog resolves by name and needs no entry here; these are the
+ *  peptides/code-named compounds that 404 by name. */
 export const PUBCHEM_CID_BY_NAME: Record<string, number> = {
   // Retatrutide (LY3437943) — "Triple G", GIP/GLP-1/glucagon triple agonist.
   retatrutide: 171390338,
+  // CJC-1295 (with DAC) — Title "Cjc 1295", C165H269N47O46.
+  'cjc-1295 dac': 91971820,
+  // Thymosin α-1 — Title "Thymalfasin", C129H215N33O55.
+  'thymosin α-1': 16130571,
+  // 5-Amino-1MQ — Title "5-Amino-1-methylquinolinium".
+  '5-amino-1mq': 950107,
 };
 
 /** 2D-structure PNG URL for a compound — CID when known, else by name. */
