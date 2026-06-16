@@ -39,6 +39,17 @@ import { MolecularStructurePanel } from '../catalog/specimen/MolecularStructureP
 const products = productsData as unknown as Product[];
 const FEATURED_SLUG = 'retatrutide-5mg';
 
+// Marquee compounds offered in the header switcher. Each has rich intel
+// (mechanism, receptor activity, 2D structure) so the whole panel re-renders
+// cleanly when selected.
+const FEATURED_SLUGS = [
+  'retatrutide-5mg', 'tirzepatide-10mg', 'semaglutide-5mg', 'cagrisema',
+  'mots-c', 'bpc157-5mg', 'ghk-cu', 'nad-plus',
+];
+const FEATURED = FEATURED_SLUGS
+  .map((s) => products.find((p) => p.slug === s))
+  .filter((p): p is Product => !!p);
+
 const SLIDES = [
   { key: 'panel', tab: 'Panel', title: 'Visual Compound Panel' },
   { key: 'dossier', tab: 'Dossier', title: 'Intelligence Dossier' },
@@ -549,10 +560,39 @@ function ChevIcon({ dir }: { dir: 'l' | 'r' }) {
 }
 
 export function CompoundIntelligenceHero() {
-  const product = products.find((p) => p.slug === FEATURED_SLUG);
   const trackRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [recordOpen, setRecordOpen] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState(FEATURED_SLUG);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const product =
+    products.find((p) => p.slug === selectedSlug) ??
+    products.find((p) => p.slug === FEATURED_SLUG);
+
+  function selectCompound(slug: string) {
+    setSelectedSlug(slug);
+    setPickerOpen(false);
+    setActive(0);
+    requestAnimationFrame(() => {
+      trackRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+    });
+  }
+
+  // Close the compound picker on outside-click / Escape.
+  useEffect(() => {
+    if (!pickerOpen) return;
+    function onDown(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setPickerOpen(false);
+    }
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setPickerOpen(false); }
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [pickerOpen]);
 
   const go = useCallback((i: number) => {
     const t = trackRef.current;
@@ -613,7 +653,7 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="module-aura flex h-[540px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[600px] lg:h-[680px]"
+        className="module-aura flex h-[452px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[500px] lg:h-[548px]"
       >
         {/* Header bar */}
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-3 sm:px-5">
@@ -626,16 +666,51 @@ export function CompoundIntelligenceHero() {
               Compound Intel
             </span>
           </div>
-          <div className="flex min-w-0 items-center gap-2.5">
+          <div ref={pickerRef} className="relative flex min-w-0 items-center gap-2.5">
             <span className="hidden text-[10px] uppercase tracking-[0.24em] text-ink/30 md:inline">
               Featured
             </span>
-            <span className="truncate font-mono text-[11px] tracking-[0.06em] text-ink/70">
-              {ci.substance}
-            </span>
-            <span className="hidden rounded-[2px] border border-ink/12 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/45 sm:inline">
-              {ci.abbreviation}
-            </span>
+            <button
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={pickerOpen}
+              onClick={() => setPickerOpen((o) => !o)}
+              className="group inline-flex min-w-0 items-center gap-1.5 rounded-full border border-ink/12 px-2.5 py-1 transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            >
+              <span className="truncate font-mono text-[11px] tracking-[0.06em] text-ink/85">
+                {ci.substance}
+              </span>
+              <span aria-hidden className={`shrink-0 text-[9px] text-ink/40 transition-transform ${pickerOpen ? 'rotate-180' : ''}`}>▾</span>
+            </button>
+            {pickerOpen && (
+              <ul
+                role="listbox"
+                aria-label="Featured compound"
+                className="absolute right-0 top-full z-40 mt-1.5 max-h-[300px] w-[210px] overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.35)]"
+                style={{ backgroundColor: 'rgba(251,249,244,0.99)', backdropFilter: 'blur(8px)' }}
+              >
+                {FEATURED.map((p) => {
+                  const on = p.slug === selectedSlug;
+                  return (
+                    <li key={p.slug}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={on}
+                        onClick={() => selectCompound(p.slug ?? FEATURED_SLUG)}
+                        className={[
+                          'flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-[12px] transition-colors',
+                          on ? 'bg-holo/[0.10] text-holo font-medium' : 'text-ink/70 hover:bg-ink/[0.05] hover:text-ink',
+                        ].join(' ')}
+                      >
+                        <span className="truncate">{p.name}</span>
+                        {on && <span aria-hidden className="text-[11px] text-holo">✓</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
 
