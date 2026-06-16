@@ -39,3 +39,7 @@ supabase/.temp/
 
 # Wrangler local cache
 .wrangler/
+
+# Walkthrough recording artifacts (keep the script + EDIT_PLAN, not the media)
+walkthrough/video/
+walkthrough/frames/
