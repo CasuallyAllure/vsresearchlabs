@@ -100,6 +100,30 @@ const RES_NAMES: Record<string, string> = {
 function resLabel(a: Atom): string {
   return `${RES_NAMES[a.res ?? ''] ?? a.res ?? '?'} ${a.resSeq ?? ''}`.trim();
 }
+
+// Full residue names + the science behind the unusual ones — Aib and the
+// α-methylated residue are what make Retatrutide protease-resistant.
+const RES_FULL: Record<string, string> = {
+  ALA: 'Alanine', ARG: 'Arginine', ASN: 'Asparagine', ASP: 'Aspartate', CYS: 'Cysteine',
+  GLN: 'Glutamine', GLU: 'Glutamate', GLY: 'Glycine', HIS: 'Histidine', ILE: 'Isoleucine',
+  LEU: 'Leucine', LYS: 'Lysine', MET: 'Methionine', PHE: 'Phenylalanine', PRO: 'Proline',
+  SER: 'Serine', THR: 'Threonine', TRP: 'Tryptophan', TYR: 'Tyrosine', VAL: 'Valine',
+  AIB: '2-aminoisobutyric acid', '2ML': 'α-methyl-leucine',
+};
+const RES_NOTE: Record<string, string> = {
+  AIB: 'synthetic α,α-dialkyl residue — rigidifies the helix & resists proteases',
+  '2ML': 'α-methylated — protease-resistant',
+  LYS: 'K17 — the C20-diacid lipidation site (lipid not resolved in the map)',
+};
+/** Rich residue descriptor for the scouter readout. */
+function resDescribe(a: Atom): string {
+  const short = RES_NAMES[a.res ?? ''] ?? a.res ?? '?';
+  const full = RES_FULL[a.res ?? ''];
+  const seq = a.resSeq ?? '';
+  const note = a.resSeq === 17 && a.res === 'LYS' ? RES_NOTE.LYS : RES_NOTE[a.res ?? ''];
+  const head = full ? `${short} ${seq} · ${full}` : `${short} ${seq}`.trim();
+  return note ? `${head} — ${note}` : head;
+}
 function atomRole(a: Atom): string {
   switch (a.name) {
     case 'N': return 'Backbone amide N';
@@ -167,9 +191,9 @@ function proceduralAtomScan(index: number, total: number, accent: boolean): Atom
 // ── Atom mesh ─────────────────────────────────────────────────────────────
 
 function AtomMesh({
-  atom, index, dense, paletteIndex, onHover, onClear,
+  atom, index, dense, paletteIndex, groupHot, onHover, onClear,
 }: {
-  atom: Atom; index: number; dense: boolean; paletteIndex: number;
+  atom: Atom; index: number; dense: boolean; paletteIndex: number; groupHot?: boolean;
   onHover: (kind: 'atom', index: number) => void; onClear: () => void;
 }) {
   const accent = atom.type === 'accent';
@@ -190,12 +214,12 @@ function AtomMesh({
     <group position={atom.pos}>
       <mesh>
         <sphereGeometry args={[coreRadius, dense ? 12 : 20, dense ? 12 : 20]} />
-        <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : 1.1} roughness={0.3} metalness={0.15} />
+        <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : groupHot ? 1.85 : 1.1} roughness={0.3} metalness={0.15} />
       </mesh>
       {/* Halo doubles as the (larger) hover target. */}
       <mesh onPointerOver={enter} onPointerOut={leave}>
         <sphereGeometry args={[haloRadius, 10, 10]} />
-        <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
+        <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : groupHot ? Math.min(0.4, haloOpacity * 1.85) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -204,10 +228,10 @@ function AtomMesh({
 // ── Bond mesh ─────────────────────────────────────────────────────────────
 
 function BondMesh({
-  from, to, accent, dense, index, onHover, onClear,
+  from, to, accent, dense, index, groupHot, onHover, onClear,
 }: {
   from: [number, number, number]; to: [number, number, number]; accent: boolean; dense: boolean;
-  index: number; onHover: (kind: 'bond', index: number) => void; onClear: () => void;
+  index: number; groupHot?: boolean; onHover: (kind: 'bond', index: number) => void; onClear: () => void;
 }) {
   const { position, quaternion, length } = useMemo(() => {
     const start = new Vector3(...from), end = new Vector3(...to);
@@ -234,12 +258,12 @@ function BondMesh({
     <group position={position} quaternion={quaternion}>
       <mesh>
         <cylinderGeometry args={[coreR, coreR, length, 7]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hot ? 2.6 : 1.4} roughness={0.4} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hot ? 2.6 : groupHot ? 2.1 : 1.4} roughness={0.4} />
       </mesh>
       {!dense && (
         <mesh>
           <cylinderGeometry args={[0.05, 0.05, length, 9]} />
-          <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : 0.22} blending={AdditiveBlending} depthWrite={false} />
+          <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : groupHot ? 0.34 : 0.22} blending={AdditiveBlending} depthWrite={false} />
         </mesh>
       )}
       <mesh onPointerOver={enter} onPointerOut={leave}>
@@ -350,7 +374,7 @@ function MolecularScene({
       let base: AtomScan;
       if (a.el) {
         const e = ELEMENTS[a.el] ?? { name: a.el, z: 0, mass: 0, eneg: 0 };
-        base = { kind: 'atom', symbol: a.el, elementName: e.name, z: e.z, mass: e.mass, eneg: e.eneg, role: atomRole(a), residue: resLabel(a), accent: false, source };
+        base = { kind: 'atom', symbol: a.el, elementName: e.name, z: e.z, mass: e.mass, eneg: e.eneg, role: atomRole(a), residue: resDescribe(a), accent: false, source };
       } else {
         base = { ...proceduralAtomScan(hovered.index, coreCount, a.type === 'accent') };
       }
@@ -403,10 +427,28 @@ function MolecularScene({
     }
   });
 
+  // Residue under the cursor — drives the whole-group "leg" glow so hovering
+  // any atom lights up its entire amino-acid chain segment.
+  const hotResidue = (() => {
+    if (!hovered) return null;
+    if (hovered.kind === 'atom') return structure.atoms[hovered.index]?.resSeq ?? null;
+    const b = structure.bonds[hovered.index];
+    return b ? structure.atoms[b[0]]?.resSeq ?? null : null;
+  })();
+
   return (
     <group ref={groupRef}>
       {structure.atoms.map((atom, i) => (
-        <AtomMesh key={`a${i}`} atom={atom} index={i} dense={dense} paletteIndex={i} onHover={onHover} onClear={onClear} />
+        <AtomMesh
+          key={`a${i}`}
+          atom={atom}
+          index={i}
+          dense={dense}
+          paletteIndex={i}
+          groupHot={hotResidue != null && atom.resSeq === hotResidue}
+          onHover={onHover}
+          onClear={onClear}
+        />
       ))}
       {structure.bonds.map((bond, i) => (
         <BondMesh
@@ -416,6 +458,11 @@ function MolecularScene({
           accent={accentBondSet.has(i) || (bond.length >= 4 && bond[2] === 'peptide')}
           dense={dense}
           index={i}
+          groupHot={
+            hotResidue != null &&
+            structure.atoms[bond[0]]?.resSeq === hotResidue &&
+            structure.atoms[bond[1]]?.resSeq === hotResidue
+          }
           onHover={onHover}
           onClear={onClear}
         />
