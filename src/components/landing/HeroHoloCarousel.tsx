@@ -374,12 +374,12 @@ function SlideHologram({
 
 function SlideEffects({ effects }: { effects: EffectRow[] }) {
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
+    <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="w-full max-w-[44ch]">
-        <p className="mb-4 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
+        <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Summary · Effects
         </p>
-        <ul className="space-y-3.5">
+        <ul className="space-y-2.5">
           {effects.map((e, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="font-mono text-[10px] tabular-nums tracking-[0.04em] holo-text-caption shrink-0 mt-0.5">
@@ -410,7 +410,7 @@ function SlideEffects({ effects }: { effects: EffectRow[] }) {
 
 function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
+    <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="max-w-[40ch] text-center">
         <p className="mb-3 font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           Mechanism · Brief
@@ -446,7 +446,7 @@ function SlideClinical({
 }) {
   const lead = study.notes?.[0];
   return (
-    <div className="absolute inset-0 flex items-start justify-center px-6 pb-12 pt-12 sm:items-center sm:px-10 sm:pt-12">
+    <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="max-w-[42ch]">
         <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
           {study.phase ? `Clinical · ${study.phase}` : 'Clinical Observation'}
