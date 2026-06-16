@@ -2,26 +2,23 @@
  * BrandLoader
  *
  * Full-screen brand loader shown during route transitions and the initial
- * page load. Visual language matches DnaVMark: same body palette (small
- * ink, medium teal, larger gold), same paired orbital-ring backdrop, but
- * orbiting at a larger radius — the three "outer planets" to the mark's
- * three "inner planets." Same CSS-rotate motion model as DnaVMark so the
- * outer family is unmistakably the same brand.
+ * page load. Just the DnaVMark — no outer body layer. The mark enters
+ * large (about 2.6× its resting size) and shrinks down to its resting
+ * size over 1.6s with an ease-out curve, then holds for a beat before
+ * the parent fade-out begins. The mark's own bodies continue orbiting
+ * the whole time at the brand tempo (7s / 11s / 15s).
  *
- * Tempos are intentionally different from the inner mark (8s / 13s / 18s
- * vs 7s / 11s / 15s) and one of the three orbits backwards — a faint
- * three-body weave on top of the slower inner weave.
- *
- * Respects prefers-reduced-motion via a CSS media query (no rAF; CSS
- * animation does the right thing automatically).
+ * Respects prefers-reduced-motion: shrink animation is skipped and the
+ * mark renders at its resting size immediately. The mark's body
+ * animations have their own reduced-motion handling inside DnaVMark.
  */
 
 import { useEffect, useState } from 'react';
 import { DnaVMark } from './DnaVMark';
 
 export interface BrandLoaderProps {
-  /** Whether the loader is visible. When flipped to false the loader fades
-   *  out over FADE_OUT_MS before unmounting. */
+  /** Whether the loader is visible. When flipped to false the loader
+   *  fades out over FADE_OUT_MS before unmounting. */
   active: boolean;
 }
 
@@ -79,17 +76,17 @@ export function BrandLoader({ active }: BrandLoaderProps) {
           from { opacity: 1; }
           to   { opacity: 0; }
         }
-        @keyframes vsrl-outer-cw  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
-        @keyframes vsrl-outer-ccw { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
-        .vsrl-outer-body {
-          transform-box: view-box;
-          transform-origin: 0px 0px;
+        @keyframes vsrl-loader-shrink {
+          from { transform: scale(2.6); }
+          to   { transform: scale(1);   }
         }
-        .vsrl-outer-body-1 { animation: vsrl-outer-cw  8s  linear infinite; }
-        .vsrl-outer-body-2 { animation: vsrl-outer-ccw 13s linear infinite; }
-        .vsrl-outer-body-3 { animation: vsrl-outer-cw  18s linear infinite; }
+        .vsrl-loader-shrink {
+          animation: vsrl-loader-shrink 1600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+          transform-origin: center;
+          will-change: transform;
+        }
         @media (prefers-reduced-motion: reduce) {
-          .vsrl-outer-body { animation: none !important; }
+          .vsrl-loader-shrink { animation: none !important; }
         }
       `}</style>
       <span
@@ -104,82 +101,15 @@ export function BrandLoader({ active }: BrandLoaderProps) {
         Loading
       </span>
 
-      <div style={{ position: 'relative', width: 220, height: 220 }}>
-        {/* Outer field — faint orbital rings + three larger bodies orbiting
-            shared center (0,0) in view-box coordinates. */}
-        <svg
-          viewBox="-110 -110 220 220"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            overflow: 'visible',
-          }}
-          aria-hidden="true"
-        >
-          <g fill="none" stroke="#1A1714" strokeLinecap="round">
-            <ellipse
-              cx="0"
-              cy="0"
-              rx="92"
-              ry="56"
-              transform="rotate(-22)"
-              opacity="0.18"
-              strokeWidth="0.6"
-            />
-            <ellipse
-              cx="0"
-              cy="0"
-              rx="68"
-              ry="94"
-              transform="rotate(33)"
-              opacity="0.11"
-              strokeWidth="0.55"
-            />
-          </g>
-
-          {/* Small ink — CW, tightest of the outer trio */}
-          <circle
-            className="vsrl-outer-body vsrl-outer-body-1"
-            cx="90"
-            cy="0"
-            r="3.2"
-            fill="#1A1714"
-            opacity="0.55"
-          />
-          {/* Medium teal — CCW, mid radius */}
-          <circle
-            className="vsrl-outer-body vsrl-outer-body-2"
-            cx="0"
-            cy="-92"
-            r="4.8"
-            fill="#34727A"
-            opacity="0.92"
-          />
-          {/* Larger gold — CW, widest of the three */}
-          <circle
-            className="vsrl-outer-body vsrl-outer-body-3"
-            cx="-76"
-            cy="40"
-            r="6.6"
-            fill="#B5904B"
-            opacity="1"
-          />
-        </svg>
-
-        {/* Inner mark — same component the header uses, full body animation */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <DnaVMark size={88} static />
-        </div>
+      <div
+        className="vsrl-loader-shrink"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <DnaVMark size={96} static />
       </div>
     </div>
   );
