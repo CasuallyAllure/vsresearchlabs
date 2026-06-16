@@ -28,7 +28,7 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AdditiveBlending, Color, Group, Quaternion, Vector3 } from 'three';
+import { AdditiveBlending, Color, Group, MeshBasicMaterial, Quaternion, Vector3 } from 'three';
 
 // ── Public types ──────────────────────────────────────────────────────────
 
@@ -348,6 +348,112 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
   );
 }
 
+// ── Residue caliper (glitchy "measuring stick" on the hovered chain) ───────
+
+interface Caliper {
+  a: [number, number, number];
+  b: [number, number, number];
+  out: [number, number, number];
+  lengthA: number;
+}
+
+/** Build a caliper across the longest axis of a residue, offset just outside
+ *  the chain. Returns null if the residue has no measurable span. */
+function computeCaliper(
+  structure: CompoundStructure,
+  resSeq: number,
+  centroid: Vector3,
+  scale: number,
+): Caliper | null {
+  const idx: number[] = [];
+  for (let i = 0; i < structure.atoms.length; i++) {
+    if (structure.atoms[i].resSeq === resSeq) idx.push(i);
+  }
+  if (idx.length < 2) return null;
+  // longest atom-pair = the residue's main axis
+  let max = 0, p = idx[0], q = idx[1];
+  for (let m = 0; m < idx.length; m++) {
+    for (let n = m + 1; n < idx.length; n++) {
+      const A = structure.atoms[idx[m]].pos, B = structure.atoms[idx[n]].pos;
+      const d = Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]);
+      if (d > max) { max = d; p = idx[m]; q = idx[n]; }
+    }
+  }
+  if (max < 0.12) return null;
+  const a = new Vector3(...structure.atoms[p].pos);
+  const b = new Vector3(...structure.atoms[q].pos);
+  const dir = new Vector3().subVectors(b, a).normalize();
+  const mid = new Vector3().addVectors(a, b).multiplyScalar(0.5);
+  // outward = component of (mid - centroid) perpendicular to the axis
+  let out = new Vector3().subVectors(mid, centroid);
+  out.addScaledVector(dir, -out.dot(dir));
+  if (out.lengthSq() < 1e-4) {
+    out = new Vector3(0, 0, 1);
+    out.addScaledVector(dir, -out.dot(dir));
+  }
+  out.normalize();
+  const off = 0.34, pad = 0.12;
+  const a2 = a.clone().addScaledVector(dir, -pad).addScaledVector(out, off);
+  const b2 = b.clone().addScaledVector(dir, pad).addScaledVector(out, off);
+  return { a: a2.toArray() as [number, number, number], b: b2.toArray() as [number, number, number], out: out.toArray() as [number, number, number], lengthA: max * scale };
+}
+
+function cylTransform(a: Vector3, b: Vector3) {
+  const dir = new Vector3().subVectors(b, a);
+  const len = dir.length();
+  const mid = new Vector3().addVectors(a, b).multiplyScalar(0.5);
+  const q = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), dir.clone().normalize());
+  return { position: mid.toArray() as [number, number, number], quaternion: q, length: len };
+}
+
+const CALIPER_COLOR = '#C4A35A';
+const TICK_LEN = 0.2;
+
+function ResidueCaliper({ caliper, reduced }: { caliper: Caliper; reduced: boolean }) {
+  const va = useMemo(() => new Vector3(...caliper.a), [caliper.a]);
+  const vb = useMemo(() => new Vector3(...caliper.b), [caliper.b]);
+  const vout = useMemo(() => new Vector3(...caliper.out), [caliper.out]);
+
+  const line = useMemo(() => cylTransform(va, vb), [va, vb]);
+  const tickA = useMemo(() => cylTransform(va.clone().addScaledVector(vout, -TICK_LEN / 2), va.clone().addScaledVector(vout, TICK_LEN / 2)), [va, vout]);
+  const tickB = useMemo(() => cylTransform(vb.clone().addScaledVector(vout, -TICK_LEN / 2), vb.clone().addScaledVector(vout, TICK_LEN / 2)), [vb, vout]);
+  const labelPos = useMemo(() => va.clone().add(vb).multiplyScalar(0.5).addScaledVector(vout, 0.16).toArray() as [number, number, number], [va, vb, vout]);
+
+  // Glitchy shimmer on the measuring line.
+  const coreRef = useRef<MeshBasicMaterial>(null);
+  useFrame((state) => {
+    if (reduced || !coreRef.current) return;
+    const t = state.clock.elapsedTime;
+    coreRef.current.opacity = 0.7 + 0.28 * Math.abs(Math.sin(t * 20));
+  });
+
+  return (
+    <group>
+      <group position={line.position} quaternion={line.quaternion}>
+        <mesh>
+          <cylinderGeometry args={[0.012, 0.012, line.length, 6]} />
+          <meshBasicMaterial ref={coreRef} color={CALIPER_COLOR} transparent opacity={0.9} blending={AdditiveBlending} depthWrite={false} />
+        </mesh>
+        <mesh>
+          <cylinderGeometry args={[0.04, 0.04, line.length, 8]} />
+          <meshBasicMaterial color={CALIPER_COLOR} transparent opacity={0.22} blending={AdditiveBlending} depthWrite={false} />
+        </mesh>
+      </group>
+      {[tickA, tickB].map((t, i) => (
+        <group key={i} position={t.position} quaternion={t.quaternion}>
+          <mesh>
+            <cylinderGeometry args={[0.012, 0.012, t.length, 6]} />
+            <meshBasicMaterial color={CALIPER_COLOR} transparent opacity={0.9} blending={AdditiveBlending} depthWrite={false} />
+          </mesh>
+        </group>
+      ))}
+      <Html position={labelPos} center zIndexRange={[39, 0]} style={{ pointerEvents: 'none' }}>
+        <div className={`holo-caliper${reduced ? '' : ' holo-live'}`}>{caliper.lengthA.toFixed(1)} Å</div>
+      </Html>
+    </group>
+  );
+}
+
 // ── Scene ─────────────────────────────────────────────────────────────────
 
 function MolecularScene({
@@ -364,6 +470,25 @@ function MolecularScene({
   const dense = useMemo(() => structure.atoms.some((a) => !!a.el), [structure.atoms]);
   const coreCount = useMemo(() => structure.atoms.filter((a) => a.type !== 'accent').length, [structure.atoms]);
   const accentBondSet = useMemo(() => new Set(structure.accentBondIndices ?? []), [structure.accentBondIndices]);
+
+  // Molecule centroid + display→Å scale (recovered from real bond lengths) so
+  // the caliper can offset outward and report a true measurement.
+  const centroid = useMemo(() => {
+    const c = new Vector3();
+    for (const a of structure.atoms) c.add(new Vector3(...a.pos));
+    if (structure.atoms.length) c.multiplyScalar(1 / structure.atoms.length);
+    return c;
+  }, [structure.atoms]);
+  const angstromScale = useMemo(() => {
+    for (const bond of structure.bonds) {
+      if (bond.length >= 4) {
+        const a = structure.atoms[bond[0]].pos, b = structure.atoms[bond[1]].pos;
+        const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+        if (d > 1e-4) return (bond[3] as number) / d;
+      }
+    }
+    return 1;
+  }, [structure]);
   const source = useMemo(() => {
     const m = structure.meta;
     if (!m) return undefined;
@@ -441,6 +566,8 @@ function MolecularScene({
     return b ? structure.atoms[b[0]]?.resSeq ?? null : null;
   })();
 
+  const caliper = hotResidue != null ? computeCaliper(structure, hotResidue, centroid, angstromScale) : null;
+
   return (
     <group ref={groupRef}>
       {structure.atoms.map((atom, i) => (
@@ -472,6 +599,8 @@ function MolecularScene({
           onClear={onClear}
         />
       ))}
+
+      {caliper && <ResidueCaliper caliper={caliper} reduced={reduced} />}
 
       {scan && (
         <Html position={scan.anchor} center zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }} wrapperClass="holo-scouter-wrap">
@@ -592,6 +721,14 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-lbl { font-size: 6.5px; letter-spacing: 0.14em; color: rgba(26,23,20,0.4); flex-shrink: 0; }
         .holo-val { font-size: 8.5px; color: rgba(26,23,20,0.85); text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; }
         .holo-src { position: relative; z-index: 1; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(26,23,20,0.1); font-size: 6.5px; letter-spacing: 0.12em; opacity: 0.85; }
+        .holo-caliper {
+          font-family: ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 8px; font-weight: 600; letter-spacing: 0.08em; white-space: nowrap;
+          color: #8a6d34; padding: 1px 5px; border-radius: 4px;
+          background: rgba(251,249,244,0.82); border: 1px solid rgba(196,163,90,0.55);
+          box-shadow: 0 0 8px rgba(196,163,90,0.35);
+          -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+        }
         @media (max-width: 640px) {
           /* Scale the readout down to stay proportional to the smaller model. */
           .holo-scouter-card { width: 122px; padding: 5px 6px 6px; border-radius: 6px; }
