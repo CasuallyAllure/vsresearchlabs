@@ -516,9 +516,9 @@ function StageActions({
 
   return (
     <div className="space-y-[var(--space-3)]">
-      <div className="research-surface-solid p-[var(--space-4)]">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-ink/75">{title}</p>
-        <p className="mt-1 mb-[var(--space-3)] text-[11.5px] leading-relaxed text-ink/45">{detail}</p>
+      <div className="research-surface-solid p-[var(--space-3)]">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-ink/75">{title}</p>
+        <p className="mt-0.5 mb-[var(--space-2)] text-[10.5px] leading-snug text-ink/45">{detail}</p>
 
         {inputs}
 
@@ -531,20 +531,21 @@ function StageActions({
           className={`${fieldCls} mb-[var(--space-3)] resize-y`}
         />
 
-        {/* Every control in one tight lane, color-coded by intent:
-            forward = advance (green) · back = caution (amber) · cancel = danger (red). */}
-        <div className="flex flex-wrap items-center gap-1">
-          {forward && (
-            <Pill advance onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
-          )}
+        {/* One tight row on every screen (compact pills shrink on phones so all
+            five fit side by side), color-coded by intent. Order: back · forward
+            · re-notify · save · cancel. */}
+        <div className="no-scrollbar flex flex-nowrap items-center gap-1 overflow-x-auto">
           {canBack && (
-            <Pill warn onClick={stepBack} disabled={busy}>← Back a step</Pill>
+            <Pill compact warn onClick={stepBack} disabled={busy}>← Back a step</Pill>
           )}
-          <Pill onClick={() => setShowReNotify(true)} disabled={busy}>
+          {forward && (
+            <Pill compact advance onClick={forward.act} disabled={busy}>{busy ? '…' : forward.label}</Pill>
+          )}
+          <Pill compact onClick={() => setShowReNotify(true)} disabled={busy}>
             {reNotifyFn === 'send-receipt' ? 'Re-notify (receipt)' : 'Re-notify (invoice)'}
           </Pill>
-          <Pill onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
-          <Pill danger onClick={cancel} disabled={busy}>Cancel order</Pill>
+          <Pill compact onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
+          <Pill compact danger onClick={cancel} disabled={busy}>Cancel order</Pill>
         </div>
       </div>
 
@@ -939,12 +940,16 @@ function MoneyInput({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-/** Small uniform pill used across the order controls. */
-function Pill({ onClick, disabled, primary, advance, warn, danger, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; advance?: boolean; warn?: boolean; danger?: boolean; children: React.ReactNode }) {
+/** Small uniform pill used across the order controls. `compact` shrinks it
+ *  further on phones so a full row of actions fits on one line. */
+function Pill({ onClick, disabled, primary, advance, warn, danger, compact, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; advance?: boolean; warn?: boolean; danger?: boolean; compact?: boolean; children: React.ReactNode }) {
+  const size = compact
+    ? 'px-1.5 py-[3px] text-[7px] tracking-[0.06em] sm:px-2.5 sm:text-[8.5px] sm:tracking-[0.14em]'
+    : 'px-2.5 py-[3px] text-[8.5px] tracking-[0.14em]';
   return (
     <button type="button" onClick={onClick} disabled={disabled}
       className={[
-        'rounded-full border px-2.5 py-[3px] text-[8.5px] uppercase tracking-[0.14em] transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
+        `shrink-0 rounded-full border uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${size}`,
         danger ? 'border-red-400/35 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
           : advance ? 'border-[#2E7D5B]/45 bg-[#2E7D5B]/[0.10] font-medium text-[#2E7D5B] hover:border-[#2E7D5B]/65 hover:bg-[#2E7D5B]/[0.16]'
           : warn ? 'border-[#B5904B]/50 bg-[#B5904B]/[0.07] text-[#9A7833] hover:border-[#B5904B]/70 hover:bg-[#B5904B]/[0.12]'
