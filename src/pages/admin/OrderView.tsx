@@ -137,6 +137,7 @@ export function OrderView({
   const [showInvoice, setShowInvoice] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [eventsUnavailable, setEventsUnavailable] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +156,7 @@ export function OrderView({
         .order('created_at', { ascending: true });
       if (cancelled) return;
       setEvents(ev.error ? [] : ((ev.data ?? []) as OrderEvent[]));
+      setEventsUnavailable(!!ev.error);
     }
     load();
     return () => { cancelled = true; };
@@ -166,6 +168,17 @@ export function OrderView({
     if (!supabase) return;
     await supabase.from('order_events').insert({ order_id: orderId, stage, kind, note });
   }, [orderId]);
+
+  // Append an event optimistically (shows instantly even before migration 014),
+  // then best-effort persist. No reload, so the local entry survives.
+  const addEvent = useCallback(async (stage: StageKey | null, kind: string, note: string) => {
+    const optimistic: OrderEvent = {
+      id: `tmp-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
+      stage, kind, note, created_at: new Date().toISOString(),
+    };
+    setEvents((prev) => [...prev, optimistic]);
+    await logEvent(stage, kind, note);
+  }, [logEvent]);
 
   const run = useCallback(async (
     rpc: () => PromiseLike<{ error: { message: string } | null }>,
@@ -238,42 +251,31 @@ export function OrderView({
         </div>
       </div>
 
-      {/* Itemized */}
+      {/* Itemized — compact rows that fit without horizontal scroll */}
       <p className="holo-text-caption mb-[var(--space-2)] text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
-      <div className="overflow-x-auto rounded-sm border border-ink/[0.08]">
-        <table className="w-full min-w-[460px] border-collapse">
-          <thead>
-            <tr className="border-b border-ink/[0.10] bg-ink/[0.02]">
-              <th className="px-[var(--space-3)] py-[var(--space-2)] text-left text-[9px] uppercase tracking-[0.18em] text-ink/45 font-normal">SKU</th>
-              <th className="px-[var(--space-3)] py-[var(--space-2)] text-left text-[9px] uppercase tracking-[0.18em] text-ink/45 font-normal">Item</th>
-              <th className="px-[var(--space-3)] py-[var(--space-2)] text-right text-[9px] uppercase tracking-[0.18em] text-ink/45 font-normal w-[52px]">Qty</th>
-              <th className="px-[var(--space-3)] py-[var(--space-2)] text-right text-[9px] uppercase tracking-[0.18em] text-ink/45 font-normal w-[90px]">Unit</th>
-              <th className="px-[var(--space-3)] py-[var(--space-2)] text-right text-[9px] uppercase tracking-[0.18em] text-ink/45 font-normal w-[100px]">Line</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map((l) => {
-              const u = unitOf(l);
-              const lt = lineTotal(l);
-              return (
-                <tr key={l.id} className="border-b border-ink/[0.05] last:border-0">
-                  <td className="px-[var(--space-3)] py-[var(--space-2)] font-mono text-[11px] text-holo-light/80">{l.sku}</td>
-                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink/80">
-                    {l.product_name}
-                    {l.item_note && <span className="ml-1.5 text-[10.5px] text-ink/40">({l.item_note})</span>}
-                  </td>
-                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{l.quantity}</td>
-                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[11.5px] tabular-nums text-ink/55">{u == null ? '—' : fmtUSD(u)}</td>
-                  <td className="px-[var(--space-3)] py-[var(--space-2)] text-right font-mono text-[12px] tabular-nums text-ink/80">{lt == null ? '—' : fmtUSD(lt)}</td>
-                </tr>
-              );
-            })}
-            {lines.length === 0 && (
-              <tr><td colSpan={5} className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
+        {lines.map((l) => {
+          const u = unitOf(l);
+          const lt = lineTotal(l);
+          return (
+            <li key={l.id} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
+              <div className="min-w-0">
+                <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
+                <p className="truncate font-mono text-[10px] text-holo-light/70">
+                  {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
+                </p>
+              </div>
+              <div className="shrink-0 text-right font-mono tabular-nums">
+                <p className="text-[10.5px] text-ink/50">{l.quantity} × {u == null ? '—' : fmtUSD(u)}</p>
+                <p className="text-[12.5px] text-ink/85">{lt == null ? '—' : fmtUSD(lt)}</p>
+              </div>
+            </li>
+          );
+        })}
+        {lines.length === 0 && (
+          <li className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</li>
+        )}
+      </ul>
 
       {/* Invoice actions — small pills */}
       <div className="mt-[var(--space-3)] flex flex-wrap items-center gap-[var(--space-2)]">
@@ -324,8 +326,8 @@ export function OrderView({
 
             <div className="mt-[var(--space-5)]">
               <StageActions
-                order={order} busy={busy} run={run} reload={reload}
-                logEvent={logEvent} onChanged={onChanged} setActionError={setActionError}
+                order={order} busy={busy} run={run} onAddEvent={addEvent}
+                onChanged={onChanged} setActionError={setActionError}
               />
             </div>
           </>
@@ -334,10 +336,10 @@ export function OrderView({
         {actionError && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{actionError}</p>}
       </section>
 
-      {/* ── History (read-only) ────────────────────────────────────────────── */}
-      {events.length > 0 && (
-        <section className="mt-[var(--space-7)]">
-          <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">History</p>
+      {/* ── Notes & history ────────────────────────────────────────────────── */}
+      <section className="mt-[var(--space-7)] border-t border-ink/[0.06] pt-[var(--space-5)]">
+        <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">Notes &amp; history</p>
+        {events.length > 0 ? (
           <ol className="space-y-[var(--space-2)]">
             {events.map((e) => (
               <li key={e.id} className="flex gap-[var(--space-3)] text-[12px]">
@@ -347,8 +349,15 @@ export function OrderView({
               </li>
             ))}
           </ol>
-        </section>
-      )}
+        ) : (
+          <p className="text-[11.5px] text-ink/40">No notes yet. Notes you save on a step show here and print on the invoice.</p>
+        )}
+        {eventsUnavailable && (
+          <p className="mt-[var(--space-2)] text-[10.5px] text-ink/35">
+            Notes show here now, but persist across reloads only after the order_events migration (014) is applied.
+          </p>
+        )}
+      </section>
 
       {showInvoice && (
         <PrintableInvoice
@@ -377,21 +386,19 @@ export function OrderView({
     });
     setBusy(false);
     if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
-    await logEvent(currentStageKey(order), 'system', note.trim() ? `Invoice sent to client — ${note.trim()}` : 'Invoice sent to client');
-    reload();
+    await addEvent(currentStageKey(order), 'system', note.trim() ? `Invoice sent to client — ${note.trim()}` : 'Invoice sent to client');
   }
 }
 
 /* ── Stage actions — back / forward + inline notes, all in one segment ─────── */
 
 function StageActions({
-  order, busy, run, reload, logEvent, onChanged, setActionError,
+  order, busy, run, onAddEvent, onChanged, setActionError,
 }: {
   order: OrderRecord;
   busy: boolean;
   run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null }, confirmMsg?: string) => Promise<boolean>;
-  reload: () => void;
-  logEvent: (stage: StageKey | null, kind: string, note: string | null) => Promise<void>;
+  onAddEvent: (stage: StageKey | null, kind: string, note: string) => Promise<void>;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
 }) {
@@ -561,9 +568,8 @@ function StageActions({
   async function saveNote() {
     const t = note.trim();
     if (!t) return;
-    await logEvent(currentStageKey(order), 'note', t);
+    await onAddEvent(currentStageKey(order), 'note', t);
     setNote('');
-    reload();
   }
 
   async function reNotify(n: string) {
@@ -572,8 +578,7 @@ function StageActions({
     const { error } = await supabase.functions.invoke(reNotifyFn, { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
     if (error) { setActionError(`Couldn't send: ${error.message}`); return; }
     const kindLabel = reNotifyFn === 'send-receipt' ? 'receipt' : 'invoice';
-    await logEvent(currentStageKey(order), 'system', n.trim() ? `Re-notified (${kindLabel}) — ${n.trim()}` : `Re-notified (${kindLabel})`);
-    reload();
+    await onAddEvent(currentStageKey(order), 'system', n.trim() ? `Re-notified (${kindLabel}) — ${n.trim()}` : `Re-notified (${kindLabel})`);
   }
 }
 
