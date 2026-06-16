@@ -1,9 +1,9 @@
 /**
  * AdminLayout
  *
- * Shell for all /admin/* pages. Horizontal pill nav across the top
- * (matches the site's pill-nav vocabulary), signed-in identity readout
- * on the right with sign-out. Children render below.
+ * Shell for all /admin/* pages. A single thin command bar carries the
+ * brand, the compact section-nav dropdown, the signed-in email, and the
+ * sign-out control — no oversized header. Children render below.
  */
 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -15,69 +15,149 @@ interface AdminLayoutProps {
   children: ReactNode;
 }
 
-const TABS: Array<{ to: string; label: string; match?: (p: string) => boolean }> = [
-  { to: '/admin',               label: 'Dashboard',    match: (p) => p === '/admin' || p === '/admin/' },
-  { to: '/admin/inquiries',     label: 'Inquiries',    match: (p) => p.startsWith('/admin/inquiries') },
-  { to: '/admin/orders',        label: 'Orders',       match: (p) => p.startsWith('/admin/orders') },
-  { to: '/admin/customers',     label: 'Customers',    match: (p) => p.startsWith('/admin/customers') },
-  { to: '/admin/inventory',     label: 'Inventory',    match: (p) => p.startsWith('/admin/inventory') },
-  { to: '/admin/import',        label: 'Import',       match: (p) => p.startsWith('/admin/import') },
-  { to: '/admin/stock-history', label: 'Stock log',    match: (p) => p.startsWith('/admin/stock-history') },
-  { to: '/admin/reports',       label: 'Reports',      match: (p) => p.startsWith('/admin/reports') },
-  { to: '/admin/audit-log',     label: 'Audit log',    match: (p) => p.startsWith('/admin/audit-log') },
-  { to: '/admin/system-health', label: 'Health',       match: (p) => p.startsWith('/admin/system-health') },
-  { to: '/admin/products',      label: 'Catalog',      match: (p) => p === '/admin/products' || /^\/admin\/[^/]+\/(edit|new)$/.test(p) || p === '/admin/new' },
+interface SubTab {
+  to: string;
+  label: string;
+  match: (p: string) => boolean;
+}
+
+interface Area {
+  key: string;
+  label: string;
+  subtabs: SubTab[];
+}
+
+/**
+ * Four operational areas. The section dropdown switches areas; within an
+ * area, a thin sub-tab strip switches between the views that play off each
+ * other. Selecting an area lands on its first sub-tab.
+ */
+const AREAS: Area[] = [
+  {
+    key: 'overview',
+    label: 'Dashboard',
+    subtabs: [
+      { to: '/admin', label: 'Dashboard', match: (p) => p === '/admin' || p === '/admin/' },
+    ],
+  },
+  {
+    key: 'commerce',
+    label: 'Commerce',
+    subtabs: [
+      { to: '/admin/orders',    label: 'Orders',    match: (p) => p.startsWith('/admin/orders') },
+      { to: '/admin/inquiries', label: 'Inquiries', match: (p) => p.startsWith('/admin/inquiries') },
+      { to: '/admin/customers', label: 'Customers', match: (p) => p.startsWith('/admin/customers') },
+    ],
+  },
+  {
+    key: 'catalog',
+    label: 'Catalog',
+    subtabs: [
+      {
+        to: '/admin/inventory',
+        label: 'Inventory',
+        // The old standalone Catalog (/admin/products) + product editor are
+        // folded into Inventory now, so they light up this sub-tab too.
+        match: (p) =>
+          p.startsWith('/admin/inventory') ||
+          p === '/admin/products' ||
+          p === '/admin/new' ||
+          /^\/admin\/[^/]+\/(edit|new)$/.test(p),
+      },
+      { to: '/admin/stock-history', label: 'Stock log', match: (p) => p.startsWith('/admin/stock-history') },
+      { to: '/admin/import',        label: 'Import',    match: (p) => p.startsWith('/admin/import') },
+    ],
+  },
+  {
+    key: 'records',
+    label: 'Records',
+    subtabs: [
+      { to: '/admin/reports',       label: 'Reports',   match: (p) => p.startsWith('/admin/reports') },
+      { to: '/admin/system-health', label: 'Health',    match: (p) => p.startsWith('/admin/system-health') },
+      { to: '/admin/audit-log',     label: 'Audit log', match: (p) => p.startsWith('/admin/audit-log') },
+    ],
+  },
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, signOut } = useAdminAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const path = location.pathname;
 
-  const activeTab = TABS.find((t) =>
-    t.match ? t.match(location.pathname) : location.pathname === t.to,
-  );
-  const currentTo = activeTab?.to ?? '/admin';
+  const activeArea =
+    AREAS.find((a) => a.subtabs.some((t) => t.match(path))) ?? AREAS[0];
+  const showSubtabs = activeArea.subtabs.length > 1;
 
   return (
-    <div className="py-[var(--space-6)]">
-      {/* Top bar — title + signed-in identity on one line */}
-      <header className="mb-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.06]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          VS Research Labs · Operations
-        </p>
-        <div className="flex items-center justify-between gap-[var(--space-3)]">
-          <div className="flex min-w-0 flex-1 items-baseline gap-[var(--space-3)]">
-            <h1 className="shrink-0 text-[clamp(1.2rem,2.4vw,1.6rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-              <span className="font-light text-ink/85">Admin </span>
-              <span className="font-medium text-ink">console.</span>
-            </h1>
-            {user && (
-              <span className="min-w-0 truncate font-mono text-[11px] tabular-nums text-ink/45">
-                {user.email}
-              </span>
-            )}
-          </div>
+    <div className="py-[var(--space-5)]">
+      {/* Thin command bar — brand · section nav · identity · sign out, one line */}
+      <header className="mb-[var(--space-4)] flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-3)]">
+        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.24em] text-ink/55">
+          <span className="text-ink/70">VS Research Labs</span>
+          <span aria-hidden="true" className="text-ink/25">/</span>
+          <span className="text-ink/40">Admin</span>
+        </span>
+
+        {/* Section nav — compact area dropdown */}
+        <nav aria-label="Admin areas" className="shrink-0">
+          <AdminFilterBar
+            label="Section"
+            options={AREAS.map((a) => ({ value: a.key, label: a.label }))}
+            value={activeArea.key}
+            onChange={(key) => {
+              const next = AREAS.find((a) => a.key === key);
+              if (next) navigate(next.subtabs[0].to);
+            }}
+            dense
+          />
+        </nav>
+
+        {/* Identity + sign out, pushed to the right */}
+        <div className="ml-auto flex min-w-0 items-center gap-[var(--space-3)]">
+          {user && (
+            <span className="hidden min-w-0 truncate font-mono text-[10px] tabular-nums text-ink/40 sm:inline">
+              {user.email}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => signOut()}
-            className="shrink-0 rounded-full border border-ink/15 px-[var(--space-4)] py-[var(--space-2)] uppercase tracking-[0.2em] text-[10px] text-ink/65 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+            className="shrink-0 rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           >
             Sign out
           </button>
         </div>
       </header>
 
-      {/* Section nav — a dropdown, not a pill row */}
-      <nav aria-label="Admin sections" className="mb-[var(--space-6)]">
-        <AdminFilterBar
-          label="Section"
-          options={TABS.map((t) => ({ value: t.to, label: t.label }))}
-          value={currentTo}
-          onChange={(to) => navigate(to)}
-          widthClass="sm:w-[240px]"
-        />
-      </nav>
+      {/* Sub-tab strip — the views inside the active area */}
+      {showSubtabs && (
+        <nav
+          aria-label={`${activeArea.label} views`}
+          className="mb-[var(--space-6)] flex flex-wrap items-center gap-x-[var(--space-1)] gap-y-[var(--space-2)]"
+        >
+          {activeArea.subtabs.map((t, i) => {
+            const on = t.match(path);
+            return (
+              <span key={t.to} className="flex items-center">
+                {i > 0 && <span aria-hidden="true" className="px-1 text-ink/20">·</span>}
+                <Link
+                  to={t.to}
+                  aria-current={on ? 'page' : undefined}
+                  className={[
+                    'rounded-full px-[var(--space-3)] py-[3px] text-[10px] uppercase tracking-[0.18em] transition-colors',
+                    on
+                      ? 'bg-ink/[0.06] text-ink'
+                      : 'text-ink/45 hover:text-ink',
+                  ].join(' ')}
+                >
+                  {t.label}
+                </Link>
+              </span>
+            );
+          })}
+        </nav>
+      )}
 
       <div>{children}</div>
 

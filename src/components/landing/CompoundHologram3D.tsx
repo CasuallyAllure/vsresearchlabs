@@ -204,10 +204,19 @@ function AtomMesh({
   const [hot, setHot] = useState(false);
 
   function enter(e: ThreeEvent<PointerEvent>) {
-    e.stopPropagation(); setHot(true); document.body.style.cursor = 'crosshair'; onHover('atom', index);
+    e.stopPropagation();
+    // Touch screens have no hover: let the group glow (groupHot) carry the
+    // highlight so a tapped atom isn't left permanently bright after the
+    // pin moves elsewhere. Mouse keeps the extra self-glow.
+    if (e.pointerType === 'mouse') { setHot(true); document.body.style.cursor = 'crosshair'; }
+    onHover('atom', index);
   }
   function leave(e: ThreeEvent<PointerEvent>) {
-    e.stopPropagation(); setHot(false); document.body.style.cursor = ''; onClear();
+    e.stopPropagation();
+    // On touch, a tap fires pointerout on release — ignore it so the
+    // highlight stays pinned until the user taps empty space.
+    if (e.pointerType !== 'mouse') return;
+    setHot(false); document.body.style.cursor = ''; onClear();
   }
 
   return (
@@ -216,8 +225,8 @@ function AtomMesh({
         <sphereGeometry args={[coreRadius, dense ? 12 : 20, dense ? 12 : 20]} />
         <meshStandardMaterial color={style.color} emissive={style.emissive} emissiveIntensity={hot ? 2.4 : groupHot ? 2.2 : 1.1} roughness={0.3} metalness={0.15} />
       </mesh>
-      {/* Halo doubles as the (larger) hover target. */}
-      <mesh onPointerOver={enter} onPointerOut={leave}>
+      {/* Halo doubles as the hover target (mouse) and tap target (touch). */}
+      <mesh onPointerOver={enter} onPointerOut={leave} onPointerDown={enter}>
         <sphereGeometry args={[haloRadius, 10, 10]} />
         <meshBasicMaterial color={style.color} transparent opacity={hot ? Math.min(0.5, haloOpacity * 2.4) : groupHot ? Math.min(0.46, haloOpacity * 2.2) : haloOpacity} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
@@ -248,10 +257,15 @@ function BondMesh({
   const [hot, setHot] = useState(false);
 
   function enter(e: ThreeEvent<PointerEvent>) {
-    e.stopPropagation(); setHot(true); document.body.style.cursor = 'crosshair'; onHover('bond', index);
+    e.stopPropagation();
+    if (e.pointerType === 'mouse') { setHot(true); document.body.style.cursor = 'crosshair'; }
+    onHover('bond', index);
   }
   function leave(e: ThreeEvent<PointerEvent>) {
-    e.stopPropagation(); setHot(false); document.body.style.cursor = ''; onClear();
+    e.stopPropagation();
+    // Touch: ignore the release-fired pointerout so the pin persists.
+    if (e.pointerType !== 'mouse') return;
+    setHot(false); document.body.style.cursor = ''; onClear();
   }
 
   return (
@@ -266,7 +280,7 @@ function BondMesh({
           <meshBasicMaterial color={color} transparent opacity={hot ? 0.45 : groupHot ? 0.42 : 0.22} blending={AdditiveBlending} depthWrite={false} />
         </mesh>
       )}
-      <mesh onPointerOver={enter} onPointerOut={leave}>
+      <mesh onPointerOver={enter} onPointerOut={leave} onPointerDown={enter}>
         <cylinderGeometry args={[hitR, hitR, length, 6]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
