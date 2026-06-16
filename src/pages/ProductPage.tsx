@@ -300,7 +300,7 @@ export function ProductPage() {
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
           className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
-          style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ backgroundColor: '#FBF9F4', border: '1px solid rgba(26,23,20,0.08)' }}
           aria-label="Compound reference and inquiry"
         >
           {/* Desktop visual identity zone */}
@@ -314,7 +314,7 @@ export function ProductPage() {
 
           {/* Mobile image gallery — replaces the visual zone at < lg */}
           {activeImageUrl && (
-            <div className="lg:hidden" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="lg:hidden" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
               <div className="aspect-[4/3] w-full overflow-hidden bg-display">
                 <img src={activeImageUrl} alt={product.name} className="h-full w-full object-cover" />
               </div>
@@ -350,7 +350,7 @@ export function ProductPage() {
           )}
 
           {/* Identifier band */}
-          <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
             <div className="flex items-center gap-2 mb-[var(--space-2)] flex-wrap">
               <AbbreviationChip value={ci.abbreviation} />
               <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">{ci.family}</span>
@@ -386,14 +386,14 @@ export function ProductPage() {
 
           {/* Regulatory chip cluster */}
           {(ci.humanTrials !== undefined || ci.fdaStatus) && (
-            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
               <RegulatoryChipCluster humanTrials={ci.humanTrials} fdaStatus={ci.fdaStatus} />
             </div>
           )}
 
           {/* Tier strip (interactive) */}
           {ci.tiers.length > 0 && (
-            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
               <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
                 Available Tiers
               </p>
@@ -407,7 +407,7 @@ export function ProductPage() {
           )}
 
           {/* Quantity + Add to Inquiry — desktop and tablet only */}
-          <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
             <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-2)]">
               <QuantityStepper quantity={quantity} onChange={setQuantity} />
               <button
@@ -418,12 +418,12 @@ export function ProductPage() {
                 style={{
                   fontSize: '11px',
                   letterSpacing: '0.04em',
-                  backgroundColor: 'rgba(255,255,255,0.09)',
-                  border: '1px solid rgba(255,255,255,0.16)',
+                  backgroundColor: 'rgba(26,23,20,0.08)',
+                  border: '1px solid rgba(26,23,20,0.22)',
                   transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out',
                 }}
-                onMouseEnter={(e) => { if (!outOfStock) { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.14)'; el.style.borderColor = 'rgba(255,255,255,0.24)'; } }}
-                onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(255,255,255,0.09)'; el.style.borderColor = 'rgba(255,255,255,0.16)'; }}
+                onMouseEnter={(e) => { if (!outOfStock) { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.14)'; el.style.borderColor = 'rgba(26,23,20,0.32)'; } }}
+                onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.08)'; el.style.borderColor = 'rgba(26,23,20,0.22)'; }}
               >
                 {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
               </button>
@@ -468,7 +468,7 @@ export function ProductPage() {
         <main className="flex-1 min-w-0 lg:overflow-visible">
           <div
             className="overflow-hidden"
-            style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)' }}
+            style={{ backgroundColor: '#FBF9F4', border: '1px solid rgba(26,23,20,0.08)' }}
           >
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>
@@ -491,8 +491,8 @@ export function ProductPage() {
         className="lg:hidden fixed left-0 right-0 z-40"
         style={{
           bottom: 'calc(max(2px, env(safe-area-inset-bottom)) + 44px)',
-          backgroundColor: '#000',
-          borderTop: '1px solid rgba(255,255,255,0.07)',
+          backgroundColor: '#FBF9F4',
+          borderTop: '1px solid rgba(26,23,20,0.08)',
         }}
         role="region"
         aria-label="Add to inquiry"
@@ -504,7 +504,7 @@ export function ProductPage() {
             onClick={handleAddToInquiry}
             disabled={outOfStock}
             className="flex-1 h-9 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.16)' }}
+            style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.08)', border: '1px solid rgba(26,23,20,0.22)' }}
           >
             {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
           </button>
