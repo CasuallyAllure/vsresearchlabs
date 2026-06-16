@@ -11,7 +11,7 @@
  * (filters) and the AdminLayout section nav.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface FilterOption<T extends string> {
   value: T;
@@ -39,6 +39,13 @@ export function AdminFilterBar<T extends string>({
 }: AdminFilterBarProps<T>) {
   const [open, setOpen] = useState(false);
   const current = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   return (
     <div className="flex w-full flex-col gap-[var(--space-2)] sm:flex-row sm:items-center sm:gap-[var(--space-3)]">

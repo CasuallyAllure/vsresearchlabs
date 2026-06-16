@@ -174,6 +174,13 @@ function OrderRowActions({ row, onDone }: { row: OrderRow; onDone: () => void })
   const btnRef = useRef<HTMLButtonElement>(null);
   const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
   function toggle() {
     if (open) return setOpen(false);
     const r = btnRef.current?.getBoundingClientRect();
