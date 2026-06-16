@@ -67,6 +67,37 @@ export interface OrderLookupResult {
   delivered_at: string | null;
 }
 
+/** One itemized line of a token-gated invoice/receipt. */
+export interface OrderInvoiceLine {
+  sku: string;
+  product_name: string;
+  quantity: number;
+  unit_price_cents: number | null;
+  item_note: string | null;
+}
+
+/**
+ * Full invoice/receipt returned by `get_order_by_token` (migration 019).
+ * Reachable only with the order's high-entropy secret token, so it may carry
+ * financials + itemized lines — unlike the enumerable status lookup.
+ */
+export interface OrderInvoice {
+  order_number: string;
+  status: OrderLookupStatus | string;
+  buyer_name: string | null;
+  placed_at: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  carrier: string | null;
+  tracking_number: string | null;
+  subtotal_cents: number | null;
+  shipping_cents: number | null;
+  total_cents: number | null;
+  payment_method: string | null;
+  paid: boolean;
+  lines: OrderInvoiceLine[];
+}
+
 /** Customer-facing label + one-line explanation + a 0–4 step index for a bar. */
 export function statusPresentation(status: string): {
   label: string;

@@ -67,6 +67,7 @@ interface OrderRecord {
   delivered_at: string | null;
   cancelled_at: string | null;
   created_at: string;
+  lookup_token: string | null;
 }
 
 interface OrderLine {
@@ -87,7 +88,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at';
+  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, lookup_token';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -308,6 +309,7 @@ export function OrderView({
         {order.invoice_amount_cents != null && (
           <SmallPill onClick={() => setShowSend(true)} disabled={busy}>Send to client</SmallPill>
         )}
+        {order.lookup_token && <CopyClientLinkPill token={order.lookup_token} />}
       </div>
 
       {/* ── Status bar ─────────────────────────────────────────────────────── */}
@@ -968,6 +970,24 @@ function SmallPill({ onClick, disabled, children }: { onClick: () => void; disab
       {children}
     </button>
   );
+}
+
+/** Copies the customer's secure invoice/receipt link (/track?t=<token>) to the
+ *  clipboard so the admin can share it. The token is the order's secret — only
+ *  someone with this link can see the itemized invoice. */
+function CopyClientLinkPill({ token }: { token: string }) {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    const url = `${window.location.origin}/track?t=${token}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt('Copy this client link:', url);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }
+  return <SmallPill onClick={copy}>{copied ? 'Link copied ✓' : 'Copy client link'}</SmallPill>;
 }
 
 /* ── helpers ──────────────────────────────────────────────────────────────── */
