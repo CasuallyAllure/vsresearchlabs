@@ -9,6 +9,7 @@ import { AdminGate } from './pages/admin/AdminGate';
 import { RouteTransitionLoader } from './components/brand/RouteTransitionLoader';
 import { DisclaimerGate } from './components/brand/DisclaimerGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { RouteMeta } from './components/RouteMeta';
 
 // Route-level code splitting. Each page (and the heavy admin cluster) becomes
 // its own chunk loaded on demand, so the initial bundle is just the router +
@@ -62,6 +63,7 @@ function RouteFallback() {
 export default function App() {
   return (
     <BrowserRouter>
+      <RouteMeta />
       <GlobalSurface>
         <GlobalHeader />
         <AnimatedPortalShell>

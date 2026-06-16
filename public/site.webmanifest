@@ -1,0 +1,13 @@
+{
+  "name": "VS Research Labs",
+  "short_name": "VS Research Labs",
+  "description": "Research-grade peptides, laboratory supplies, and precision instruments.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4EFE6",
+  "theme_color": "#F4EFE6",
+  "icons": [
+    { "src": "/brand/vs-dna-s-full-colour.png", "sizes": "480x480", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/vs-dna-s-full-colour.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

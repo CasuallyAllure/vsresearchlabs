@@ -1,0 +1,8 @@
+# VS Research Labs
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /track
+
+Sitemap: https://vsresearchlabs.com/sitemap.xml
