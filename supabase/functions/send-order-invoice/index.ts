@@ -24,6 +24,8 @@ const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research L
 const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 
 const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
+// Public site origin for the customer's secure invoice/receipt link.
+const SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
@@ -85,6 +87,7 @@ interface OrderRow {
   ship_zip: string | null;
   ship_country: string | null;
   created_at: string;
+  lookup_token: string | null;
 }
 
 function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string }): string {
@@ -201,6 +204,13 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: s
       </p>
     </div>
 
+    ${order.lookup_token ? `
+    <!-- Secure online invoice link -->
+    <div style="text-align:center;margin-top:18px;">
+      <a href="${SITE_URL}/track?t=${order.lookup_token}" style="display:inline-block;background:#1A1714;color:#FBF9F4;text-decoration:none;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;padding:13px 28px;border-radius:999px;">View &amp; print your invoice →</a>
+      <div style="font-size:11px;color:#6F665C;margin-top:8px;line-height:1.5;">View your invoice online, track status, and save a PDF anytime — no login needed.</div>
+    </div>` : ""}
+
     <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">
       Once payment is received and verified, your order moves to fulfillment and ships from our nearest warehouse (<strong>Sacramento</strong> or <strong>Vallejo, California</strong>). You'll receive a tracking number by email as soon as it leaves the dock.
     </p>
@@ -245,7 +255,7 @@ Deno.serve(async (req: Request) => {
     .select(`id, order_number, buyer_name, buyer_contact, buyer_organization,
              invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
              payment_method, status, notes,
-             ship_street, ship_city, ship_state, ship_zip, ship_country, created_at`)
+             ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
     .eq("id", payload.order_id)
     .single();
   if (orderError || !order) return jsonResponse({ error: "Order not found." }, 404);

@@ -22,6 +22,8 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
 const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
+// Public site origin for the customer's secure receipt link.
+const SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
@@ -64,6 +66,7 @@ interface OrderRow {
   ship_zip: string | null;
   ship_country: string | null;
   created_at: string;
+  lookup_token: string | null;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -193,6 +196,13 @@ function buildReceiptHtml(order: OrderRow, lines: OrderLine[]): string {
       </table>
     </div>
 
+    ${order.lookup_token ? `
+    <!-- Secure online receipt link -->
+    <div style="text-align:center;margin-top:18px;">
+      <a href="${SITE_URL}/track?t=${order.lookup_token}" style="display:inline-block;background:#1A1714;color:#FBF9F4;text-decoration:none;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;padding:13px 28px;border-radius:999px;">View &amp; print your receipt →</a>
+      <div style="font-size:11px;color:#6F665C;margin-top:8px;line-height:1.5;">View your receipt online and save a PDF anytime — no login needed.</div>
+    </div>` : ""}
+
     <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">Thank you for your order. Keep this receipt for your records — you can reply to this email anytime with questions about reference <strong>${escapeHtml(order.order_number)}</strong>.</p>
 
     <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">
@@ -234,7 +244,7 @@ Deno.serve(async (req: Request) => {
     .select(`id, order_number, status, buyer_name, buyer_contact, buyer_organization,
              invoice_amount_cents, subtotal_cents, shipping_cents, payment_method,
              tracking_number, carrier, paid_at, fulfilled_at, delivered_at,
-             ship_street, ship_city, ship_state, ship_zip, ship_country, created_at`)
+             ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
     .eq("id", payload.order_id)
     .single();
   if (orderError || !order) return jsonResponse({ error: "Order not found." }, 404);
