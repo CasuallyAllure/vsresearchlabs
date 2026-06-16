@@ -62,20 +62,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </header>
 
-      {/* Tab nav */}
-      <nav aria-label="Admin sections" className="mb-[var(--space-8)]">
-        <ul className="flex flex-wrap items-center gap-2">
+      {/* Tab nav — single scrollable line, compact pills (no wrap) */}
+      <nav aria-label="Admin sections" className="mb-[var(--space-6)] border-b border-ink/[0.06] pb-[var(--space-3)]">
+        <ul className="no-scrollbar -mx-[var(--space-1)] flex items-center gap-1.5 overflow-x-auto px-[var(--space-1)]">
           {TABS.map((tab) => {
             const active = tab.match
               ? tab.match(location.pathname)
               : location.pathname === tab.to;
             return (
-              <li key={tab.to}>
+              <li key={tab.to} className="shrink-0">
                 <NavLink
                   to={tab.to}
                   end={tab.to === '/admin'}
                   className={[
-                    'inline-flex items-center rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] transition-colors',
+                    'inline-flex items-center whitespace-nowrap rounded-full px-[var(--space-3)] py-[var(--space-1-5)] text-[10px] uppercase tracking-[0.16em] transition-colors',
                     'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
                     active
                       ? 'bg-ink/[0.10] text-ink border border-ink/20'
