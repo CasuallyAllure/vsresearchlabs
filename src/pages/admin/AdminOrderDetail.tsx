@@ -646,9 +646,8 @@ function ActionPanel({
           </div>
           <p className="text-[11px] text-ink/45 mb-[var(--space-4)] leading-relaxed">
             Emails a fully-branded invoice (subtotal, shipping, total) with Zelle
-            payment instructions to{' '}
-            <span className="font-mono text-ink/70">info@velariss.co</span>.
-            Buyer is told to label the payment with the order number.
+            payment instructions to the buyer. Buyer is told to label the
+            payment with the order number.
             Status flips to <span className="font-mono">invoice_sent</span>.
           </p>
           <button

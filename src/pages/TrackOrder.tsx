@@ -76,7 +76,7 @@ export function TrackOrder() {
               id="track-id"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="VSR-ORD-… or you@email.com"
+              placeholder="VSR-ORD-… or your email"
               autoComplete="off"
               className="w-full rounded-sm border border-ink/15 bg-base-800 px-[var(--space-3)] py-[var(--space-2)] text-[13px] text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/40"
             />

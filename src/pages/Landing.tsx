@@ -225,24 +225,22 @@ const SEQUENCE: Array<{ code: string; title: string; body: string }> = [
   },
 ];
 
-const REFERENCES: Array<{ quote: string; name: string; role: string }> = [
+// Operating standards stated in our own voice — not fabricated testimonials.
+const STANDARDS: Array<{ statement: string; label: string }> = [
   {
-    quote:
-      'Certificates of analysis arrived alongside batch confirmation. Documentation was available before request.',
-    name: 'M. Chen',
-    role: 'Research Procurement Lead · Northeast U.S.',
+    statement:
+      'Certificates of analysis and batch confirmation are available before request — not produced after the fact.',
+    label: 'Documentation',
   },
   {
-    quote:
-      'Batch references matched our intake records exactly. Reconciliation took minutes, not a cycle.',
-    name: 'J. Park',
-    role: 'Laboratory Manager · Independent facility',
+    statement:
+      'Batch references stay consistent session over session, so intake records reconcile in minutes, not a cycle.',
+    label: 'Traceability',
   },
   {
-    quote:
-      'Inquiry turnaround was consistent. Repeat dose tiers were quoted within one business day.',
-    name: 'K. Whitfield',
-    role: 'Senior Researcher · University partner',
+    statement:
+      'Inquiries — including repeat dose tiers and custom volumes — are quoted within one business day.',
+    label: 'Turnaround',
   },
 ];
 
@@ -1004,22 +1002,19 @@ export function Landing() {
           ))}
         </ol>
 
-        {/* Field references */}
+        {/* Operating standards — stated in our own voice, not testimonials */}
         <div className="mt-[var(--space-12)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em]">
-            Field references
+            Operating standards
           </p>
           <ul className="mt-[var(--space-6)] grid grid-cols-1 gap-x-[var(--space-10)] gap-y-[var(--space-8)] lg:grid-cols-3">
-            {REFERENCES.map((r) => (
-              <li key={r.name}>
-                <blockquote className="holo-text-body max-w-[34ch] text-[13px] font-light leading-relaxed">
-                  {r.quote}
-                </blockquote>
-                <p className="mt-[var(--space-4)] text-[12px] text-ink/65">
-                  {r.name}
+            {STANDARDS.map((s) => (
+              <li key={s.label}>
+                <p className="holo-text-body max-w-[34ch] text-[13px] font-light leading-relaxed">
+                  {s.statement}
                 </p>
-                <p className="holo-text-caption mt-[var(--space-0-5)] text-[9.5px] uppercase tracking-[0.2em]">
-                  {r.role}
+                <p className="holo-text-caption mt-[var(--space-4)] text-[9.5px] uppercase tracking-[0.2em] text-holo/70">
+                  {s.label}
                 </p>
               </li>
             ))}
