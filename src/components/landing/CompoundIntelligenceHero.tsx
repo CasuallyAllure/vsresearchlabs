@@ -34,6 +34,7 @@ import {
 } from '../../lib/compoundIntelligence';
 import { RegulatoryChipCluster } from '../catalog/intelligence/RegulatoryChipCluster';
 import { SummaryText } from '../catalog/intelligence/SummaryText';
+import { MolecularStructurePanel } from '../catalog/specimen/MolecularStructurePanel';
 
 const products = productsData as unknown as Product[];
 const FEATURED_SLUG = 'retatrutide-5mg';
@@ -175,21 +176,36 @@ function SlidePanel({
 }) {
   const add = useCart((s) => s.add);
   return (
-    <div className="grid h-full grid-cols-1 grid-rows-[128px_1fr] md:grid-cols-5 md:grid-rows-none">
-      {/* Specimen plate — anchors the visual, does not dominate */}
-      <div className="relative min-h-0 min-w-0 border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
-        {ci.specimenImage ? (
-          <img
-            src={ci.specimenImage}
-            alt={`${ci.substance} specimen plate`}
-            className="h-full w-full object-contain p-3 md:p-6"
-            style={{ opacity: 0.94 }}
-          />
-        ) : null}
+    <div className="grid h-full grid-cols-1 grid-rows-[164px_1fr] md:grid-cols-5 md:grid-rows-none">
+      {/* Specimen plate — generated vial + real PubChem structure, side by side.
+          Identifier rides a header strip so it never lands on the artwork. */}
+      <div className="relative flex min-h-0 min-w-0 flex-col border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
+        <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-3 pb-2">
+          <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-ink/35">
+            Specimen · {ci.sku}
+          </span>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink/25">
+            Vial / 2D
+          </span>
+        </div>
+        <div className="grid min-h-0 flex-1 grid-cols-2">
+          {/* Left — generated specimen vial */}
+          <div className="relative flex min-h-0 items-center justify-center overflow-hidden border-r border-ink/[0.06]">
+            {ci.specimenImage ? (
+              <img
+                src={ci.specimenImage}
+                alt={`${ci.substance} specimen vial`}
+                className="h-full w-full object-contain p-2 md:p-3"
+                style={{ opacity: 0.94 }}
+              />
+            ) : null}
+          </div>
+          {/* Right — real 2D molecular structure (PubChem) */}
+          <div className="relative min-h-0 overflow-hidden">
+            <MolecularStructurePanel substance={ci.substance} abbreviation={ci.abbreviation} />
+          </div>
+        </div>
         <CornerMarks />
-        <span className="absolute left-4 top-3 font-mono text-[9px] uppercase tracking-[0.24em] text-ink/35">
-          Specimen · {ci.sku}
-        </span>
       </div>
 
       {/* Intelligence — the product. Image supports it. */}
