@@ -21,6 +21,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 export type NavRole = 'guest' | 'owner';
 
 const ACCENT = '#34727A';
+const GOLD = '#B5904B';
 
 /* ── prefers-reduced-motion hook ────────────────────────────────────────── */
 
@@ -75,48 +76,30 @@ function HomeIcon({ active, reduce }: IconProps) {
   );
 }
 
-function AtomIcon({ active, reduce }: IconProps) {
-  // Single ellipse path string reused inside each rotated <g>. Local
-  // coords mean the rotation applies to the motion path automatically.
-  const orbit = 'M 21 12 A 9 3.7 0 1 1 3 12 A 9 3.7 0 1 1 21 12';
+// Research Library — gold owl (knowledge / the library). Drawn in brand
+// gold regardless of active state; the pupils give a slow blink when the
+// route is live (static under reduced motion).
+function OwlIcon({ active, reduce }: IconProps) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="1.2" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.7" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.7" transform="rotate(60 12 12)" />
-      <ellipse cx="12" cy="12" rx="9" ry="3.7" transform="rotate(120 12 12)" />
-      {active && (
-        <>
-          {/* Nucleus glows brighter when alive */}
-          <circle cx="12" cy="12" r="1.4" fill={ACCENT} stroke="none" style={{ filter: `drop-shadow(0 0 2px ${ACCENT})` }} />
-          {/* Three orbiting electrons, staggered phase so they don't bunch */}
-          {[
-            { rot: 0,   begin: '0s'    },
-            { rot: 60,  begin: '-0.8s' },
-            { rot: 120, begin: '-1.6s' },
-          ].map(({ rot, begin }) => (
-            <g key={rot} transform={`rotate(${rot} 12 12)`}>
-              <circle
-                r="1.5"
-                fill={ACCENT}
-                stroke="none"
-                style={{ filter: `drop-shadow(0 0 2.5px ${ACCENT})` }}
-              >
-                {reduce ? (
-                  // Static "electron at rest" position when motion is reduced.
-                  <></>
-                ) : (
-                  <animateMotion dur="2.4s" begin={begin} repeatCount="indefinite" path={orbit} />
-                )}
-              </circle>
-              {reduce && (
-                // Place a static electron at one end of the orbital ring.
-                <circle cx="21" cy="12" r="1.5" fill={ACCENT} stroke="none" style={{ filter: `drop-shadow(0 0 2.5px ${ACCENT})` }} />
-              )}
-            </g>
-          ))}
-        </>
-      )}
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7.2 5.4 9 8" />
+      <path d="M16.8 5.4 15 8" />
+      <path d="M12 4C8.1 4 5 7.1 5 11v2.5a7 7 0 0 0 14 0V11c0-3.9-3.1-7-7-7Z" />
+      <circle cx="9.5" cy="10.5" r="2.1" />
+      <circle cx="14.5" cy="10.5" r="2.1" />
+      <path d="M12 11.7 11 13.2h2Z" />
+      <path d="M10.2 20.6v1.1" />
+      <path d="M13.8 20.6v1.1" />
+      <circle cx="9.5" cy="10.5" r="0.6" fill={GOLD} stroke="none" style={active ? { filter: `drop-shadow(0 0 2px ${GOLD})` } : undefined}>
+        {active && !reduce && (
+          <animate attributeName="r" values="0.6;0.6;0.15;0.6" keyTimes="0;0.85;0.92;1" dur="4s" repeatCount="indefinite" />
+        )}
+      </circle>
+      <circle cx="14.5" cy="10.5" r="0.6" fill={GOLD} stroke="none" style={active ? { filter: `drop-shadow(0 0 2px ${GOLD})` } : undefined}>
+        {active && !reduce && (
+          <animate attributeName="r" values="0.6;0.6;0.15;0.6" keyTimes="0;0.85;0.92;1" dur="4s" repeatCount="indefinite" />
+        )}
+      </circle>
     </svg>
   );
 }
@@ -410,7 +393,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             <HomeIcon active={isHome} reduce={reduce} />
           </NavSlot>
           <NavSlot isActive={isResearchLibrary} ariaLabel="Research library — compound intelligence" kind="link" to="/research">
-            <AtomIcon active={isResearchLibrary} reduce={reduce} />
+            <OwlIcon active={isResearchLibrary} reduce={reduce} />
           </NavSlot>
           <NavSlot
             isActive={isResearchSupplies}

@@ -33,6 +33,9 @@ interface NavLinkDef {
   caption?: string;
   match?: (pathname: string) => boolean;
   icon: React.ReactNode;
+  /** Renders the row as a disabled "coming soon" seal (no navigation),
+   *  matching the landing's "Archive in preparation" treatment. */
+  comingSoon?: boolean;
 }
 
 const HomeIcon = (
@@ -41,14 +44,21 @@ const HomeIcon = (
   </svg>
 );
 
-const MicroscopeIcon = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M6 18h8" />
-    <path d="M3 22h18" />
-    <path d="M14 22a7 7 0 1 0 0-14" />
-    <path d="M9 14h2" />
-    <path d="M9 12a2 2 0 0 1-2-2V6h4v4a2 2 0 0 1-2 2Z" />
-    <path d="M12 6 8.5 2.5a2.12 2.12 0 0 0-3 3L9 9" />
+// Research Library mark — a gold owl (knowledge / the library), drawn in
+// brand gold regardless of active state so it reads as the section's
+// signature rather than a generic nav glyph.
+const OwlIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-gold)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M7.2 5.4 9 8" />
+    <path d="M16.8 5.4 15 8" />
+    <path d="M12 4C8.1 4 5 7.1 5 11v2.5a7 7 0 0 0 14 0V11c0-3.9-3.1-7-7-7Z" />
+    <circle cx="9.5" cy="10.5" r="2.1" />
+    <circle cx="14.5" cy="10.5" r="2.1" />
+    <circle cx="9.5" cy="10.5" r="0.55" fill="var(--color-accent-gold)" stroke="none" />
+    <circle cx="14.5" cy="10.5" r="0.55" fill="var(--color-accent-gold)" stroke="none" />
+    <path d="M12 11.7 11 13.2h2Z" />
+    <path d="M10.2 20.6v1.1" />
+    <path d="M13.8 20.6v1.1" />
   </svg>
 );
 
@@ -102,7 +112,7 @@ const PackageIcon = (
 
 const TOP_NAV: NavLinkDef[] = [
   { to: '/', label: 'Home', caption: 'Landing', icon: HomeIcon, match: (p) => p === '/' },
-  { to: '/research', label: 'Research Library', caption: 'Compound Intelligence', icon: MicroscopeIcon, match: (p) => p.startsWith('/research') && !p.startsWith('/research-supplies') },
+  { to: '/research', label: 'Research Library', caption: 'Compound Intelligence', icon: OwlIcon, match: (p) => p.startsWith('/research') && !p.startsWith('/research-supplies') },
 ];
 
 const RESEARCH_SUPPLIES_CHILDREN: NavLinkDef[] = [
@@ -114,7 +124,7 @@ const RESEARCH_SUPPLIES_CHILDREN: NavLinkDef[] = [
 const TAIL_NAV: NavLinkDef[] = [
   { to: '/track', label: 'Track Order', caption: 'Status · Invoice · Receipt', icon: PackageIcon, match: (p) => p.startsWith('/track') },
   { to: '/laboratory-equipment', label: 'Laboratory Equipment', caption: 'Instruments · Consumables · Handling', icon: InstrumentIcon, match: (p) => p.startsWith('/laboratory-equipment') },
-  { to: '/documentation', label: 'Documentation', caption: 'COA · HPLC · Mass Spec · Sterility', icon: DocumentIcon, match: (p) => p.startsWith('/documentation') },
+  { to: '/documentation', label: 'Documentation', caption: 'COA · HPLC · Mass Spec · Sterility', icon: DocumentIcon, match: (p) => p.startsWith('/documentation'), comingSoon: true },
   { to: '/contact', label: 'Contact', caption: 'Open Inquiries', icon: MailIcon, match: (p) => p.startsWith('/contact') },
 ];
 
@@ -128,6 +138,39 @@ interface NavItemProps {
 
 function NavItem({ item, pathname, onClick, indent }: NavItemProps) {
   const isActive = item.match ? item.match(pathname) : pathname === item.to;
+
+  // Coming-soon row — same concept as the landing's "Archive in
+  // preparation" seal: blur/dim the real content so it never reads as
+  // live, with a mono seal. Not a link; not focusable.
+  if (item.comingSoon) {
+    return (
+      <li>
+        <div
+          aria-disabled="true"
+          title="Coming soon"
+          className={`relative flex items-center gap-3 py-2.5 rounded-[3px] cursor-not-allowed ${indent ? 'pl-8 pr-3' : 'px-3'}`}
+        >
+          <div className="flex min-w-0 items-center gap-3 select-none blur-[1.5px] opacity-45 saturate-[0.6]">
+            <span className="shrink-0 text-ink/55">{item.icon}</span>
+            <span className="flex flex-col min-w-0">
+              <span className="text-[12.5px] tracking-tight text-ink/80">
+                {item.label}
+              </span>
+              {item.caption && (
+                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5 truncate">
+                  {item.caption}
+                </span>
+              )}
+            </span>
+          </div>
+          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/55">
+            Coming soon
+          </span>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <li>
       <Link
