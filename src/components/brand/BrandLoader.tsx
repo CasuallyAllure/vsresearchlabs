@@ -18,17 +18,23 @@ export interface BrandLoaderProps {
   /** Whether the loader is visible. When flipped to false the loader
    *  fades out over FADE_OUT_MS before unmounting. */
   active: boolean;
+  /** First-entry intro: the three bodies dance alone first, then the V
+   *  monogram rises in behind them. Only true on the very first paint;
+   *  route-transition loaders leave it off and show the full mark. */
+  intro?: boolean;
 }
 
 const FADE_IN_MS = 220;
 const FADE_OUT_MS = 520;
+// Intro only — how long the three bodies "dance" before the V rises in.
+const V_REVEAL_DELAY_MS = 1700;
 // Shift the loader's mark this many px UP from viewport center so it sits
 // in the upper half of the screen — paired with DisclaimerGate's
 // CARD_DROP_PX so the loader logo and the gate module visually "meet in
 // the middle" of the viewport.
 const MARK_LIFT_PX = 30;
 
-export function BrandLoader({ active }: BrandLoaderProps) {
+export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
   const [mounted, setMounted] = useState(active);
   const [exiting, setExiting] = useState(false);
 
@@ -100,7 +106,12 @@ export function BrandLoader({ active }: BrandLoaderProps) {
           transform: `translateY(-${MARK_LIFT_PX}px)`,
         }}
       >
-        <DnaVMark size={96} static bodyEntryMs={1600} />
+        <DnaVMark
+          size={96}
+          static
+          bodyEntryMs={1600}
+          vRevealDelayMs={intro ? V_REVEAL_DELAY_MS : undefined}
+        />
       </div>
     </div>
   );

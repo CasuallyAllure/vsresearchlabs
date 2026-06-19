@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VideoIntroModule } from './VideoIntroModule';
+import { useScrollLock } from '../../lib/useScrollLock';
 
 export function IntroModal() {
   const [render, setRender] = useState(true);
@@ -27,13 +28,8 @@ export function IntroModal() {
     return () => clearTimeout(t);
   }, [render]);
 
-  // Body scroll lock while visible.
-  useEffect(() => {
-    if (!render) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
-  }, [render]);
+  // Body scroll lock while visible (ref-counted — won't clash with the gate).
+  useScrollLock(render);
 
   // ESC closes.
   useEffect(() => {

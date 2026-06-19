@@ -18,8 +18,9 @@
  *   - ESC does NOT close — this is a legal gate, not a dismissable dialog
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DnaVMark } from './DnaVMark';
+import { useScrollLock } from '../../lib/useScrollLock';
 
 const STORAGE_KEY = 'vsrl_disclaimer_accepted_v1';
 
@@ -30,27 +31,16 @@ const CARD_PADDING_TOP = 28;     // matches inline padding in card style
 const MARK_SIZE = 64;            // DnaVMark size in the gate
 
 export function DisclaimerGate() {
-  const [open, setOpen] = useState(false);
+  // Show on first visit only — read storage during init (client-only SPA),
+  // so there's no flash and no setState-in-effect.
+  const [open, setOpen] = useState(() => {
+    try { return !localStorage.getItem(STORAGE_KEY); } catch { return true; }
+  });
   const [age, setAge] = useState(false);
   const [terms, setTerms] = useState(false);
 
-  useEffect(() => {
-    try {
-      const accepted = localStorage.getItem(STORAGE_KEY);
-      if (!accepted) setOpen(true);
-    } catch {
-      setOpen(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
+  // Ref-counted lock — safe even when the intro modal stacks on top.
+  useScrollLock(open);
 
   function accept() {
     if (!age || !terms) return;

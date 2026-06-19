@@ -10,6 +10,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProductStore } from '../../stores/productStore';
+import { useScrollLock } from '../../lib/useScrollLock';
 
 interface DomainRow {
   to: string;
@@ -46,16 +47,13 @@ const ROWS: DomainRow[] = [
 export function ResearchSuppliesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const products = useProductStore((s) => s.products);
 
+  useScrollLock(open);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
   if (!open) return null;

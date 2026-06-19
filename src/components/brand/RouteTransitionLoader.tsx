@@ -17,11 +17,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BrandLoader } from './BrandLoader';
 
-// Initial = first paint of the app. We hold long enough for the three-body
-// orbit to complete one full ∞ cycle (PERIOD_MS = 2800) so users see the
-// motion settle, then BrandLoader's internal fade-out (520ms) crossfades
-// into whatever's underneath — usually the DisclaimerGate.
-const INITIAL_SHOW_MS = 2200;
+// Initial = first paint of the app. We hold long enough for the intro to
+// play out: the three bodies dance/spiral in alone (~1.7s), the V monogram
+// rises in behind them (~0.76s), then a brief settle before BrandLoader's
+// internal fade-out (520ms) crossfades into whatever's underneath — usually
+// the DisclaimerGate. Route changes use the short hold and skip the intro.
+const INITIAL_SHOW_MS = 3200;
 const TRANSITION_SHOW_MS = 380;
 
 export function RouteTransitionLoader() {
@@ -37,6 +38,8 @@ export function RouteTransitionLoader() {
   }
 
   const [active, setActive] = useState(!reducedMotionRef.current);
+  // Intro (bodies-first, then V) plays only on the very first paint.
+  const [intro, setIntro] = useState(true);
 
   useEffect(() => {
     if (reducedMotionRef.current) {
@@ -45,6 +48,7 @@ export function RouteTransitionLoader() {
     }
     const isFirst = isFirstRunRef.current;
     isFirstRunRef.current = false;
+    if (!isFirst) setIntro(false);
 
     setActive(true);
     const timer = setTimeout(
@@ -54,5 +58,5 @@ export function RouteTransitionLoader() {
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  return <BrandLoader active={active} />;
+  return <BrandLoader active={active} intro={intro} />;
 }

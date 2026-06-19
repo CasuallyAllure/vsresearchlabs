@@ -25,12 +25,18 @@ interface DnaVMarkProps {
    *  The mark itself (monogram, strand, rings) stays still and crisp —
    *  only the body positions animate. Runs once. */
   bodyEntryMs?: number;
+  /** Intro-only reveal: when set, the V monogram starts hidden and rises
+   *  in behind the bodies after this delay (ms) — so on first entry the
+   *  three bodies + DNA strand "dance" alone first, then the V appears.
+   *  Everything else (strand, rungs, rings, bodies) is visible from the
+   *  start. Runs once; disabled under prefers-reduced-motion. */
+  vRevealDelayMs?: number;
 }
 
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
-export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs }: DnaVMarkProps) {
+export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
   const [spinning, setSpinning] = useState(true);
@@ -74,8 +80,17 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         </linearGradient>
       </defs>
 
-      {/* V monogram */}
-      <g fill="#1A1714">
+      {/* V monogram — on intro, hidden until vRevealDelayMs then rises in
+          "behind" the already-dancing bodies. */}
+      <g
+        fill="#1A1714"
+        className={vRevealDelayMs ? 'dna-v-reveal' : undefined}
+        style={
+          vRevealDelayMs
+            ? { transformBox: 'view-box', animationDelay: `${vRevealDelayMs}ms` }
+            : undefined
+        }
+      >
         <rect x="16.5" y="21.3" width="21.5" height="2.7" rx="0.6" />
         <path d="M21 23.5 L34 23.5 L50 62 L50 84.5 Z" />
         <path d="M50.75 84.79 L 51.77 82.52 L 52.80 80.25 L 53.82 77.98 L 54.85 75.71 L 55.87 73.44 L 56.90 71.17 L 57.92 68.90 L 58.95 66.63 L 59.97 64.35 L 60.99 62.08 L 62.02 59.81 L 63.04 57.54 L 64.07 55.27 L 65.09 53.00 L 59.87 51.00 L 59.11 53.37 L 58.35 55.74 L 57.59 58.11 L 56.83 60.49 L 56.08 62.86 L 55.32 65.23 L 54.56 67.60 L 53.80 69.98 L 53.04 72.35 L 52.29 74.72 L 51.53 77.10 L 50.77 79.47 L 50.01 81.84 L 49.25 84.21 Z" />
@@ -137,9 +152,18 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           from { transform: scale(3.4); }
           to   { transform: scale(1);   }
         }
+        .dna-v-mark .dna-v-reveal {
+          animation: dna-v-reveal-in 760ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        }
+        @keyframes dna-v-reveal-in {
+          from { opacity: 0; transform: translateY(7px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
         @media (prefers-reduced-motion: reduce) {
           .dna-v-mark .vsbody { animation: none !important; }
           .dna-v-mark .dna-bodies-enter { animation: none !important; }
+          /* No staged reveal for reduced motion — V is simply present. */
+          .dna-v-mark .dna-v-reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
         }
       `}</style>
     </svg>

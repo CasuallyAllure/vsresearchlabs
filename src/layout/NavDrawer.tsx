@@ -25,6 +25,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useScrollLock } from '../lib/useScrollLock';
 import { Logo } from '../components/brand/Logo';
 
 interface NavLinkDef {
@@ -232,17 +233,8 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  // Body scroll lock while open
-  useEffect(() => {
-    if (!open) return;
-    const y = window.scrollY;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.scrollTo(0, y);
-    };
-  }, [open]);
+  // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
+  useScrollLock(open);
 
   return createPortal(
     <>
