@@ -17,12 +17,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BrandLoader } from './BrandLoader';
 
-// Initial = first paint of the app. We hold long enough for the intro to
-// play out: the three bodies dance/spiral in alone (~1.7s), the V monogram
-// rises in behind them (~0.76s), then a brief settle before BrandLoader's
-// internal fade-out (520ms) crossfades into whatever's underneath — usually
-// the DisclaimerGate. Route changes use the short hold and skip the intro.
-const INITIAL_SHOW_MS = 3200;
+// Initial = first paint of the app. We hold long enough for the full intro
+// to play without being cut: the three bodies dance ALONE (~2s), the rest of
+// the mark (DNA strand + V + rings) rises in behind them (~0.76s), then a
+// settle before BrandLoader's internal fade-out (520ms) crossfades into
+// whatever's underneath. Route changes use the short hold and skip the intro.
+const INITIAL_SHOW_MS = 3900;
 const TRANSITION_SHOW_MS = 380;
 
 export function RouteTransitionLoader() {

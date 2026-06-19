@@ -26,8 +26,9 @@ export interface BrandLoaderProps {
 
 const FADE_IN_MS = 220;
 const FADE_OUT_MS = 520;
-// Intro only — how long the three bodies "dance" before the V rises in.
-const V_REVEAL_DELAY_MS = 1700;
+// Intro only — how long the three bodies dance ALONE before the rest of
+// the mark (DNA strand + V + rings) rises in behind them.
+const V_REVEAL_DELAY_MS = 2000;
 // Shift the loader's mark this many px UP from viewport center so it sits
 // in the upper half of the screen — paired with DisclaimerGate's
 // CARD_DROP_PX so the loader logo and the gate module visually "meet in

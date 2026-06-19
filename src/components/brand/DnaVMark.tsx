@@ -80,10 +80,10 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         </linearGradient>
       </defs>
 
-      {/* V monogram — on intro, hidden until vRevealDelayMs then rises in
-          "behind" the already-dancing bodies. */}
+      {/* Mark body (V monogram + DNA strand + orbit rings). On intro it
+          starts hidden and rises in together — behind the three bodies,
+          which dance ALONE first (they live outside this group). */}
       <g
-        fill="#1A1714"
         className={vRevealDelayMs ? 'dna-v-reveal' : undefined}
         style={
           vRevealDelayMs
@@ -91,6 +91,8 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
             : undefined
         }
       >
+      {/* V monogram */}
+      <g fill="#1A1714">
         <rect x="16.5" y="21.3" width="21.5" height="2.7" rx="0.6" />
         <path d="M21 23.5 L34 23.5 L50 62 L50 84.5 Z" />
         <path d="M50.75 84.79 L 51.77 82.52 L 52.80 80.25 L 53.82 77.98 L 54.85 75.71 L 55.87 73.44 L 56.90 71.17 L 57.92 68.90 L 58.95 66.63 L 59.97 64.35 L 60.99 62.08 L 62.02 59.81 L 63.04 57.54 L 64.07 55.27 L 65.09 53.00 L 59.87 51.00 L 59.11 53.37 L 58.35 55.74 L 57.59 58.11 L 56.83 60.49 L 56.08 62.86 L 55.32 65.23 L 54.56 67.60 L 53.80 69.98 L 53.04 72.35 L 52.29 74.72 L 51.53 77.10 L 50.77 79.47 L 50.01 81.84 L 49.25 84.21 Z" />
@@ -113,6 +115,7 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           <ellipse cx="50" cy="52" rx="36" ry="21.5" transform="rotate(-20 50 52)" opacity="0.30" strokeWidth="0.8" />
           <ellipse cx="53" cy="47" rx="25" ry="38" transform="rotate(33 53 47)" opacity="0.17" strokeWidth="0.7" />
         </g>
+      </g>
       </g>
 
       {/* Three bodies — wrapped so they can optionally enter from a wider
