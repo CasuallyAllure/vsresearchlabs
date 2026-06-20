@@ -21,7 +21,7 @@ import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
 import { inStockByKey } from '../../lib/stock';
-import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
 
 const ALL_TAB = '__all__';
@@ -42,7 +42,7 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   const variants = allVariants.filter((v) => isVariantPublic(product.sku, v.dose));
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
-  const priceCents = tierPriceCents(product, activeDose);
+  const priceCents = effectiveTierPriceCents(product, activeDose);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
   const [added, setAdded] = useState(false);

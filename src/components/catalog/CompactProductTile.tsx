@@ -26,7 +26,7 @@ import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic } from '../../lib/productOverrides';
 
 const STOCK_GREEN = '#2E7D5B';
@@ -42,7 +42,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
   const imageUrl = product.images?.[0] ?? null;
 
   // Subscribe to overrides so admin changes propagate immediately.
-  const override = useProductOverrides((s) => s.bySku[product.sku] ?? null);
+  useProductOverrides((s) => s.bySku[product.sku] ?? null);
   // Re-render when variant prices change.
   useProductOverrides((s) => s.variantBySku);
   const stocked = isSkuInStock(product.sku);
@@ -53,8 +53,11 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
 
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
-  const baseCents = tierPriceCents(product, activeDose);
-  const priceCents = override?.price_cents_override ?? baseCents;
+  // effectiveTierPriceCents reads (per-dose override → per-sku override →
+  // formula fallback) so the master sheet's prices flow through to the
+  // tile. Previously this used tierPriceCents (formula only), which is
+  // why AICAR rendered at $470 instead of the admin-set $60.
+  const priceCents = effectiveTierPriceCents(product, activeDose);
 
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
