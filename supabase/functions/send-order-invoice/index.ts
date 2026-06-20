@@ -93,7 +93,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: lines } = await supabase
     .from("order_lines")
-    .select("sku, product_name, quantity, unit_price_cents, item_note")
+    .select("sku, product_name, quantity, unit_price_cents, item_note, fast_ship")
     .eq("order_id", order.id);
 
   const orderRow = order as OrderRow;

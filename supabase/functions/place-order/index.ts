@@ -606,6 +606,9 @@ Deno.serve(async (req: Request) => {
     order_id: orderRow.id, sku: i.product.sku ?? i.product.id, product_name: i.product.name,
     quantity: clampQty(i.quantity), unit_price_cents: clampCents(i.unitPriceCents),
     item_note: i.note ?? null,
+    // Snapshot ship speed so admin invoice re-sends carry the same FAST/standard
+    // badge the order-time invoice shows (column added in migration 023).
+    fast_ship: typeof i.fast === "boolean" ? i.fast : null,
   })));
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
