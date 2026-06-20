@@ -112,11 +112,25 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
           />
         </div>
 
-        {/* Identity — compact 2-line */}
+        {/* Identity — compact 2-line, with optional gold nickname pip */}
         <div className="px-2 pt-1.5 pb-1">
-          <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-ink/40 truncate">
-            {product.abbreviation} · {product.family.split(' ')[0]}
-          </p>
+          <div className="flex items-center gap-1 min-w-0">
+            <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-ink/40 truncate">
+              {product.abbreviation} · {product.family.split(' ')[0]}
+            </p>
+            {product.nickname && (
+              <span
+                className="shrink-0 font-mono text-[8px] uppercase tracking-[0.16em] px-1 py-0 rounded-[2px] border"
+                style={{
+                  color: '#8A6E2E',
+                  borderColor: 'rgba(181,144,75,0.40)',
+                  backgroundColor: 'rgba(181,144,75,0.10)',
+                }}
+              >
+                {product.nickname}
+              </span>
+            )}
+          </div>
           <p className="text-[11px] font-medium text-ink leading-tight truncate">
             {product.name}
           </p>

@@ -110,6 +110,13 @@ export interface Product {
    */
   abbreviation: string;
   /**
+   * Optional research-community nickname displayed as a small label above
+   * the product name on cards (e.g. "Wolverine" for the BPC-157 + TB-500
+   * blend, after the X-Men healing trope). Pure marketing surface — no
+   * scientific claim, no replacement of the canonical name below it.
+   */
+  nickname?: string;
+  /**
    * Pharmacological / instrument class. Distinct from `category`:
    * `category` is the catalog department (one of three compound
    * categories or laboratory-equipment); `family` is the procurement-

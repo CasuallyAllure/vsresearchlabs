@@ -1,67 +1,5 @@
 [
   {
-    "id": "rs-10-amino-1mq",
-    "slug": "10-amino-1mq",
-    "name": "10-Amino-1MQ",
-    "category": "biopeptide-research-supplies",
-    "shortDescription": "NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research. Lyophilized, research grade.",
-    "laymanSummary": "NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research.",
-    "longDescription": "10-Amino-1MQ — NNMT inhibitor analogue investigated alongside 5-amino-1MQ in metabolic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
-    "images": [
-      "/specimens/10-amino-1mq.svg"
-    ],
-    "specs": [
-      {
-        "label": "Purity (HPLC)",
-        "value": "≥ 98%"
-      },
-      {
-        "label": "Form",
-        "value": "Lyophilized powder"
-      },
-      {
-        "label": "Mass",
-        "value": "10 mg"
-      },
-      {
-        "label": "Storage",
-        "value": "−20°C, desiccated"
-      }
-    ],
-    "sku": "VSR-RS-10MQ",
-    "abbreviation": "10MQ",
-    "family": "NNMT Inhibitor",
-    "variants": [
-      {
-        "dose": "10mg"
-      }
-    ],
-    "priceCents": null,
-    "stock": null,
-    "tags": [
-      "metabolic-cofactor",
-      "compound",
-      "research"
-    ],
-    "featured": false,
-    "createdAt": "2026-06-01T00:00:00.000Z",
-    "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
-    "storageCondition": "−20°C, desiccated, light-protected",
-    "shelfLifeMonths": 24,
-    "unitOfMeasure": "vial",
-    "leadTimeDays": 7,
-    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
-    "shippingCondition": "Dry ice required",
-    "researchClassification": "metabolic-cofactor",
-    "mechanismSummary": "Described as an analogue of 5-amino-1MQ intended to inhibit nicotinamide N-methyltransferase (NNMT), the SAM-dependent enzyme that methylates nicotinamide. The proposed effect — preserved NAD+ salvage and reduced adipocyte lipogenesis — is extrapolated from the 5-amino parent and not yet substantiated for this specific analogue.",
-    "receptorActivity": "Purported NNMT enzyme inhibitor by analogy to 5-amino-1MQ; no verified selectivity or potency data exist for this specific compound.",
-    "pathwaySummary": "Presumed inhibition of the NNMT / nicotinamide–NAD+ methylation pathway, by analogy only.",
-    "fdaStatus": "Research-chemical only — no authoritative characterisation",
-    "humanTrialsConfirmed": false
-  },
-  {
     "id": "rs-5-amino-1mq",
     "slug": "5-amino-1mq",
     "name": "5-Amino-1MQ",
@@ -95,7 +33,7 @@
     "family": "NNMT Inhibitor",
     "variants": [
       {
-        "dose": "5mg"
+        "dose": "10mg"
       },
       {
         "dose": "50mg"
@@ -425,7 +363,8 @@
     "receptorActivity": "No single receptor: BPC-157 modulates the nitric-oxide system and upregulates VEGFR2/growth-factor signalling; TB-500 acts mainly through G-actin sequestration.",
     "pathwaySummary": "Proposed angiogenic and cytoprotective effects via VEGFR2–NO signalling (BPC-157) and actin-regulation/cell-migration pathways (TB-500); evidence is preclinical.",
     "fdaStatus": "Not approved — neither component is FDA-approved for human use",
-    "humanTrialsConfirmed": false
+    "humanTrialsConfirmed": false,
+    "nickname": "Wolverine"
   },
   {
     "id": "rs-cagrilintide",

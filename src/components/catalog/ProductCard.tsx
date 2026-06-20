@@ -109,9 +109,23 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
 
   const identity = (
     <>
-      <p className="text-[10px] uppercase tracking-[0.25em] text-ink/40">
-        {product.family}
-      </p>
+      <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-ink/40">
+          {product.family}
+        </p>
+        {product.nickname && (
+          <span
+            className="text-[10px] uppercase tracking-[0.22em] px-1.5 py-0.5 rounded-[3px] border"
+            style={{
+              color: '#8A6E2E',
+              borderColor: 'rgba(181,144,75,0.45)',
+              backgroundColor: 'rgba(181,144,75,0.08)',
+            }}
+          >
+            “{product.nickname}”
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-2 min-w-0">
         <AbbreviationChip value={product.abbreviation} />
         <h3 className="text-sm font-medium text-ink truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
