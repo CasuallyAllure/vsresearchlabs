@@ -190,7 +190,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
-          backgroundColor: 'rgba(251, 249, 244, 0.97)',
+          backgroundColor: 'var(--color-surface-elevated)',
           borderLeft: '1px solid rgba(26, 23, 20, 0.12)',
           boxShadow: '-24px 0 60px -20px rgba(26,23,20,0.25)',
           backdropFilter: 'blur(10px)',
@@ -525,7 +525,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 >
                   <span aria-hidden="true" className="text-[11px] leading-none mt-0.5">⚡</span>
                   <p className="text-[10px] leading-relaxed text-ink/75">
-                    Fast-ship + standard items may arrive in <span className="font-medium">separate shipments</span>.
+                    Fast-ship + standard items may arrive in <span className="font-medium">separate shipments</span> — <span className="font-medium">no extra charge</span>.
                   </p>
                 </div>
               )}

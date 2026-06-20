@@ -664,7 +664,8 @@ export function CartPage() {
               <p className="text-[11.5px] leading-relaxed text-ink/75">
                 <span className="font-medium text-ink">Your order mixes fast-ship and standard items.</span>{' '}
                 These ship from different locations and may arrive in{' '}
-                <span className="font-medium">separate shipments</span> — you'll get tracking for each.
+                <span className="font-medium">separate shipments</span> — you'll get tracking for each,{' '}
+                <span className="font-medium">at no extra cost to you</span>.
               </p>
             </div>
           )}

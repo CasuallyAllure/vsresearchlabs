@@ -117,7 +117,7 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
     `responsible for orders sent to a wrong/incomplete address you provided.`,
     `This is also your chance to add or remove items: reply to this email before`,
     `paying and we'll send an updated invoice. Paying confirms the order as shown.`,
-    mixed ? `\nNote: this order mixes fast-ship and standard items — they may arrive in separate shipments.` : ``,
+    mixed ? `\nNote: this order mixes fast-ship and standard items — they may arrive in separate shipments, at no extra cost to you.` : ``,
     ``,
     `Items:`,
     lineText,
@@ -164,7 +164,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
   const mixedShipBlock = mixedShip
     ? `<div style="margin-top:16px;background:rgba(214,158,46,0.10);border:1px solid rgba(214,158,46,0.40);border-radius:10px;padding:14px 18px;">
         <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#9A7B1E;font-weight:700;margin-bottom:6px;">⚡ Separate shipments</div>
-        <div style="font-size:12.5px;color:#1A1714;line-height:1.6;">This order mixes <strong>fast-ship</strong> and <strong>standard</strong> items. They ship from different locations and may arrive separately — you'll get tracking for each shipment.</div>
+        <div style="font-size:12.5px;color:#1A1714;line-height:1.6;">This order mixes <strong>fast-ship</strong> and <strong>standard</strong> items. They ship from different locations and may arrive separately — you'll get tracking for each shipment, <strong>at no extra cost to you</strong>.</div>
       </div>`
     : "";
 
