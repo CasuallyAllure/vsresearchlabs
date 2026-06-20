@@ -17,6 +17,7 @@ import { useCart } from '../hooks/useCart';
 import { NavDrawer } from './NavDrawer';
 import { CartDrawer } from './CartDrawer';
 import { Logo } from '../components/brand/Logo';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 export type HeaderRole = 'guest' | 'owner';
 
@@ -34,7 +35,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
       <header
         className="sticky top-0 z-40 backdrop-blur-md border-b border-ink/[0.08]"
         data-role={role}
-        style={{ backgroundColor: 'rgba(244, 239, 230, 0.82)' }}
+        style={{ backgroundColor: 'var(--header-bg)' }}
       >
         <div className="relative z-10 h-[72px] sm:h-[72px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}

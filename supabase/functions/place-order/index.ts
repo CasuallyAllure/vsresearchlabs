@@ -38,6 +38,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
 import {
   buildInvoiceHtml,
+  buildInvoiceText,
   invoiceSubject,
   type OrderRow,
   type OrderLine,
@@ -441,12 +442,13 @@ function buildBusinessEmailHtml(
     </div>`;
 }
 
-async function sendResendEmail(args: { to: string; subject: string; html: string; replyTo?: string }) {
+async function sendResendEmail(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: FROM_EMAIL, to: args.to, subject: args.subject, html: args.html,
+      ...(args.text ? { text: args.text } : {}),
       ...(args.replyTo ? { reply_to: args.replyTo } : {}),
     }),
   });
@@ -647,6 +649,7 @@ Deno.serve(async (req: Request) => {
           to: contact,
           subject: invoiceSubject(invOrder),
           html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines }),
+          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;
@@ -658,10 +661,21 @@ Deno.serve(async (req: Request) => {
       console.error("Buyer invoice email threw:", err);
     }
   }
+  const bizText = [
+    `New order ${orderNumber} — ${name} (${usd(totalCents)})`,
+    `Contact: ${contact}`,
+    ``,
+    ...items.map((i) => `  - ${i.product.name}${i.fast === true ? " [FAST]" : i.fast === false ? " [STANDARD]" : ""} · qty ${clampQty(i.quantity)} · ${usd(clampCents(i.unitPriceCents))} ea`),
+    ``,
+    `Total: ${usd(totalCents)}`,
+    `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
+    `Mark paid in Admin → Orders once confirmed.`,
+  ].join("\n");
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
     subject: `New order ${orderNumber} — ${name} (${usd(totalCents)})`,
     html: buildBusinessEmailHtml(cleanPayload, orderNumber, referenceId, totalCents),
+    text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
   });
   if (!biz.ok) console.error("Business email failed:", biz);

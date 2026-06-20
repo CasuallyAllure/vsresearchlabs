@@ -82,6 +82,63 @@ export function invoiceSubject(order: Pick<OrderRow, "order_number" | "invoice_a
   return `Invoice ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · VS Research Labs`;
 }
 
+const ZELLE_FOR_TEXT = ZELLE_EMAIL;
+
+/**
+ * Plain-text version of the invoice. Sending a multipart (text + html) email
+ * instead of html-only materially improves inbox placement — html-only is a
+ * common spam-filter penalty. Resend takes both `text` and `html`.
+ */
+export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }): string {
+  const { order, lines } = args;
+  const speeds = lines.map((l) => l.fast_ship);
+  const mixed = speeds.includes(true) && speeds.includes(false);
+  const ship = [
+    order.ship_street,
+    [order.ship_city, order.ship_state, order.ship_zip].filter(Boolean).join(", "),
+    order.ship_country,
+  ].filter(Boolean).join("\n");
+
+  const lineText = lines.map((l) => {
+    const speed = l.fast_ship === true ? " [FAST]" : l.fast_ship === false ? " [STANDARD]" : "";
+    return `  - ${l.product_name}${speed} · qty ${l.quantity} · ${fmtUsd(l.unit_price_cents)} ea`;
+  }).join("\n");
+
+  return [
+    `VS RESEARCH LABS — INVOICE`,
+    ``,
+    `Order: ${order.order_number}`,
+    `Billed to: ${order.buyer_name} (${order.buyer_contact})`,
+    ``,
+    `Ship to:`,
+    ship || "  — to be provided —",
+    ``,
+    `Before you pay: confirm the shipping address above is correct — we're not`,
+    `responsible for orders sent to a wrong/incomplete address you provided.`,
+    `This is also your chance to add or remove items: reply to this email before`,
+    `paying and we'll send an updated invoice. Paying confirms the order as shown.`,
+    mixed ? `\nNote: this order mixes fast-ship and standard items — they may arrive in separate shipments.` : ``,
+    ``,
+    `Items:`,
+    lineText,
+    ``,
+    `Total due: ${fmtUsd(order.invoice_amount_cents)}`,
+    ``,
+    `HOW TO PAY — Zelle to: ${ZELLE_FOR_TEXT}`,
+    `Payment note (enter exactly): ${paymentCode(order.order_number)}`,
+    `Send as Friends & Family — other payment types are rejected.`,
+    order.lookup_token ? `\nMark payment sent: ${FUNCTIONS_BASE}/mark-payment-claimed?t=${order.lookup_token}` : ``,
+    order.lookup_token ? `View / print invoice: ${SITE_URL}/track?t=${order.lookup_token}` : ``,
+    ``,
+    `Terms: Research use only — not for human or veterinary use. All sales final;`,
+    `if third-party testing comes back below 98–99% purity we replace or refund`,
+    `(send the report to ops@vsresearchlabs.com within 14 days of delivery).`,
+    ``,
+    `Questions? Just reply to this email.`,
+    `VS Research Labs · Northern California Biopeptide Sciences`,
+  ].join("\n");
+}
+
 export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string }): string {
   const { order, lines, notes } = args;
   const subtotal = order.subtotal_cents;

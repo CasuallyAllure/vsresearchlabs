@@ -18,6 +18,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
   buildInvoiceHtml,
+  buildInvoiceText,
   invoiceSubject,
   type OrderRow,
   type OrderLine,
@@ -51,12 +52,12 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-async function sendResendEmail(args: { to: string; subject: string; html: string }):
+async function sendResendEmail(args: { to: string; subject: string; html: string; text?: string }):
   Promise<{ ok: boolean; status: number; body: unknown }> {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM_EMAIL, to: args.to, subject: args.subject, html: args.html }),
+    body: JSON.stringify({ from: FROM_EMAIL, to: args.to, subject: args.subject, html: args.html, ...(args.text ? { text: args.text } : {}) }),
   });
   let body: unknown = null;
   try { body = await res.json(); } catch { body = null; }
@@ -95,8 +96,11 @@ Deno.serve(async (req: Request) => {
     .select("sku, product_name, quantity, unit_price_cents, item_note")
     .eq("order_id", order.id);
 
-  const html = buildInvoiceHtml({ order: order as OrderRow, lines: (lines ?? []) as OrderLine[], notes: payload.notes });
-  const result = await sendResendEmail({ to: order.buyer_contact, subject: invoiceSubject(order), html });
+  const orderRow = order as OrderRow;
+  const orderLines = (lines ?? []) as OrderLine[];
+  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes });
+  const text = buildInvoiceText({ order: orderRow, lines: orderLines });
+  const result = await sendResendEmail({ to: order.buyer_contact, subject: invoiceSubject(order), html, text });
 
   if (!result.ok) {
     console.error("Invoice email failed:", result);

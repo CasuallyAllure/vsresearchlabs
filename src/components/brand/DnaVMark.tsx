@@ -91,15 +91,16 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
             : undefined
         }
       >
-      {/* V monogram */}
-      <g fill="#1A1714">
+      {/* V monogram — currentColor so it tracks --color-content-primary
+          (near-black in light, silver in dark). */}
+      <g fill="currentColor">
         <rect x="16.5" y="21.3" width="21.5" height="2.7" rx="0.6" />
         <path d="M21 23.5 L34 23.5 L50 62 L50 84.5 Z" />
         <path d="M50.75 84.79 L 51.77 82.52 L 52.80 80.25 L 53.82 77.98 L 54.85 75.71 L 55.87 73.44 L 56.90 71.17 L 57.92 68.90 L 58.95 66.63 L 59.97 64.35 L 60.99 62.08 L 62.02 59.81 L 63.04 57.54 L 64.07 55.27 L 65.09 53.00 L 59.87 51.00 L 59.11 53.37 L 58.35 55.74 L 57.59 58.11 L 56.83 60.49 L 56.08 62.86 L 55.32 65.23 L 54.56 67.60 L 53.80 69.98 L 53.04 72.35 L 52.29 74.72 L 51.53 77.10 L 50.77 79.47 L 50.01 81.84 L 49.25 84.21 Z" />
       </g>
 
-      <path d="M61.52 54.50 L61.78 53.79 L62.01 53.06 L62.15 52.31 L62.20 51.52 L62.17 50.70 L62.08 49.85 L61.98 49.00 L61.94 48.18 L62.02 47.40 L62.29 46.69 L62.80 46.07 L63.56 45.56 L64.57 45.13 L65.78 44.79 L67.14 44.50 L68.53 44.22 L69.86 43.92 L71.03 43.56 L71.94 43.10 L72.52 42.51 L72.74 41.79 L72.66 40.94 L72.29 39.99 L71.68 38.95 L70.88 37.83 L69.94 36.65 L68.92 35.45 L67.90 34.25 L66.95 33.07 L66.12 31.95 L65.49 30.89 L65.10 29.93 L64.97 29.07 L65.15 28.33 L65.62 27.70 L66.39 27.18 L67.41 26.77 L68.66 26.44 L70.12 26.19 L71.67 25.97 L73.11 25.71 L74.39 25.39 L75.46 24.99 L76.28 24.50 L76.86 23.91 L77.20 23.23" fill="none" stroke="#1A1714" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" opacity="0.4" />
-      <g stroke="#1A1714" strokeWidth="1.2" strokeLinecap="round" opacity="0.3">
+      <path d="M61.52 54.50 L61.78 53.79 L62.01 53.06 L62.15 52.31 L62.20 51.52 L62.17 50.70 L62.08 49.85 L61.98 49.00 L61.94 48.18 L62.02 47.40 L62.29 46.69 L62.80 46.07 L63.56 45.56 L64.57 45.13 L65.78 44.79 L67.14 44.50 L68.53 44.22 L69.86 43.92 L71.03 43.56 L71.94 43.10 L72.52 42.51 L72.74 41.79 L72.66 40.94 L72.29 39.99 L71.68 38.95 L70.88 37.83 L69.94 36.65 L68.92 35.45 L67.90 34.25 L66.95 33.07 L66.12 31.95 L65.49 30.89 L65.10 29.93 L64.97 29.07 L65.15 28.33 L65.62 27.70 L66.39 27.18 L67.41 26.77 L68.66 26.44 L70.12 26.19 L71.67 25.97 L73.11 25.71 L74.39 25.39 L75.46 24.99 L76.28 24.50 L76.86 23.91 L77.20 23.23" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" opacity="0.4" />
+      <g stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3">
         <path d="M61.38 38.22 L72.52 42.50" />
         <path d="M76.22 32.92 L65.04 28.63" />
       </g>
@@ -111,7 +112,7 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
 
       {/* Orbit rings (static) */}
       <g transform="translate(34,1.5) scale(0.6)">
-        <g fill="none" stroke="#1A1714" strokeLinecap="round">
+        <g fill="none" stroke="currentColor" strokeLinecap="round">
           <ellipse cx="50" cy="52" rx="36" ry="21.5" transform="rotate(-20 50 52)" opacity="0.30" strokeWidth="0.8" />
           <ellipse cx="53" cy="47" rx="25" ry="38" transform="rotate(33 53 47)" opacity="0.17" strokeWidth="0.7" />
         </g>
@@ -134,12 +135,15 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
             : undefined
         }
       >
-        <circle className="vsbody vsbody-1" cx="69.4" cy="9.9" r="1.86" fill="#1A1714" opacity="0.5" style={bodyStyle('0s')} />
+        <circle className="vsbody vsbody-1" cx="69.4" cy="9.9" r="1.86" fill="currentColor" opacity="0.5" style={bodyStyle('0s')} />
         <circle className="vsbody vsbody-2" cx="49" cy="39.3" r="2.82" fill="#34727A" opacity="0.9" style={bodyStyle('-1.2s')} />
         <circle className="vsbody vsbody-3" cx="83.2" cy="27.3" r="4.2" fill="#B5904B" opacity="1" style={bodyStyle('-0.6s')} />
       </g>
 
       <style>{`
+        /* currentColor for the V / rings / body-1 tracks the active theme's
+           primary content color: near-black in light, silver in dark. */
+        .dna-v-mark { color: var(--color-content-primary); }
         .dna-v-mark .vsbody-1 { animation: vsbody-cw  7s  linear infinite; }
         .dna-v-mark .vsbody-2 { animation: vsbody-ccw 11s linear infinite; }
         .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }

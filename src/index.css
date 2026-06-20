@@ -39,12 +39,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(26, 23, 20, 0.18);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 23, 20, 0.3);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Hide the scrollbar on horizontal-scroll strips (compact filter bars). */

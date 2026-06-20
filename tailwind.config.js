@@ -7,21 +7,55 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Cream surface ramp (light editorial). base.900 = page cream;
-        // lighter steps = cards / overlays. (Names kept so existing
-        // `bg-base-*` utilities recolor without a sweep.)
-        base: { 900: '#F4EFE6', 800: '#FBF9F4', 700: '#FFFFFF', 600: '#ECE6DA' },
-        // Ink — primary content + on-cream overlays (use ink/xx opacity).
-        ink: { DEFAULT: '#1A1714', light: '#6B635A', muted: '#9A9186' },
-        // Gold — primary brand signal.
-        gold: { light: '#C7A463', DEFAULT: '#B5904B', dark: '#8C6A2A', muted: '#A99770' },
-        // Teal — secondary accent (replaces the holo cyan). Aliased as `holo`
-        // so existing `holo-*` utilities recolor to teal without a sweep.
-        holo: { light: '#62A0A6', DEFAULT: '#34727A', dim: '#1E444A', muted: '#1E444A' },
-        teal: { light: '#62A0A6', DEFAULT: '#34727A', dark: '#1E444A' },
-        // Light image-bay surface (specimen/product bays sit on light now).
-        display: { DEFAULT: '#FBF9F4', elevated: '#FFFFFF' },
-        text: { primary: '#1A1714', secondary: '#6B635A', tertiary: '#9A9186' },
+        // Palette is bound to CSS channel variables (space-separated RGB)
+        // so the whole utility surface (incl. `/xx` opacity modifiers)
+        // recolors when `html[data-theme="dark"]` flips the channels.
+        // Light values live in :root; dark values in the [data-theme] block
+        // — both in src/theme/theme.css. Never hardcode hex here again.
+        //
+        // Cream surface ramp (light) → near-black ramp (dark). base.900 = page.
+        base: {
+          900: 'rgb(var(--c-base-900) / <alpha-value>)',
+          800: 'rgb(var(--c-base-800) / <alpha-value>)',
+          700: 'rgb(var(--c-base-700) / <alpha-value>)',
+          600: 'rgb(var(--c-base-600) / <alpha-value>)',
+        },
+        // Ink — primary content. Near-black (light) → silver (dark).
+        ink: {
+          DEFAULT: 'rgb(var(--c-ink) / <alpha-value>)',
+          light: 'rgb(var(--c-ink-light) / <alpha-value>)',
+          muted: 'rgb(var(--c-ink-muted) / <alpha-value>)',
+        },
+        // Gold — primary brand signal. Stays warm in both themes.
+        gold: {
+          light: 'rgb(var(--c-gold-light) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--c-gold) / <alpha-value>)',
+          dark: 'rgb(var(--c-gold-dark) / <alpha-value>)',
+          muted: 'rgb(var(--c-gold-muted) / <alpha-value>)',
+        },
+        // Teal — secondary accent. Aliased as `holo` so existing `holo-*`
+        // utilities recolor without a sweep. Stays warm in both themes.
+        holo: {
+          light: 'rgb(var(--c-teal-light) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--c-teal) / <alpha-value>)',
+          dim: 'rgb(var(--c-teal-dark) / <alpha-value>)',
+          muted: 'rgb(var(--c-teal-dark) / <alpha-value>)',
+        },
+        teal: {
+          light: 'rgb(var(--c-teal-light) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--c-teal) / <alpha-value>)',
+          dark: 'rgb(var(--c-teal-dark) / <alpha-value>)',
+        },
+        // Image-bay surface (specimen/product bays).
+        display: {
+          DEFAULT: 'rgb(var(--c-display) / <alpha-value>)',
+          elevated: 'rgb(var(--c-display-elevated) / <alpha-value>)',
+        },
+        text: {
+          primary: 'rgb(var(--c-text-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--c-text-secondary) / <alpha-value>)',
+          tertiary: 'rgb(var(--c-text-tertiary) / <alpha-value>)',
+        },
       },
       borderRadius: {
         card: '24px',

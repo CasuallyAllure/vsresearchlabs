@@ -27,6 +27,38 @@
   --card-radius: var(--radius-3xl);
 
   /* ─────────────────────────────────────────────────────────────────────────
+     TAILWIND PALETTE CHANNELS (space-separated RGB)
+     These back the Tailwind colors in tailwind.config.js via
+     `rgb(var(--c-*) / <alpha-value>)`, so every `text-ink`, `bg-base-900`,
+     `border-ink/[0.08]`, `bg-gold` … recolors when the dark block below
+     flips the channels. LIGHT values here mirror the original hex exactly.
+     ───────────────────────────────────────────────────────────────────────── */
+  --c-base-900: 244 239 230;   /* #F4EFE6 page cream */
+  --c-base-800: 251 249 244;   /* #FBF9F4 cards */
+  --c-base-700: 255 255 255;   /* #FFFFFF overlay */
+  --c-base-600: 236 230 218;   /* #ECE6DA sunken */
+  --c-ink: 26 23 20;           /* #1A1714 primary content */
+  --c-ink-light: 107 99 90;    /* #6B635A secondary */
+  --c-ink-muted: 154 145 134;  /* #9A9186 tertiary */
+  --c-gold-light: 199 164 99;  /* #C7A463 */
+  --c-gold: 181 144 75;        /* #B5904B */
+  --c-gold-dark: 140 106 42;   /* #8C6A2A */
+  --c-gold-muted: 169 151 112; /* #A99770 */
+  --c-teal-light: 98 160 166;  /* #62A0A6 */
+  --c-teal: 52 114 122;        /* #34727A */
+  --c-teal-dark: 30 68 74;     /* #1E444A */
+  --c-display: 251 249 244;    /* #FBF9F4 */
+  --c-display-elevated: 255 255 255; /* #FFFFFF */
+  --c-text-primary: 26 23 20;   /* #1A1714 */
+  --c-text-secondary: 107 99 90; /* #6B635A */
+  --c-text-tertiary: 154 145 134; /* #9A9186 */
+
+  /* Chrome tokens that are not Tailwind-bound (inline-styled surfaces). */
+  --header-bg: rgba(244, 239, 230, 0.82);
+  --scrollbar-thumb: rgba(26, 23, 20, 0.18);
+  --scrollbar-thumb-hover: rgba(26, 23, 20, 0.30);
+
+  /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Surfaces
      ───────────────────────────────────────────────────────────────────────── */
   --color-surface-base: #F4EFE6;
@@ -259,6 +291,112 @@
   --ease-enter: cubic-bezier(0.12, 0, 0.39, 0);
   --ease-micro: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+}
+
+/* ============================================================================
+   DARK THEME — "Black & Silver" (machine register)
+   ---------------------------------------------------------------------------
+   Single source of truth for the dark palette. Flips:
+     1. the Tailwind channel vars (--c-*)  → recolors every utility class
+     2. the legacy --color-* / research --surface-* tokens → recolors the
+        hand-rolled CSS utilities (.holo-surface, .cta-*, .research-surface-*,
+        body bg, .text-content-*, borders …)
+   Surfaces go to a stratified near-black ramp; content goes to silver;
+   gold + teal are KEPT WARM (nudged brighter so they read on black).
+   ============================================================================ */
+html[data-theme="dark"] {
+  --theme-mode: "dark";
+
+  /* ── Tailwind channels ───────────────────────────────────────────────── */
+  /* Surfaces — near-black ramp. Higher elevation = lighter (overlay top,
+     sunken deepest), mirroring the light ramp's elevation direction. */
+  --c-base-900: 12 12 13;     /* #0C0C0D page */
+  --c-base-800: 22 22 24;     /* #161618 cards */
+  --c-base-700: 30 30 33;     /* #1E1E21 overlay/topmost */
+  --c-base-600: 6 6 7;        /* #060607 sunken */
+  /* Content — silver ramp. */
+  --c-ink: 233 233 236;       /* #E9E9EC primary (silver-white) */
+  --c-ink-light: 168 169 173; /* #A8A9AD secondary (mid silver) */
+  --c-ink-muted: 110 111 115; /* #6E6F73 tertiary (dim silver) */
+  /* Gold — warm, brightened a touch for black bg. */
+  --c-gold-light: 216 185 120; /* #D8B978 */
+  --c-gold: 196 154 72;        /* #C49A48 */
+  --c-gold-dark: 168 125 45;   /* #A87D2D */
+  --c-gold-muted: 156 138 99;  /* #9C8A63 */
+  /* Teal — warm, brightened for black bg. */
+  --c-teal-light: 127 186 192; /* #7FBAC0 */
+  --c-teal: 76 151 160;        /* #4C97A0 */
+  --c-teal-dark: 42 94 100;    /* #2A5E64 */
+  /* Image bays / display insets — stay dark. */
+  --c-display: 22 22 24;       /* #161618 */
+  --c-display-elevated: 30 30 33; /* #1E1E21 */
+  /* Text mirrors ink. */
+  --c-text-primary: 233 233 236;
+  --c-text-secondary: 168 169 173;
+  --c-text-tertiary: 110 111 115;
+
+  /* ── Chrome tokens (inline-styled surfaces) ──────────────────────────── */
+  --header-bg: rgba(12, 12, 13, 0.82);
+  --scrollbar-thumb: rgba(233, 233, 236, 0.16);
+  --scrollbar-thumb-hover: rgba(233, 233, 236, 0.30);
+
+  /* ── Legacy --color-* tokens (back the hand-rolled CSS utilities) ─────── */
+  --color-surface-base: #0C0C0D;
+  --color-surface-elevated: #161618;
+  --color-surface-overlay: #1E1E21;
+  --color-surface-sunken: #060607;
+
+  --color-content-primary: #E9E9EC;
+  --color-content-secondary: #A8A9AD;
+  --color-content-tertiary: #6E6F73;
+  --color-content-inverse: #0C0C0D;
+
+  --color-border-default: rgba(233, 233, 236, 0.14);
+  --color-border-subtle: rgba(233, 233, 236, 0.07);
+  --color-border-strong: rgba(233, 233, 236, 0.26);
+
+  --color-interactive-primary: #C49A48;
+  --color-interactive-primaryHover: #D8B978;
+  --color-interactive-primaryActive: #A87D2D;
+  --color-interactive-secondary: rgba(233, 233, 236, 0.07);
+  --color-interactive-secondaryHover: rgba(233, 233, 236, 0.12);
+
+  --color-accent-gold-light: #D8B978;
+  --color-accent-gold: #C49A48;
+  --color-accent-gold-dark: #A87D2D;
+  --color-accent-gold-muted: #9C8A63;
+  --color-accent-teal-light: #7FBAC0;
+  --color-accent-teal: #4C97A0;
+  --color-accent-teal-dark: #2A5E64;
+
+  --color-display-base: #0A0A0B;
+  --color-display-elevated: #161618;
+
+  /* Status — slightly brightened to hold on black. */
+  --color-status-success: #4CAF82;
+  --color-status-successMuted: rgba(76, 175, 130, 0.16);
+  --color-status-warning: #D89A3A;
+  --color-status-warningMuted: rgba(216, 154, 58, 0.16);
+  --color-status-error: #D96565;
+  --color-status-errorMuted: rgba(217, 101, 101, 0.16);
+  --color-status-info: #4C97A0;
+  --color-status-infoMuted: rgba(76, 151, 160, 0.16);
+
+  /* ── Research surface tokens (E1/E2) ─────────────────────────────────── */
+  --surface-product: #161618;
+  --surface-product-hover: #1E1E21;
+  --surface-elevated-research: #1E1E21;
+  --surface-cta: rgba(233, 233, 236, 0.06);
+  --border-product: rgba(233, 233, 236, 0.10);
+  --border-product-hover: rgba(233, 233, 236, 0.20);
+  --border-cta: rgba(233, 233, 236, 0.15);
+  --surface-specimen-bay: #161618;
+}
+
+/* The dark page sits behind backdrop-blurred chrome; set color-scheme so
+   form controls, scrollbars and the like adopt dark native styling. */
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /* ============================================================================
