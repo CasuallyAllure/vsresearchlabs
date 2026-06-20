@@ -475,11 +475,13 @@ function mapRecords(text: string): ParsedRow[] {
       fields.push(label);
     };
 
-    // Price (USD) → cents. Accept either `price_usd` (template column) OR
-    // `current_price` (the live/effective-price column the master sheet uses
-    // as the editable price column). price_usd wins if both are filled.
+    // Price (USD) → cents. The master sheet's editable price column is
+    // `price`. Older sheets used `current_price` (and legacy `price_usd`);
+    // we accept all three so older exports keep working.
     const priceRaw =
-      ((rec['price_usd'] ?? '').trim() || (rec['current_price'] ?? '').trim());
+      ((rec['price'] ?? '').trim()
+        || (rec['price_usd'] ?? '').trim()
+        || (rec['current_price'] ?? '').trim());
     if (priceRaw !== '') {
       const usd = parseFloat(priceRaw.replace(/[$,]/g, ''));
       if (Number.isFinite(usd) && usd >= 0) {
@@ -490,8 +492,8 @@ function mapRecords(text: string): ParsedRow[] {
       }
     }
 
-    // cost_usd → cents (admin-only COGS)
-    const costRaw = (rec['cost_usd'] ?? '').trim();
+    // Cost (USD) → cents — admin-only COGS. Accept `cost` or legacy `cost_usd`.
+    const costRaw = ((rec['cost'] ?? '').trim() || (rec['cost_usd'] ?? '').trim());
     if (costRaw !== '') {
       const usd = parseFloat(costRaw.replace(/[$,]/g, ''));
       if (Number.isFinite(usd) && usd >= 0) {
@@ -503,8 +505,46 @@ function mapRecords(text: string): ParsedRow[] {
     }
 
     set('on_hand', rec['on_hand'], 'on_hand');
-    set('lead_days', rec['lead_days'], 'lead_days');
-    set('hidden', rec['hidden'], 'hidden');
+
+    // ── New clean columns: ships_from / inbound / hide_publicly ──
+    //   ships_from = 'warehouse'      → lead_days = 'x' (RPC parses → 7d default)
+    //   ships_from = '<N> days' or N → lead_days = N
+    //   inbound = <N>                → hidden = 'w<N>' (RPC parses → inbound_units)
+    //   hide_publicly = YES          → hidden = 'true' (overrides inbound mapping)
+    // Legacy `lead_days` and `hidden` columns still work if present.
+    const shipsFromRaw = (rec['ships_from'] ?? '').trim().toLowerCase();
+    if (shipsFromRaw) {
+      if (shipsFromRaw === 'warehouse' || shipsFromRaw === 'wh') {
+        payload.lead_days = 'x';
+        fields.push('lead_days');
+      } else {
+        const m = shipsFromRaw.match(/^(\d+)(?:\s*days?)?$/);
+        if (m) {
+          payload.lead_days = m[1];
+          fields.push('lead_days');
+        } else if (!error) {
+          error = `Bad ships_from "${shipsFromRaw}"`;
+        }
+      }
+    } else if ((rec['lead_days'] ?? '').trim()) {
+      set('lead_days', rec['lead_days'], 'lead_days');
+    }
+
+    const hidePublic = (rec['hide_publicly'] ?? '').trim().toLowerCase();
+    const inboundRaw = (rec['inbound'] ?? '').trim();
+    if (hidePublic && ['yes','y','true','t','1','hidden'].includes(hidePublic)) {
+      payload.hidden = 'true';
+      fields.push('hidden');
+    } else if (inboundRaw && /^\d+$/.test(inboundRaw)) {
+      const n = parseInt(inboundRaw, 10);
+      if (n > 0) {
+        payload.hidden = `w${n}`;
+        fields.push('inbound');
+      }
+    } else if ((rec['hidden'] ?? '').trim()) {
+      set('hidden', rec['hidden'], 'hidden');
+    }
+
     set('reorder_at', rec['reorder_at'], 'reorder_at');
     // Clip — record a single "clip" chip when a url is present.
     const url = (rec['video_url'] ?? '').trim();
