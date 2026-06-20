@@ -72,8 +72,8 @@ export function CompoundVisualizerFrame({
       {/* Top title strip — single thin label line (lower-third / chyron
           style), static across all slides. */}
       <div
-        className={`absolute inset-x-4 top-3 z-10 flex items-center gap-2 font-mono uppercase tracking-[0.2em] ${
-          expanded ? 'text-[10px]' : 'text-[8.5px]'
+        className={`absolute inset-x-4 top-3 z-10 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono uppercase tracking-[0.2em] ${
+          expanded ? 'text-[10px] pr-10' : 'text-[8.5px] pr-1'
         }`}
       >
         <span className="tabular-nums text-ink/40">FIG-01</span>
@@ -129,17 +129,19 @@ export function CompoundVisualizerFrame({
         }}
       />
 
-      {/* Bottom-right registration — provenance of the rendered structure
-          (real cryo-EM coordinates). See data/structures/retatrutide.json. */}
+      {/* Bottom-left registration — provenance of the rendered structure
+          (real cryo-EM coordinates). Moved off the right edge so it never
+          shares the corner with the expand control. */}
       <span
-        className={`absolute bottom-3 right-4 z-10 font-mono uppercase tracking-[0.2em] text-ink/40 ${
+        className={`absolute bottom-3 left-4 z-10 font-mono uppercase tracking-[0.2em] text-ink/40 ${
           expanded ? 'text-[9px]' : 'text-[8px]'
         }`}
       >
         PDB 8YW3
       </span>
 
-      {/* Expand affordance — inline only. Lives above the canvas/carousel
+      {/* Expand affordance — inline only. Bottom-right corner so it never
+          overlaps the FIG-01 title strip; sits above the canvas/carousel
           so the click never competes with drag-to-rotate or swipe. */}
       {onExpand && (
         <button
@@ -147,7 +149,7 @@ export function CompoundVisualizerFrame({
           onClick={onExpand}
           aria-label="Expand compound visualizer"
           title="Expand"
-          className="hero-holo-expand absolute right-3 top-2.5 z-40 flex h-7 w-7 items-center justify-center rounded-md border border-ink/15 bg-base-800/80 text-ink/55 backdrop-blur transition-colors hover:border-ink/35 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+          className="hero-holo-expand absolute right-3 bottom-2.5 z-40 flex h-7 w-7 items-center justify-center rounded-md border border-ink/15 bg-base-800/80 text-ink/55 backdrop-blur transition-colors hover:border-ink/35 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
         >
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
             <path

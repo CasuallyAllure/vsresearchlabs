@@ -35,8 +35,11 @@ alter table product_variant_stock
     check (inbound_units >= 0);
 
 -- ── 2. Public view — expose inbound_units alongside on_hand + lead_days ──────
+-- Dropping + recreating because we're inserting a column in the middle of
+-- the select list; CREATE OR REPLACE refuses positional renames.
 
-create or replace view public_variant_overrides as
+drop view if exists public_variant_overrides;
+create view public_variant_overrides as
   select sku, dose, on_hand, inbound_units, price_cents, lead_days
   from product_variant_stock;
 
@@ -127,7 +130,7 @@ begin
         update product_variant_stock
           set on_hand = v_target, updated_at = now()
           where sku = v_sku and dose = v_dose;
-        v_changed := v_changed || 'on_hand';
+        v_changed := array_append(v_changed, 'on_hand');
       else
         select on_hand into v_before from product_stock where sku = v_sku;
         v_delta := v_target - coalesce(v_before, 0);
@@ -135,7 +138,7 @@ begin
           update product_stock set on_hand = v_target, updated_at = now() where sku = v_sku;
           insert into stock_movements (sku, delta, reason, notes, admin_id, on_hand_after)
             values (v_sku, v_delta, 'manual_adjustment', 'Bulk import', v_admin, v_target);
-          v_changed := v_changed || 'on_hand';
+          v_changed := array_append(v_changed, 'on_hand');
         end if;
       end if;
     end if;
@@ -151,7 +154,7 @@ begin
           set price_cents_override = floor((v_row->>'price_cents')::numeric)::int, updated_at = now()
           where sku = v_sku;
       end if;
-      v_changed := v_changed || 'price';
+      v_changed := array_append(v_changed, 'price');
     end if;
 
     -- cost (admin-only COGS per kit, USD→cents as cost_cents). Per dose.
@@ -159,7 +162,7 @@ begin
       update product_variant_stock
         set cost_cents = floor((v_row->>'cost_cents')::numeric)::int, updated_at = now()
         where sku = v_sku and dose = v_dose;
-      v_changed := v_changed || 'cost';
+      v_changed := array_append(v_changed, 'cost');
     end if;
 
     -- lead_days — per dose. Now accepts:
@@ -172,17 +175,17 @@ begin
       if v_lead_raw is null or v_lead_raw = '' then
         update product_variant_stock set lead_days = null, updated_at = now()
           where sku = v_sku and dose = v_dose;
-        v_changed := v_changed || 'lead_days';
+        v_changed := array_append(v_changed, 'lead_days');
       elsif v_lead_norm in ('x', 'xx') or v_lead_norm ~ '^x+$' then
         update product_variant_stock
           set lead_days = WAREHOUSE_DEFAULT_LEAD, updated_at = now()
           where sku = v_sku and dose = v_dose;
-        v_changed := v_changed || 'lead_days';
+        v_changed := array_append(v_changed, 'lead_days');
       elsif v_lead_raw ~ '^[0-9]+(\.[0-9]+)?$' then
         update product_variant_stock
           set lead_days = floor(v_lead_raw::numeric)::int, updated_at = now()
           where sku = v_sku and dose = v_dose;
-        v_changed := v_changed || 'lead_days';
+        v_changed := array_append(v_changed, 'lead_days');
       else
         -- Unrecognized token — skip silently to avoid blowing up the import
         -- on values like '?'. Reported per-row so user can audit.
@@ -204,7 +207,7 @@ begin
           set reorder_at = floor((v_row->>'reorder_at')::numeric)::int, updated_at = now()
           where sku = v_sku;
       end if;
-      v_changed := v_changed || 'reorder_at';
+      v_changed := array_append(v_changed, 'reorder_at');
     end if;
 
     -- hidden — overloaded:
@@ -221,14 +224,14 @@ begin
           update product_variant_stock
             set inbound_units = v_inbound, updated_at = now()
             where sku = v_sku and dose = v_dose;
-          v_changed := v_changed || 'inbound';
+          v_changed := array_append(v_changed, 'inbound');
         end if;
       else
         update product_stock
           set hidden = (v_hidden_norm in ('true','t','1','yes','y','hidden')),
               updated_at = now()
           where sku = v_sku;
-        v_changed := v_changed || 'hidden';
+        v_changed := array_append(v_changed, 'hidden');
       end if;
     end if;
 
@@ -241,7 +244,7 @@ begin
             video_thumbnail   = nullif(btrim(v_row->>'video_thumbnail'), ''),
             updated_at        = now()
         where sku = v_sku;
-      v_changed := v_changed || 'clip';
+      v_changed := array_append(v_changed, 'clip');
     end if;
 
     if array_length(v_changed, 1) is null then

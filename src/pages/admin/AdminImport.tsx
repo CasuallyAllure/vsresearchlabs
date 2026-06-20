@@ -475,8 +475,11 @@ function mapRecords(text: string): ParsedRow[] {
       fields.push(label);
     };
 
-    // price_usd → cents
-    const priceRaw = (rec['price_usd'] ?? '').trim();
+    // Price (USD) → cents. Accept either `price_usd` (template column) OR
+    // `current_price` (the live/effective-price column the master sheet uses
+    // as the editable price column). price_usd wins if both are filled.
+    const priceRaw =
+      ((rec['price_usd'] ?? '').trim() || (rec['current_price'] ?? '').trim());
     if (priceRaw !== '') {
       const usd = parseFloat(priceRaw.replace(/[$,]/g, ''));
       if (Number.isFinite(usd) && usd >= 0) {

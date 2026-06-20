@@ -35,7 +35,7 @@ import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
-import { tierPriceCents } from '../lib/pricing';
+import { effectiveTierPriceCents } from '../lib/pricing';
 import { deriveProductDose } from '../types';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
@@ -146,8 +146,9 @@ export function CartPage() {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
-        // Cart-derived price for this line (placeholder pricing for now).
-        unitPriceCents: tierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
+        // Honors admin overrides from the master sheet import; falls back to
+        // the formula when no per-variant override exists.
+        unitPriceCents: effectiveTierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
       })),
     };
 

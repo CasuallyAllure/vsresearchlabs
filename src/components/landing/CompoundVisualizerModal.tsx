@@ -60,13 +60,21 @@ export function CompoundVisualizerModal({ open, onClose }: CompoundVisualizerMod
       aria-label="Compound visualizer — expanded"
       className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6"
     >
-      {/* Backdrop */}
+      {/* Backdrop — luminous cream veil, not a dark scrim. Frosted blur +
+          a soft white bloom toward the top keeps the expanded module
+          feeling ethereal and on-brand rather than a smoky lightbox. */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`absolute inset-0 bg-ink/65 backdrop-blur-[3px] transition-opacity duration-300 ${
+        className={`absolute inset-0 transition-opacity duration-300 ${
           shown ? 'opacity-100' : 'opacity-0'
         }`}
+        style={{
+          background:
+            'radial-gradient(120% 90% at 50% 26%, rgba(255,255,255,0.58) 0%, rgba(251,249,244,0.6) 52%, rgba(238,232,222,0.7) 100%)',
+          backdropFilter: 'blur(16px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+        }}
       />
 
       {/* Panel — large, but capped so it never overflows the viewport. */}

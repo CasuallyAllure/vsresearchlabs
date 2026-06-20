@@ -1,11 +1,13 @@
 /**
- * AvailabilityBadge — per-dose fulfillment state.
+ * AvailabilityBadge — public per-dose stock pill.
  *
- *   in stock        → "In stock"
- *   order-on-demand → "Ships in N days" + "Buy 2, get 1 free" (the lead-time
- *                     incentive; applied by admin at invoice, no cart math)
- *   out of stock    → "Out of stock"
- *   untracked dose  → nothing (the catalog's own stock pip covers it)
+ *   in stock       → "In stock"  (any of: on_hand, inbound, warehouse drop-ship)
+ *   out of stock   → "Out of stock"
+ *   untracked dose → nothing (the catalog's own stock pip covers it)
+ *
+ * The public catalog deliberately does NOT distinguish supply sources —
+ * shelf, inbound, and drop-ship all read as "in stock". Admin views read
+ * the raw fields directly to see the truth.
  *
  * Subscribes to the override store so it updates when admin overrides load.
  */
@@ -15,12 +17,10 @@ import { useProductOverrides, doseAvailability } from '../../lib/productOverride
 interface Props {
   sku: string;
   dose: string;
-  /** Show the "Buy 2, get 1 free" chip alongside a lead-time state. */
-  showOffer?: boolean;
   className?: string;
 }
 
-export function AvailabilityBadge({ sku, dose, showOffer = true, className = '' }: Props) {
+export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
   // Re-render when admin overrides load.
   useProductOverrides((s) => s.variantBySku);
   const a = doseAvailability(sku, dose);
@@ -36,22 +36,6 @@ export function AvailabilityBadge({ sku, dose, showOffer = true, className = '' 
     );
   }
 
-  if (a.state === 'lead') {
-    return (
-      <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
-        <span className={`${pill} border-[#B5904B]/40 text-[#8a6d34] bg-[#B5904B]/[0.08]`}>
-          Ships in {a.leadDays} days
-        </span>
-        {showOffer && (
-          <span className={`${pill} border-[#34727A]/40 text-[#34727A] bg-[#34727A]/[0.08]`}>
-            Buy 2, get 1 free
-          </span>
-        )}
-      </span>
-    );
-  }
-
-  // out
   return (
     <span className={`${pill} border-ink/15 text-ink/45 bg-ink/[0.02] ${className}`}>
       Out of stock

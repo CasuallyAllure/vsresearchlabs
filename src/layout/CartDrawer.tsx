@@ -32,7 +32,7 @@ import { useCart } from '../hooks/useCart';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
-import { tierPriceCents } from '../lib/pricing';
+import { effectiveTierPriceCents } from '../lib/pricing';
 import { deriveProductDose } from '../types';
 import { Turnstile } from '../components/security/Turnstile';
 
@@ -137,7 +137,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
-        unitPriceCents: tierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
+        unitPriceCents: effectiveTierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
       })),
     };
 

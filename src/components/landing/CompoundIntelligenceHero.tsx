@@ -653,10 +653,10 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="module-aura flex h-[428px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[470px] lg:h-[512px]"
+        className="module-aura flex h-[508px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[552px] lg:h-[600px]"
       >
         {/* Header bar */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-2.5 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-1.5 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:inline">
@@ -729,7 +729,7 @@ export function CompoundIntelligenceHero() {
                 aria-selected={on}
                 type="button"
                 onClick={() => go(i)}
-                className="group relative flex-1 px-3 py-2 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
+                className="group relative flex-1 px-3 py-1.5 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
               >
                 <span className="font-mono text-[9.5px] tabular-nums text-ink/30">
                   0{i + 1}

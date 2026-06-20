@@ -207,7 +207,6 @@ export function variantPriceCents(sku: string, dose: string): number | null {
 
 export type DoseAvailability =
   | { state: 'in_stock' }
-  | { state: 'lead'; leadDays: number } // order-on-demand; buy-2-get-1-free
   | { state: 'out' }
   | { state: 'unknown' }; // no per-dose row tracked yet
 
