@@ -23,7 +23,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { OrderStatusChip } from './AdminOrders';
-import { CARRIERS } from '../../lib/tracking';
+import { CARRIERS, carrierRequiresTracking } from '../../lib/tracking';
 import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
@@ -423,6 +423,11 @@ export function OrderView({
     if (!order) return;
     setEditing(false);
     await addEvent(currentStageKey(order), 'system', summary);
+    // Reload so the action panel's subtotal field picks up the recomputed
+    // server-side amount from save_order_lines. Without this the subtotal
+    // input would stay frozen on the pre-edit number.
+    reload();
+    onChanged?.();
     if (order.invoiced_at) {
       const warn = '⚠ Itemized changed after the invoice was sent — re-send the invoice so the buyer’s copy matches.';
       setEditWarn(warn);
@@ -453,6 +458,18 @@ function StageActions({
   const [subUsd, setSubUsd] = useState(order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2) : '');
   const [shipUsd, setShipUsd] = useState(order.shipping_cents != null ? (order.shipping_cents / 100).toFixed(2) : '');
   const [discUsd, setDiscUsd] = useState(initialDiscount > 0 ? (initialDiscount / 100).toFixed(2) : '');
+
+  // Subtotal sync: when the line editor saves, the parent reloads the order
+  // and the new server-side subtotal_cents lands on this prop. Re-init the
+  // subUsd field so the admin sees the new total without manually retyping.
+  // Pre-invoice only — once the invoice is sent the field locks to the
+  // historical value.
+  useEffect(() => {
+    if (reached.invoiced) return;
+    if (order.subtotal_cents != null) {
+      setSubUsd((order.subtotal_cents / 100).toFixed(2));
+    }
+  }, [order.subtotal_cents, reached.invoiced]);
   const [tracking, setTracking] = useState(order.tracking_number ?? '');
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
   const [note, setNote] = useState('');
@@ -484,27 +501,38 @@ function StageActions({
   } else if (!reached.shipped) {
     title = 'Processing — ready to ship';
     detail = 'Marking shipped deducts stock for every line and emails the buyer. Add tracking if you have it.';
+    const needsTracking = carrierRequiresTracking(carrier);
     inputs = (
-      <div className="mb-[var(--space-3)] grid grid-cols-[110px_1fr] gap-[var(--space-3)]">
+      <div className={`mb-[var(--space-3)] grid gap-[var(--space-3)] ${needsTracking ? 'grid-cols-[110px_1fr]' : 'grid-cols-1'}`}>
         <label className="block">
           <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Carrier</span>
           <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className={fieldCls}>
             {CARRIERS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </label>
-        <label className="block">
-          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
-          <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number" className={fieldCls} />
-        </label>
+        {needsTracking && (
+          <label className="block">
+            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
+            <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number" className={fieldCls} />
+          </label>
+        )}
       </div>
     );
     forward = {
-      label: 'Mark shipped',
+      label: needsTracking ? 'Mark shipped' : 'Mark hand-delivered',
       act: () => advance(
-        () => supabase!.rpc('confirm_order_fulfilled', { p_order_id: order.id, p_tracking_number: tracking.trim() || null, p_carrier: tracking.trim() ? carrier : null }),
+        () => supabase!.rpc('confirm_order_fulfilled', {
+          p_order_id: order.id,
+          p_tracking_number: needsTracking ? (tracking.trim() || null) : null,
+          p_carrier: carrier,
+        }),
         'shipped',
-        tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped',
-        'Mark shipped? This deducts stock for every line.',
+        needsTracking
+          ? (tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped')
+          : 'Hand delivered',
+        needsTracking
+          ? 'Mark shipped? This deducts stock for every line.'
+          : 'Mark hand-delivered? This deducts stock for every line and notifies the buyer the order is in transit.',
       ),
     };
   } else if (!reached.delivered) {
@@ -856,40 +884,41 @@ function ItemizedEditor({
 
   async function save() {
     if (!supabase) return;
-    // Validate
+    // Validate before sending — fail fast with a usable message.
     for (const r of rows) {
       const q = parseInt(r.quantity, 10);
       if (!r.sku.trim() || !r.product_name.trim()) { setErr('Every line needs a SKU and a name.'); return; }
       if (!Number.isFinite(q) || q < 1 || q > 9999) { setErr('Quantity must be 1–9999.'); return; }
     }
     setSaving(true); setErr(null);
-    const keptIds = rows.filter((r) => r.id).map((r) => r.id!) ;
-    const toDelete = initial.filter((l) => !keptIds.includes(l.id)).map((l) => l.id);
+
+    // Build the payload for save_order_lines (migration 020) — atomic
+    // replace of all lines + server-side subtotal recompute. No more stale
+    // amount_cents after a line edit, no more N-row save loops.
+    const linesPayload = rows.map((r) => ({
+      sku: r.sku.trim(),
+      product_name: r.product_name.trim(),
+      quantity: parseInt(r.quantity, 10),
+      unit_price_cents: r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100),
+      item_note: null,
+    }));
+
     try {
-      if (toDelete.length) {
-        const { error } = await supabase.from('order_lines').delete().in('id', toDelete);
-        if (error) throw error;
-      }
-      for (const r of rows) {
-        const payload = {
-          sku: r.sku.trim(), product_name: r.product_name.trim(),
-          quantity: parseInt(r.quantity, 10),
-          unit_price_cents: r.unitUsd.trim() === '' ? null : Math.round(parseFloat(r.unitUsd) * 100),
-        };
-        if (r.id) {
-          const { error } = await supabase.from('order_lines').update(payload).eq('id', r.id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from('order_lines').insert({ order_id: orderId, ...payload });
-          if (error) throw error;
-        }
-      }
+      const { data, error } = await supabase.rpc('save_order_lines', {
+        p_order_id: orderId,
+        p_lines: linesPayload,
+      });
+      if (error) throw error;
       setSaving(false);
-      onSaved(`Itemized edited — ${rows.length} item${rows.length === 1 ? '' : 's'}`);
+      const sub = (data as { subtotal_cents?: number } | null)?.subtotal_cents ?? null;
+      const subStr = sub !== null ? ` · subtotal $${(sub / 100).toFixed(2)}` : '';
+      onSaved(`Itemized edited — ${rows.length} item${rows.length === 1 ? '' : 's'}${subStr}`);
     } catch (e: unknown) {
       setSaving(false);
       const msg = e instanceof Error ? e.message : 'Save failed.';
-      setErr(/permission|policy|row-level/i.test(msg) ? 'Editing needs migration 015 applied (admin write access to order lines).' : msg);
+      setErr(/permission|policy|row-level/i.test(msg)
+        ? 'Editing needs migration 015 + 020 applied (admin write access + save_order_lines RPC).'
+        : msg);
     }
   }
 

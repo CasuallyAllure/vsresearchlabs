@@ -7,22 +7,30 @@
  * tier.) Status labels mirror the `lookup_order` SQL in migration 012.
  */
 
-export type Carrier = 'usps' | 'ups' | 'fedex' | 'dhl';
+export type Carrier = 'usps' | 'ups' | 'fedex' | 'dhl' | 'hand_delivered';
 
 export const CARRIERS: { value: Carrier; label: string }[] = [
   { value: 'usps', label: 'USPS' },
   { value: 'ups', label: 'UPS' },
   { value: 'fedex', label: 'FedEx' },
   { value: 'dhl', label: 'DHL' },
+  { value: 'hand_delivered', label: 'Hand delivered (in-person)' },
 ];
 
 const CARRIER_LABELS: Record<string, string> = {
   usps: 'USPS', ups: 'UPS', fedex: 'FedEx', dhl: 'DHL',
+  hand_delivered: 'Hand delivered',
 };
 
 export function carrierLabel(carrier: string | null | undefined): string {
   if (!carrier) return 'Carrier';
   return CARRIER_LABELS[carrier.toLowerCase()] ?? carrier;
+}
+
+/** Carriers that don't need a tracking number — fulfillment / delivery is
+ *  manual / in-person. The UI hides the tracking field for these. */
+export function carrierRequiresTracking(carrier: string | null | undefined): boolean {
+  return (carrier ?? '').toLowerCase() !== 'hand_delivered';
 }
 
 /** The carrier's own tracking page for a number. Null if we can't build one. */
@@ -41,6 +49,9 @@ export function carrierTrackingUrl(
       return `https://www.fedex.com/fedextrack/?trknbr=${num}`;
     case 'dhl':
       return `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${num}`;
+    case 'hand_delivered':
+      // No external tracking page for in-person delivery.
+      return null;
     default:
       // Unknown carrier — fall back to a Google search of the number.
       return `https://www.google.com/search?q=${num}+tracking`;

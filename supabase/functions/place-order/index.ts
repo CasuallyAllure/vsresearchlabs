@@ -256,6 +256,54 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
     </div>`;
 }
 
+// Short acknowledgement sent at order-placement time. Confirms the order
+// was received and tells the buyer the formal invoice arrives shortly
+// (admin reviews + sends it manually via /admin/orders/:id). Replaces the
+// old "auto-invoice at cart submit" flow.
+function buildAcknowledgementHtml(
+  payload: OrderPayload, orderNumber: string,
+): string {
+  const shipLines: string[] = [];
+  if (payload.ship_street) shipLines.push(escapeHtml(payload.ship_street));
+  const cityState = [payload.ship_city, payload.ship_state].filter(Boolean).join(", ");
+  const cityStateZip = [cityState, payload.ship_zip].filter(Boolean).join(" ").trim();
+  if (cityStateZip) shipLines.push(escapeHtml(cityStateZip));
+  if (payload.ship_country) shipLines.push(escapeHtml(payload.ship_country));
+
+  return `
+    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:560px;margin:0 auto;padding:8px;">
+      ${brandHeaderHtml()}
+      <h2 style="font-weight:300;letter-spacing:0.04em;margin:18px 0 12px;text-align:center;">
+        We got your order, ${escapeHtml((payload.name ?? "").split(" ")[0] || "researcher")}.
+      </h2>
+      <p style="font-size:14px;color:#444;line-height:1.55;margin:0 0 16px;text-align:center;">
+        Your reference number is
+        <span style="font-family:monospace;font-weight:700;color:#111;">${escapeHtml(orderNumber)}</span>.
+        A team member will review pricing + availability, then email you a
+        formal invoice with payment instructions. You don't need to do
+        anything until that arrives — usually within a few hours during
+        business hours.
+      </p>
+      ${shipLines.length > 0 ? `
+        <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin:0 0 18px;background:#fafafa;">
+          <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.25em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
+            Ship to
+          </div>
+          <div style="font-size:13px;color:#111;line-height:1.5;">
+            ${escapeHtml(payload.name)}<br/>
+            ${shipLines.join("<br/>")}
+          </div>
+          <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.18em;color:#9aa0a6;text-transform:uppercase;margin-top:10px;">
+            Reply to this email if anything is wrong.
+          </div>
+        </div>
+      ` : ""}
+      <p style="margin-top:24px;color:#888;font-size:12px;text-align:center;">
+        VS Research Labs — For Research Purposes Only · Not for Human Use
+      </p>
+    </div>`;
+}
+
 function buildInvoiceEmailHtml(
   payload: OrderPayload, orderNumber: string, totalCents: number,
 ): string {
@@ -495,12 +543,15 @@ Deno.serve(async (req: Request) => {
     category: i.product.category ?? null, item_note: i.note ?? null,
   })));
 
-  // 2) Order row (auto-invoiced)
+  // 2) Order row — created in pending_review. The branded invoice is NOT
+  // sent here; the admin reviews the lines/pricing first, then explicitly
+  // hits Save → Send Invoice in /admin/orders/:id. That's where status
+  // advances to invoice_sent and the buyer gets the formal invoice.
   const orderNumber = generateOrderNumber();
   const { data: orderRow, error: ordErr } = await supabase
     .from("orders")
     .insert({
-      order_number: orderNumber, inquiry_id: inquiryRow.id, status: "invoice_sent",
+      order_number: orderNumber, inquiry_id: inquiryRow.id, status: "pending_review",
       buyer_name: name, buyer_contact: contact, buyer_organization: organization || null,
       notes: notes || null,
       ship_street:  shipStreet  || null,
@@ -510,9 +561,7 @@ Deno.serve(async (req: Request) => {
       ship_country: shipCountry || null,
       subtotal_cents:       totalCents,
       shipping_cents:       null,
-      invoice_amount_cents: totalCents,
       payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
-      invoiced_at: new Date().toISOString(),
     })
     .select("id, order_number, created_at").single();
   if (ordErr || !orderRow) {
@@ -529,15 +578,18 @@ Deno.serve(async (req: Request) => {
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
   // 3) Emails
-  let invoiceEmailSent = false;
+  //   Buyer gets a short acknowledgement (NOT the priced invoice — that's
+  //   sent from admin after pricing is reviewed). Business notification
+  //   still fires immediately so the admin sees the new pending order.
+  let acknowledgementEmailSent = false;
   if (contactIsEmail) {
     const r = await sendResendEmail({
       to: contact,
-      subject: `Invoice ${orderNumber} — VS Research Labs`,
-      html: buildInvoiceEmailHtml(cleanPayload, orderNumber, totalCents),
+      subject: `Order ${orderNumber} received — VS Research Labs`,
+      html: buildAcknowledgementHtml(cleanPayload, orderNumber),
     });
-    invoiceEmailSent = r.ok;
-    if (!r.ok) console.error("Invoice email failed:", r);
+    acknowledgementEmailSent = r.ok;
+    if (!r.ok) console.error("Acknowledgement email failed:", r);
   }
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
@@ -553,7 +605,11 @@ Deno.serve(async (req: Request) => {
     referenceId,
     createdAt: orderRow.created_at,
     amountCents: totalCents,
-    invoiceEmailSent,
+    // Renamed: this is now the acknowledgement email, not the priced
+    // invoice. Keep both keys for backwards compat with older client
+    // builds that still read invoiceEmailSent.
+    acknowledgementEmailSent,
+    invoiceEmailSent: false,
     contactIsEmail,
   });
 });

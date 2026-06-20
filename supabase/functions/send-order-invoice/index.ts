@@ -26,6 +26,10 @@ const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
 // Public site origin for the customer's secure invoice/receipt link.
 const SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
+// Edge Function origin for the "I've sent payment" link. Falls back to the
+// site path which a Cloudflare worker rewrite can rewrite to the EF, but
+// the SUPABASE_URL form works straight away with no extra config.
+const FUNCTIONS_BASE = (Deno.env.get("PUBLIC_FUNCTIONS_URL") ?? `${SUPABASE_URL}/functions/v1`).replace(/\/+$/, "");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
@@ -66,6 +70,14 @@ function escapeHtml(s: string): string {
 function fmtUsd(cents: number | null | undefined): string {
   if (cents === null || cents === undefined) return "—";
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+// Last segment of the order number — VSR-ORD-YYMMDD-NNN → NNN. That's the
+// short code the buyer types in the Zelle/PayPal note. Date portion in the
+// full order number disambiguates collisions on our end.
+function paymentCode(orderNumber: string): string {
+  const parts = orderNumber.split("-");
+  return parts[parts.length - 1] || orderNumber;
 }
 
 interface OrderRow {
@@ -197,18 +209,42 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: s
       <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:10px;">Payment Instructions</div>
       <p style="margin:0 0 12px;font-size:14px;color:#1A1714;line-height:1.6;">Please send <strong>${fmtUsd(total)}</strong> via <strong>Zelle</strong> to:</p>
       <div style="background:#F4EFE6;border:0.5px solid rgba(26,23,20,0.14);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:15px;color:#1A1714;letter-spacing:0.04em;word-break:break-all;"><strong>${escapeHtml(ZELLE_EMAIL)}</strong></div>
-      <p style="margin:0 0 8px;font-size:13.5px;color:#1A1714;line-height:1.6;"><strong>Include your order number in the memo / note field:</strong></p>
-      <div style="background:#F4EFE6;border:0.5px solid rgba(26,23,20,0.14);border-radius:6px;padding:12px 14px;margin-bottom:14px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:14px;color:#1A1714;letter-spacing:0.04em;word-break:break-all;"><strong>${escapeHtml(order.order_number)}</strong></div>
+
+      <!-- Short payment code (last 3-4 digits of the order number) -->
+      <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 12px;background:#fff;text-align:center;">
+        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;letter-spacing:0.3em;color:#6F665C;text-transform:uppercase;margin:0 0 8px;">
+          Payment note · enter exactly
+        </div>
+        <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-weight:700;font-size:34px;letter-spacing:0.18em;color:#1A1714;line-height:1;">
+          ${escapeHtml(paymentCode(order.order_number))}
+        </div>
+        <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#6F665C;margin-top:8px;">
+          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+        </div>
+      </div>
+
+      <p style="margin:0 0 14px;font-size:12px;color:#6F665C;line-height:1.55;">
+        Your full reference is <span style="font-family:'JetBrains Mono','SF Mono',monospace;color:#1A1714;">${escapeHtml(order.order_number)}</span>
+        — we use that on our end; you don't need to retype it.
+      </p>
+
       <p style="margin:0;font-size:12.5px;color:#6F665C;line-height:1.6;background:#F4EFE6;padding:10px 14px;border-radius:6px;border-left:2px solid #34727A;">
-        Send as <strong>family &amp; friends</strong> if Zelle prompts you to choose. Payments without the order number in the memo may delay fulfillment — please double-check before sending.
+        Send as <strong>family &amp; friends</strong> if Zelle prompts you to choose. Payments not sent as Friends &amp; Family will be rejected.
       </p>
     </div>
 
     ${order.lookup_token ? `
-    <!-- Secure online invoice link -->
-    <div style="text-align:center;margin-top:18px;">
-      <a href="${SITE_URL}/track?t=${order.lookup_token}" style="display:inline-block;background:#1A1714;color:#FBF9F4;text-decoration:none;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;padding:13px 28px;border-radius:999px;">View &amp; print your invoice →</a>
-      <div style="font-size:11px;color:#6F665C;margin-top:8px;line-height:1.5;">View your invoice online, track status, and save a PDF anytime — no login needed.</div>
+    <!-- "I've sent payment" CTA — buyer clicks this after they Zelle the money,
+         which advances the order to payment_claimed and pings the admin to
+         verify the deposit. -->
+    <div style="text-align:center;margin-top:20px;">
+      <a href="${FUNCTIONS_BASE}/mark-payment-claimed?t=${order.lookup_token}" style="display:inline-block;background:#34727A;color:#FBF9F4;text-decoration:none;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;padding:15px 32px;border-radius:999px;font-weight:600;">✓ I've sent payment</a>
+      <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Click after you send the Zelle / PayPal payment — we'll verify the deposit and start fulfillment.</div>
+    </div>
+
+    <!-- Secondary: view / print invoice -->
+    <div style="text-align:center;margin-top:14px;">
+      <a href="${SITE_URL}/track?t=${order.lookup_token}" style="display:inline-block;color:#1A1714;text-decoration:underline;font-size:11.5px;letter-spacing:0.12em;text-transform:uppercase;">View &amp; print this invoice</a>
     </div>` : ""}
 
     <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">

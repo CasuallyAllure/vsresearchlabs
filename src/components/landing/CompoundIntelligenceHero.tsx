@@ -197,14 +197,16 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 14) {
     let pausedUntil = 0;
     let visible = true;
 
+    // Pause only when the reader actually takes over (scroll / click /
+    // touch / keyboard) — NOT on a resting cursor, so the ambient drift
+    // keeps going while they simply look at it.
     const nudgePause = () => {
       pausedUntil = performance.now() + 2600;
     };
-    el.addEventListener('pointerenter', nudgePause);
-    el.addEventListener('pointermove', nudgePause);
-    el.addEventListener('focusin', nudgePause);
     el.addEventListener('wheel', nudgePause, { passive: true });
     el.addEventListener('touchstart', nudgePause, { passive: true });
+    el.addEventListener('pointerdown', nudgePause);
+    el.addEventListener('focusin', nudgePause);
 
     // Only drift while the panel is actually on screen.
     const io = new IntersectionObserver(
@@ -241,11 +243,10 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 14) {
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
-      el.removeEventListener('pointerenter', nudgePause);
-      el.removeEventListener('pointermove', nudgePause);
-      el.removeEventListener('focusin', nudgePause);
       el.removeEventListener('wheel', nudgePause);
       el.removeEventListener('touchstart', nudgePause);
+      el.removeEventListener('pointerdown', nudgePause);
+      el.removeEventListener('focusin', nudgePause);
     };
   }, [speedPxPerSec]);
   return ref;
@@ -733,7 +734,7 @@ export function CompoundIntelligenceHero() {
         className="module-aura flex h-[508px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[552px] lg:h-[600px]"
       >
         {/* Header bar */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-1.5 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-1 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:inline">
@@ -752,7 +753,7 @@ export function CompoundIntelligenceHero() {
               aria-haspopup="listbox"
               aria-expanded={pickerOpen}
               onClick={() => setPickerOpen((o) => !o)}
-              className="group inline-flex min-w-0 items-center gap-1.5 rounded-full border border-ink/12 px-2.5 py-1 transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+              className="group inline-flex min-w-0 items-center gap-1.5 rounded-full border border-ink/12 px-2.5 py-0.5 transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
             >
               <span className="truncate font-mono text-[11px] tracking-[0.06em] text-ink/85">
                 {ci.substance}
