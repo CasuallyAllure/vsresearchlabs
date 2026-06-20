@@ -341,19 +341,28 @@ export function OrderView({
         ) : (
           <>
             <ol className="flex items-stretch gap-1.5">
-              {STAGES.map((s) => {
-                const done = reached[s.key];
-                const isCurrent = !done && nextStage(reached) === s.key;
-                return (
-                  <li key={s.key} className="flex-1">
-                    <div className={`h-[5px] rounded-full transition-colors ${done ? 'bg-holo' : isCurrent ? 'bg-holo/30' : 'bg-ink/[0.10]'}`} />
-                    <p className={`mt-1.5 text-[8.5px] uppercase leading-tight tracking-[0.1em] ${done ? 'text-ink/70' : isCurrent ? 'text-ink font-medium' : 'text-ink/30'}`}>
-                      {s.label}
-                      {isCurrent && <span className="ml-1 text-holo">● now</span>}
-                    </p>
-                  </li>
-                );
-              })}
+              {(() => {
+                // Paid but not yet shipped = the order is being prepared. Surface
+                // "order processing" on the Payment received node and suppress the
+                // default "now" marker on Shipped so the active state reads right.
+                const isProcessing = reached.paid && !reached.shipped;
+                return STAGES.map((s) => {
+                  const done = reached[s.key];
+                  const isCurrent = !done && nextStage(reached) === s.key;
+                  const showProcessing = isProcessing && s.key === 'paid';
+                  const showNow = isCurrent && !(isProcessing && s.key === 'shipped');
+                  return (
+                    <li key={s.key} className="flex-1">
+                      <div className={`h-[5px] rounded-full transition-colors ${done ? 'bg-holo' : isCurrent ? 'bg-holo/30' : 'bg-ink/[0.10]'}`} />
+                      <p className={`mt-1.5 text-[8.5px] uppercase leading-tight tracking-[0.1em] ${done ? 'text-ink/70' : isCurrent ? 'text-ink font-medium' : 'text-ink/30'}`}>
+                        {s.label}
+                        {showProcessing && <span className="ml-1" style={{ color: '#2E7D5B' }}>· order processing</span>}
+                        {showNow && <span className="ml-1 text-holo">● now</span>}
+                      </p>
+                    </li>
+                  );
+                });
+              })()}
             </ol>
 
             <div className="mt-[var(--space-5)]">
