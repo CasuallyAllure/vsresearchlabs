@@ -38,7 +38,7 @@ import { getCompoundVideo } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides } from '../../lib/productOverrides';
+import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
@@ -119,6 +119,17 @@ export function CompoundIntelligenceOverlay({
   // Canonical normalized view-model — single read of Product per render.
   const ci = useMemo(() => getCompoundIntelligence(product), [product]);
 
+  // Public-visibility filter for variant tiers. Subscribe to variantBySku
+  // so the strip re-renders when a price is set / cleared by admin import.
+  // Re-uses ci.tiers' identity when nothing changed.
+  const variantBySku = useProductOverrides((s) => s.variantBySku);
+  const visibleTiers = useMemo(
+    () => ci.tiers.filter((v) => isVariantPublic(product.sku, v.dose)),
+    // variantBySku in deps so the filter re-runs after an import.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ci.tiers, product.sku, variantBySku],
+  );
+
   const [closing, setClosing] = useState(false);
   const closingRef = useRef(false);
   const onCloseRef = useRef(onClose);
@@ -126,7 +137,10 @@ export function CompoundIntelligenceOverlay({
   useEffect(() => { onCloseRef.current = onClose; });
 
   const [selectedTierIndex, setSelectedTierIndex] = useState<number>(() => {
-    const idx = ci.tiers.findIndex((v) => v.dose === ci.activeDose);
+    // Initial selection: prefer the catalog's activeDose if it's still public,
+    // otherwise the first publicly-priced variant.
+    const visible = ci.tiers.filter((v) => isVariantPublic(product.sku, v.dose));
+    const idx = visible.findIndex((v) => v.dose === ci.activeDose);
     return idx >= 0 ? idx : 0;
   });
   const [quantity, setQuantity] = useState(1);
@@ -180,7 +194,7 @@ export function CompoundIntelligenceOverlay({
   // Subscribe to admin overrides so the price recomputes when they load.
   useProductOverrides((s) => s.variantBySku);
   useProductOverrides((s) => s.bySku);
-  const activeTier = ci.tiers[selectedTierIndex] ?? null;
+  const activeTier = visibleTiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
   const priceCents = effectiveTierPriceCents(product, activeDoseLabel);
 
@@ -360,7 +374,7 @@ export function CompoundIntelligenceOverlay({
               )}
 
               {/* Select mg + live price + add-to-inquiry, co-located */}
-              {ci.tiers.length > 0 && (
+              {visibleTiers.length > 0 && (
                 <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
                   <div className="flex items-baseline justify-between mb-2">
                     <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
@@ -372,7 +386,7 @@ export function CompoundIntelligenceOverlay({
                   </div>
                   <TierStrip
                     mode="select"
-                    variants={ci.tiers}
+                    variants={visibleTiers}
                     selectedIndex={selectedTierIndex}
                     onSelect={setSelectedTierIndex}
                   />
@@ -464,7 +478,7 @@ export function CompoundIntelligenceOverlay({
                       {passportStats.map((s) => <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />)}
                     </div>
                   )}
-                  {ci.tiers.length > 0 && (
+                  {visibleTiers.length > 0 && (
                     <div className="mt-3">
                       <div className="flex items-baseline justify-between mb-2">
                         <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
@@ -476,7 +490,7 @@ export function CompoundIntelligenceOverlay({
                       </div>
                       <TierStrip
                         mode="select"
-                        variants={ci.tiers}
+                        variants={visibleTiers}
                         selectedIndex={selectedTierIndex}
                         onSelect={setSelectedTierIndex}
                       />
