@@ -36,6 +36,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
+import {
+  buildInvoiceHtml,
+  invoiceSubject,
+  type OrderRow,
+  type OrderLine,
+} from "../_shared/invoiceEmail.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -581,44 +587,47 @@ Deno.serve(async (req: Request) => {
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
   // 3) Emails
-  //   Buyer: fire the FULL branded invoice via the send-order-invoice
-  //     Edge Function. Single source of truth for the invoice template
-  //     (line items, payment block, "I've sent payment" CTA, research-use
-  //     terms + purity guarantee) — no duplicated HTML lives here.
+  //   Buyer: render the FULL branded invoice from the SHARED template
+  //     (_shared/invoiceEmail.ts) and send it INLINE over the same Resend path
+  //     the business notification uses. We deliberately do NOT call the
+  //     send-order-invoice Edge Function over HTTP here: that internal
+  //     function-to-function hop proved unreliable (the buyer copy silently
+  //     never arrived while the inline business email always did). The shared
+  //     template keeps a single source of truth; send-order-invoice still
+  //     exists for admin re-sends and renders the identical email.
   //   Business: branded internal notification with prices visible at a
   //     glance + "watch for payment code" action block.
   let invoiceEmailSent = false;
   if (contactIsEmail) {
-    // Bound the internal call so a slow/hung invoice function can never block
-    // order placement — the order is already persisted; the email is best-effort.
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 10_000);
     try {
-      const inv = await fetch(`${SUPABASE_URL}/functions/v1/send-order-invoice`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // The Supabase Edge gateway routes on the apikey header; the browser
-          // SDK always sends BOTH apikey + Authorization. A function-to-function
-          // fetch must do the same — Authorization alone can be rejected at the
-          // gateway (401) before the invoice function ever runs, which is why
-          // the business email (sent inline) arrived but the buyer invoice
-          // silently didn't.
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-        },
-        body: JSON.stringify({ order_id: orderRow.id }),
-        signal: ctrl.signal,
-      });
-      invoiceEmailSent = inv.ok;
-      if (!inv.ok) {
-        const errBody = await inv.text().catch(() => "");
-        console.error("Invoice email function failed:", inv.status, errBody);
+      // Re-read the order so we have the DB-generated lookup_token (for the
+      // "I've sent payment" + view-invoice links) and the canonical amounts.
+      const { data: invOrder } = await supabase
+        .from("orders")
+        .select(`id, order_number, buyer_name, buyer_contact, buyer_organization,
+                 invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
+                 payment_method, status, notes,
+                 ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
+        .eq("id", orderRow.id)
+        .single();
+      if (invOrder) {
+        const { data: invLines } = await supabase
+          .from("order_lines")
+          .select("sku, product_name, quantity, unit_price_cents, item_note")
+          .eq("order_id", orderRow.id);
+        const invRes = await sendResendEmail({
+          to: contact,
+          subject: invoiceSubject(invOrder),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: (invLines ?? []) as OrderLine[] }),
+          replyTo: BUSINESS_EMAIL,
+        });
+        invoiceEmailSent = invRes.ok;
+        if (!invRes.ok) console.error("Buyer invoice email failed:", invRes.status, invRes.body);
+      } else {
+        console.error("Buyer invoice: could not re-read order", orderRow.id);
       }
     } catch (err) {
-      console.error("Invoice email function threw:", err);
-    } finally {
-      clearTimeout(timer);
+      console.error("Buyer invoice email threw:", err);
     }
   }
   const biz = await sendResendEmail({
