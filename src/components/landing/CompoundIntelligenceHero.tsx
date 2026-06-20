@@ -176,6 +176,81 @@ function IdentityRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+/**
+ * useDriftScroll — gives a scroll container a slow, ambient self-scroll
+ * that drifts down through the overflowing content, holds at the bottom,
+ * then drifts back up (a gentle teleprompter to invite reading). Pauses
+ * the moment the reader hovers, focuses, or scrolls it themselves, and
+ * resumes shortly after they let go. No-ops under reduced motion.
+ */
+function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 14) {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let raf = 0;
+    let last = 0;
+    let dir = 1;
+    let holdUntil = 0;
+    let pausedUntil = 0;
+    let visible = true;
+
+    const nudgePause = () => {
+      pausedUntil = performance.now() + 2600;
+    };
+    el.addEventListener('pointerenter', nudgePause);
+    el.addEventListener('pointermove', nudgePause);
+    el.addEventListener('focusin', nudgePause);
+    el.addEventListener('wheel', nudgePause, { passive: true });
+    el.addEventListener('touchstart', nudgePause, { passive: true });
+
+    // Only drift while the panel is actually on screen.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) last = 0; // avoid a jump after being idle
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(el);
+
+    const step = (t: number) => {
+      raf = requestAnimationFrame(step);
+      if (!visible) return;
+      if (!last) last = t;
+      const dt = (t - last) / 1000;
+      last = t;
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 6 || t < holdUntil || t < pausedUntil) return;
+      let next = el.scrollTop + dir * speedPxPerSec * dt;
+      if (next >= max) {
+        next = max;
+        dir = -1;
+        holdUntil = t + 2200;
+      } else if (next <= 0) {
+        next = 0;
+        dir = 1;
+        holdUntil = t + 2200;
+      }
+      el.scrollTop = next;
+    };
+    raf = requestAnimationFrame(step);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      el.removeEventListener('pointerenter', nudgePause);
+      el.removeEventListener('pointermove', nudgePause);
+      el.removeEventListener('focusin', nudgePause);
+      el.removeEventListener('wheel', nudgePause);
+      el.removeEventListener('touchstart', nudgePause);
+    };
+  }, [speedPxPerSec]);
+  return ref;
+}
+
 function SlidePanel({
   ci,
   product,
@@ -186,6 +261,7 @@ function SlidePanel({
   onOpenRecord: () => void;
 }) {
   const add = useCart((s) => s.add);
+  const driftRef = useDriftScroll<HTMLDivElement>();
   return (
     <div className="grid h-full grid-cols-1 grid-rows-[132px_1fr] md:grid-cols-5 md:grid-rows-none">
       {/* Specimen plate — generated vial + real PubChem structure, side by side.
@@ -219,8 +295,9 @@ function SlidePanel({
         <CornerMarks />
       </div>
 
-      {/* Intelligence — the product. Image supports it. */}
-      <div className="flex min-w-0 flex-col overflow-y-auto p-4 sm:p-5 md:col-span-3">
+      {/* Intelligence — the product. Image supports it. Slowly self-drifts
+          through the copy to invite reading; pauses on interaction. */}
+      <div ref={driftRef} className="flex min-w-0 flex-col overflow-y-auto p-4 sm:p-5 md:col-span-3">
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden
@@ -729,7 +806,7 @@ export function CompoundIntelligenceHero() {
                 aria-selected={on}
                 type="button"
                 onClick={() => go(i)}
-                className="group relative flex-1 px-3 py-1.5 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
+                className="group relative flex-1 px-3 py-1 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
               >
                 <span className="font-mono text-[9.5px] tabular-nums text-ink/30">
                   0{i + 1}
