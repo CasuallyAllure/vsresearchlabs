@@ -22,7 +22,7 @@ import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
 import { inStockByKey } from '../../lib/stock';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
+import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
@@ -78,19 +78,50 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
       </button>
 
       {variants.length > 1 ? (
-        <select
-          value={activeDose}
-          onChange={(e) => {
-            const idx = variants.findIndex((v) => v.dose === e.target.value);
-            if (idx >= 0) setTierIndex(idx);
-          }}
+        <div
+          role="radiogroup"
           aria-label="Select dose"
-          className="shrink-0 w-[74px] px-1.5 py-1 text-[10.5px] font-mono tabular-nums text-ink/85 bg-ink/[0.04] border border-ink/[0.1] rounded-[3px] focus:outline-none focus:border-ink/30"
+          className="shrink-0 flex flex-wrap gap-1 max-w-[140px] justify-end"
         >
-          {variants.map((v) => (
-            <option key={v.dose} value={v.dose}>{v.dose}</option>
-          ))}
-        </select>
+          {variants.map((v, i) => {
+            const isActive = i === tierIndex;
+            const av = doseAvailability(product.sku, v.dose);
+            const isFast = av.state === 'in_stock' && av.fast;
+            const doseTxt = v.dose.replace(/\s+/g, '').toUpperCase();
+            return (
+              <button
+                key={v.dose}
+                type="button"
+                role="radio"
+                aria-checked={isActive}
+                onClick={() => setTierIndex(i)}
+                title={isFast ? `${v.dose} · ships fast` : v.dose}
+                className="font-mono leading-none px-1.5 py-1 rounded-[3px] border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                style={{
+                  fontSize: '9px',
+                  letterSpacing: '0.14em',
+                  backgroundColor: isActive ? '#1A1714' : 'rgba(26,23,20,0.02)',
+                  color: isActive ? '#FBF9F4' : 'rgba(26,23,20,0.78)',
+                  borderColor: isActive ? '#1A1714' : 'rgba(26,23,20,0.12)',
+                }}
+              >
+                {doseTxt}
+                {isFast && (
+                  <span
+                    className="ml-1"
+                    style={{
+                      color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
+                      fontSize: '8px',
+                      letterSpacing: '0.20em',
+                    }}
+                  >
+                    · FAST
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       ) : (
         <span className="shrink-0 w-[74px] text-right font-mono text-[11px] tabular-nums text-ink/60">{activeDose}</span>
       )}
