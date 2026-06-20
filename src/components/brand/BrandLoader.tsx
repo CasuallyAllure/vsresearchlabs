@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { DnaVMark } from './DnaVMark';
+import { BRAND_WORDMARK } from './Logo';
 
 export interface BrandLoaderProps {
   /** Whether the loader is visible. When flipped to false the loader
@@ -108,6 +109,23 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           64%  { opacity: 1; }
           100% { opacity: 0; }
         }
+        /* Wordmark rises in with the V — same 760ms fade+lift as the
+           DnaVMark V reveal so the two complete the mark together. */
+        @keyframes vsrl-word-reveal {
+          from { opacity: 0; transform: translateY(7px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+        .vsrl-word-reveal {
+          opacity: 0;
+          animation: vsrl-word-reveal 760ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .vsrl-word-reveal {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
       {/* White frosted backdrop — masked away outside-in on exit. */}
@@ -142,6 +160,7 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
         style={{
           position: 'relative',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           transform: `translateY(-${MARK_LIFT_PX}px)`,
@@ -156,6 +175,23 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           bodyEntryMs={1600}
           vRevealDelayMs={intro ? V_REVEAL_DELAY_MS : undefined}
         />
+        {/* Wordmark — identical font / weight / tracking to the header
+            Logo, sitting directly under the V. In intro mode it rises in
+            with the V (same delay + 760ms curve); otherwise it's simply
+            present, matching the always-visible mark on route loaders. */}
+        <span
+          className={`font-serif font-medium uppercase leading-none whitespace-nowrap text-ink${
+            intro ? ' vsrl-word-reveal' : ''
+          }`}
+          style={{
+            marginTop: -10,
+            fontSize: 13,
+            letterSpacing: '0.2em',
+            ...(intro ? { animationDelay: `${V_REVEAL_DELAY_MS}ms` } : null),
+          }}
+        >
+          {BRAND_WORDMARK}
+        </span>
       </div>
     </div>
   );

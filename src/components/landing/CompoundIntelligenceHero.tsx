@@ -183,46 +183,36 @@ function IdentityRow({ label, value }: { label: string; value: string }) {
  * the moment the reader hovers, focuses, or scrolls it themselves, and
  * resumes shortly after they let go. No-ops under reduced motion.
  */
-function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 14) {
+function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 20) {
   const ref = useRef<T>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    // Per-frame scrollTop writes need instant scrolling, not smooth.
+    el.style.scrollBehavior = 'auto';
+
     let raf = 0;
     let last = 0;
     let dir = 1;
     let holdUntil = 0;
     let pausedUntil = 0;
-    let visible = true;
 
-    // Pause only when the reader actually takes over (scroll / click /
-    // touch / keyboard) — NOT on a resting cursor, so the ambient drift
-    // keeps going while they simply look at it.
+    // Pause briefly when the reader actually takes over (scroll / touch /
+    // click / keyboard), then resume the ambient drift.
     const nudgePause = () => {
-      pausedUntil = performance.now() + 2600;
+      pausedUntil = performance.now() + 1400;
     };
     el.addEventListener('wheel', nudgePause, { passive: true });
-    el.addEventListener('touchstart', nudgePause, { passive: true });
+    el.addEventListener('touchmove', nudgePause, { passive: true });
     el.addEventListener('pointerdown', nudgePause);
     el.addEventListener('focusin', nudgePause);
 
-    // Only drift while the panel is actually on screen.
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        visible = entry.isIntersecting;
-        if (visible) last = 0; // avoid a jump after being idle
-      },
-      { threshold: 0.2 },
-    );
-    io.observe(el);
-
     const step = (t: number) => {
       raf = requestAnimationFrame(step);
-      if (!visible) return;
       if (!last) last = t;
-      const dt = (t - last) / 1000;
+      const dt = Math.min((t - last) / 1000, 0.05);
       last = t;
       const max = el.scrollHeight - el.clientHeight;
       if (max <= 6 || t < holdUntil || t < pausedUntil) return;
@@ -242,9 +232,8 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 14) {
 
     return () => {
       cancelAnimationFrame(raf);
-      io.disconnect();
       el.removeEventListener('wheel', nudgePause);
-      el.removeEventListener('touchstart', nudgePause);
+      el.removeEventListener('touchmove', nudgePause);
       el.removeEventListener('pointerdown', nudgePause);
       el.removeEventListener('focusin', nudgePause);
     };
@@ -264,7 +253,7 @@ function SlidePanel({
   const add = useCart((s) => s.add);
   const driftRef = useDriftScroll<HTMLDivElement>();
   return (
-    <div className="grid h-full grid-cols-1 grid-rows-[132px_1fr] md:grid-cols-5 md:grid-rows-none">
+    <div className="grid h-full grid-cols-1 grid-rows-[112px_1fr] md:grid-cols-5 md:grid-rows-none">
       {/* Specimen plate — generated vial + real PubChem structure, side by side.
           Identifier rides a header strip so it never lands on the artwork. */}
       <div className="relative flex min-h-0 min-w-0 flex-col border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
@@ -731,10 +720,10 @@ export function CompoundIntelligenceHero() {
         aria-roledescription="carousel"
         aria-label={`Featured compound intelligence: ${ci.substance}`}
         onKeyDown={onKeyDown}
-        className="module-aura flex h-[508px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[552px] lg:h-[600px]"
+        className="module-aura flex h-[572px] flex-col overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-display sm:h-[592px] lg:h-[616px]"
       >
         {/* Header bar */}
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-1 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-ink/[0.08] px-4 py-0.5 sm:px-5">
           <div className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:inline">
@@ -807,7 +796,7 @@ export function CompoundIntelligenceHero() {
                 aria-selected={on}
                 type="button"
                 onClick={() => go(i)}
-                className="group relative flex-1 px-3 py-1 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
+                className="group relative flex-1 px-3 py-0.5 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
               >
                 <span className="font-mono text-[9.5px] tabular-nums text-ink/30">
                   0{i + 1}

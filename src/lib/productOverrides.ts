@@ -205,6 +205,36 @@ export function variantPriceCents(sku: string, dose: string): number | null {
   return state.bySku[sku]?.price_cents_override ?? null;
 }
 
+/** Public catalog visibility for a (sku, dose) pair.
+ *
+ * A variant is publicly visible when the master inventory sheet carries an
+ * admin-set price for it. No price = sit in the DB but don't appear as a
+ * dose option to buyers (the user's "we're not gonna put it as an option"
+ * rule). The formula fallback in lib/pricing.ts is intentionally not used
+ * here — it'd defeat the no-price-means-hide policy by manufacturing a
+ * placeholder price for every mg dose.
+ *
+ * If no per-dose row exists at all (no import has touched this variant) we
+ * default to visible so a fresh seed install still shows everything; the
+ * filter only kicks in once the import has written something. */
+export function isVariantPublic(sku: string, dose: string): boolean {
+  const state = useProductOverrides.getState();
+  const v = state.variantBySku[sku]?.[dose];
+  if (!v) return true; // not yet tracked — don't hide
+  return v.price_cents != null;
+}
+
+/** Same rule applied at the SKU level. A product is publicly visible only if
+ *  at least one of its tracked variants is publicly visible. Used to filter
+ *  catalog list grids. */
+export function isProductPublic(sku: string, variantDoses: string[]): boolean {
+  const state = useProductOverrides.getState();
+  const variants = state.variantBySku[sku];
+  if (!variants) return true; // nothing imported for this SKU yet
+  // If any provided dose has a price, the product is publicly visible.
+  return variantDoses.some((dose) => variants[dose]?.price_cents != null);
+}
+
 export type DoseAvailability =
   | { state: 'in_stock' }
   | { state: 'out' }

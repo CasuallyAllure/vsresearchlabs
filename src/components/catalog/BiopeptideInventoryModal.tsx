@@ -22,6 +22,7 @@ import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
 import { inStockByKey } from '../../lib/stock';
 import { tierPriceCents, formatPrice } from '../../lib/pricing';
+import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
 
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
@@ -33,8 +34,12 @@ const ALL_DESCRIPTION =
 
 /** One compact inventory row: name + class · dose select · price · add. */
 function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id: string) => void }) {
+  // Re-render when variant overrides load.
+  useProductOverrides((s) => s.variantBySku);
   const stocked = inStockByKey(product.id);
-  const variants = product.variants ?? [];
+  // Filter to publicly-priced variants only — see lib/productOverrides.
+  const allVariants = product.variants ?? [];
+  const variants = allVariants.filter((v) => isVariantPublic(product.sku, v.dose));
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
   const priceCents = tierPriceCents(product, activeDose);

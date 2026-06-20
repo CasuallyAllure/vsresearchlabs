@@ -96,6 +96,9 @@
     "variants": [
       {
         "dose": "5mg"
+      },
+      {
+        "dose": "50mg"
       }
     ],
     "priceCents": null,
@@ -1288,6 +1291,9 @@
       },
       {
         "dose": "1500mg"
+      },
+      {
+        "dose": "1200mg"
       }
     ],
     "priceCents": null,

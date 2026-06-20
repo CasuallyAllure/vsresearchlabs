@@ -23,7 +23,7 @@ import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isSkuInStock } from '../../lib/productOverrides';
+import { useProductOverrides, isSkuInStock, isVariantPublic } from '../../lib/productOverrides';
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
@@ -47,7 +47,11 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
   useProductOverrides((s) => s.variantBySku);
   useProductOverrides((s) => s.bySku);
   const stocked = isSkuInStock(product.sku);
-  const variants = product.variants ?? [];
+  // Filter to publicly-priced variants. Unpriced doses live in the catalog
+  // seed for admin import / future stocking, but stay invisible to buyers
+  // until the master sheet assigns them a price.
+  const allVariants = product.variants ?? [];
+  const variants = allVariants.filter((v) => isVariantPublic(product.sku, v.dose));
 
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);

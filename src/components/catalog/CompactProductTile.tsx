@@ -27,7 +27,7 @@ import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { tierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isSkuInStock } from '../../lib/productOverrides';
+import { useProductOverrides, isSkuInStock, isVariantPublic } from '../../lib/productOverrides';
 
 const STOCK_GREEN = '#2E7D5B';
 const STOCK_RED = '#B23A3A';
@@ -43,8 +43,13 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
 
   // Subscribe to overrides so admin changes propagate immediately.
   const override = useProductOverrides((s) => s.bySku[product.sku] ?? null);
+  // Re-render when variant prices change.
+  useProductOverrides((s) => s.variantBySku);
   const stocked = isSkuInStock(product.sku);
-  const variants = product.variants ?? [];
+  // Only render variants with an admin-set price — no-price doses stay
+  // hidden from the public catalog.
+  const allVariants = product.variants ?? [];
+  const variants = allVariants.filter((v) => isVariantPublic(product.sku, v.dose));
 
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
