@@ -198,6 +198,10 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 20) {
     let dir = 1;
     let holdUntil = 0;
     let pausedUntil = 0;
+    // Float accumulator for the scroll position. We must NOT read scrollTop
+    // back each frame: iOS quantizes it to whole pixels, so a sub-pixel
+    // per-frame delta would round to zero and never advance.
+    let pos = el.scrollTop;
 
     // Pause briefly when the reader actually takes over (scroll / touch /
     // click / keyboard), then resume the ambient drift.
@@ -215,18 +219,25 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 20) {
       const dt = Math.min((t - last) / 1000, 0.05);
       last = t;
       const max = el.scrollHeight - el.clientHeight;
-      if (max <= 6 || t < holdUntil || t < pausedUntil) return;
-      let next = el.scrollTop + dir * speedPxPerSec * dt;
-      if (next >= max) {
-        next = max;
+      // While the reader is in control, track their position instead of
+      // fighting it; resume the drift from wherever they left off.
+      if (t < pausedUntil) {
+        pos = el.scrollTop;
+        return;
+      }
+      if (max <= 6 || t < holdUntil) return;
+      if (pos > max) pos = max;
+      pos += dir * speedPxPerSec * dt;
+      if (pos >= max) {
+        pos = max;
         dir = -1;
         holdUntil = t + 2200;
-      } else if (next <= 0) {
-        next = 0;
+      } else if (pos <= 0) {
+        pos = 0;
         dir = 1;
         holdUntil = t + 2200;
       }
-      el.scrollTop = next;
+      el.scrollTop = pos;
     };
     raf = requestAnimationFrame(step);
 
