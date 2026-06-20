@@ -32,8 +32,9 @@ import { useCart } from '../hooks/useCart';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
-import { effectiveTierPriceCents } from '../lib/pricing';
-import { deriveProductDose } from '../types';
+import { lineUnitCents } from '../lib/cartActions';
+import { placeOrder } from '../lib/placeOrder';
+import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
 
 const MAX_QTY = 999;
@@ -137,30 +138,19 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
-        unitPriceCents: effectiveTierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
+        // Same resolver the cart display uses (lib/cartActions.lineUnitCents).
+        unitPriceCents: lineUnitCents(i),
       })),
     };
 
-    const { data, error } = await supabase.functions.invoke('place-order', {
-      body: payload,
-    });
+    const outcome = await placeOrder(payload);
 
-    if (error || !data?.success) {
-      const message =
-        (data && typeof data === 'object' && 'error' in data
-          ? String((data as { error: unknown }).error)
-          : null) ??
-        error?.message ??
-        'Failed to place order. Please try again.';
-      setSubmit({ kind: 'error', message });
+    if (!outcome.ok) {
+      setSubmit({ kind: 'error', message: outcome.message });
       return;
     }
 
-    const reference =
-      data && typeof data === 'object' && 'orderNumber' in data
-        ? String((data as { orderNumber: unknown }).orderNumber)
-        : undefined;
-
+    const reference = outcome.data.orderNumber;
     const sentEmail = email.trim();
     clear();
     setFirstName('');
@@ -466,6 +456,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           <p className="mt-0.5 truncate">
                             <SKUCode value={item.product.sku} className="text-ink/35" />
                           </p>
+                          <p className="mt-0.5 font-mono text-[11px] tabular-nums text-ink/60">
+                            {formatUsd(lineUnitCents(item))}
+                            {item.quantity > 1 && (
+                              <span className="text-ink/35">
+                                {' '}× {item.quantity} ={' '}
+                                <span className="text-ink/75">{formatUsd(lineUnitCents(item) * item.quantity)}</span>
+                              </span>
+                            )}
+                          </p>
                           <div className="mt-2 flex items-center gap-2">
                             <button
                               type="button"
@@ -506,6 +505,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
             {/* Footer — continue to the details step */}
             <div className="border-t border-ink/[0.06] px-5 py-3">
+              {items.length > 0 && (
+                <div className="mb-2.5 flex items-baseline justify-between">
+                  <span className="text-[9px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+                  <span className="font-mono text-[12.5px] tabular-nums text-ink">
+                    {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
+                  </span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setView('form')}

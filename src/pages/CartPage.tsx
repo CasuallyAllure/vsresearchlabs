@@ -35,8 +35,8 @@ import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
-import { effectiveTierPriceCents } from '../lib/pricing';
-import { deriveProductDose } from '../types';
+import { lineUnitCents } from '../lib/cartActions';
+import { placeOrder } from '../lib/placeOrder';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
 
@@ -146,36 +146,21 @@ export function CartPage() {
         },
         quantity: i.quantity,
         note: i.note?.trim() || undefined,
-        // Honors admin overrides from the master sheet import; falls back to
-        // the formula when no per-variant override exists.
-        unitPriceCents: effectiveTierPriceCents(i.product, deriveProductDose(i.product)) ?? 0,
+        // Same resolver the cart display uses (lib/cartActions.lineUnitCents):
+        // (sku, dose) admin override → captured priceCents → 0.
+        unitPriceCents: lineUnitCents(i),
       })),
     };
 
-    const { data, error } = await supabase.functions.invoke('place-order', {
-      body: payload,
-    });
+    const outcome = await placeOrder(payload);
 
-    if (error || !data?.success) {
-      const message =
-        (data && typeof data === 'object' && 'error' in data
-          ? String((data as { error: unknown }).error)
-          : null) ??
-        error?.message ??
-        'Failed to place order. Please try again.';
-      setSubmit({ kind: 'error', message });
+    if (!outcome.ok) {
+      setSubmit({ kind: 'error', message: outcome.message });
       return;
     }
 
     // Server-authoritative order data.
-    const serverResp = data as {
-      success: true;
-      orderNumber?: string;
-      referenceId?: string;
-      createdAt?: string;
-      amountCents?: number;
-      invoiceEmailSent?: boolean;
-    };
+    const serverResp = outcome.data;
 
     if (!serverResp.orderNumber) {
       setSubmit({
@@ -511,6 +496,8 @@ export function CartPage() {
           const noteValue = item.note ?? '';
           const isNoteOpen = !!notesOpen[item.product.id] || noteValue.length > 0;
           const atMax = item.quantity >= MAX_QTY;
+          const unit = lineUnitCents(item);
+          const lineTotal = unit * item.quantity;
           return (
             <li
               key={item.product.id}
@@ -542,6 +529,15 @@ export function CartPage() {
                         <span className="mx-1.5 text-ink/20" aria-hidden="true">·</span>
                         {item.product.category.replace(/-/g, ' ')}
                       </>
+                    )}
+                  </p>
+                  <p className="mt-1 text-[12px] font-mono tabular-nums text-ink/70">
+                    {formatUsd(unit)}
+                    {item.quantity > 1 && (
+                      <span className="text-ink/40">
+                        {' '}× {item.quantity} ={' '}
+                        <span className="text-ink/80">{formatUsd(lineTotal)}</span>
+                      </span>
                     )}
                   </p>
                 </div>
@@ -627,7 +623,17 @@ export function CartPage() {
           );
         })}
             </ul>
+            <div className="flex items-baseline justify-between gap-[var(--space-4)] px-[var(--space-5)] py-[var(--space-4)] border-t border-ink/[0.1]">
+              <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+              <span className="text-sm font-mono tabular-nums text-ink">
+                {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
+              </span>
+            </div>
           </div>
+          <p className="mt-[var(--space-3)] text-[11px] text-ink/40 leading-relaxed">
+            Shipping is calculated separately. Final pricing is confirmed on the
+            invoice we email you — you can adjust the order before paying.
+          </p>
         </div>
 
         {/* Inquiry form column — Level 1 solid surface module.

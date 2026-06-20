@@ -118,110 +118,202 @@ function InvoiceByToken({ token }: { token: string }) {
   const docKind: 'invoice' | 'receipt' = o.paid ? 'receipt' : 'invoice';
   const shipped = formatDate(o.shipped_at);
   const delivered = formatDate(o.delivered_at);
+  const placed = formatDate(o.placed_at);
+
+  // Hand-delivered orders never have a tracking pipeline; they ship in-person.
+  const isHandDelivered = (o.carrier ?? '').toLowerCase() === 'hand_delivered';
+  // Once the order is in transit (shipped or delivered) the tracking card is
+  // the buyer's primary focus. Before that we still render it as "awaiting
+  // tracking" so the buyer knows where to look.
+  const inTransit = pres.step >= 4;
 
   return (
     <>
-      <header className="mb-[var(--space-6)]">
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <header className="mb-[var(--space-5)]">
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          {docKind === 'receipt' ? 'Receipt' : 'Invoice'}
+          Track your order
         </p>
         <h1 className="text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
           <span className="font-light text-ink/85">Order </span>
           <span className="font-medium text-ink">{o.order_number}</span>
         </h1>
-        {o.buyer_name && <p className="mt-[var(--space-2)] text-[13px] text-ink/60">{o.buyer_name}</p>}
+        <div className="mt-[var(--space-2)] flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1 text-[12px] text-ink/55">
+          {o.buyer_name && <span>{o.buyer_name}</span>}
+          {placed && (
+            <>
+              {o.buyer_name && <span className="text-ink/25">·</span>}
+              <span><span className="uppercase tracking-[0.14em] text-ink/35 mr-1">Placed</span>{placed}</span>
+            </>
+          )}
+        </div>
       </header>
 
-      <article className="research-surface-solid p-[var(--space-5)]">
-        {/* Status stepper */}
-        <div className="mb-[var(--space-4)] flex items-start justify-between gap-[var(--space-4)] flex-wrap">
-          <div>
-            <h2 className="text-[1.1rem] font-medium text-ink">{pres.label}</h2>
-            {pres.detail && <p className="mt-1 text-[12px] text-ink/65 max-w-[52ch]">{pres.detail}</p>}
-          </div>
-          {formatDate(o.placed_at) && (
-            <p className="text-[11px] text-ink/45 text-right">
-              <span className="uppercase tracking-[0.18em] text-ink/35">Placed</span><br />{formatDate(o.placed_at)}
+      {/* ── Status module — the tracking bar ─────────────────────────── */}
+      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+        <div className="mb-[var(--space-3)]">
+          <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35 mb-1">
+            Status
+          </p>
+          <h2 className="text-[1.15rem] font-medium text-ink leading-snug">{pres.label}</h2>
+          {pres.detail && (
+            <p className="mt-1.5 text-[12.5px] text-ink/65 leading-relaxed max-w-[58ch]">
+              {pres.detail}
             </p>
           )}
         </div>
+
         {pres.tone !== 'stopped' && (
-          <ol className="flex items-center gap-1 mb-[var(--space-5)]" aria-label="Order progress">
+          <ol className="flex items-stretch gap-1 mt-[var(--space-4)]" aria-label="Order progress">
             {STATUS_STEPS.map((label, i) => {
               const reached = i <= pres.step;
+              const isCurrent = i === pres.step;
               return (
                 <li key={label} className="flex-1 min-w-0">
-                  <div className={`h-1 rounded-full transition-colors ${reached ? 'bg-holo' : 'bg-ink/12'}`} aria-current={i === pres.step ? 'step' : undefined} />
-                  <span className={`mt-1 block truncate text-[9px] uppercase tracking-[0.14em] ${reached ? 'text-ink/70' : 'text-ink/35'}`}>{label}</span>
+                  <div
+                    className={`h-1.5 rounded-full transition-colors ${
+                      reached ? 'bg-holo' : 'bg-ink/12'
+                    }`}
+                    style={isCurrent ? { boxShadow: '0 0 0 3px rgba(98,160,166,0.18)' } : undefined}
+                    aria-current={isCurrent ? 'step' : undefined}
+                  />
+                  <span
+                    className={`mt-1.5 block truncate text-[8.5px] uppercase tracking-[0.16em] ${
+                      reached ? (isCurrent ? 'text-ink font-medium' : 'text-ink/70') : 'text-ink/30'
+                    }`}
+                  >
+                    {label}
+                  </span>
                 </li>
               );
             })}
           </ol>
         )}
+      </article>
 
-        {/* Itemized */}
-        <p className="holo-text-caption mb-[var(--space-2)] text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
+      {/* ── Tracking module — dedicated card, always present ─────────── */}
+      {!isHandDelivered && (
+        <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+          <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
+            {inTransit ? 'In transit' : 'Carrier tracking'}
+          </p>
+          {o.tracking_number ? (
+            <div className="flex flex-wrap items-end justify-between gap-[var(--space-4)]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-ink/45">
+                  {carrierLabel(o.carrier)}
+                </p>
+                <p className="mt-1 font-mono text-[15px] tabular-nums text-ink break-all leading-tight">
+                  {o.tracking_number}
+                </p>
+                {(shipped || delivered) && (
+                  <p className="mt-1.5 text-[11px] text-ink/55">
+                    {delivered ? `Delivered ${delivered}` : shipped ? `Shipped ${shipped}` : null}
+                  </p>
+                )}
+              </div>
+              {url && (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors"
+                >
+                  Track on {carrierLabel(o.carrier)} ↗
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-[var(--space-3)]">
+              <span
+                aria-hidden="true"
+                className="inline-block h-2 w-2 rounded-full bg-ink/20"
+              />
+              <p className="text-[12.5px] text-ink/60 leading-relaxed max-w-[58ch]">
+                A carrier and tracking number will appear here as soon as your
+                order ships. You'll also get an email the moment it leaves the
+                warehouse.
+              </p>
+            </div>
+          )}
+        </article>
+      )}
+      {isHandDelivered && (
+        <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+          <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
+            Delivery method
+          </p>
+          <div className="flex items-center gap-[var(--space-3)]">
+            <span
+              aria-hidden="true"
+              className="inline-block h-2 w-2 rounded-full bg-holo/70"
+            />
+            <p className="text-[12.5px] text-ink/75 leading-relaxed">
+              <strong className="text-ink">Hand delivery</strong>
+              {delivered ? ` — delivered ${delivered}.` : ' — we’ll reach out to coordinate the handoff.'}
+            </p>
+          </div>
+        </article>
+      )}
+
+      {/* ── Order summary — secondary, collapsed to essentials ───────── */}
+      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+        <div className="flex items-baseline justify-between gap-[var(--space-3)] mb-[var(--space-3)]">
+          <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35">
+            Order summary
+          </p>
+          {o.total_cents != null && (
+            <p className="font-mono tabular-nums text-ink text-[14px]">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-ink/40 mr-2">
+                {o.paid ? 'Paid' : 'Due'}
+              </span>
+              {fmtUSD(o.total_cents)}
+            </p>
+          )}
+        </div>
         <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
           {o.lines.map((l, i) => {
             const u = unitOf(l);
             return (
-              <li key={`${l.sku}-${i}`} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
+              <li
+                key={`${l.sku}-${i}`}
+                className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
-                  <p className="truncate font-mono text-[10px] text-holo-light/70">{l.sku}{l.item_note ? ` · ${l.item_note}` : ''}</p>
+                  <p className="truncate font-mono text-[10px] text-holo-light/70">
+                    {l.sku}
+                    {l.item_note ? ` · ${l.item_note}` : ''}
+                  </p>
                 </div>
                 <div className="shrink-0 text-right font-mono tabular-nums">
-                  <p className="text-[10.5px] text-ink/50">{l.quantity} × {fmtUSD(u)}</p>
-                  <p className="text-[12.5px] text-ink/85">{fmtUSD(u == null ? null : u * l.quantity)}</p>
+                  <p className="text-[10.5px] text-ink/50">
+                    {l.quantity} × {fmtUSD(u)}
+                  </p>
+                  <p className="text-[12.5px] text-ink/85">
+                    {fmtUSD(u == null ? null : u * l.quantity)}
+                  </p>
                 </div>
               </li>
             );
           })}
-          {o.lines.length === 0 && <li className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">No line items.</li>}
+          {o.lines.length === 0 && (
+            <li className="px-[var(--space-3)] py-[var(--space-4)] text-center text-[12px] text-ink/40">
+              No line items.
+            </li>
+          )}
         </ul>
-
-        {/* Totals + pay/paid */}
-        {o.total_cents != null && (
-          <div className="mt-[var(--space-4)] flex items-end justify-between gap-[var(--space-4)] flex-wrap border-t border-ink/[0.08] pt-[var(--space-4)]">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-ink/40">{o.paid ? 'Amount paid' : 'Amount due'}</p>
-              <p className="font-mono text-[1.25rem] tabular-nums text-ink">{fmtUSD(o.total_cents)}</p>
-              {o.subtotal_cents != null && (
-                <p className="mt-0.5 font-mono text-[11px] tabular-nums text-ink/45">Subtotal {fmtUSD(o.subtotal_cents)} · Shipping {fmtUSD(o.shipping_cents ?? 0)}</p>
-              )}
-            </div>
-            {o.paid ? (
-              <span className="rounded-sm border border-[#2E7D5B]/45 bg-[#2E7D5B]/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] text-[#2E7D5B]">Paid</span>
-            ) : (
-              o.payment_method && (
-                <p className="text-[11px] text-ink/55 max-w-[24ch] sm:text-right">
-                  <span className="uppercase tracking-[0.16em] text-ink/35">Pay via</span><br />{o.payment_method}
-                </p>
-              )
-            )}
-          </div>
-        )}
-
-        {/* Tracking */}
-        {o.tracking_number && (
-          <div className="mt-[var(--space-4)] flex items-center justify-between gap-[var(--space-4)] flex-wrap border-t border-ink/[0.08] pt-[var(--space-4)]">
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-ink/40">{carrierLabel(o.carrier)} tracking</p>
-              <p className="font-mono text-[12px] text-ink/80 break-all">{o.tracking_number}</p>
-              {(shipped || delivered) && <p className="mt-1 text-[11px] text-ink/45">{delivered ? `Delivered ${delivered}` : `Shipped ${shipped}`}</p>}
-            </div>
-            {url && (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors">
-                Track on {carrierLabel(o.carrier)} ↗
-              </a>
-            )}
-          </div>
+        {!o.paid && o.payment_method && (
+          <p className="mt-[var(--space-3)] text-[11px] text-ink/55">
+            <span className="uppercase tracking-[0.16em] text-ink/35">Pay via</span>{' '}
+            {o.payment_method}
+          </p>
         )}
 
         <button
           type="button"
           onClick={() => setShowDoc(true)}
-          className="mt-[var(--space-5)] rounded-full border border-ink/25 bg-ink/[0.05] px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-ink/80 hover:border-ink/40 hover:bg-ink/[0.10] transition-colors"
+          className="mt-[var(--space-4)] rounded-full border border-ink/25 bg-ink/[0.05] px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-ink/80 hover:border-ink/40 hover:bg-ink/[0.10] transition-colors"
         >
           View / print {docKind}
         </button>

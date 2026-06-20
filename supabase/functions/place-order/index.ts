@@ -589,14 +589,26 @@ Deno.serve(async (req: Request) => {
   //     glance + "watch for payment code" action block.
   let invoiceEmailSent = false;
   if (contactIsEmail) {
+    // Bound the internal call so a slow/hung invoice function can never block
+    // order placement — the order is already persisted; the email is best-effort.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10_000);
     try {
       const inv = await fetch(`${SUPABASE_URL}/functions/v1/send-order-invoice`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // The Supabase Edge gateway routes on the apikey header; the browser
+          // SDK always sends BOTH apikey + Authorization. A function-to-function
+          // fetch must do the same — Authorization alone can be rejected at the
+          // gateway (401) before the invoice function ever runs, which is why
+          // the business email (sent inline) arrived but the buyer invoice
+          // silently didn't.
+          apikey: SUPABASE_SERVICE_KEY,
           Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
         },
         body: JSON.stringify({ order_id: orderRow.id }),
+        signal: ctrl.signal,
       });
       invoiceEmailSent = inv.ok;
       if (!inv.ok) {
@@ -605,6 +617,8 @@ Deno.serve(async (req: Request) => {
       }
     } catch (err) {
       console.error("Invoice email function threw:", err);
+    } finally {
+      clearTimeout(timer);
     }
   }
   const biz = await sendResendEmail({

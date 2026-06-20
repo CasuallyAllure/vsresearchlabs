@@ -31,6 +31,7 @@ import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
+import { variantProduct } from '../lib/cartActions';
 import { useDocumentsByProduct } from '../hooks/useDocuments';
 import { getCompoundIntelligence } from '../lib/compoundIntelligence';
 import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
@@ -145,13 +146,15 @@ export function ProductPage() {
 
   function handleAddToInquiry() {
     if (!product) return;
+    const dose = ci?.tiers[selectedTierIndex]?.dose ?? ci?.activeDose ?? '';
+    const line = variantProduct(product, dose);
     const items = useCart.getState().items;
-    const existing = items.find((i) => i.product.id === product.id);
+    const existing = items.find((i) => i.product.id === line.id);
     if (existing) {
-      updateQuantity(product.id, existing.quantity + quantity);
+      updateQuantity(line.id, existing.quantity + quantity);
     } else {
-      addToInquiry(product);
-      if (quantity > 1) updateQuantity(product.id, quantity);
+      addToInquiry(line);
+      if (quantity > 1) updateQuantity(line.id, quantity);
     }
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1800);

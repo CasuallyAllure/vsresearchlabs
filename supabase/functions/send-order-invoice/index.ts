@@ -172,9 +172,25 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: s
         </div>
       </div>
 
-      <div style="margin-bottom:22px;">
+      <div style="margin-bottom:16px;">
         <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:6px;">Ship To</div>
         <div style="font-size:13px;color:#1A1714;line-height:1.55;">${shipBlock || '<span style="color:#A09689;">— to be provided —</span>'}</div>
+      </div>
+
+      <!-- Verify-before-you-pay notice. Last chance for the buyer to correct
+           the shipping address or change the line items BEFORE paying. -->
+      <div style="margin-bottom:22px;background:#F4EFE6;padding:12px 14px;border-radius:6px;border-left:2px solid #34727A;">
+        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:6px;">Before you pay — check this</div>
+        <p style="margin:0 0 8px;font-size:12.5px;color:#1A1714;line-height:1.6;">
+          <strong>Confirm your shipping address above is correct.</strong> Once
+          you pay, that's where it ships — we are <strong>not responsible</strong>
+          for orders sent to a wrong or incomplete address you provided.
+        </p>
+        <p style="margin:0;font-size:12.5px;color:#1A1714;line-height:1.6;">
+          This is also your chance to <strong>add or remove items</strong>. Need a
+          change? <strong>Reply to this email before paying</strong> and we'll send
+          an updated invoice. Paying confirms the order exactly as shown.
+        </p>
       </div>
 
       <!-- Items -->

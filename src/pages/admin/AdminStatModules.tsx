@@ -48,7 +48,7 @@ function skuName(sku: string): string {
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
-type OrderStatus = 'pending_invoice' | 'invoice_sent' | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
+type OrderStatus = 'pending_review' | 'pending_invoice' | 'invoice_sent' | 'payment_claimed' | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
 
 interface InquiryRow {
   id: string;

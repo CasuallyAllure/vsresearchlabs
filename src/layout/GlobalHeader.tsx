@@ -66,11 +66,11 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
           {/* CENTER — DNA·V identity lockup.
               Mobile: stacked (mark above wordmark), bigger, centered.
               Desktop (sm+): horizontal lockup, centered, larger. */}
-          <Logo variant="stacked" markSize={50} wordSize={13} className="sm:hidden absolute left-1/2 -translate-x-1/2" />
+          <Logo variant="stacked" markSize={50} wordSize={12} className="sm:hidden absolute left-1/2 -translate-x-1/2" />
           <Logo
             variant="lockup"
             markSize={56}
-            wordSize={18}
+            wordSize={15}
             className="hidden sm:inline-flex sm:absolute sm:left-1/2 sm:-translate-x-1/2"
           />
 

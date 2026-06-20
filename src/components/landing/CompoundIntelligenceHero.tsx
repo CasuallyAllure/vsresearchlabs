@@ -28,6 +28,7 @@ import { CompoundIntelligenceOverlay } from '../catalog/CompoundIntelligenceOver
 import productsData from '../../data/products.json';
 import type { Product, ProductStudy, StudyModel } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { variantProduct } from '../../lib/cartActions';
 import {
   getCompoundIntelligence,
   type CompoundIntelligence,
@@ -354,7 +355,7 @@ function SlidePanel({
         <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
           <button
             type="button"
-            onClick={() => add(product)}
+            onClick={() => add(variantProduct(product, ci.activeDose))}
             className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.2em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />

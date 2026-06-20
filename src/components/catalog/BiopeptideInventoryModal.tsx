@@ -21,6 +21,7 @@ import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
 import { inStockByKey } from '../../lib/stock';
+import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 
@@ -49,10 +50,11 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   const timer = useRef<number | null>(null);
 
   function handleAdd() {
+    const line = variantProduct(product, activeDose);
     const items = useCart.getState().items;
-    const existing = items.find((i) => i.product.id === product.id);
-    if (existing) updateQuantity(product.id, existing.quantity + 1);
-    else add(product);
+    const existing = items.find((i) => i.product.id === line.id);
+    if (existing) updateQuantity(line.id, existing.quantity + 1);
+    else add(line);
     setAdded(true);
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setAdded(false), 1100);

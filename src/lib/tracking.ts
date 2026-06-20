@@ -63,6 +63,7 @@ export function carrierTrackingUrl(
 export type OrderLookupStatus =
   | 'received'
   | 'awaiting_payment'
+  | 'payment_verifying'   // buyer clicked "I've sent payment" — admin verifying
   | 'processing'
   | 'shipped'
   | 'delivered'
@@ -118,15 +119,17 @@ export function statusPresentation(status: string): {
 } {
   switch (status) {
     case 'received':
-      return { label: 'Order received', detail: 'We have your order and are preparing your invoice.', step: 0, tone: 'neutral' };
+      return { label: 'Order received', detail: 'We have your order and have sent your invoice. Check your email.', step: 0, tone: 'neutral' };
     case 'awaiting_payment':
-      return { label: 'Awaiting payment', detail: 'Your invoice has been sent. We ship once payment clears.', step: 1, tone: 'neutral' };
+      return { label: 'Awaiting payment', detail: 'Your invoice has been sent. We ship once payment clears — click "I’ve sent payment" in the invoice email after you pay.', step: 1, tone: 'neutral' };
+    case 'payment_verifying':
+      return { label: 'Verifying payment', detail: 'You marked your payment as sent — we’re confirming the deposit. This usually takes under a business day.', step: 2, tone: 'progress' };
     case 'processing':
-      return { label: 'Processing', detail: 'Payment received — your order is being packed.', step: 2, tone: 'progress' };
+      return { label: 'Processing', detail: 'Payment received — your order is being packed and will ship shortly.', step: 3, tone: 'progress' };
     case 'shipped':
-      return { label: 'Shipped', detail: 'Your order is on its way. Track it with the carrier below.', step: 3, tone: 'progress' };
+      return { label: 'Shipped', detail: 'Your order is on its way. Track it with the carrier below.', step: 4, tone: 'progress' };
     case 'delivered':
-      return { label: 'Delivered', detail: 'Your order was delivered. Thanks for your order.', step: 4, tone: 'done' };
+      return { label: 'Delivered', detail: 'Your order was delivered. Thanks for your order.', step: 5, tone: 'done' };
     case 'cancelled':
       return { label: 'Cancelled', detail: 'This order was cancelled. Contact us if that’s unexpected.', step: 0, tone: 'stopped' };
     default:
@@ -134,4 +137,6 @@ export function statusPresentation(status: string): {
   }
 }
 
-export const STATUS_STEPS = ['Received', 'Invoiced', 'Processing', 'Shipped', 'Delivered'];
+// 6 steps now (added "Verifying" between Invoiced and Processing) so the
+// payment_verifying stage gets its own slot on the public progress bar.
+export const STATUS_STEPS = ['Received', 'Invoiced', 'Verifying', 'Processing', 'Shipped', 'Delivered'];

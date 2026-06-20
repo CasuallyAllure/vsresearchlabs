@@ -27,6 +27,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { variantProduct } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 import { SKUCode } from '../ui/identifiers';
 
@@ -50,7 +51,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
   function handleAdd(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(variantProduct(product, dose));
     setAdded(true);
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);

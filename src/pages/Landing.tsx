@@ -537,9 +537,25 @@ export function Landing() {
                   Velari Systems Research Labs
                 </strong>{' '}
                 is a Northern California research company specializing in{' '}
-                <span className="font-medium text-holo">
-                  peptides, nootropics, and skincare-grade compounds
-                </span>
+                {/* Official category colors — matched to the three orbiting
+                    bodies on the DNA·V mark: peptides=gold, nootropics=teal,
+                    skincare=grey. Laboratory equipment inherits the paragraph
+                    color. Each word links to its supply destination. */}
+                <Link to="/research-supplies/biopeptide" className="font-medium text-gold underline-offset-2 hover:underline">
+                  peptides
+                </Link>
+                ,{' '}
+                <Link to="/research-supplies/nootropics" className="font-medium text-holo underline-offset-2 hover:underline">
+                  nootropics
+                </Link>
+                ,{' '}
+                <Link to="/research-supplies/skincare" className="font-medium text-ink/50 underline-offset-2 hover:underline">
+                  skincare-grade compounds
+                </Link>
+                , and{' '}
+                <Link to="/laboratory-equipment" className="font-medium underline-offset-2 hover:underline">
+                  laboratory equipment
+                </Link>
                 {' '}— all supplied at research-grade purity.{' '}
                 <SameDayDeliveryBadge />
                 {' '}and{' '}

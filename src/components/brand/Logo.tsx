@@ -45,7 +45,7 @@ export function Logo({
   to = '/',
   markSize = 30,
   wordSize = 17,
-  showTagline = true,
+  showTagline = false,
   dark = false,
   className = '',
   ariaLabel = `${BRAND_NAME} — Home`,

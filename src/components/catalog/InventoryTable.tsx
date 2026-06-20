@@ -31,6 +31,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Product, ProductCategory } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { variantProduct } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 
 export interface InventoryTableRow {
@@ -83,10 +84,10 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
     }
   }
 
-  function handleAdd(e: React.MouseEvent<HTMLButtonElement>, product: Product) {
+  function handleAdd(e: React.MouseEvent<HTMLButtonElement>, product: Product, dose: string) {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(variantProduct(product, dose));
     setAddedId(product.id);
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
@@ -169,7 +170,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                 <td className="px-[var(--space-4)] py-[var(--space-3)] text-right">
                   <button
                     type="button"
-                    onClick={(e) => handleAdd(e, product)}
+                    onClick={(e) => handleAdd(e, product, dose)}
                     aria-label={
                       isAdded
                         ? `${product.name} added to inquiry`

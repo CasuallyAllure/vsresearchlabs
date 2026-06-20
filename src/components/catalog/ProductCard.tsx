@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic } from '../../lib/productOverrides';
 import { AvailabilityBadge } from './AvailabilityBadge';
@@ -62,10 +63,11 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
   const [added, setAdded] = useState(false);
 
   function handleAdd() {
+    const line = variantProduct(product, activeDose);
     const items = useCart.getState().items;
-    const existing = items.find((i) => i.product.id === product.id);
-    if (existing) updateQuantity(product.id, existing.quantity + 1);
-    else add(product);
+    const existing = items.find((i) => i.product.id === line.id);
+    if (existing) updateQuantity(line.id, existing.quantity + 1);
+    else add(line);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1400);
   }

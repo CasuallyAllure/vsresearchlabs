@@ -7,10 +7,19 @@
  * mobile-only floor bar; the drawer is primary.
  *
  * Surface posture matches the rest of the shell:
- *   - Frosted black + hairline right border
- *   - Holo cyan accent for active route + hover state
- *   - Gold reserved for the inquiry cart pip (primary action signal)
+ *   - Frosted cream + hairline right border (editorial light theme)
+ *   - Teal accent for active route + hover state
+ *   - Gold reserved for the identity tick + inquiry cart pip
  *   - Silver mono captions for section headers and meta
+ *
+ * Layout discipline (everything reads as one engineered system):
+ *   - Single 20px left gutter — the identity mark, every section label,
+ *     and every row icon share the same left edge.
+ *   - Editorial section labels: mono caps + a hairline that runs to the
+ *     panel edge.
+ *   - Research-supply children hang off a vertical guide rule, each with
+ *     its own domain icon (helix / neuron / droplet) so the three are
+ *     instantly distinguishable rather than a stack of identical flasks.
  *
  * Interaction:
  *   - Slides from left (hamburger is on the left side of the header)
@@ -26,7 +35,7 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { useScrollLock } from '../lib/useScrollLock';
-import { Logo } from '../components/brand/Logo';
+import { DnaVMark } from '../components/brand/DnaVMark';
 
 interface NavLinkDef {
   to: string;
@@ -38,6 +47,10 @@ interface NavLinkDef {
    *  matching the landing's "Archive in preparation" treatment. */
   comingSoon?: boolean;
 }
+
+/* ── Icon set — 18px, 1.4 stroke, currentColor unless a signature color
+      is intentional (the owl is always gold). Each research domain gets
+      a distinct, on-brand glyph. ───────────────────────────────────── */
 
 const HomeIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -63,6 +76,7 @@ const OwlIcon = (
   </svg>
 );
 
+// Research Supplies parent — a flask (the catalog as a whole).
 const FlaskIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M9 3h6" />
@@ -71,11 +85,52 @@ const FlaskIcon = (
   </svg>
 );
 
-const InstrumentIcon = (
+// Biopeptide — DNA double-helix, echoing the brand mark.
+const HelixIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <line x1="3" y1="9" x2="21" y2="9" />
-    <line x1="9" y1="21" x2="9" y2="9" />
+    <path d="M8 3c0 3.6 8 4 8 9s-8 5.4-8 9" />
+    <path d="M16 3c0 3.6-8 4-8 9s8 5.4 8 9" />
+    <path d="M9 6.5h6" />
+    <path d="M9 17.5h6" />
+  </svg>
+);
+
+// Nootropics — a synaptic node with terminals (cognition).
+const NeuronIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="2.3" />
+    <path d="M12 9.7V5.4" />
+    <path d="M12 14.3v4.3" />
+    <path d="M10 10.9 6.4 8.7" />
+    <path d="M14 10.9 17.6 8.7" />
+    <path d="M10 13.1 6.4 15.3" />
+    <path d="M14 13.1 17.6 15.3" />
+    <circle cx="12" cy="4.6" r="1" />
+    <circle cx="12" cy="19.4" r="1" />
+    <circle cx="5.5" cy="8.2" r="1" />
+    <circle cx="18.5" cy="8.2" r="1" />
+    <circle cx="5.5" cy="15.8" r="1" />
+    <circle cx="18.5" cy="15.8" r="1" />
+  </svg>
+);
+
+// Skincare — a droplet with a shine arc (dermal / topical).
+const DropletIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3.3c3.1 4.1 5.2 6.5 5.2 9.3a5.2 5.2 0 0 1-10.4 0c0-2.8 2.1-5.2 5.2-9.3z" />
+    <path d="M9.5 14a2.6 2.6 0 0 0 2.1 2.1" />
+  </svg>
+);
+
+// Laboratory Equipment — a microscope (instruments / bench).
+const MicroscopeIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5.5 21h9" />
+    <path d="M3.5 21h17" />
+    <path d="M9.5 21a7 7 0 0 0 5-11.9" />
+    <path d="M8.6 5.1 11.7 6.6 9.5 11.2 6.4 9.7z" />
+    <path d="M8.1 11.4 9.9 12.3" />
+    <path d="M8 14.5h4" />
   </svg>
 );
 
@@ -112,32 +167,37 @@ const PackageIcon = (
 );
 
 const TOP_NAV: NavLinkDef[] = [
-  { to: '/', label: 'Home', caption: 'Landing', icon: HomeIcon, match: (p) => p === '/' },
+  { to: '/', label: 'Home', caption: 'Overview', icon: HomeIcon, match: (p) => p === '/' },
   { to: '/research', label: 'Research Library', caption: 'Compound Intelligence', icon: OwlIcon, match: (p) => p.startsWith('/research') && !p.startsWith('/research-supplies') },
 ];
 
 const RESEARCH_SUPPLIES_CHILDREN: NavLinkDef[] = [
-  { to: '/research-supplies/biopeptide', label: 'Biopeptide', icon: FlaskIcon, match: (p) => p.startsWith('/research-supplies/biopeptide') },
-  { to: '/research-supplies/nootropics', label: 'Nootropics', icon: FlaskIcon, match: (p) => p.startsWith('/research-supplies/nootropics') },
-  { to: '/research-supplies/skincare', label: 'Skincare', icon: FlaskIcon, match: (p) => p.startsWith('/research-supplies/skincare') },
+  { to: '/research-supplies/biopeptide', label: 'Biopeptide', caption: 'Peptide sciences', icon: HelixIcon, match: (p) => p.startsWith('/research-supplies/biopeptide') },
+  { to: '/research-supplies/nootropics', label: 'Nootropics', caption: 'Cognitive', icon: NeuronIcon, match: (p) => p.startsWith('/research-supplies/nootropics') },
+  { to: '/research-supplies/skincare', label: 'Skincare', caption: 'Dermal', icon: DropletIcon, match: (p) => p.startsWith('/research-supplies/skincare') },
 ];
 
 const TAIL_NAV: NavLinkDef[] = [
   { to: '/track', label: 'Track Order', caption: 'Status · Invoice · Receipt', icon: PackageIcon, match: (p) => p.startsWith('/track') },
-  { to: '/laboratory-equipment', label: 'Laboratory Equipment', caption: 'Instruments · Consumables · Handling', icon: InstrumentIcon, match: (p) => p.startsWith('/laboratory-equipment') },
-  { to: '/documentation', label: 'Documentation', caption: 'COA · HPLC · Mass Spec · Sterility', icon: DocumentIcon, match: (p) => p.startsWith('/documentation'), comingSoon: true },
-  { to: '/contact', label: 'Contact', caption: 'Open Inquiries', icon: MailIcon, match: (p) => p.startsWith('/contact') },
+  { to: '/laboratory-equipment', label: 'Laboratory Equipment', caption: 'Instruments · Consumables', icon: MicroscopeIcon, match: (p) => p.startsWith('/laboratory-equipment') },
+  { to: '/documentation', label: 'Documentation', caption: 'COA · HPLC · Assays', icon: DocumentIcon, match: (p) => p.startsWith('/documentation'), comingSoon: true },
+  { to: '/contact', label: 'Contact', caption: 'Open inquiries', icon: MailIcon, match: (p) => p.startsWith('/contact') },
 ];
 
-interface NavItemProps {
-  item: NavLinkDef;
-  pathname: string;
-  onClick: () => void;
-  /** Visual indent for sub-items under a section header. */
-  indent?: boolean;
+/* ── Editorial section label — mono caps with a hairline running to the
+      panel edge. The structural rhythm of the whole drawer. ─────────── */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5 px-2.5 mb-1.5">
+      <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-ink/40 whitespace-nowrap">
+        {children}
+      </span>
+      <span aria-hidden="true" className="h-px flex-1 bg-ink/[0.07]" />
+    </div>
+  );
 }
 
-function NavItem({ item, pathname, onClick, indent }: NavItemProps) {
+function NavItem({ item, pathname, onClick }: { item: NavLinkDef; pathname: string; onClick: () => void }) {
   const isActive = item.match ? item.match(pathname) : pathname === item.to;
 
   // Coming-soon row — same concept as the landing's "Archive in
@@ -149,23 +209,21 @@ function NavItem({ item, pathname, onClick, indent }: NavItemProps) {
         <div
           aria-disabled="true"
           title="Coming soon"
-          className={`relative flex items-center gap-3 py-2.5 rounded-[3px] cursor-not-allowed ${indent ? 'pl-8 pr-3' : 'px-3'}`}
+          className="relative flex items-center gap-3 rounded-md px-2.5 py-2 cursor-not-allowed"
         >
           <div className="flex min-w-0 items-center gap-3 select-none blur-[1.5px] opacity-45 saturate-[0.6]">
-            <span className="shrink-0 text-ink/55">{item.icon}</span>
-            <span className="flex flex-col min-w-0">
-              <span className="text-[12.5px] tracking-tight text-ink/80">
-                {item.label}
-              </span>
+            <span className="grid h-[18px] w-[18px] shrink-0 place-items-center text-ink/55">{item.icon}</span>
+            <span className="flex min-w-0 flex-col">
+              <span className="text-[12.5px] leading-tight tracking-[-0.01em] text-ink/80">{item.label}</span>
               {item.caption && (
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5 truncate">
+                <span className="mt-0.5 truncate font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
                   {item.caption}
                 </span>
               )}
             </span>
           </div>
-          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/55">
-            Coming soon
+          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ink/55">
+            Soon
           </span>
         </div>
       </li>
@@ -179,36 +237,46 @@ function NavItem({ item, pathname, onClick, indent }: NavItemProps) {
         onClick={onClick}
         aria-current={isActive ? 'page' : undefined}
         className={[
-          'group relative flex items-center gap-3 py-2.5 rounded-[3px] transition-colors',
+          'group relative flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors',
           'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
-          indent ? 'pl-8 pr-3' : 'px-3',
-          isActive ? 'bg-holo/[0.08]' : 'hover:bg-ink/[0.03]',
+          isActive ? 'bg-holo/[0.07]' : 'hover:bg-ink/[0.04]',
         ].join(' ')}
       >
         {isActive && (
           <span
             aria-hidden="true"
-            className="absolute left-0 top-2 bottom-2 w-[2px] rounded-r-sm"
+            className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full"
             style={{ backgroundColor: 'var(--color-accent-teal)' }}
           />
         )}
         <span
-          className={`shrink-0 ${isActive ? 'text-holo-light' : 'text-ink/55 group-hover:text-ink/80'} transition-colors`}
+          className={`grid h-[18px] w-[18px] shrink-0 place-items-center transition-colors ${
+            isActive ? 'text-holo-light' : 'text-ink/50 group-hover:text-ink/80'
+          }`}
         >
           {item.icon}
         </span>
-        <span className="flex flex-col min-w-0">
+        <span className="flex min-w-0 flex-col">
           <span
-            className={`text-[12.5px] tracking-tight ${isActive ? 'text-ink' : 'text-ink/80 group-hover:text-ink'} transition-colors`}
+            className={`text-[12.5px] leading-tight tracking-[-0.01em] transition-colors ${
+              isActive ? 'text-ink' : 'text-ink/85 group-hover:text-ink'
+            }`}
           >
             {item.label}
           </span>
           {item.caption && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5 truncate">
+            <span className="mt-0.5 truncate font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
               {item.caption}
             </span>
           )}
         </span>
+        {isActive && (
+          <span
+            aria-hidden="true"
+            className="ml-auto h-1 w-1 shrink-0 rounded-full"
+            style={{ backgroundColor: 'var(--color-accent-teal)' }}
+          />
+        )}
       </Link>
     </li>
   );
@@ -252,7 +320,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Primary navigation"
-        className={`fixed top-0 left-0 z-[60] h-[100dvh] w-[320px] max-w-[88vw] sm:w-[360px] flex flex-col transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 z-[60] h-[100dvh] w-[296px] max-w-[86vw] sm:w-[316px] flex flex-col transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
@@ -262,23 +330,43 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           backdropFilter: 'blur(10px)',
         }}
       >
-        {/* Drawer header — identity + close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.08]">
+        {/* Identity — letterhead lockup. Mark + wordmark + jurisdiction,
+            all sharing the panel's 20px left gutter. */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-ink/[0.08]">
           <Link
             to="/"
             onClick={onClose}
-            className="flex flex-col gap-1.5 min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+            aria-label="VS Research Labs — Home"
+            className="group flex items-center gap-3 min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           >
-            <Logo variant="lockup" markSize={24} wordSize={12.5} showTagline={false} to={null} ariaLabel="VS Research Labs" />
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/40 pl-[34px]">
-              Bay Area · California
+            <DnaVMark size={34} static />
+            <span className="flex flex-col gap-[5px] min-w-0">
+              <span
+                className="font-serif font-medium uppercase leading-none text-ink"
+                style={{ fontSize: 14, letterSpacing: '0.18em' }}
+              >
+                Research Labs
+              </span>
+              <span className="flex items-center gap-1.5 min-w-0">
+                <span
+                  aria-hidden="true"
+                  className="h-[1.5px] w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: 'var(--color-accent-gold)' }}
+                />
+                <span
+                  className="truncate font-mono uppercase leading-none text-ink/50"
+                  style={{ fontSize: 8, letterSpacing: '0.18em' }}
+                >
+                  Bay Area · California
+                </span>
+              </span>
             </span>
           </Link>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="-mr-2 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
+            className="-mr-2 -mt-1 p-2 text-ink/45 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -288,93 +376,80 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         </div>
 
         {/* Nav body — primary destinations */}
-        <nav aria-label="Primary" className="px-2 py-3 flex-1 min-h-0 overflow-y-auto">
-          <p className="px-3 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
-            Navigate
-          </p>
+        <nav aria-label="Primary" className="px-2.5 py-4 flex-1 min-h-0 overflow-y-auto">
+          <SectionLabel>Navigate</SectionLabel>
           <ul className="flex flex-col">
             {TOP_NAV.map((item) => (
-              <NavItem
-                key={item.to}
-                item={item}
-                pathname={location.pathname}
-                onClick={onClose}
-              />
+              <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
             ))}
           </ul>
 
-          {/* Research Supplies — hierarchical group with 3 children */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
-            Research Supplies
-          </p>
-          <ul className="flex flex-col">
-            <NavItem
-              item={{
-                to: '/research-supplies',
-                label: 'All Compounds',
-                icon: FlaskIcon,
-                match: (p) => p === '/research-supplies',
-              }}
-              pathname={location.pathname}
-              onClick={onClose}
-            />
-            {RESEARCH_SUPPLIES_CHILDREN.map((item) => (
+          {/* Research Supplies — parent + a guided sub-tree of domains */}
+          <div className="mt-6">
+            <SectionLabel>Research Supplies</SectionLabel>
+            <ul className="flex flex-col">
               <NavItem
-                key={item.to}
-                item={item}
-                pathname={location.pathname}
-                onClick={onClose}
-                indent
-              />
-            ))}
-          </ul>
-
-          {/* Equipment + ops — flat tail */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
-            Operational
-          </p>
-          <ul className="flex flex-col">
-            {TAIL_NAV.map((item) => (
-              <NavItem
-                key={item.to}
-                item={item}
+                item={{
+                  to: '/research-supplies',
+                  label: 'All Compounds',
+                  caption: 'Browse by domain',
+                  icon: FlaskIcon,
+                  match: (p) => p === '/research-supplies',
+                }}
                 pathname={location.pathname}
                 onClick={onClose}
               />
-            ))}
-          </ul>
+            </ul>
+            {/* Domains hang off a vertical guide rule aligned under the
+                parent's icon. Each carries its own signature glyph. */}
+            <ul className="mt-0.5 ml-[19px] flex flex-col border-l border-ink/[0.09] pl-2.5">
+              {RESEARCH_SUPPLIES_CHILDREN.map((item) => (
+                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
+              ))}
+            </ul>
+          </div>
 
-          {/* Inquiry — separate group */}
-          <p className="px-3 mt-5 mb-2 font-mono text-[8.5px] uppercase tracking-[0.3em] text-ink/35">
-            Inquiry
-          </p>
-          <ul>
-            <li>
-              <Link
-                to="/cart"
-                onClick={onClose}
-                aria-current={location.pathname === '/cart' ? 'page' : undefined}
-                className="group relative flex items-center gap-3 px-3 py-2.5 rounded-[3px] hover:bg-ink/[0.03] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
-              >
-                <span className="shrink-0 text-ink/55 group-hover:text-gold transition-colors">
-                  {CartIcon}
-                </span>
-                <span className="flex flex-col min-w-0 flex-1">
-                  <span className="text-[12.5px] tracking-tight text-ink/85 group-hover:text-ink transition-colors">
-                    Inquiry List
+          {/* Equipment + ops */}
+          <div className="mt-6">
+            <SectionLabel>Operational</SectionLabel>
+            <ul className="flex flex-col">
+              {TAIL_NAV.map((item) => (
+                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
+              ))}
+            </ul>
+          </div>
+
+          {/* Inquiry — the primary action signal, gold-accented */}
+          <div className="mt-6">
+            <SectionLabel>Inquiry</SectionLabel>
+            <ul>
+              <li>
+                <Link
+                  to="/cart"
+                  onClick={onClose}
+                  aria-current={location.pathname === '/cart' ? 'page' : undefined}
+                  className="group relative flex items-center gap-3 rounded-md px-2.5 py-2 hover:bg-gold/[0.06] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+                >
+                  <span className="grid h-[18px] w-[18px] shrink-0 place-items-center text-ink/50 group-hover:text-gold transition-colors">
+                    {CartIcon}
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
-                    {itemCount > 0 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending` : 'Empty'}
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-[12.5px] leading-tight tracking-[-0.01em] text-ink/85 group-hover:text-ink transition-colors">
+                      Inquiry List
+                    </span>
+                    <span className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
+                      {itemCount > 0 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending` : 'Empty'}
+                    </span>
                   </span>
-                </span>
-                {itemCount > 0 && (
-                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 bg-gold rounded-sm text-[10px] font-medium text-ink flex items-center justify-center tabular-nums">
-                    {itemCount}
-                  </span>
-                )}
-              </Link>
-            </li>
-          </ul>
+                  {itemCount > 0 && (
+                    <span className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-sm bg-gold px-1 text-[10px] font-medium text-ink tabular-nums">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            </ul>
+          </div>
         </nav>
 
         {/* Drawer footer — quiet legal/meta + admin sign-in. Real flex child

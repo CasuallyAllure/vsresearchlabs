@@ -37,6 +37,7 @@ import { CompoundVideo } from './intelligence/CompoundVideo';
 import { getCompoundVideo } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
+import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
 import { AvailabilityBadge } from './AvailabilityBadge';
@@ -153,13 +154,14 @@ export function CompoundIntelligenceOverlay({
   }
 
   function handleAddToInquiry() {
+    const line = variantProduct(product, activeDoseLabel);
     const currentItems = useCart.getState().items;
-    const existing = currentItems.find((i) => i.product.id === product.id);
+    const existing = currentItems.find((i) => i.product.id === line.id);
     if (existing) {
-      updateQuantity(product.id, existing.quantity + quantity);
+      updateQuantity(line.id, existing.quantity + quantity);
     } else {
-      add(product);
-      if (quantity > 1) updateQuantity(product.id, quantity);
+      add(line);
+      if (quantity > 1) updateQuantity(line.id, quantity);
     }
   }
 
