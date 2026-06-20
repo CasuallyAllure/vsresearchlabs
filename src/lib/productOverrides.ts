@@ -35,12 +35,16 @@ export interface ProductOverride {
   video_thumbnail: string | null;
 }
 
-/** Per-dose override (migration 011/013). price_cents null → lib/pricing.
- *  lead_days non-null + on_hand 0 → order-on-demand ("Ships in N days"). */
+/** Per-dose override (migration 011/013/018). price_cents null → lib/pricing.
+ *  Three independent stock sources combine into "is this purchasable":
+ *    on_hand        — physical shelf stock (24h ship)
+ *    inbound_units  — in-transit, already paid for (count as inventory)
+ *    lead_days      — drop-ship warehouse SLA (admin-only display) */
 export interface VariantOverride {
   sku: string;
   dose: string;
   on_hand: number;
+  inbound_units: number;
   price_cents: number | null;
   lead_days: number | null;
 }
@@ -103,11 +107,31 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
     // (deploy landed before the migration), the catalog still works on formula
     // pricing and per-sku stock.
     const variantBySku: Record<string, Record<string, VariantOverride>> = {};
-    const { data: vData } = await supabase
+    // Migration 018 added inbound_units. Try the full select first; if the
+    // column isn't live yet (older DB) fall back to the pre-018 shape so
+    // catalog rendering still works during a partial deploy.
+    let vData: Partial<VariantOverride>[] | null = null;
+    const { data: vFull, error: vFullErr } = await supabase
       .from('public_variant_overrides')
-      .select('sku, dose, on_hand, price_cents, lead_days');
-    for (const row of (vData ?? []) as VariantOverride[]) {
-      (variantBySku[row.sku] ??= {})[row.dose] = row;
+      .select('sku, dose, on_hand, inbound_units, price_cents, lead_days');
+    if (!vFullErr) {
+      vData = vFull as Partial<VariantOverride>[];
+    } else {
+      const { data: vBase } = await supabase
+        .from('public_variant_overrides')
+        .select('sku, dose, on_hand, price_cents, lead_days');
+      vData = vBase as Partial<VariantOverride>[];
+    }
+    for (const row of (vData ?? [])) {
+      if (!row.sku || !row.dose) continue;
+      (variantBySku[row.sku] ??= {})[row.dose] = {
+        sku: row.sku,
+        dose: row.dose,
+        on_hand: row.on_hand ?? 0,
+        inbound_units: row.inbound_units ?? 0,
+        price_cents: row.price_cents ?? null,
+        lead_days: row.lead_days ?? null,
+      };
     }
 
     set({ bySku: next, variantBySku, loaded: true, loading: false, error: null });
@@ -125,9 +149,20 @@ export function isSkuVisible(sku: string): boolean {
   return !o.hidden && !o.deleted_at;
 }
 
+/** A variant counts as in stock if ANY of the three sources has supply:
+ *    on_hand        — physical shelf
+ *    inbound_units  — already paid for, in transit
+ *    lead_days      — warehouse drop-ship (admin-only timing)
+ *  Public catalog displays "In stock" for any of these (the lead-time
+ *  truth stays in admin). */
+function variantHasSupply(v: VariantOverride): boolean {
+  return v.on_hand > 0 || v.inbound_units > 0 || v.lead_days != null;
+}
+
 /** Is the SKU in stock? Per-dose aware: a product is in stock if ANY of its
- *  doses has stock. Falls back to the per-sku count, then to a deterministic
- *  hash when nothing is known, so the dev experience still has variety. */
+ *  doses has any supply. Falls back to the per-sku count, then to a
+ *  deterministic hash when nothing is known, so the dev experience still has
+ *  variety. */
 export function isSkuInStock(sku: string): boolean {
   const state = useProductOverrides.getState();
   const o = state.bySku[sku];
@@ -135,7 +170,7 @@ export function isSkuInStock(sku: string): boolean {
   const variants = state.variantBySku[sku];
   if (variants) {
     const doses = Object.values(variants);
-    if (doses.length > 0) return doses.some((v) => v.on_hand > 0);
+    if (doses.length > 0) return doses.some(variantHasSupply);
   }
   if (o) return o.on_hand > 0;
   // Fallback: same hash-based heuristic as the old inStockByKey.
@@ -147,11 +182,12 @@ export function isSkuInStock(sku: string): boolean {
 }
 
 /** Is a specific dose of a SKU in stock? Returns true when no per-dose row
- *  exists (unknown → don't block), false only when the dose is tracked at 0. */
+ *  exists (unknown → don't block), false only when the dose is tracked with
+ *  no supply across any source. */
 export function isDoseInStock(sku: string, dose: string): boolean {
   const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
   if (!v) return isSkuInStock(sku);
-  return v.on_hand > 0;
+  return variantHasSupply(v);
 }
 
 /** Price in cents, honoring an admin override. Returns null when no
@@ -176,17 +212,21 @@ export type DoseAvailability =
   | { state: 'unknown' }; // no per-dose row tracked yet
 
 /**
- * Availability for a specific dose:
- *   on_hand > 0                  → in_stock
- *   on_hand 0 + lead_days > 0     → lead (ships in N days, buy 2 get 1 free)
- *   on_hand 0 + no lead_days      → out
- *   no per-dose row at all        → unknown (don't show a hard "out")
+ * Public-facing availability for a specific dose. Public catalog treats every
+ * supply source (on_hand, inbound, warehouse drop-ship) as plain "in stock" —
+ * we don't expose the warehouse SLA to the buyer.
+ *
+ *   any supply source has units / lead → in_stock
+ *   tracked but nothing anywhere       → out
+ *   no per-dose row at all             → unknown (don't show a hard "out")
+ *
+ * Admin views should NOT use this — use the raw VariantOverride fields so
+ * staff can distinguish on_hand vs inbound vs drop-ship.
  */
 export function doseAvailability(sku: string, dose: string): DoseAvailability {
   const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
   if (!v) return { state: 'unknown' };
-  if (v.on_hand > 0) return { state: 'in_stock' };
-  if (v.lead_days != null && v.lead_days > 0) return { state: 'lead', leadDays: v.lead_days };
+  if (variantHasSupply(v)) return { state: 'in_stock' };
   return { state: 'out' };
 }
 

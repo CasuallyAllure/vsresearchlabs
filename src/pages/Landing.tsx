@@ -30,7 +30,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
@@ -38,9 +38,8 @@ import { DocumentGallery } from '../components/documents/DocumentGallery';
 import { CompoundIntelligenceHero } from '../components/landing/CompoundIntelligenceHero';
 // Heavy (three.js + R3F + drei) — split into its own chunk so it streams in
 // after the page paints instead of blocking the initial bundle.
-const HeroHoloCarousel = lazy(() =>
-  import('../components/landing/HeroHoloCarousel').then((m) => ({ default: m.HeroHoloCarousel })),
-);
+import { CompoundVisualizerFrame } from '../components/landing/CompoundVisualizerFrame';
+import { CompoundVisualizerModal } from '../components/landing/CompoundVisualizerModal';
 import { IntroModal } from '../components/landing/IntroModal';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
@@ -292,11 +291,13 @@ const BRIDGE_SUSPENDERS: ReadonlyArray<{ x: number; yTop: number }> = [
 
 export function Landing() {
   const [suppliesOpen, setSuppliesOpen] = useState(false);
+  const [compoundExpanded, setCompoundExpanded] = useState(false);
   return (
     <>
       {/* Floating intro — appears on first entry, must be dismissed. */}
       <IntroModal />
       <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
+      <CompoundVisualizerModal open={compoundExpanded} onClose={() => setCompoundExpanded(false)} />
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
@@ -602,135 +603,7 @@ export function Landing() {
               className="op-reveal md:col-span-6"
               style={{ ['--op-delay' as string]: '210ms' }}
             >
-              <div
-                className="module-aura relative aspect-[5/4] w-full overflow-hidden rounded-2xl"
-                style={{
-                  background: 'linear-gradient(155deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.32) 100%)',
-                  backdropFilter: 'blur(26px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(26px) saturate(150%)',
-                  border: '1px solid rgba(255,255,255,0.75)',
-                  boxShadow:
-                    '0 26px 64px -30px rgba(26,23,20,0.28), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(26,23,20,0.05)',
-                }}
-                aria-label="Compound visualization"
-              >
-                {/* Corner registration marks — scientific panel cue */}
-                <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 h-2.5 w-2.5 border-l border-t border-ink/25" />
-                <span aria-hidden="true" className="pointer-events-none absolute right-2 top-2 h-2.5 w-2.5 border-r border-t border-ink/25" />
-                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 h-2.5 w-2.5 border-b border-l border-ink/25" />
-                <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2.5 w-2.5 border-b border-r border-ink/25" />
-
-                {/* Top scrim — thin band that keeps the title strip legible
-                    over the structure without eating into slide content. */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-12"
-                  style={{
-                    background:
-                      'linear-gradient(to bottom, rgba(251,249,244,0.9) 0%, rgba(251,249,244,0.4) 55%, transparent 100%)',
-                  }}
-                />
-
-                {/* Top title strip — single thin label line (lower-third /
-                    chyron style), static across all slides. */}
-                <div className="absolute inset-x-4 top-3 z-10 flex items-center gap-2 font-mono text-[8.5px] uppercase tracking-[0.2em]">
-                  <span className="tabular-nums text-ink/40">FIG-01</span>
-                  <span aria-hidden="true" className="text-ink/25">·</span>
-                  <span className="text-ink/45">Compound of the Month</span>
-                  <span aria-hidden="true" className="text-ink/25">·</span>
-                  <span className="font-bold tracking-[0.18em]" style={{ color: '#8C6A2A' }}>
-                    Retatrutide
-                  </span>
-                </div>
-
-                {/* Subtle grid backdrop — instrumentation feel */}
-                <svg
-                  aria-hidden="true"
-                  className="absolute inset-0 h-full w-full"
-                  viewBox="0 0 200 160"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <pattern id="hero-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(52, 114, 122,0.05)" strokeWidth="0.4" />
-                    </pattern>
-                    <radialGradient id="hero-glow" cx="50%" cy="55%" r="55%">
-                      <stop offset="0%" stopColor="rgba(52, 114, 122,0.12)" />
-                      <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-                    </radialGradient>
-                  </defs>
-                  <rect width="200" height="160" fill="url(#hero-grid)" />
-                  <rect width="200" height="160" fill="url(#hero-glow)" />
-                </svg>
-
-                {/* Holographic content — swipeable: Slide 1 hologram,
-                    Slide 2 mechanism brief, Slide 3 lead clinical study.
-                    Frame chrome (caption / corners / REV / scanlines)
-                    stays static across all slides. */}
-                <Suspense
-                  fallback={
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ink/30">
-                        Initializing structure…
-                      </span>
-                    </div>
-                  }
-                >
-                  <HeroHoloCarousel />
-                </Suspense>
-
-                {/* Scanline overlay — period 90s holo cue */}
-                <div
-                  aria-hidden="true"
-                  className="hero-holo-scan pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      'repeating-linear-gradient(to bottom, transparent 0px, rgba(52, 114, 122,0.05) 1px, transparent 2px, transparent 3px)',
-                    mixBlendMode: 'screen',
-                  }}
-                />
-
-                {/* Bottom-right registration — provenance of the rendered
-                    structure (real cryo-EM coordinates), not a drawing
-                    revision. See data/structures/retatrutide.json. */}
-                <span className="absolute bottom-3 right-4 z-10 font-mono text-[8px] uppercase tracking-[0.2em] text-ink/40">
-                  PDB 8YW3
-                </span>
-
-                {/* Holographic animation styles — scoped to this frame */}
-                <style>{`
-                  @keyframes hero-holo-spin {
-                    from { transform: rotateY(0deg); }
-                    to   { transform: rotateY(360deg); }
-                  }
-                  @keyframes hero-holo-flicker {
-                    0%, 100% { opacity: 0.92; }
-                    8%       { opacity: 0.55; }
-                    9%       { opacity: 0.95; }
-                    42%      { opacity: 0.78; }
-                    43%      { opacity: 0.95; }
-                    71%      { opacity: 0.6; }
-                    72%      { opacity: 0.92; }
-                  }
-                  @keyframes hero-holo-scan {
-                    from { transform: translateY(-100%); }
-                    to   { transform: translateY(100%); }
-                  }
-                  .hero-holo-spin {
-                    animation: hero-holo-spin 14s linear infinite;
-                  }
-                  .hero-holo-flicker {
-                    animation: hero-holo-spin 14s linear infinite,
-                               hero-holo-flicker 3.4s steps(1, end) infinite;
-                  }
-                  @media (prefers-reduced-motion: reduce) {
-                    .hero-holo-spin, .hero-holo-flicker, .hero-holo-scan {
-                      animation: none !important;
-                      opacity: 0.9;
-                    }
-                  }
-                `}</style>
-              </div>
+              <CompoundVisualizerFrame onExpand={() => setCompoundExpanded(true)} />
             </div>
           </div>
 

@@ -25,7 +25,9 @@ export interface BrandLoaderProps {
 }
 
 const FADE_IN_MS = 220;
-const FADE_OUT_MS = 520;
+// Exit takes a touch longer now: the white doesn't fade uniformly, it
+// recedes outside-in like a closing vignette that collapses onto the logo.
+const FADE_OUT_MS = 660;
 // Intro only — how long the three bodies dance ALONE before the rest of
 // the mark (DNA strand + V + rings) rises in behind them.
 const V_REVEAL_DELAY_MS = 2000;
@@ -56,6 +58,23 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
 
   if (!mounted) return null;
 
+  // Radial mask applied to the white layer only while exiting — its
+  // opaque disc (the surviving white) is centered on the logo (which sits
+  // MARK_LIFT_PX above viewport center) and shrinks to nothing, so the
+  // white peels away from the edges inward and collapses onto the mark.
+  const vignetteMask = exiting
+    ? {
+        WebkitMaskImage:
+          'radial-gradient(circle, #000 34%, rgba(0,0,0,0.55) 52%, transparent 70%)',
+        maskImage:
+          'radial-gradient(circle, #000 34%, rgba(0,0,0,0.55) 52%, transparent 70%)',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: `50% calc(50% - ${MARK_LIFT_PX}px)`,
+        maskPosition: `50% calc(50% - ${MARK_LIFT_PX}px)`,
+      }
+    : null;
+
   return (
     <div
       role="status"
@@ -68,13 +87,7 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(251, 249, 244, 0.94)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
         pointerEvents: 'none',
-        animation: exiting
-          ? `vsrl-loader-fade-out ${FADE_OUT_MS}ms ease-in forwards`
-          : `vsrl-loader-fade-in ${FADE_IN_MS}ms ease-out`,
       }}
     >
       <style>{`
@@ -82,11 +95,37 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        @keyframes vsrl-loader-fade-out {
-          from { opacity: 1; }
-          to   { opacity: 0; }
+        /* White recedes outside-in: the masked opaque disc shrinks to a
+           point on the logo. */
+        @keyframes vsrl-bg-vignette {
+          from { -webkit-mask-size: 440% 440%; mask-size: 440% 440%; }
+          to   { -webkit-mask-size: 0% 0%;     mask-size: 0% 0%;     }
+        }
+        /* Logo holds through the vignette, then fades as the last white
+           collapses onto it. */
+        @keyframes vsrl-logo-exit {
+          0%   { opacity: 1; }
+          64%  { opacity: 1; }
+          100% { opacity: 0; }
         }
       `}</style>
+
+      {/* White frosted backdrop — masked away outside-in on exit. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(251, 249, 244, 0.94)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          animation: exiting
+            ? `vsrl-bg-vignette ${FADE_OUT_MS}ms ease-in forwards`
+            : `vsrl-loader-fade-in ${FADE_IN_MS}ms ease-out`,
+          ...vignetteMask,
+        }}
+      />
+
       <span
         style={{
           position: 'absolute',
@@ -101,10 +140,14 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
 
       <div
         style={{
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           transform: `translateY(-${MARK_LIFT_PX}px)`,
+          animation: exiting
+            ? `vsrl-logo-exit ${FADE_OUT_MS}ms ease-in forwards`
+            : undefined,
         }}
       >
         <DnaVMark
