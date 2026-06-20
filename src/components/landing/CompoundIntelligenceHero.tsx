@@ -195,7 +195,6 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 20) {
 
     let raf = 0;
     let last = 0;
-    let dir = 1;
     let holdUntil = 0;
     let pausedUntil = 0;
     // Float accumulator for the scroll position. We must NOT read scrollTop
@@ -226,16 +225,20 @@ function useDriftScroll<T extends HTMLElement>(speedPxPerSec = 20) {
         return;
       }
       if (max <= 6 || t < holdUntil) return;
-      if (pos > max) pos = max;
-      pos += dir * speedPxPerSec * dt;
+      // Reached the bottom on the previous pass → rewind to the top (a cut,
+      // never an upward scroll) and pause briefly before drifting again.
+      if (pos >= max) {
+        pos = 0;
+        el.scrollTop = 0;
+        holdUntil = t + 900;
+        return;
+      }
+      pos += speedPxPerSec * dt; // always downward
       if (pos >= max) {
         pos = max;
-        dir = -1;
-        holdUntil = t + 2200;
-      } else if (pos <= 0) {
-        pos = 0;
-        dir = 1;
-        holdUntil = t + 2200;
+        el.scrollTop = max;
+        holdUntil = t + 3000; // dwell at the end so the reader catches up
+        return;
       }
       el.scrollTop = pos;
     };
