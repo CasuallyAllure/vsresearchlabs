@@ -543,15 +543,16 @@ Deno.serve(async (req: Request) => {
     category: i.product.category ?? null, item_note: i.note ?? null,
   })));
 
-  // 2) Order row — created in pending_review. The branded invoice is NOT
-  // sent here; the admin reviews the lines/pricing first, then explicitly
-  // hits Save → Send Invoice in /admin/orders/:id. That's where status
-  // advances to invoice_sent and the buyer gets the formal invoice.
+  // 2) Order row — created in invoice_sent. The buyer gets the full
+  // branded invoice (with terms + purity guarantee + payment block +
+  // "I've sent payment" CTA) immediately at order time, so this stage
+  // is already past the "we need to review" step. Admin can still edit
+  // lines later and re-fire the invoice from /admin/orders/:id if needed.
   const orderNumber = generateOrderNumber();
   const { data: orderRow, error: ordErr } = await supabase
     .from("orders")
     .insert({
-      order_number: orderNumber, inquiry_id: inquiryRow.id, status: "pending_review",
+      order_number: orderNumber, inquiry_id: inquiryRow.id, status: "invoice_sent",
       buyer_name: name, buyer_contact: contact, buyer_organization: organization || null,
       notes: notes || null,
       ship_street:  shipStreet  || null,
@@ -561,7 +562,9 @@ Deno.serve(async (req: Request) => {
       ship_country: shipCountry || null,
       subtotal_cents:       totalCents,
       shipping_cents:       null,
+      invoice_amount_cents: totalCents,
       payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
+      invoiced_at: new Date().toISOString(),
     })
     .select("id, order_number, created_at").single();
   if (ordErr || !orderRow) {
@@ -578,18 +581,31 @@ Deno.serve(async (req: Request) => {
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
   // 3) Emails
-  //   Buyer gets a short acknowledgement (NOT the priced invoice — that's
-  //   sent from admin after pricing is reviewed). Business notification
-  //   still fires immediately so the admin sees the new pending order.
-  let acknowledgementEmailSent = false;
+  //   Buyer: fire the FULL branded invoice via the send-order-invoice
+  //     Edge Function. Single source of truth for the invoice template
+  //     (line items, payment block, "I've sent payment" CTA, research-use
+  //     terms + purity guarantee) — no duplicated HTML lives here.
+  //   Business: branded internal notification with prices visible at a
+  //     glance + "watch for payment code" action block.
+  let invoiceEmailSent = false;
   if (contactIsEmail) {
-    const r = await sendResendEmail({
-      to: contact,
-      subject: `Order ${orderNumber} received — VS Research Labs`,
-      html: buildAcknowledgementHtml(cleanPayload, orderNumber),
-    });
-    acknowledgementEmailSent = r.ok;
-    if (!r.ok) console.error("Acknowledgement email failed:", r);
+    try {
+      const inv = await fetch(`${SUPABASE_URL}/functions/v1/send-order-invoice`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        },
+        body: JSON.stringify({ order_id: orderRow.id }),
+      });
+      invoiceEmailSent = inv.ok;
+      if (!inv.ok) {
+        const errBody = await inv.text().catch(() => "");
+        console.error("Invoice email function failed:", inv.status, errBody);
+      }
+    } catch (err) {
+      console.error("Invoice email function threw:", err);
+    }
   }
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
@@ -605,11 +621,7 @@ Deno.serve(async (req: Request) => {
     referenceId,
     createdAt: orderRow.created_at,
     amountCents: totalCents,
-    // Renamed: this is now the acknowledgement email, not the priced
-    // invoice. Keep both keys for backwards compat with older client
-    // builds that still read invoiceEmailSent.
-    acknowledgementEmailSent,
-    invoiceEmailSent: false,
+    invoiceEmailSent,
     contactIsEmail,
   });
 });

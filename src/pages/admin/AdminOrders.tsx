@@ -15,8 +15,10 @@ import { AdminFilterBar } from './AdminFilterBar';
 import { OrderView } from './OrderView';
 
 type OrderStatus =
+  | 'pending_review'   // migration 020 — new buyer-placed order awaiting admin look
   | 'pending_invoice'
   | 'invoice_sent'
+  | 'payment_claimed'  // migration 020 — buyer clicked "I've sent payment"
   | 'paid'
   | 'fulfilled'
   | 'cancelled'
@@ -40,14 +42,22 @@ type FilterValue = OrderStatus | 'ALL' | 'OPEN';
 const FILTER_OPTIONS: Array<{ value: FilterValue; label: string }> = [
   { value: 'OPEN', label: 'Open' },
   { value: 'ALL', label: 'All' },
+  { value: 'pending_review', label: 'New' },
   { value: 'pending_invoice', label: 'To invoice' },
   { value: 'invoice_sent', label: 'Sent' },
+  { value: 'payment_claimed', label: 'Claims paid' },
   { value: 'paid', label: 'Paid' },
   { value: 'fulfilled', label: 'Shipped' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
-const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
+const OPEN_STATUSES: OrderStatus[] = [
+  'pending_review',
+  'pending_invoice',
+  'invoice_sent',
+  'payment_claimed',
+  'paid',
+];
 
 type DateValue = 'all' | 'today' | '7d' | '30d' | 'month' | 'custom';
 
@@ -278,8 +288,10 @@ export function OrderStatusChip({ status, deliveredAt }: { status: OrderStatus; 
   let cls = '';
   let label = status.replace(/_/g, ' ');
   switch (status) {
+    case 'pending_review':  cls = 'border-[#B5904B]/40 text-[#8a6d34] bg-[#B5904B]/[0.08]'; label = 'new'; break;
     case 'pending_invoice': cls = 'border-ink/25 text-ink/80 bg-ink/[0.05]'; break;
     case 'invoice_sent':    cls = 'border-holo/40 text-holo-light/80 bg-holo/[0.08]'; break;
+    case 'payment_claimed': cls = 'border-[#34727A]/40 text-[#34727A] bg-[#34727A]/[0.08]'; label = 'claims paid'; break;
     case 'paid':            cls = 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]'; break;
     case 'fulfilled':       cls = 'border-ink/15 text-ink/55 bg-ink/[0.02]'; label = 'shipped'; break;
     case 'cancelled':       cls = 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]'; break;

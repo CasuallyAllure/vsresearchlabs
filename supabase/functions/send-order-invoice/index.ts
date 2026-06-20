@@ -250,6 +250,34 @@ function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: s
     <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">
       Once payment is received and verified, your order moves to fulfillment and ships from our nearest warehouse (<strong>Sacramento</strong> or <strong>Vallejo, California</strong>). You'll receive a tracking number by email as soon as it leaves the dock.
     </p>
+
+    <!-- Research-use disclaimer + purity guarantee. This is part of every
+         invoice we issue — it sets the terms before payment, not after. -->
+    <div style="margin-top:22px;padding:18px 22px;border:1px solid #E4DFD5;border-radius:12px;background:#FBF9F4;">
+      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:10px;">
+        Terms · Research Use Only
+      </div>
+      <p style="margin:0 0 12px;font-size:12.5px;color:#1A1714;line-height:1.65;">
+        Every compound in this order is sold strictly for
+        <strong>laboratory research and professional B2B use</strong>.
+        Not for human or veterinary consumption. By submitting this
+        order you confirm you are a qualified researcher or authorized
+        purchaser.
+      </p>
+      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:10px;">
+        Purity Guarantee
+      </div>
+      <p style="margin:0;font-size:12.5px;color:#1A1714;line-height:1.65;">
+        All sales are <strong>final</strong> — we do not accept returns
+        of opened research material. However, if independent third-party
+        testing comes back below <strong>98–99% purity</strong>
+        (compound-dependent), we'll either <strong>replace the affected
+        product</strong> at our cost or issue a <strong>full refund</strong>,
+        your choice. Send the lab report to
+        <a href="mailto:ops@vsresearchlabs.com" style="color:#34727A;text-decoration:underline;">ops@vsresearchlabs.com</a>
+        within 14 days of delivery and we'll handle it.
+      </p>
+    </div>
     <p style="margin:0 4px 16px;font-size:13px;color:#1A1714;line-height:1.6;">Questions? Simply reply to this email — your message lands on the same reference thread.</p>
 
     <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">

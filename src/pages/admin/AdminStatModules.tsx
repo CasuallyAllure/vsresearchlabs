@@ -97,7 +97,16 @@ function monthStartISO(): string {
 
 const ORDER_COLS =
   'id, order_number, status, buyer_name, buyer_contact, invoice_amount_cents, delivered_at, tracking_number, carrier, created_at, fulfilled_at';
-const OPEN_STATUSES: OrderStatus[] = ['pending_invoice', 'invoice_sent', 'paid'];
+// pending_review + payment_claimed are new statuses (migration 020). Include
+// both in the "open" bucket so the dashboard count doesn't silently miss
+// newly-placed orders or buyer-claimed-paid orders awaiting verification.
+const OPEN_STATUSES: OrderStatus[] = [
+  'pending_review',
+  'pending_invoice',
+  'invoice_sent',
+  'payment_claimed',
+  'paid',
+];
 
 export function AdminStatModules() {
   const [data, setData] = useState<DashData | null>(null);
@@ -111,21 +120,44 @@ export function AdminStatModules() {
       if (!supabase) { setError('Backend not configured.'); return; }
       try {
         const since = monthStartISO();
-        const [openOrders, inq, skus, month] = await Promise.all([
+        const [openOrders, inq, productStockRes, variantStockRes, month] = await Promise.all([
           supabase.from('orders').select(ORDER_COLS).in('status', OPEN_STATUSES).order('created_at', { ascending: false }).limit(300),
           supabase.from('inquiries')
             .select('id, reference_id, created_at, name, contact, organization, notes, item_count')
             .eq('status', 'OPEN').order('created_at', { ascending: false }).limit(200),
-          supabase.from('product_stock').select('sku, on_hand').gt('on_hand', 0).order('on_hand', { ascending: false }).limit(1000),
+          // Per-SKU shelf stock (lab equipment + legacy single-variant compounds).
+          supabase.from('product_stock').select('sku, on_hand').gt('on_hand', 0).limit(1000),
+          // Per-dose stock added by migration 011/018. on_hand or inbound>0 → counts.
+          supabase.from('public_variant_overrides').select('sku, on_hand, inbound_units').limit(2000),
           supabase.from('orders').select(ORDER_COLS).eq('status', 'fulfilled').gte('fulfilled_at', since).order('fulfilled_at', { ascending: false }).limit(300),
         ]);
         if (cancelled) return;
-        const firstErr = openOrders.error || inq.error || skus.error || month.error;
+        const firstErr = openOrders.error || inq.error || productStockRes.error || month.error;
         if (firstErr) { setError(firstErr.message); return; }
+
+        // Aggregate per-SKU stock from both tables. Per-variant rows sum
+        // on_hand + inbound_units per SKU so a compound with 5mg on shelf
+        // and 50mg inbound counts once as a stocked SKU with the combined
+        // unit total. variantStockRes may be missing on older DBs — fall
+        // back to product_stock-only behavior gracefully.
+        const skuMap = new Map<string, number>();
+        for (const r of (productStockRes.data ?? []) as SkuRow[]) {
+          if (r.on_hand > 0) skuMap.set(r.sku, (skuMap.get(r.sku) ?? 0) + r.on_hand);
+        }
+        if (!variantStockRes.error) {
+          for (const r of (variantStockRes.data ?? []) as Array<{ sku: string; on_hand: number; inbound_units: number }>) {
+            const reachable = (r.on_hand ?? 0) + (r.inbound_units ?? 0);
+            if (reachable > 0) skuMap.set(r.sku, (skuMap.get(r.sku) ?? 0) + reachable);
+          }
+        }
+        const skus: SkuRow[] = Array.from(skuMap.entries())
+          .map(([sku, on_hand]) => ({ sku, on_hand }))
+          .sort((a, b) => b.on_hand - a.on_hand);
+
         setData({
           openOrders: (openOrders.data ?? []) as OrderRow[],
           inquiries: (inq.data ?? []) as InquiryRow[],
-          skus: (skus.data ?? []) as SkuRow[],
+          skus,
           monthSales: (month.data ?? []) as OrderRow[],
         });
       } catch (e: unknown) {
