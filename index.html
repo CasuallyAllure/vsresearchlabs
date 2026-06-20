@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Theme boot — apply the saved light/dark mode BEFORE first paint so the
+         page never flashes the wrong palette. Mirrors src/hooks/useTheme.ts. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('vsr.theme');
+          document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+
     <!-- Fonts — warm the connection early so Cormorant Garamond is ready
          for the first-paint brand loader wordmark (avoids a Times fallback
          flash that reads as less refined than the header). -->

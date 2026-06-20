@@ -64,6 +64,10 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
             </svg>
           </button>
 
+          {/* LEFT — Theme swatch (light / black-&-silver dark). Tiny disc
+              showing the live palette, sits just after the hamburger. */}
+          <ThemeToggle className="-ml-1" />
+
           {/* CENTER — DNA·V identity lockup.
               Mobile: stacked (mark above wordmark), bigger, centered.
               Desktop (sm+): horizontal lockup, centered, larger. */}
