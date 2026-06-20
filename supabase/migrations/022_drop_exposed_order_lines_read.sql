@@ -1,0 +1,24 @@
+-- 022_drop_exposed_order_lines_read.sql
+--
+-- SECURITY MITIGATION — completes the revert of migration 016.
+--
+-- Migration 016 widened the anonymous order lookup to expose invoice
+-- financials AND a full itemized line read (lookup_order_lines), gated only by
+-- (order_number | buyer email) + shipping ZIP. That gate is enumerable
+-- (order numbers are VSR-ORD-YYMMDD-NNN with <=1000 NNN values/known day, ZIP
+-- is low-entropy), so an anon attacker could harvest each order's amounts and
+-- exact contents.
+--
+-- The financials exposure is already closed by migration 021, which redefines
+-- lookup_order to a status/tracking-only shape (no subtotal/total/payment).
+-- The one piece 021 does NOT undo is the itemized read function itself, so this
+-- migration removes it. The token-gated invoice view (get_order_by_token, high
+-- entropy lookup_token emailed with the invoice) remains the intended way to
+-- expose line items.
+--
+-- NOTE: supersedes the earlier 018_revert_client_invoice_exposure file
+-- (renumbered to 022 to avoid a version collision with
+-- 018_inbound_and_warehouse_lead and to apply cleanly after 021's lookup_order
+-- redefinition).
+
+drop function if exists lookup_order_lines(text, text);
