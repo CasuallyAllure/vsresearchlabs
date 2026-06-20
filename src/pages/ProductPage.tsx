@@ -399,6 +399,7 @@ export function ProductPage() {
               </p>
               <TierStrip
                 mode="select"
+                sku={product.sku}
                 variants={ci.tiers}
                 selectedIndex={selectedTierIndex}
                 onSelect={handleTierSelect}

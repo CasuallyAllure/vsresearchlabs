@@ -183,6 +183,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               <TierStrip
                 mode="select"
                 size="sm"
+                sku={product.sku}
                 variants={variants}
                 selectedIndex={tierIndex}
                 onSelect={setTierIndex}
@@ -229,7 +230,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         <div className="border-t border-ink/[0.06] px-4 py-3 space-y-1.5">
           {identity}
           {variants.length > 0 && (
-            <TierStrip variants={variants} activeDose={activeDose} className="pt-0.5" />
+            <TierStrip sku={product.sku} variants={variants} activeDose={activeDose} className="pt-0.5" />
           )}
         </div>
       </div>

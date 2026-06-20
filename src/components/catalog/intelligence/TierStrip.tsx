@@ -18,11 +18,14 @@
  */
 
 import type { ProductVariant } from '../../../types';
+import { doseAvailability } from '../../../lib/productOverrides';
 
 type TierStripProps =
   | {
       mode?: 'read';
       variants: ProductVariant[];
+      /** Optional — when set, fast-ship variants render a small "· FAST" suffix. */
+      sku?: string;
       /** When set, the matching variant is rendered with the "active" treatment. */
       activeDose?: string;
       className?: string;
@@ -30,6 +33,8 @@ type TierStripProps =
   | {
       mode: 'select';
       variants: ProductVariant[];
+      /** Optional — when set, fast-ship variants render a small "· FAST" suffix. */
+      sku?: string;
       selectedIndex: number;
       onSelect: (i: number) => void;
       /** 'sm' is a daintier control for dense surfaces like grid cards. */
@@ -37,32 +42,66 @@ type TierStripProps =
       className?: string;
     };
 
+// Brand chip — same visual language as CompactProductTile + the row inside
+// BiopeptideInventoryModal. Mono caps, ink fill on active, hairline border
+// on inactive, optional green "· FAST" suffix when the dose ships fast.
+function dosePresentation(dose: string): string {
+  return dose.replace(/\s+/g, '').toUpperCase();
+}
+
+function FastBadge({ active, size }: { active: boolean; size: 'sm' | 'md' }) {
+  return (
+    <span
+      style={{
+        marginLeft: '4px',
+        color: active ? 'rgba(155,196,163,1)' : '#2E7D5B',
+        fontSize: size === 'sm' ? '7.5px' : '8.5px',
+        letterSpacing: '0.20em',
+      }}
+    >
+      · FAST
+    </span>
+  );
+}
+
 export function TierStrip(props: TierStripProps) {
   if (!props.variants || props.variants.length === 0) return null;
+
+  const sku = props.sku;
 
   if (props.mode === 'select') {
     const { variants, selectedIndex, onSelect, className } = props;
     const sm = props.size === 'sm';
     return (
-      <div className={['flex flex-wrap', sm ? 'gap-1' : 'gap-1.5', className ?? ''].filter(Boolean).join(' ')}>
+      <div
+        role="radiogroup"
+        aria-label="Select dose"
+        className={['flex flex-wrap', sm ? 'gap-1' : 'gap-1.5', className ?? ''].filter(Boolean).join(' ')}
+      >
         {variants.map((v, i) => {
           const active = i === selectedIndex;
+          const av = sku ? doseAvailability(sku, v.dose) : { state: 'unknown' as const };
+          const isFast = av.state === 'in_stock' && av.fast;
           return (
             <button
               key={v.dose}
               type="button"
+              role="radio"
+              aria-checked={active}
               onClick={() => onSelect(i)}
-              className="rounded-[2px] font-mono tabular-nums leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 active:scale-[0.95]"
+              title={isFast ? `${v.dose} · ships fast` : v.dose}
+              className="rounded-[3px] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 active:scale-[0.96] transition-colors"
               style={{
-                padding: sm ? '3px 7px' : '4px 10px',
-                fontSize: sm ? '9.5px' : '11px',
-                backgroundColor: active ? 'rgba(52,114,122,0.12)' : 'rgba(26,23,20,0.03)',
-                border: active ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.12)',
-                color: active ? '#34727A' : 'rgba(26,23,20,0.62)',
-                transition: 'background-color 100ms ease-out, border-color 100ms ease-out, color 100ms ease-out, transform 100ms ease-out',
+                padding: sm ? '3px 7px' : '5px 10px',
+                fontSize: sm ? '8.5px' : '10px',
+                letterSpacing: '0.16em',
+                backgroundColor: active ? '#1A1714' : 'rgba(26,23,20,0.02)',
+                color: active ? '#FBF9F4' : 'rgba(26,23,20,0.78)',
+                border: active ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.12)',
               }}
             >
-              {v.dose}
+              {dosePresentation(v.dose)}
+              {isFast && <FastBadge active={active} size={sm ? 'sm' : 'md'} />}
             </button>
           );
         })}
@@ -79,23 +118,25 @@ export function TierStrip(props: TierStripProps) {
       aria-label="Available dose tiers"
     >
       {variants.map((v) => {
-        const isActive = activeDose && v.dose === activeDose;
+        const isActive = !!(activeDose && v.dose === activeDose);
+        const av = sku ? doseAvailability(sku, v.dose) : { state: 'unknown' as const };
+        const isFast = av.state === 'in_stock' && av.fast;
         return (
           <span
             key={v.dose}
             role="listitem"
-            className={[
-              'inline-flex items-center',
-              'px-1.5 py-[1px]',
-              'rounded',
-              'text-[10px] tabular-nums',
-              'transition-colors',
-              isActive
-                ? 'bg-ink/[0.08] border border-ink/[0.18] text-ink/85'
-                : 'bg-transparent border border-ink/[0.06] text-ink/45',
-            ].join(' ')}
+            className="font-mono leading-none rounded-[3px]"
+            style={{
+              padding: '2px 6px',
+              fontSize: '9px',
+              letterSpacing: '0.16em',
+              backgroundColor: isActive ? '#1A1714' : 'transparent',
+              color: isActive ? '#FBF9F4' : 'rgba(26,23,20,0.50)',
+              border: isActive ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.10)',
+            }}
           >
-            {v.dose}
+            {dosePresentation(v.dose)}
+            {isFast && <FastBadge active={isActive} size="sm" />}
           </span>
         );
       })}

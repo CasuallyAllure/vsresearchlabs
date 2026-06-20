@@ -386,6 +386,7 @@ export function CompoundIntelligenceOverlay({
                   </div>
                   <TierStrip
                     mode="select"
+                    sku={product.sku}
                     variants={visibleTiers}
                     selectedIndex={selectedTierIndex}
                     onSelect={setSelectedTierIndex}
@@ -490,6 +491,7 @@ export function CompoundIntelligenceOverlay({
                       </div>
                       <TierStrip
                         mode="select"
+                        sku={product.sku}
                         variants={visibleTiers}
                         selectedIndex={selectedTierIndex}
                         onSelect={setSelectedTierIndex}
