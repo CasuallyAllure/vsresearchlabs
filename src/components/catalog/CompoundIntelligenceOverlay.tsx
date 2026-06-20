@@ -263,7 +263,7 @@ export function CompoundIntelligenceOverlay({
           style={{
             maxWidth: '1080px',
             height: 'min(calc(100dvh - 40px), 860px)',
-            backgroundColor: '#FBF9F4',
+            backgroundColor: 'var(--color-surface-elevated)',
             border: '1px solid rgba(26,23,20,0.10)',
             boxShadow: 'inset 0 1px 0 rgba(26,23,20,0.04), 0 40px 120px rgba(26,23,20,0.22)',
             animation: closing ? 'cio-panel-out 230ms cubic-bezier(0.23, 1, 0.32, 1) forwards' : 'cio-panel 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
@@ -331,7 +331,7 @@ export function CompoundIntelligenceOverlay({
 
             {/* Left passport — no specimen bay (moved to visual zone above) */}
             <div className="hidden lg:flex flex-col overflow-hidden shrink-0"
-              style={{ width: '300px', backgroundColor: '#F4EFE6', borderRight: '1px solid rgba(26,23,20,0.07)' }}>
+              style={{ width: '300px', backgroundColor: 'var(--color-surface-base)', borderRight: '1px solid var(--color-border-subtle)' }}>
 
               {/* Passport header */}
               <div className="px-4 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>

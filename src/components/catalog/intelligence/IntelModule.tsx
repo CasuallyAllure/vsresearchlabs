@@ -115,15 +115,15 @@ export function IntelModule({ index, title, defaultOpen = false, reserved = fals
   return (
     <div
       className="cio-module"
-      style={{ '--mi': index, borderBottom: '1px solid rgba(26,23,20,0.05)' } as React.CSSProperties}
+      style={{ '--mi': index, borderBottom: '1px solid var(--color-border-subtle)' } as React.CSSProperties}
     >
       <ModuleHeader index={index} title={title} reserved={reserved} open={open} onToggle={() => setOpen((o) => !o)} />
       <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 200ms cubic-bezier(0.23, 1, 0.32, 1)' }}>
         <div style={{ overflow: 'hidden' }}>
-          <div style={{ backgroundColor: open ? '#FFFFFF' : 'transparent', transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1)', borderTop: open ? '1px solid rgba(26,23,20,0.05)' : '1px solid transparent' }}>
+          <div style={{ backgroundColor: open ? 'var(--color-surface-elevated)' : 'transparent', transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1)', borderTop: open ? '1px solid var(--color-border-subtle)' : '1px solid transparent' }}>
             {reserved ? (
               <div className="px-4 py-4">
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed rgba(26,23,20,0.08)' }}>
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed var(--color-border-subtle)' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-ink/22 shrink-0">
                     <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
                   </svg>

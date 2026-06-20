@@ -324,7 +324,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
-          backgroundColor: 'rgba(251, 249, 244, 0.97)',
+          backgroundColor: 'var(--color-surface-elevated)',
           borderRight: '1px solid rgba(26, 23, 20, 0.12)',
           boxShadow: '24px 0 60px -20px rgba(26,23,20,0.25)',
           backdropFilter: 'blur(10px)',

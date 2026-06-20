@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div
           role="alert"
           className="flex min-h-screen items-center justify-center px-6"
-          style={{ background: '#F4EFE6', color: '#1A1714' }}
+          style={{ background: 'var(--color-surface-base)', color: 'var(--color-content-primary)' }}
         >
           <div className="w-full max-w-[460px] text-center">
             <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-ink/45">

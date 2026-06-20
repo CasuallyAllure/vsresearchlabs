@@ -74,7 +74,7 @@ export function HeroSegmentMenu({
             alignRight ? 'right-0' : 'left-0'
           }`}
           style={{
-            backgroundColor: 'rgba(251, 249, 244, 0.98)',
+            backgroundColor: 'var(--color-surface-elevated)',
             border: '1px solid rgba(26, 23, 20, 0.12)',
             boxShadow: '0 14px 38px -14px rgba(26,23,20,0.32)',
             backdropFilter: 'blur(8px)',
@@ -84,7 +84,7 @@ export function HeroSegmentMenu({
           <span
             aria-hidden="true"
             className={`absolute -top-[5px] h-2.5 w-2.5 rotate-45 ${alignRight ? 'right-5' : 'left-5'}`}
-            style={{ backgroundColor: 'rgba(251, 249, 244, 0.98)', borderLeft: '1px solid rgba(26,23,20,0.12)', borderTop: '1px solid rgba(26,23,20,0.12)' }}
+            style={{ backgroundColor: 'var(--color-surface-elevated)', borderLeft: '1px solid var(--color-border-default)', borderTop: '1px solid var(--color-border-default)' }}
           />
           <p className="px-2.5 pb-1 pt-1.5 font-mono text-[8px] uppercase tracking-[0.26em] text-ink/40">
             {heading}

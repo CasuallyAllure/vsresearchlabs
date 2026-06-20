@@ -271,14 +271,12 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
               // pill_height (~36px) + small gap (8px).
               bottom: 'calc(max(2px, env(safe-area-inset-bottom)) + 44px)',
               width: 'min(360px, calc(100vw - 1.5rem))',
-              background:
-                'linear-gradient(180deg, rgba(251, 249, 244, 0.96) 0%, rgba(244, 239, 230, 0.97) 100%)',
-              border: '0.5px solid rgba(26, 23, 20, 0.12)',
+              background: 'var(--botnav-sheet-grad)',
+              border: '0.5px solid var(--botnav-border)',
               borderRadius: '20px',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
-              boxShadow:
-                '0 12px 36px -16px rgba(26, 23, 20, 0.28), inset 0 0.5px 0 rgba(255, 255, 255, 0.7)',
+              boxShadow: 'var(--botnav-shadow-sheet)',
             }}
           >
             <div className="px-4 pt-4 pb-2">
@@ -344,14 +342,12 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
           // devices the safe-area inset keeps it clear of the home bar;
           // otherwise it sits 2px above the absolute bottom edge.
           bottom: 'max(2px, env(safe-area-inset-bottom))',
-          background:
-            'linear-gradient(180deg, rgba(251, 249, 244, 0.9) 0%, rgba(244, 239, 230, 0.94) 100%)',
-          border: '0.5px solid rgba(26, 23, 20, 0.12)',
+          background: 'var(--botnav-grad)',
+          border: '0.5px solid var(--botnav-border)',
           borderRadius: '9999px',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          boxShadow:
-            '0 8px 24px -12px rgba(26, 23, 20, 0.28), inset 0 0.5px 0 rgba(255, 255, 255, 0.7)',
+          boxShadow: 'var(--botnav-shadow)',
         }}
       >
         {/* Hint — points at the center Research Supplies slot. */}
@@ -443,7 +439,7 @@ function NavSlot(props: NavSlotProps) {
   ].join(' ');
   const style = props.isActive
     ? {
-        backgroundColor: 'rgba(255, 255, 255, 0.10)',
+        backgroundColor: 'var(--color-interactive-secondary)',
         boxShadow: 'inset 0 0 0 0.5px rgba(255, 255, 255, 0.18)',
       }
     : undefined;

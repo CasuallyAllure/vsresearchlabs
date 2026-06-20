@@ -383,6 +383,10 @@ export function Landing() {
                   viewBox="0 0 600 140"
                   preserveAspectRatio="xMidYEnd meet"
                   className="h-full w-full"
+                  /* Structural line-art rides currentColor → ink on cream,
+                     silver on black. Per-line alpha kept via *-opacity attrs.
+                     The teal Bay Lights below are exempt (own color). */
+                  style={{ color: 'var(--color-content-primary)' }}
                 >
                   <defs>
                     {/* Soft halo for the Bay Lights trickle */}
@@ -392,17 +396,17 @@ export function Landing() {
                   </defs>
 
                   {/* Project labels — silver mono micrograph */}
-                  <text x="6" y="9" fontFamily="monospace" fontSize="6" fill="rgba(26,23,20,0.5)" letterSpacing="0.22em">BAY BRIDGE · EAST SPAN</text>
-                  <text x="525" y="9" fontFamily="monospace" fontSize="6" fill="rgba(26,23,20,0.5)" letterSpacing="0.18em">OPENED 2013</text>
+                  <text x="6" y="9" fontFamily="monospace" fontSize="6" fill="currentColor" fillOpacity="0.5" letterSpacing="0.22em">BAY BRIDGE · EAST SPAN</text>
+                  <text x="525" y="9" fontFamily="monospace" fontSize="6" fill="currentColor" fillOpacity="0.5" letterSpacing="0.18em">OPENED 2013</text>
 
                   {/* Main cable — single self-anchored loop: deck → over tower
                       top → deck. Two Q segments meeting at the tower saddle. */}
-                  <path d="M 20,92 Q 215,60 410,14" fill="none" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
-                  <path d="M 410,14 Q 495,60 580,92" fill="none" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
+                  <path d="M 20,92 Q 215,60 410,14" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="1.1" strokeLinecap="round" />
+                  <path d="M 410,14 Q 495,60 580,92" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="1.1" strokeLinecap="round" />
 
                   {/* Suspender verticals — dense rod field, each top riding
                       the catenary cable (see BRIDGE_SUSPENDERS). */}
-                  <g stroke="rgba(26,23,20,0.3)" strokeWidth="0.4">
+                  <g stroke="currentColor" strokeOpacity="0.3" strokeWidth="0.4">
                     {BRIDGE_SUSPENDERS.map(({ x, yTop }) => (
                       <line key={`rod-${x}`} x1={x} y1={yTop} x2={x} y2={92} />
                     ))}
@@ -411,19 +415,19 @@ export function Landing() {
                   {/* Single tower — four-legged from the bridge's iconic
                       side view. Legs flare slightly at the base and
                       converge near the top, with cross-bracing visible. */}
-                  <g stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round">
+                  <g stroke="currentColor" strokeOpacity="0.55" strokeWidth="1.1" strokeLinecap="round">
                     {/* Outer pair (visible legs) */}
                     <line x1="404" y1="92" x2="408" y2="12" />
                     <line x1="416" y1="92" x2="412" y2="12" />
                     {/* Inner pair (back legs, slightly dimmer perspective) */}
                   </g>
-                  <g stroke="rgba(26,23,20,0.4)" strokeWidth="0.65" strokeLinecap="round">
+                  <g stroke="currentColor" strokeOpacity="0.4" strokeWidth="0.65" strokeLinecap="round">
                     <line x1="407" y1="92" x2="409" y2="12" />
                     <line x1="413" y1="92" x2="411" y2="12" />
                   </g>
 
                   {/* Tower cross-bracing — horizontal beams between the legs */}
-                  <g stroke="rgba(26,23,20,0.38)" strokeWidth="0.5">
+                  <g stroke="currentColor" strokeOpacity="0.38" strokeWidth="0.5">
                     <line x1="404.5" y1="20" x2="415.5" y2="20" />
                     <line x1="405" y1="32" x2="415" y2="32" />
                     <line x1="405.5" y1="44" x2="414.5" y2="44" />
@@ -432,7 +436,7 @@ export function Landing() {
                     <line x1="407" y1="80" x2="413" y2="80" />
                   </g>
                   {/* Internal X bracing (subtle) */}
-                  <g stroke="rgba(26,23,20,0.25)" strokeWidth="0.35">
+                  <g stroke="currentColor" strokeOpacity="0.25" strokeWidth="0.35">
                     <line x1="404.5" y1="20" x2="415" y2="32" />
                     <line x1="415.5" y1="20" x2="405" y2="32" />
                     <line x1="405" y1="32" x2="414.5" y2="44" />
@@ -447,25 +451,25 @@ export function Landing() {
 
                   {/* Saddle at tower top — small horizontal piece where the
                       main cable passes over. */}
-                  <line x1="406" y1="12" x2="414" y2="12" stroke="rgba(26,23,20,0.55)" strokeWidth="1.1" strokeLinecap="round" />
+                  <line x1="406" y1="12" x2="414" y2="12" stroke="currentColor" strokeOpacity="0.55" strokeWidth="1.1" strokeLinecap="round" />
 
                   {/* Roadway deck — single wide deck (East Span is single deck) */}
-                  <line x1="0" y1="92" x2="600" y2="92" stroke="rgba(26,23,20,0.5)" strokeWidth="0.85" />
-                  <line x1="0" y1="98" x2="600" y2="98" stroke="rgba(26,23,20,0.34)" strokeWidth="0.5" />
+                  <line x1="0" y1="92" x2="600" y2="92" stroke="currentColor" strokeOpacity="0.5" strokeWidth="0.85" />
+                  <line x1="0" y1="98" x2="600" y2="98" stroke="currentColor" strokeOpacity="0.34" strokeWidth="0.5" />
 
                   {/* Pier extending down from tower base into water */}
-                  <g stroke="rgba(26,23,20,0.36)" strokeWidth="0.6">
+                  <g stroke="currentColor" strokeOpacity="0.36" strokeWidth="0.6">
                     <line x1="406" y1="98" x2="406" y2="128" />
                     <line x1="414" y1="98" x2="414" y2="128" />
                     <line x1="404" y1="128" x2="416" y2="128" />
                   </g>
 
                   {/* Waterline */}
-                  <line x1="0" y1="132" x2="600" y2="132" stroke="rgba(26,23,20,0.22)" strokeWidth="0.3" strokeDasharray="3 4" />
+                  <line x1="0" y1="132" x2="600" y2="132" stroke="currentColor" strokeOpacity="0.22" strokeWidth="0.3" strokeDasharray="3 4" />
 
                   {/* Dimension marks */}
-                  <text x="295" y="14" fontFamily="monospace" fontSize="5" fill="rgba(26,23,20,0.45)" letterSpacing="0.1em">MAIN SPAN 1,263 FT</text>
-                  <text x="403" y="138" fontFamily="monospace" fontSize="5" fill="rgba(26,23,20,0.42)" letterSpacing="0.12em">SAS TOWER · 525 FT</text>
+                  <text x="295" y="14" fontFamily="monospace" fontSize="5" fill="currentColor" fillOpacity="0.45" letterSpacing="0.1em">MAIN SPAN 1,263 FT</text>
+                  <text x="403" y="138" fontFamily="monospace" fontSize="5" fill="currentColor" fillOpacity="0.42" letterSpacing="0.12em">SAS TOWER · 525 FT</text>
 
                   {/* ── Bay Lights ──────────────────────────────────────────
                       A luminous point trickles down each suspender cable,

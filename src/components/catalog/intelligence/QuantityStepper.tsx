@@ -37,7 +37,7 @@ export function QuantityStepper({
   return (
     <div
       className={['flex items-center shrink-0 rounded-[2px] overflow-hidden', className ?? ''].filter(Boolean).join(' ')}
-      style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+      style={{ border: '1px solid var(--color-border-default)' }}
     >
       <button
         type="button"
@@ -50,7 +50,7 @@ export function QuantityStepper({
       </button>
       <span
         className="w-8 h-8 flex items-center justify-center font-mono tabular-nums text-ink/70 select-none"
-        style={{ fontSize: '12px', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRight: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ fontSize: '12px', borderLeft: '1px solid var(--color-border-subtle)', borderRight: '1px solid var(--color-border-subtle)' }}
       >
         {quantity}
       </span>

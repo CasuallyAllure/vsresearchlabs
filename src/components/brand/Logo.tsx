@@ -28,6 +28,8 @@ interface LogoProps {
   /** Wordmark font-size in px (lockup/stacked). */
   wordSize?: number;
   showTagline?: boolean;
+  /** Enclose the V mark in a gold seal ring (badge treatment). */
+  circled?: boolean;
   /** Use the inverted mark + light wordmark for dark surfaces. */
   dark?: boolean;
   className?: string;
@@ -46,6 +48,7 @@ export function Logo({
   markSize = 30,
   wordSize = 17,
   showTagline = false,
+  circled = false,
   dark = false,
   className = '',
   ariaLabel = `${BRAND_NAME} — Home`,
@@ -63,7 +66,7 @@ export function Logo({
     />
   ) : (
     // Inline, so the three bodies can swing + glow on hover.
-    <DnaVMark size={markSize} />
+    <DnaVMark size={markSize} ring={circled} />
   );
 
   const wordmark = (
@@ -93,7 +96,7 @@ export function Logo({
     body = (
       <span className="flex flex-col items-center gap-0 min-w-0">
         {mark}
-        <span className="flex flex-col items-center gap-1 min-w-0 -mt-[7px]">
+        <span className={`flex flex-col items-center gap-1 min-w-0 ${circled ? 'mt-[3px]' : '-mt-[7px]'}`}>
           {wordmark}
           {tagline}
         </span>
@@ -109,7 +112,7 @@ export function Logo({
         {mark}
         <span
           className="flex flex-col items-center gap-1 min-w-0"
-          style={{ marginLeft: `-${Math.round(markSize * 0.16)}px` }}
+          style={{ marginLeft: circled ? `${Math.round(markSize * 0.12)}px` : `-${Math.round(markSize * 0.16)}px` }}
         >
           {wordmark}
           {tagline}

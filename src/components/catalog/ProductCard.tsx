@@ -207,9 +207,9 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               style={{
                 padding: '5px 11px',
                 fontSize: '8.5px',
-                backgroundColor: added ? 'rgba(52, 114, 122,0.14)' : 'rgba(255,255,255,0.07)',
-                border: added ? '1px solid rgba(52, 114, 122,0.40)' : '1px solid rgba(255,255,255,0.14)',
-                color: added ? '#9BD8FF' : 'rgba(255,255,255,0.78)',
+                backgroundColor: added ? 'rgba(52, 114, 122,0.14)' : 'var(--color-interactive-secondary)',
+                border: added ? '1px solid rgba(52, 114, 122,0.40)' : '1px solid var(--color-border-default)',
+                color: added ? '#9BD8FF' : 'var(--color-content-secondary)',
               }}
             >
               {added ? '✓ Added' : 'Add'}

@@ -66,9 +66,9 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
         <span className="absolute inset-0 flex items-center justify-center">
           <span
             className="flex h-8 w-8 items-center justify-center rounded-full transition-transform group-hover:scale-110"
-            style={{ backgroundColor: 'rgba(251,249,244,0.92)', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+            style={{ backgroundColor: 'var(--color-surface-elevated)', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#1A1714" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--color-content-primary)" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
             </svg>
           </span>

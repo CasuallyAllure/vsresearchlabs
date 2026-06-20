@@ -102,8 +102,8 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
                 style={{
                   fontSize: '9px',
                   letterSpacing: '0.14em',
-                  backgroundColor: isActive ? '#1A1714' : 'rgba(26,23,20,0.02)',
-                  color: isActive ? '#FBF9F4' : 'rgba(26,23,20,0.78)',
+                  backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
+                  color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
                   borderColor: isActive ? '#1A1714' : 'rgba(26,23,20,0.12)',
                 }}
               >

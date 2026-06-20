@@ -326,7 +326,7 @@ function SlideHologram({
             className="pointer-events-none absolute inset-x-0 bottom-0 z-[15] h-16"
             style={{
               background:
-                'linear-gradient(to top, rgba(251,249,244,0.5) 0%, rgba(251,249,244,0.16) 55%, transparent 100%)',
+                'linear-gradient(to top, var(--color-surface-elevated) 0%, transparent 100%)',
             }}
           />
           <div className="absolute inset-x-4 bottom-8 z-20 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pointer-events-none font-mono text-[8px] uppercase tracking-[0.18em]">

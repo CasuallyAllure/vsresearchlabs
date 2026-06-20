@@ -35,7 +35,7 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
   const pubchemUrl = pubchemImageUrl(substance);
 
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{ backgroundColor: '#F4EFE6' }}>
+    <div className="mol-structure-bay relative w-full h-full overflow-hidden">
       {/* Fallback / loading state — always in DOM, fades out when real structure loads */}
       <div
         className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
@@ -52,22 +52,20 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
           alt={`${substance} molecular structure`}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
-          className="absolute inset-0 w-full h-full object-contain transition-opacity duration-700"
+          className="mol-structure-img absolute inset-0 w-full h-full object-contain transition-opacity duration-700"
           style={{
-            padding: '20px',
-            // PubChem PNG is black structure on white. multiply drops the
-            // white into the cream bay and leaves the dark structure +
-            // softened heteroatom hues readable on light.
-            filter: 'contrast(0.96) saturate(0.6)',
-            mixBlendMode: 'multiply',
+            // Tighter padding so the structure fills more of the panel.
+            // Compositing (multiply on light / invert+screen on dark) lives
+            // in theme.css keyed off [data-theme] so the molecule reads on
+            // both the cream bay (light) and bare black (dark).
+            padding: '10px',
             opacity: loaded ? 1 : 0,
           }}
         />
       )}
 
       {/* Compound label overlay at bottom-left */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-end justify-between pointer-events-none"
-        style={{ background: 'linear-gradient(to top, rgba(244,239,230,0.92) 0%, rgba(244,239,230,0.4) 60%, transparent 100%)' }}>
+      <div className="mol-structure-fade absolute bottom-0 left-0 right-0 px-3 py-2 flex items-end justify-between pointer-events-none">
         <div>
           <p className="font-mono text-ink/22 uppercase" style={{ fontSize: '8px', letterSpacing: '0.22em' }}>
             Molecular Structure

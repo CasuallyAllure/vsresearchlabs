@@ -65,7 +65,7 @@ export function SameDayDeliveryBadge() {
             aria-label="Same-day delivery zones"
             className="fixed left-1/2 top-1/2 z-[71] w-[340px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-[6px] p-4 text-left"
             style={{
-              backgroundColor: '#FBF9F4',
+              backgroundColor: 'var(--color-surface-elevated)',
               border: '1px solid rgba(26, 23, 20, 0.14)',
               boxShadow: '0 24px 60px -18px rgba(26,23,20,0.45), 0 0 0 0.5px rgba(26,23,20,0.05)',
             }}

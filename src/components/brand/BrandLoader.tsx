@@ -174,19 +174,25 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           static
           bodyEntryMs={1600}
           vRevealDelayMs={intro ? V_REVEAL_DELAY_MS : undefined}
+          // The loader vignette is always cream (both themes), so pin the V
+          // to ink — never let it follow the theme to silver (invisible here).
+          inkColor="#1A1714"
         />
         {/* Wordmark — identical font / weight / tracking to the header
             Logo, sitting directly under the V. In intro mode it rises in
             with the V (same delay + 760ms curve); otherwise it's simply
             present, matching the always-visible mark on route loaders. */}
         <span
-          className={`font-serif font-medium uppercase leading-none whitespace-nowrap text-ink${
+          className={`font-serif font-medium uppercase leading-none whitespace-nowrap${
             intro ? ' vsrl-word-reveal' : ''
           }`}
           style={{
             marginTop: -10,
             fontSize: 13,
             letterSpacing: '0.2em',
+            // Cream vignette in both themes → pin wordmark to ink, not the
+            // theme's silver content color.
+            color: '#1A1714',
             ...(intro ? { animationDelay: `${V_REVEAL_DELAY_MS}ms` } : null),
           }}
         >

@@ -70,8 +70,7 @@ export function CompoundVisualizerModal({ open, onClose }: CompoundVisualizerMod
           shown ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
-          background:
-            'radial-gradient(120% 90% at 50% 26%, rgba(255,255,255,0.58) 0%, rgba(251,249,244,0.6) 52%, rgba(238,232,222,0.7) 100%)',
+          background: 'var(--visualizer-backdrop)',
           backdropFilter: 'blur(16px) saturate(140%)',
           WebkitBackdropFilter: 'blur(16px) saturate(140%)',
         }}

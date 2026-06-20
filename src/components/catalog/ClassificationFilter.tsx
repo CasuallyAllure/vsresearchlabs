@@ -137,7 +137,7 @@ export function ClassificationFilter({
               <ul
                 role="listbox"
                 className="absolute z-40 mt-1 max-h-[240px] w-full overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
-                style={{ backgroundColor: 'rgba(251,249,244,0.99)', backdropFilter: 'blur(8px)' }}
+                style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
               >
                 {matches.map((m) => (
                   <li key={m.id}>
@@ -172,7 +172,7 @@ export function ClassificationFilter({
               role="listbox"
               aria-label="Categories"
               className="absolute right-0 z-40 mt-1 max-h-[260px] w-[220px] max-w-[80vw] overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
-              style={{ backgroundColor: 'rgba(251,249,244,0.99)', backdropFilter: 'blur(8px)' }}
+              style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
             >
               {tabs.map((tab) => {
                 const active = tab.id === value;

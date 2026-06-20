@@ -769,7 +769,7 @@ export function CompoundIntelligenceHero() {
                 role="listbox"
                 aria-label="Featured compound"
                 className="absolute right-0 top-full z-40 mt-1.5 max-h-[300px] w-[210px] overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.35)]"
-                style={{ backgroundColor: 'rgba(251,249,244,0.99)', backdropFilter: 'blur(8px)' }}
+                style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
               >
                 {FEATURED.map((p) => {
                   const on = p.slug === selectedSlug;

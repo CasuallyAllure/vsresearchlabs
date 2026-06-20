@@ -47,7 +47,7 @@ interface StudyCardProps {
 export function StudyCard({ study, index }: StudyCardProps) {
   const isHumanTrial = study.model === 'human';
   return (
-    <div className="py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+    <div className="py-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       {/* Index + title + link */}
       <div className="flex items-start gap-2.5 mb-2">
         <span className="font-mono text-ink/20 tabular-nums shrink-0 pt-0.5" style={{ fontSize: '9px', minWidth: '14px' }}>
@@ -73,9 +73,9 @@ export function StudyCard({ study, index }: StudyCardProps) {
           className="uppercase"
           style={{
             fontSize: '8px', letterSpacing: '0.14em', padding: '1px 4px', borderRadius: '2px',
-            backgroundColor: isHumanTrial ? 'rgba(52, 114, 122,0.08)' : 'rgba(255,255,255,0.04)',
-            border: isHumanTrial ? '1px solid rgba(52, 114, 122,0.18)' : '1px solid rgba(255,255,255,0.07)',
-            color: isHumanTrial ? 'rgba(52,114,122,0.75)' : 'rgba(255,255,255,0.35)',
+            backgroundColor: isHumanTrial ? 'rgba(52, 114, 122,0.08)' : 'var(--color-interactive-secondary)',
+            border: isHumanTrial ? '1px solid rgba(52, 114, 122,0.18)' : '1px solid var(--color-border-subtle)',
+            color: isHumanTrial ? 'rgba(52,114,122,0.75)' : 'var(--color-content-tertiary)',
           }}>
           {STUDY_MODEL_LABEL[study.model]}
         </span>
@@ -84,7 +84,7 @@ export function StudyCard({ study, index }: StudyCardProps) {
         {study.phase && (
           <>
             <span className="text-ink/14" aria-hidden="true">·</span>
-            <span className="text-ink/30 uppercase" style={{ fontSize: '8px', letterSpacing: '0.12em', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1px 4px', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="text-ink/30 uppercase" style={{ fontSize: '8px', letterSpacing: '0.12em', backgroundColor: 'var(--color-interactive-secondary)', padding: '1px 4px', borderRadius: '2px', border: '1px solid var(--color-border-subtle)' }}>
               {study.phase}
             </span>
           </>

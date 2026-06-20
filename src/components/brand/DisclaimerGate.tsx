@@ -102,8 +102,8 @@ export function DisclaimerGate() {
           overflowX: 'hidden',
           padding: `${CARD_PADDING_TOP}px 26px 24px`,
           background:
-            'linear-gradient(135deg, rgba(251,249,244,0.88) 0%, rgba(251,249,244,0.66) 100%)',
-          border: '1px solid rgba(255,255,255,0.45)',
+            'linear-gradient(135deg, var(--color-surface-elevated) 0%, var(--color-surface-base) 100%)',
+          border: '1px solid var(--color-border-default)',
           borderRadius: '16px',
           boxShadow:
             '0 24px 60px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.65), 0 0 0 1px rgba(52,114,122,0.10)',
@@ -217,7 +217,7 @@ export function DisclaimerGate() {
             marginBottom: '8px',
             border: '1px solid rgba(26,23,20,0.12)',
             borderRadius: '8px',
-            background: 'rgba(255,255,255,0.55)',
+            background: 'var(--color-interactive-secondary)',
             fontSize: '13px',
             color: '#1A1714',
             cursor: 'pointer',
@@ -250,7 +250,7 @@ export function DisclaimerGate() {
             marginBottom: '20px',
             border: '1px solid rgba(26,23,20,0.12)',
             borderRadius: '8px',
-            background: 'rgba(255,255,255,0.55)',
+            background: 'var(--color-interactive-secondary)',
             fontSize: '13px',
             color: '#1A1714',
             cursor: 'pointer',

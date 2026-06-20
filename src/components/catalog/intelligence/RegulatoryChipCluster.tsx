@@ -43,16 +43,16 @@ export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChip
   const fdaIsWarning = fdaStatus ? isNegativeFdaStatus(fdaStatus) : false;
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-1.5 pb-3 mb-1"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
+      style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       {humanTrials !== undefined && (
         <div className="flex items-center gap-2">
           <span className="text-ink/28 uppercase" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>Human Trials</span>
           <span className="uppercase"
             style={{
               fontSize: '8px', letterSpacing: '0.14em', padding: '1px 5px', borderRadius: '2px',
-              backgroundColor: humanTrials ? 'rgba(100,175,100,0.10)' : 'rgba(255,255,255,0.04)',
-              border: humanTrials ? '1px solid rgba(100,175,100,0.22)' : '1px solid rgba(255,255,255,0.08)',
-              color: humanTrials ? 'rgba(140,200,140,0.82)' : 'rgba(255,255,255,0.35)',
+              backgroundColor: humanTrials ? 'rgba(100,175,100,0.10)' : 'var(--color-interactive-secondary)',
+              border: humanTrials ? '1px solid rgba(100,175,100,0.22)' : '1px solid var(--color-border-subtle)',
+              color: humanTrials ? 'rgba(140,200,140,0.82)' : 'var(--color-content-tertiary)',
             }}>
             {humanTrials ? 'Confirmed' : 'None known'}
           </span>

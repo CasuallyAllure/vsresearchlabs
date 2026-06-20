@@ -95,8 +95,8 @@ export function TierStrip(props: TierStripProps) {
                 padding: sm ? '3px 7px' : '5px 10px',
                 fontSize: sm ? '8.5px' : '10px',
                 letterSpacing: '0.16em',
-                backgroundColor: active ? '#1A1714' : 'rgba(26,23,20,0.02)',
-                color: active ? '#FBF9F4' : 'rgba(26,23,20,0.78)',
+                backgroundColor: active ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
+                color: active ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
                 border: active ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.12)',
               }}
             >
@@ -130,8 +130,8 @@ export function TierStrip(props: TierStripProps) {
               padding: '2px 6px',
               fontSize: '9px',
               letterSpacing: '0.16em',
-              backgroundColor: isActive ? '#1A1714' : 'transparent',
-              color: isActive ? '#FBF9F4' : 'rgba(26,23,20,0.50)',
+              backgroundColor: isActive ? 'var(--color-content-primary)' : 'transparent',
+              color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-tertiary)',
               border: isActive ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.10)',
             }}
           >

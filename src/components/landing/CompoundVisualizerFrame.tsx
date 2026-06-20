@@ -42,11 +42,10 @@ export function CompoundVisualizerFrame({
         expanded ? 'h-full' : 'aspect-[5/4]'
       }`}
       style={{
-        background:
-          'linear-gradient(155deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.32) 100%)',
+        background: 'var(--visualizer-glass)',
         backdropFilter: 'blur(26px) saturate(150%)',
         WebkitBackdropFilter: 'blur(26px) saturate(150%)',
-        border: '1px solid rgba(255,255,255,0.75)',
+        border: '1px solid var(--visualizer-glass-border)',
         boxShadow:
           '0 26px 64px -30px rgba(26,23,20,0.28), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(26,23,20,0.05)',
       }}
@@ -63,10 +62,7 @@ export function CompoundVisualizerFrame({
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-12"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgba(251,249,244,0.9) 0%, rgba(251,249,244,0.4) 55%, transparent 100%)',
-        }}
+        style={{ background: 'var(--visualizer-scrim)' }}
       />
 
       {/* Top title strip — single thin label line (lower-third / chyron

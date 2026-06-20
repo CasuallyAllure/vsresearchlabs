@@ -31,12 +31,20 @@ interface DnaVMarkProps {
    *  Everything else (strand, rungs, rings, bodies) is visible from the
    *  start. Runs once; disabled under prefers-reduced-motion. */
   vRevealDelayMs?: number;
+  /** Pin the V / orbit rings / body-1 to a fixed color, overriding the
+   *  theme-driven default (`--color-content-primary`). Used by surfaces
+   *  whose background does NOT follow the theme — e.g. the BrandLoader's
+   *  always-cream vignette needs a black V in both light and dark. */
+  inkColor?: string;
+  /** Draw a seal ring enclosing the mark (V + orbits). Used by the header
+   *  lockup to read the monogram as a badge. */
+  ring?: boolean;
 }
 
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
-export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs }: DnaVMarkProps) {
+export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs, inkColor, ring = false }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
   const [spinning, setSpinning] = useState(true);
@@ -57,6 +65,10 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
       viewBox="0 0 100 100"
       fill="none"
       overflow="visible"
+      style={{
+        ...(inkColor ? { color: inkColor } : null),
+        ...(isStatic ? null : { cursor: 'pointer' }),
+      }}
       {...(isStatic
         ? { 'aria-hidden': true }
         : {
@@ -64,7 +76,6 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
             'aria-label': spinning
               ? 'VS Research Labs — bodies orbiting (click to pause)'
               : 'VS Research Labs — orbit paused (click to resume)',
-            style: { cursor: 'pointer' },
             onClick: (e: React.MouseEvent<SVGSVGElement>) => {
               e.preventDefault();
               e.stopPropagation();
@@ -78,7 +89,27 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           <stop offset="0.55" stopColor="#C49A48" />
           <stop offset="1" stopColor="#A87D2D" />
         </linearGradient>
+        {/* Metallic rim — top-lit gold band so the seal ring catches light. */}
+        <linearGradient id={`rim-${uid}`} x1="0.5" y1="0" x2="0.5" y2="1">
+          <stop offset="0" stopColor="#E1C57E" />
+          <stop offset="0.5" stopColor="#B5904B" />
+          <stop offset="1" stopColor="#8C6A2A" />
+        </linearGradient>
       </defs>
+
+      {/* Seal — a thin gold ring enclosing the mark. Drawn first, so the
+          monogram and orbiting bodies sit on top. */}
+      {ring && (
+        <circle
+          cx="51"
+          cy="46"
+          r="50"
+          fill="none"
+          stroke={`url(#rim-${uid})`}
+          strokeWidth="1.4"
+          strokeOpacity="0.8"
+        />
+      )}
 
       {/* Mark body (V monogram + DNA strand + orbit rings). On intro it
           starts hidden and rises in together — behind the three bodies,

@@ -303,7 +303,7 @@ export function ProductPage() {
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
           className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
-          style={{ backgroundColor: '#FBF9F4', border: '1px solid rgba(26,23,20,0.08)' }}
+          style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border-default)' }}
           aria-label="Compound reference and inquiry"
         >
           {/* Desktop visual identity zone */}
@@ -472,7 +472,7 @@ export function ProductPage() {
         <main className="flex-1 min-w-0 lg:overflow-visible">
           <div
             className="overflow-hidden"
-            style={{ backgroundColor: '#FBF9F4', border: '1px solid rgba(26,23,20,0.08)' }}
+            style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border-default)' }}
           >
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>
@@ -495,8 +495,8 @@ export function ProductPage() {
         className="lg:hidden fixed left-0 right-0 z-40"
         style={{
           bottom: 'calc(max(2px, env(safe-area-inset-bottom)) + 44px)',
-          backgroundColor: '#FBF9F4',
-          borderTop: '1px solid rgba(26,23,20,0.08)',
+          backgroundColor: 'var(--color-surface-elevated)',
+          borderTop: '1px solid var(--color-border-default)',
         }}
         role="region"
         aria-label="Add to inquiry"

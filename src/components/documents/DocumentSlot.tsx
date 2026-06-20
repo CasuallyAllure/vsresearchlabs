@@ -101,16 +101,16 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
       <article
         className="group flex items-center gap-[var(--space-4)] p-[var(--space-3)] transition-colors"
         style={{
-          backgroundColor: 'rgba(255,255,255,0.022)',
-          border: '1px solid rgba(255,255,255,0.07)',
+          backgroundColor: 'var(--color-interactive-secondary)',
+          border: '1px solid var(--color-border-subtle)',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.035)';
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)';
+          (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-interactive-secondary)';
+          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-subtle)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.022)';
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
+          (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-interactive-secondary)';
+          (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-subtle)';
         }}
       >
         {/* Thumbnail — small document-aspect plate */}
@@ -140,8 +140,8 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
               style={{
                 padding: '1px 5px',
                 borderRadius: '2px',
-                border: '1px solid rgba(255,255,255,0.10)',
-                backgroundColor: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--color-border-subtle)',
+                backgroundColor: 'var(--color-interactive-secondary)',
               }}
             >
               {slot.abbreviation}
@@ -190,7 +190,7 @@ function EmptySlot({ slot }: { slot: SlotDef }) {
       className="flex items-center gap-[var(--space-4)] p-[var(--space-3)]"
       style={{
         backgroundColor: 'transparent',
-        border: '1px dashed rgba(255,255,255,0.07)',
+        border: '1px dashed var(--color-border-subtle)',
       }}
       aria-label={`${slot.label} — awaiting upload`}
     >
@@ -209,8 +209,8 @@ function EmptySlot({ slot }: { slot: SlotDef }) {
             style={{
               padding: '1px 5px',
               borderRadius: '2px',
-              border: '1px solid rgba(255,255,255,0.07)',
-              backgroundColor: 'rgba(255,255,255,0.02)',
+              border: '1px solid var(--color-border-subtle)',
+              backgroundColor: 'var(--color-interactive-secondary)',
             }}
           >
             {slot.abbreviation}
