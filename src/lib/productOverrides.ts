@@ -236,7 +236,11 @@ export function isProductPublic(sku: string, variantDoses: string[]): boolean {
 }
 
 export type DoseAvailability =
-  | { state: 'in_stock' }
+  /** `fast`: supply is on_hand or inbound — physically reachable in 24h or
+   *   already in transit. UI hints "fast ship".
+   *  not-fast: supply comes only from warehouse drop-ship (lead_days set).
+   *   UI says plain "In stock" — buyer doesn't see the warehouse SLA. */
+  | { state: 'in_stock'; fast: boolean }
   | { state: 'out' }
   | { state: 'unknown' }; // no per-dose row tracked yet
 
@@ -255,8 +259,11 @@ export type DoseAvailability =
 export function doseAvailability(sku: string, dose: string): DoseAvailability {
   const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
   if (!v) return { state: 'unknown' };
-  if (variantHasSupply(v)) return { state: 'in_stock' };
-  return { state: 'out' };
+  if (!variantHasSupply(v)) return { state: 'out' };
+  // Fast = physically reachable supply (shelf or in-transit).
+  // Not fast = the only supply source is the warehouse SLA (lead_days).
+  const fast = v.on_hand > 0 || v.inbound_units > 0;
+  return { state: 'in_stock', fast };
 }
 
 /** Admin-set cited-clip for a SKU, if any. Returns null when no video_url
