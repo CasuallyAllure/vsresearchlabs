@@ -52,6 +52,8 @@ interface OrderItemPayload {
   quantity: number;
   note?: string;
   unitPriceCents?: number;
+  /** true = fast ship, false = standard (drop-ship). Drives the email badges. */
+  fast?: boolean;
 }
 
 interface OrderPayload {
@@ -162,6 +164,12 @@ function brandHeaderHtml(): string {
     </div>`;
 }
 
+function shipTagBiz(fast: boolean | undefined): string {
+  if (fast === true)  return `<div style="margin-top:3px;"><span style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#2E7D5B;background:rgba(46,125,91,0.10);border:1px solid rgba(46,125,91,0.30);border-radius:3px;padding:1px 5px;">⚡ Fast</span></div>`;
+  if (fast === false) return `<div style="margin-top:3px;"><span style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6f76;background:#f3f3f3;border:1px solid #ddd;border-radius:3px;padding:1px 5px;">Standard</span></div>`;
+  return "";
+}
+
 function lineRowsHtml(items: OrderItemPayload[]): string {
   return items.map((item) => {
     const name = escapeHtml(item.product?.name ?? "Item");
@@ -172,12 +180,23 @@ function lineRowsHtml(items: OrderItemPayload[]): string {
     return `
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:monospace;font-size:12px;color:#555;">${sku}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eee;">${name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eee;">${name}${shipTagBiz(item.fast)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${qty}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-family:monospace;">${unit ? usd(unit) : "—"}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-family:monospace;">${line ? usd(line) : "—"}</td>
       </tr>`;
   }).join("");
+}
+
+/** Mixed fast + standard → flag in the business email so the operator knows
+ *  to split the shipment. Empty when all lines are the same speed (or unknown). */
+function mixedShipNoticeHtml(items: OrderItemPayload[]): string {
+  const speeds = items.map((i) => i.fast);
+  if (!(speeds.includes(true) && speeds.includes(false))) return "";
+  return `<div style="border:1px solid rgba(214,158,46,0.45);background:rgba(214,158,46,0.10);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
+    <strong style="display:block;margin-bottom:3px;color:#9A7B1E;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚡ Split shipment</strong>
+    This order mixes fast-ship and standard items — ship them separately.
+  </div>`;
 }
 
 // "Ship to" block — shows the address the buyer entered in the cart so they
@@ -406,6 +425,7 @@ function buildBusinessEmailHtml(
           </tr>
         </tfoot>
       </table>
+      ${mixedShipNoticeHtml(payload.items)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
         Buyer received their branded invoice with Zelle / PayPal instructions.
@@ -493,6 +513,7 @@ Deno.serve(async (req: Request) => {
       quantity: clampQty(r.quantity),
       note: noteRaw.length > 0 ? noteRaw.slice(0, 1000) : undefined,
       unitPriceCents: clampCents(r.unitPriceCents),
+      fast: typeof r.fast === "boolean" ? r.fast : undefined,
     });
   }
 
@@ -611,14 +632,21 @@ Deno.serve(async (req: Request) => {
         .eq("id", orderRow.id)
         .single();
       if (invOrder) {
-        const { data: invLines } = await supabase
-          .from("order_lines")
-          .select("sku, product_name, quantity, unit_price_cents, item_note")
-          .eq("order_id", orderRow.id);
+        // Build the invoice lines from the in-memory payload (not a DB re-read)
+        // so the per-line FAST/standard ship badge is included — order_lines
+        // doesn't snapshot ship speed.
+        const invLines: OrderLine[] = items.map((i) => ({
+          sku: i.product.sku ?? i.product.id,
+          product_name: i.product.name,
+          quantity: clampQty(i.quantity),
+          unit_price_cents: clampCents(i.unitPriceCents),
+          item_note: i.note ?? null,
+          fast_ship: typeof i.fast === "boolean" ? i.fast : null,
+        }));
         const invRes = await sendResendEmail({
           to: contact,
           subject: invoiceSubject(invOrder),
-          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: (invLines ?? []) as OrderLine[] }),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;

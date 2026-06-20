@@ -35,7 +35,8 @@ import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
-import { lineUnitCents } from '../lib/cartActions';
+import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
@@ -57,6 +58,9 @@ const MAX_QTY = 999;
 
 export function CartPage() {
   const items = useCart((s) => s.items);
+  // Subscribe to variant overrides so prices + FAST/standard ship badges
+  // re-render once the store finishes loading (e.g. on a direct /cart load).
+  useProductOverrides((s) => s.variantBySku);
   const updateQuantity = useCart((s) => s.updateQuantity);
   const setItemNote = useCart((s) => s.setItemNote);
   const remove = useCart((s) => s.remove);
@@ -149,6 +153,9 @@ export function CartPage() {
         // Same resolver the cart display uses (lib/cartActions.lineUnitCents):
         // (sku, dose) admin override → captured priceCents → 0.
         unitPriceCents: lineUnitCents(i),
+        // FAST = reachable from shelf/in-transit; standard = drop-ship warehouse.
+        // Carried into the invoice + business emails so labels match the cart.
+        fast: lineIsFast(i),
       })),
     };
 
@@ -540,6 +547,23 @@ export function CartPage() {
                       </span>
                     )}
                   </p>
+                  <p className="mt-1">
+                    {lineIsFast(item) ? (
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[3px]"
+                        style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}
+                      >
+                        ⚡ Fast ship
+                      </span>
+                    ) : (
+                      <span
+                        className="font-mono text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[3px]"
+                        style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}
+                      >
+                        Standard ship
+                      </span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Quantity controls */}
@@ -630,6 +654,20 @@ export function CartPage() {
               </span>
             </div>
           </div>
+          {cartHasMixedShipping(items) && (
+            <div
+              className="mt-[var(--space-3)] flex items-start gap-2 rounded-[6px] px-[var(--space-4)] py-[var(--space-3)]"
+              style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}
+              role="note"
+            >
+              <span aria-hidden="true" className="text-[13px] leading-none mt-0.5">⚡</span>
+              <p className="text-[11.5px] leading-relaxed text-ink/75">
+                <span className="font-medium text-ink">Your order mixes fast-ship and standard items.</span>{' '}
+                These ship from different locations and may arrive in{' '}
+                <span className="font-medium">separate shipments</span> — you'll get tracking for each.
+              </p>
+            </div>
+          )}
           <p className="mt-[var(--space-3)] text-[11px] text-ink/40 leading-relaxed">
             Shipping is calculated separately. Final pricing is confirmed on the
             invoice we email you — you can adjust the order before paying.

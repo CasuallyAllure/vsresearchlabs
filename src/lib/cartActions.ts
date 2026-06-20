@@ -27,7 +27,7 @@
 import type { Product } from '../types';
 import { deriveProductDose } from '../types';
 import { effectiveTierPriceCents, tierPriceCents } from './pricing';
-import { variantPriceCents } from './productOverrides';
+import { variantPriceCents, doseAvailability } from './productOverrides';
 
 /**
  * Returns a cart-line product for the given (product, dose). When `dose` is
@@ -73,4 +73,28 @@ export function lineUnitCents(item: { product: Product }): number {
   if (override != null) return override;
   if (item.product.priceCents != null) return item.product.priceCents;
   return tierPriceCents(item.product, dose) ?? 0;
+}
+
+/**
+ * Is this cart line a FAST-ship item? Fast = physically reachable supply
+ * (on-hand or in-transit) for the (sku, dose) — same definition the catalog
+ * FAST badge uses (doseAvailability). Non-fast items ship from the drop-ship
+ * warehouse, so a cart that mixes the two will arrive in separate shipments.
+ */
+export function lineIsFast(item: { product: Product }): boolean {
+  const av = doseAvailability(item.product.sku, deriveProductDose(item.product));
+  return av.state === 'in_stock' && av.fast;
+}
+
+/** True when the cart contains BOTH fast-ship and standard (drop-ship) lines —
+ *  the buyer should be told the order may arrive in separate shipments. */
+export function cartHasMixedShipping(items: Array<{ product: Product }>): boolean {
+  let fast = false;
+  let standard = false;
+  for (const i of items) {
+    if (lineIsFast(i)) fast = true;
+    else standard = true;
+    if (fast && standard) return true;
+  }
+  return false;
 }

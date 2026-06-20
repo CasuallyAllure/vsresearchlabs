@@ -37,7 +37,8 @@ for (const p of [...productsData, ...generatedCompounds] as unknown as Product[]
 }
 
 type OrderStatus =
-  | 'pending_invoice' | 'invoice_sent' | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
+  | 'pending_review' | 'pending_invoice' | 'invoice_sent' | 'payment_claimed'
+  | 'paid' | 'fulfilled' | 'cancelled' | 'refunded';
 
 interface OrderRecord {
   id: string;
@@ -61,6 +62,7 @@ interface OrderRecord {
   ship_zip: string | null;
   ship_country: string | null;
   invoiced_at: string | null;
+  payment_claimed_at: string | null;
   paid_at: string | null;
   fulfilled_at: string | null;
   shipped_at: string | null;
@@ -88,7 +90,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, lookup_token';
+  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, lookup_token';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -104,11 +106,12 @@ function unitOf(l: OrderLine): number | null {
 
 /* ── Stage model ──────────────────────────────────────────────────────────── */
 
-type StageKey = 'received' | 'invoiced' | 'paid' | 'shipped' | 'delivered';
+type StageKey = 'received' | 'invoiced' | 'claimed' | 'paid' | 'shipped' | 'delivered';
 
 const STAGES: Array<{ key: StageKey; label: string }> = [
   { key: 'received',  label: 'Order received' },
   { key: 'invoiced',  label: 'Invoice sent' },
+  { key: 'claimed',   label: 'Payment sent' },
   { key: 'paid',      label: 'Payment received' },
   { key: 'shipped',   label: 'Shipped' },
   { key: 'delivered', label: 'Delivered' },
@@ -117,7 +120,9 @@ const STAGES: Array<{ key: StageKey; label: string }> = [
 function reachedMap(o: OrderRecord): Record<StageKey, boolean> {
   return {
     received: true,
-    invoiced: !!o.invoiced_at || ['invoice_sent', 'paid', 'fulfilled'].includes(o.status),
+    invoiced: !!o.invoiced_at || ['invoice_sent', 'payment_claimed', 'paid', 'fulfilled'].includes(o.status),
+    // "Payment sent" = buyer clicked the I've-sent-payment link (buyer-asserted).
+    claimed: !!o.payment_claimed_at || ['payment_claimed', 'paid', 'fulfilled'].includes(o.status),
     paid: !!o.paid_at || ['paid', 'fulfilled'].includes(o.status),
     shipped: !!o.fulfilled_at || o.status === 'fulfilled',
     delivered: !!o.delivered_at,
@@ -495,8 +500,10 @@ function StageActions({
     );
     forward = { label: 'Send invoice', act: sendInvoice };
   } else if (!reached.paid) {
-    title = 'Awaiting payment';
-    detail = 'Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.';
+    title = reached.claimed ? 'Buyer marked payment sent' : 'Awaiting payment';
+    detail = reached.claimed
+      ? 'The buyer clicked “I’ve sent payment.” Verify the deposit landed (Zelle / PayPal F&F), then mark received. No stock moves yet.'
+      : 'Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.';
     forward = { label: 'Payment received', act: () => advance(() => supabase!.rpc('mark_order_paid', { p_order_id: order.id }), 'paid', 'Payment received') };
   } else if (!reached.shipped) {
     title = 'Processing — ready to ship';

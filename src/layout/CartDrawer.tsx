@@ -32,7 +32,8 @@ import { useCart } from '../hooks/useCart';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
-import { lineUnitCents } from '../lib/cartActions';
+import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
@@ -53,6 +54,8 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const items = useCart((s) => s.items);
+  // Subscribe so prices + FAST/standard badges re-render when overrides load.
+  useProductOverrides((s) => s.variantBySku);
   const itemCount = useCart((s) => s.itemCount());
   const updateQuantity = useCart((s) => s.updateQuantity);
   const remove = useCart((s) => s.remove);
@@ -140,6 +143,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         note: i.note?.trim() || undefined,
         // Same resolver the cart display uses (lib/cartActions.lineUnitCents).
         unitPriceCents: lineUnitCents(i),
+        // FAST vs standard ship — carried into the emails so labels match.
+        fast: lineIsFast(i),
       })),
     };
 
@@ -465,6 +470,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               </span>
                             )}
                           </p>
+                          <p className="mt-1">
+                            {lineIsFast(item) ? (
+                              <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ Fast</span>
+                            ) : (
+                              <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}>Standard</span>
+                            )}
+                          </p>
                           <div className="mt-2 flex items-center gap-2">
                             <button
                               type="button"
@@ -505,6 +517,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
             {/* Footer — continue to the details step */}
             <div className="border-t border-ink/[0.06] px-5 py-3">
+              {cartHasMixedShipping(items) && (
+                <div
+                  className="mb-2.5 flex items-start gap-1.5 rounded-[5px] px-2.5 py-2"
+                  style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}
+                  role="note"
+                >
+                  <span aria-hidden="true" className="text-[11px] leading-none mt-0.5">⚡</span>
+                  <p className="text-[10px] leading-relaxed text-ink/75">
+                    Fast-ship + standard items may arrive in <span className="font-medium">separate shipments</span>.
+                  </p>
+                </div>
+              )}
               {items.length > 0 && (
                 <div className="mb-2.5 flex items-baseline justify-between">
                   <span className="text-[9px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
