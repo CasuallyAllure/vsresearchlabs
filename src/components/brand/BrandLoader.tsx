@@ -106,7 +106,7 @@ export function BrandLoader({ active }: BrandLoaderProps) {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(245, 240, 232, 0.6)',
+          background: 'var(--loader-bg)',
           backdropFilter: 'blur(18px) saturate(118%)',
           WebkitBackdropFilter: 'blur(18px) saturate(118%)',
           animation: exiting
@@ -146,9 +146,9 @@ export function BrandLoader({ active }: BrandLoaderProps) {
           static
           ring
           spin
-          // The loader vignette is always cream (both themes), so pin the V
-          // to ink — never let it follow the theme to silver (invisible here).
-          inkColor="#1A1714"
+          // No inkColor → the V follows the theme's content color (ink on the
+          // cream backdrop in light, silver on the dark backdrop in dark mode),
+          // matching the header.
         />
         {/* Wordmark — identical font / weight / tracking to the header Logo,
             sitting directly under the V. Simply present (no staged reveal). */}
@@ -158,9 +158,8 @@ export function BrandLoader({ active }: BrandLoaderProps) {
             marginTop: 6,
             fontSize: 12,
             letterSpacing: '0.2em',
-            // Cream vignette in both themes → pin wordmark to ink, not the
-            // theme's silver content color.
-            color: '#1A1714',
+            // Follows the theme: ink in light, silver in dark.
+            color: 'var(--color-content-primary)',
           }}
         >
           {BRAND_WORDMARK}

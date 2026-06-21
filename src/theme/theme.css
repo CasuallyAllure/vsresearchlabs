@@ -55,6 +55,8 @@
 
   /* Chrome tokens that are not Tailwind-bound (inline-styled surfaces). */
   --header-bg: rgba(244, 239, 230, 0.82);
+  /* Frosted brand-loader backdrop — translucent so the blurred page shows. */
+  --loader-bg: rgba(245, 240, 232, 0.6);
   --scrollbar-thumb: rgba(26, 23, 20, 0.18);
   --scrollbar-thumb-hover: rgba(26, 23, 20, 0.30);
   /* Floating bottom nav (pill + research-supplies sheet) — frosted glass. */
@@ -349,6 +351,8 @@ html[data-theme="dark"] {
 
   /* ── Chrome tokens (inline-styled surfaces) ──────────────────────────── */
   --header-bg: rgba(12, 12, 13, 0.82);
+  /* Frosted brand-loader backdrop — dark in this theme. */
+  --loader-bg: rgba(12, 12, 13, 0.6);
   --scrollbar-thumb: rgba(233, 233, 236, 0.16);
   --scrollbar-thumb-hover: rgba(233, 233, 236, 0.30);
   --botnav-grad: linear-gradient(180deg, rgba(30, 30, 33, 0.9) 0%, rgba(18, 18, 20, 0.94) 100%);
