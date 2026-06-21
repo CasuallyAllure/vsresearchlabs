@@ -164,6 +164,7 @@ export function OrderView({
   const [eventsUnavailable, setEventsUnavailable] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editWarn, setEditWarn] = useState<string | null>(null);
+  const [pendingSend, setPendingSend] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -326,11 +327,26 @@ export function OrderView({
         </ul>
       )}
 
+      {/* Send-now prompt — appears after saving itemized when no invoice sent yet */}
+      {pendingSend && (
+        <div className="mt-[var(--space-3)] flex items-center justify-between rounded-sm border border-holo/30 bg-holo/[0.06] px-[var(--space-3)] py-[var(--space-2)]">
+          <p className="text-[11px] text-ink/70">Lines saved — ready to send the invoice to the buyer.</p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => { setPendingSend(false); setShowSend(true); }}
+            className="ml-[var(--space-3)] shrink-0 rounded-full border border-holo/50 px-[var(--space-3)] py-[4px] text-[9.5px] uppercase tracking-[0.16em] text-holo hover:border-holo hover:text-holo-light disabled:opacity-40"
+          >
+            Send invoice →
+          </button>
+        </div>
+      )}
+
       {/* Invoice actions — small pills */}
       <div className="mt-[var(--space-3)] flex flex-wrap items-center gap-[var(--space-2)]">
         <SmallPill onClick={() => setShowInvoice(true)}>View / print invoice</SmallPill>
         {order.invoice_amount_cents != null && (
-          <SmallPill onClick={() => setShowSend(true)} disabled={busy}>Send to client</SmallPill>
+          <SmallPill onClick={() => { setPendingSend(false); setShowSend(true); }} disabled={busy}>Send to client</SmallPill>
         )}
         {order.lookup_token && <CopyClientLinkPill token={order.lookup_token} />}
       </div>
@@ -461,11 +477,13 @@ export function OrderView({
     reload();
     onChanged?.();
     if (order.invoiced_at) {
-      const warn = '⚠ Itemized changed after the invoice was sent — re-send the invoice so the buyer’s copy matches.';
+      const warn = 'Lines edited after invoice was sent \u2014 re-send to buyer so their copy matches.';
       setEditWarn(warn);
+      setPendingSend(false);
       await addEvent(currentStageKey(order), 'system', warn);
     } else {
       setEditWarn(null);
+      setPendingSend(true);
     }
     reload();
   }
@@ -529,7 +547,7 @@ function StageActions({
   } else if (!reached.paid) {
     title = reached.claimed ? 'Buyer marked payment sent' : 'Awaiting payment';
     detail = reached.claimed
-      ? 'The buyer clicked “I’ve sent payment.” Verify the deposit landed (Zelle / PayPal F&F), then mark received. No stock moves yet.'
+      ? `The buyer clicked “I’ve sent payment.” Verify the deposit landed (Zelle / PayPal F&F), then mark received. No stock moves yet.`
       : 'Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.';
     forward = { label: 'Payment received', act: () => advance(() => supabase!.rpc('mark_order_paid', { p_order_id: order.id }), 'paid', 'Payment received') };
   } else if (!reached.shipped) {

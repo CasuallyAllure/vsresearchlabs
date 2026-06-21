@@ -86,7 +86,9 @@ Deno.serve(async (req: Request) => {
     .eq("id", payload.order_id)
     .single();
   if (orderError || !order) return jsonResponse({ error: "Order not found." }, 404);
-  if (order.status !== "invoice_sent") return jsonResponse({ error: `Order status is ${order.status}; expected invoice_sent.` }, 409);
+  if (order.status === "cancelled" || order.status === "refunded") {
+    return jsonResponse({ error: `Cannot send invoice for a ${order.status} order.` }, 409);
+  }
   if (!EMAIL_REGEX.test(order.buyer_contact)) {
     return jsonResponse({ ok: false, skipped: true, reason: "Buyer contact is not an email address; invoice email skipped." });
   }
