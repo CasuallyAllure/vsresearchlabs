@@ -97,8 +97,20 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         </linearGradient>
       </defs>
 
-      {/* Seal — a thin gold ring enclosing the mark. Drawn first, so the
-          monogram and orbiting bodies sit on top. */}
+      {/* Mark body (V monogram + DNA strand + orbit rings + seal ring). On
+          intro it starts hidden and rises in together — behind the three
+          bodies, which dance ALONE first (they live outside this group). */}
+      <g
+        className={vRevealDelayMs ? 'dna-v-reveal' : undefined}
+        style={
+          vRevealDelayMs
+            ? { transformBox: 'view-box', animationDelay: `${vRevealDelayMs}ms` }
+            : undefined
+        }
+      >
+      {/* Seal — a thin gold ring enclosing the mark. Inside the reveal group,
+          so on the intro loader it appears together with the V (not during the
+          balls-only phase). */}
       {ring && (
         <circle
           cx="51"
@@ -110,18 +122,6 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           strokeOpacity="0.8"
         />
       )}
-
-      {/* Mark body (V monogram + DNA strand + orbit rings). On intro it
-          starts hidden and rises in together — behind the three bodies,
-          which dance ALONE first (they live outside this group). */}
-      <g
-        className={vRevealDelayMs ? 'dna-v-reveal' : undefined}
-        style={
-          vRevealDelayMs
-            ? { transformBox: 'view-box', animationDelay: `${vRevealDelayMs}ms` }
-            : undefined
-        }
-      >
       {/* V monogram — currentColor so it tracks --color-content-primary
           (near-black in light, silver in dark). */}
       <g fill="currentColor">

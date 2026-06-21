@@ -172,6 +172,7 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
         <DnaVMark
           size={96}
           static
+          ring
           bodyEntryMs={1600}
           vRevealDelayMs={intro ? V_REVEAL_DELAY_MS : undefined}
           // The loader vignette is always cream (both themes), so pin the V
