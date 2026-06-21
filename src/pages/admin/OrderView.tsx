@@ -192,6 +192,14 @@ export function OrderView({
 
   const reload = useCallback(() => setRefreshKey((k) => k + 1), []);
 
+  // While waiting on buyer payment confirmation, poll so the admin view
+  // updates automatically when the buyer presses "I've sent payment".
+  useEffect(() => {
+    if (!order || order.status !== 'invoice_sent') return;
+    const id = setInterval(reload, 20_000);
+    return () => clearInterval(id);
+  }, [order?.status, reload]);
+
   const logEvent = useCallback(async (stage: StageKey | null, kind: string, note: string | null) => {
     if (!supabase) return;
     await supabase.from('order_events').insert({ order_id: orderId, stage, kind, note });
