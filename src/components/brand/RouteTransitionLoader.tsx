@@ -25,9 +25,16 @@ import { BrandLoader } from './BrandLoader';
 const INITIAL_SHOW_MS = 3900;
 const TRANSITION_SHOW_MS = 380;
 
+// Module scope — true until the very first (intro) loader has fully played.
+// Lives OUTSIDE the component so React StrictMode's double-invoked mount
+// effect can't prematurely consume it: only the timer that actually fires
+// (the intro's full INITIAL_SHOW_MS, never the StrictMode-cleared one) flips
+// it false. Guarantees the bodies-first intro on the real first paint in both
+// dev (StrictMode) and production. Resets on a full page reload.
+let firstLoadPending = true;
+
 export function RouteTransitionLoader() {
   const location = useLocation();
-  const isFirstRunRef = useRef(true);
   const reducedMotionRef = useRef(false);
 
   // Resolve reduced-motion preference once, synchronously.
@@ -37,24 +44,23 @@ export function RouteTransitionLoader() {
     ).matches;
   }
 
-  const [active, setActive] = useState(!reducedMotionRef.current);
-  // Intro (bodies-first, then V) plays only on the very first paint.
-  const [intro, setIntro] = useState(true);
+  const [active, setActive] = useState(!reducedMotionRef.current && firstLoadPending);
+  // Intro (bodies-first, then V) plays only while the first load is pending.
+  const [intro, setIntro] = useState(firstLoadPending);
 
   useEffect(() => {
     if (reducedMotionRef.current) {
       setActive(false);
       return;
     }
-    const isFirst = isFirstRunRef.current;
-    isFirstRunRef.current = false;
-    if (!isFirst) setIntro(false);
-
+    const isFirst = firstLoadPending;
+    setIntro(isFirst);
     setActive(true);
-    const timer = setTimeout(
-      () => setActive(false),
-      isFirst ? INITIAL_SHOW_MS : TRANSITION_SHOW_MS
-    );
+    const timer = setTimeout(() => {
+      setActive(false);
+      // Consume the first-load flag only once the intro has fully shown.
+      firstLoadPending = false;
+    }, isFirst ? INITIAL_SHOW_MS : TRANSITION_SHOW_MS);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
