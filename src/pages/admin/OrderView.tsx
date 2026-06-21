@@ -51,6 +51,7 @@ interface VariantOption {
   /** "5-Amino-1MQ — 10mg" — the human label the admin searches by. */
   name: string;
   priceCents: number;
+  family: string;
 }
 
 type OrderStatus =
@@ -878,17 +879,21 @@ function SendNoteModal({
 
 /* ── Itemized editor — add / change / remove order lines ──────────────────── */
 
-interface DraftRow { key: string; id?: string; sku: string; product_name: string; quantity: string; unitUsd: string }
+interface DraftRow { key: string; id?: string; sku: string; product_name: string; quantity: string; unitUsd: string; family: string }
 
 function ItemizedEditor({
   orderId, initial, onCancel, onSaved,
 }: { orderId: string; initial: OrderLine[]; onCancel: () => void; onSaved: (summary: string) => void }) {
   const [rows, setRows] = useState<DraftRow[]>(
-    initial.map((l, i) => ({
-      key: `e${i}`, id: l.id, sku: l.sku, product_name: l.product_name,
-      quantity: String(l.quantity),
-      unitUsd: l.unit_price_cents != null ? (l.unit_price_cents / 100).toFixed(2) : '',
-    })),
+    initial.map((l, i) => {
+      const catalog = l.sku ? productBySku.get(l.sku) : undefined;
+      return {
+        key: `e${i}`, id: l.id, sku: l.sku, product_name: l.product_name,
+        quantity: String(l.quantity),
+        unitUsd: l.unit_price_cents != null ? (l.unit_price_cents / 100).toFixed(2) : '',
+        family: catalog?.family ?? '',
+      };
+    }),
   );
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -898,7 +903,7 @@ function ItemizedEditor({
   }
   function remove(key: string) { setRows((rs) => rs.filter((r) => r.key !== key)); }
   function add() {
-    setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', quantity: '1', unitUsd: '' }]);
+    setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', quantity: '1', unitUsd: '', family: '' }]);
   }
   // Ensure the per-variant admin prices are loaded so the picker shows real
   // prices (not a $0 placeholder) even if the admin lands here cold. Idempotent.
@@ -908,34 +913,39 @@ function ItemizedEditor({
   // via effectiveTierPriceCents). Subscribing to the overrides store rebuilds
   // this once prices hydrate, so the picker is never stuck on an empty price.
   const variantBySku = useProductOverrides((s) => s.variantBySku);
-  const { options: variantOptions, byName: variantByName } = useMemo(() => {
+  const { options: variantOptions, byName: variantByName, byFamily, families } = useMemo(() => {
     const options: VariantOption[] = [];
     const byName = new Map<string, VariantOption>();
+    const byFamily = new Map<string, VariantOption[]>();
     for (const p of productBySku.values()) {
       for (const v of p.variants ?? []) {
         if (!isVariantPublic(p.sku, v.dose)) continue;
         const cents = effectiveTierPriceCents(p, v.dose);
         if (cents == null) continue;
         const name = v.dose ? `${p.name} — ${v.dose}` : p.name;
-        const opt: VariantOption = { sku: p.sku, dose: v.dose, name, priceCents: cents };
+        const opt: VariantOption = { sku: p.sku, dose: v.dose, name, priceCents: cents, family: p.family };
         options.push(opt);
         byName.set(name, opt);
+        const fam = byFamily.get(p.family) ?? [];
+        fam.push(opt);
+        byFamily.set(p.family, fam);
       }
     }
     options.sort((a, b) => a.name.localeCompare(b.name));
-    return { options, byName };
+    const families = [...byFamily.keys()].sort();
+    return { options, byName, byFamily, families };
   }, [variantBySku]);
 
-  // Pick a product by name → fill its SKU + real catalog price. The admin can
-  // still hand-edit the price afterward for a one-off adjustment.
-  function onPickProduct(key: string, name: string) {
-    const patch: Partial<DraftRow> = { product_name: name };
-    const opt = variantByName.get(name.trim());
-    if (opt) {
-      patch.sku = opt.sku;
-      patch.unitUsd = (opt.priceCents / 100).toFixed(2);
-    }
-    update(key, patch);
+  function onPickFamily(key: string, family: string) {
+    update(key, { family, sku: '', product_name: '', unitUsd: '' });
+  }
+
+  function onPickVariant(key: string, variantKey: string) {
+    if (!variantKey) { update(key, { sku: '', product_name: '', unitUsd: '' }); return; }
+    const [sku, dose] = variantKey.split('|');
+    const opt = variantOptions.find((o) => o.sku === sku && o.dose === dose);
+    if (!opt) return;
+    update(key, { sku: opt.sku, product_name: opt.name, unitUsd: (opt.priceCents / 100).toFixed(2) });
   }
 
   async function save() {
@@ -980,35 +990,59 @@ function ItemizedEditor({
 
   return (
     <div className="rounded-sm border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
-      <datalist id="variant-options">
-        {variantOptions.map((o) => (
-          <option key={`${o.sku}|${o.dose}`} value={o.name}>{`${skuSuffix(o.sku)} · $${(o.priceCents / 100).toFixed(2)}`}</option>
-        ))}
-      </datalist>
       <div className="space-y-[var(--space-2)]">
         {rows.map((r) => {
           const cents = r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100);
           const qty = parseInt(r.quantity, 10);
           const lineCents = Number.isFinite(cents) && Number.isFinite(qty) ? cents * qty : 0;
+          const variantKey = (() => {
+            const opt = variantByName.get(r.product_name.trim());
+            return opt ? `${opt.sku}|${opt.dose}` : '';
+          })();
+          const familyOptions = byFamily.get(r.family) ?? [];
           return (
-          <div key={r.key} className="grid grid-cols-[1fr_auto] items-start gap-[var(--space-2)] border-b border-ink/[0.05] pb-[var(--space-2)]">
-            <div className="min-w-0 space-y-1">
-              <input list="variant-options" value={r.product_name} onChange={(e) => onPickProduct(r.key, e.target.value)} placeholder="Search product or dose…" className={fieldCls} />
-              <div className="flex items-center gap-2 pl-0.5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">{r.sku ? skuSuffix(r.sku) : '— no sku —'}</span>
-                {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/40">line {fmtUSD(lineCents)}</span>}
+          <div key={r.key} className="space-y-1.5 border-b border-ink/[0.05] pb-[var(--space-2)]">
+            <div className="grid grid-cols-[1fr_1.6fr] gap-1.5">
+              <div>
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Type</span>
+                <select value={r.family} onChange={(e) => onPickFamily(r.key, e.target.value)} className={fieldCls}>
+                  <option value="">— Select type —</option>
+                  {families.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </div>
+              <div>
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Product</span>
+                <select
+                  value={variantKey}
+                  onChange={(e) => onPickVariant(r.key, e.target.value)}
+                  disabled={!r.family}
+                  className={`${fieldCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  <option value="">{r.family ? '— Select product —' : '— Pick a type first —'}</option>
+                  {familyOptions.map((o) => (
+                    <option key={`${o.sku}|${o.dose}`} value={`${o.sku}|${o.dose}`}>
+                      {o.name} · ${(o.priceCents / 100).toFixed(2)}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className="flex items-start gap-[var(--space-2)]">
-              <label className="block w-[56px]">
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
-                <input type="number" min="1" max="9999" value={r.quantity} onChange={(e) => update(r.key, { quantity: e.target.value })} className={`${fieldCls} text-right`} />
-              </label>
-              <label className="block w-[80px]">
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
-                <input type="number" step="0.01" min="0" value={r.unitUsd} onChange={(e) => update(r.key, { unitUsd: e.target.value })} placeholder="—" className={`${fieldCls} text-right`} />
-              </label>
-              <button type="button" onClick={() => remove(r.key)} aria-label="Remove" className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300">×</button>
+            <div className="grid grid-cols-[1fr_auto] items-center gap-[var(--space-2)]">
+              <div className="flex items-center gap-2 pl-0.5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">{r.sku ? skuSuffix(r.sku) : '—'}</span>
+                {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/40">line {fmtUSD(lineCents)}</span>}
+              </div>
+              <div className="flex items-center gap-[var(--space-2)]">
+                <label className="block w-[56px]">
+                  <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
+                  <input type="number" min="1" max="9999" value={r.quantity} onChange={(e) => update(r.key, { quantity: e.target.value })} className={`${fieldCls} text-right`} />
+                </label>
+                <label className="block w-[80px]">
+                  <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
+                  <input type="number" step="0.01" min="0" value={r.unitUsd} onChange={(e) => update(r.key, { unitUsd: e.target.value })} placeholder="—" className={`${fieldCls} text-right`} />
+                </label>
+                <button type="button" onClick={() => remove(r.key)} aria-label="Remove" className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300">×</button>
+              </div>
             </div>
           </div>
           );
