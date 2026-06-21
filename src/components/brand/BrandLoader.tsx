@@ -170,7 +170,7 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
         }}
       >
         <DnaVMark
-          size={96}
+          size={78}
           static
           ring
           bodyEntryMs={1600}
@@ -188,8 +188,8 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
             intro ? ' vsrl-word-reveal' : ''
           }`}
           style={{
-            marginTop: -10,
-            fontSize: 13,
+            marginTop: 6,
+            fontSize: 12,
             letterSpacing: '0.2em',
             // Cream vignette in both themes → pin wordmark to ink, not the
             // theme's silver content color.
