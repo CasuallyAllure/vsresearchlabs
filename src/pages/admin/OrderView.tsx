@@ -97,6 +97,7 @@ interface OrderLine {
   quantity: number;
   unit_price_cents: number | null;
   item_note: string | null;
+  fast_ship: boolean | null;
 }
 
 interface OrderEvent {
@@ -172,7 +173,7 @@ export function OrderView({
       if (!supabase) { setError('Backend not configured.'); return; }
       const [o, l] = await Promise.all([
         supabase.from('orders').select(ORDER_SELECT).eq('id', orderId).single(),
-        supabase.from('order_lines').select('id, sku, product_name, quantity, unit_price_cents, item_note').eq('order_id', orderId),
+        supabase.from('order_lines').select('id, sku, product_name, quantity, unit_price_cents, item_note, fast_ship').eq('order_id', orderId),
       ]);
       if (cancelled) return;
       if (o.error) { setError(o.error.message); return; }
@@ -309,7 +310,10 @@ export function OrderView({
             return (
               <li key={l.id} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
                 <div className="min-w-0">
-                  <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
+                    {l.fast_ship && <span className="shrink-0 rounded-sm bg-[#B5904B]/15 px-1 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-[#B5904B]">Fast</span>}
+                  </div>
                   <p className="truncate font-mono text-[10px] text-holo-light/70">
                     {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
                   </p>
@@ -790,7 +794,10 @@ function PrintableInvoice({
                   return (
                     <tr key={l.id} className="border-b border-[#1A1714]/[0.08]">
                       <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
-                      <td className="py-2 pr-3 text-[12px] text-[#1A1714]">{l.product_name}</td>
+                      <td className="py-2 pr-3 text-[12px] text-[#1A1714]">
+                        {l.product_name}
+                        {l.fast_ship && <span className="ml-1.5 rounded-sm bg-[#B5904B]/12 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8C6A2F]">Fast ship</span>}
+                      </td>
                       <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
                       <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">{u == null ? '—' : fmtUSD(u)}</td>
                       <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{u == null ? '—' : fmtUSD(u * l.quantity)}</td>
@@ -897,7 +904,7 @@ function SendNoteModal({
 
 /* ── Itemized editor — add / change / remove order lines ──────────────────── */
 
-interface DraftRow { key: string; id?: string; sku: string; product_name: string; quantity: string; unitUsd: string; family: string }
+interface DraftRow { key: string; id?: string; sku: string; product_name: string; compound: string; dose: string; quantity: string; unitUsd: string; fastShip: boolean }
 
 function ItemizedEditor({
   orderId, initial, onCancel, onSaved,
@@ -905,11 +912,17 @@ function ItemizedEditor({
   const [rows, setRows] = useState<DraftRow[]>(
     initial.map((l, i) => {
       const catalog = l.sku ? productBySku.get(l.sku) : undefined;
+      const compound = catalog?.name ?? '';
+      const sep = ' — ';
+      const dose = compound && l.product_name.startsWith(compound + sep)
+        ? l.product_name.slice(compound.length + sep.length)
+        : '';
       return {
         key: `e${i}`, id: l.id, sku: l.sku, product_name: l.product_name,
+        compound, dose,
         quantity: String(l.quantity),
         unitUsd: l.unit_price_cents != null ? (l.unit_price_cents / 100).toFixed(2) : '',
-        family: catalog?.family ?? '',
+        fastShip: l.fast_ship ?? false,
       };
     }),
   );
@@ -921,20 +934,17 @@ function ItemizedEditor({
   }
   function remove(key: string) { setRows((rs) => rs.filter((r) => r.key !== key)); }
   function add() {
-    setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', quantity: '1', unitUsd: '', family: '' }]);
+    setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', compound: '', dose: '', quantity: '1', unitUsd: '', fastShip: false }]);
   }
   // Ensure the per-variant admin prices are loaded so the picker shows real
   // prices (not a $0 placeholder) even if the admin lands here cold. Idempotent.
   useEffect(() => { useProductOverrides.getState().load(); }, []);
 
-  // Pickable variants with their REAL admin-set prices (per (sku, dose) override
-  // via effectiveTierPriceCents). Subscribing to the overrides store rebuilds
-  // this once prices hydrate, so the picker is never stuck on an empty price.
+  // Compound → dose variants with REAL admin-set prices. Keyed by the product's
+  // display name (e.g. "BPC-157") so column 1 = compound, column 2 = dose.
   const variantBySku = useProductOverrides((s) => s.variantBySku);
-  const { options: variantOptions, byName: variantByName, byFamily, families } = useMemo(() => {
-    const options: VariantOption[] = [];
-    const byName = new Map<string, VariantOption>();
-    const byFamily = new Map<string, VariantOption[]>();
+  const { compoundNames, byCompound } = useMemo(() => {
+    const byCompound = new Map<string, VariantOption[]>();
     for (const p of productBySku.values()) {
       for (const v of p.variants ?? []) {
         if (!isVariantPublic(p.sku, v.dose)) continue;
@@ -942,28 +952,26 @@ function ItemizedEditor({
         if (cents == null) continue;
         const name = v.dose ? `${p.name} — ${v.dose}` : p.name;
         const opt: VariantOption = { sku: p.sku, dose: v.dose, name, priceCents: cents, family: p.family };
-        options.push(opt);
-        byName.set(name, opt);
-        const fam = byFamily.get(p.family) ?? [];
-        fam.push(opt);
-        byFamily.set(p.family, fam);
+        const arr = byCompound.get(p.name) ?? [];
+        arr.push(opt);
+        byCompound.set(p.name, arr);
       }
     }
-    options.sort((a, b) => a.name.localeCompare(b.name));
-    const families = [...byFamily.keys()].sort();
-    return { options, byName, byFamily, families };
+    const compoundNames = [...byCompound.keys()].sort();
+    return { compoundNames, byCompound };
   }, [variantBySku]);
 
-  function onPickFamily(key: string, family: string) {
-    update(key, { family, sku: '', product_name: '', unitUsd: '' });
+  function onPickCompound(key: string, compound: string) {
+    update(key, { compound, dose: '', sku: '', product_name: '', unitUsd: '' });
   }
 
-  function onPickVariant(key: string, variantKey: string) {
-    if (!variantKey) { update(key, { sku: '', product_name: '', unitUsd: '' }); return; }
+  function onPickDose(key: string, variantKey: string) {
+    if (!variantKey) { update(key, { dose: '', sku: '', product_name: '', unitUsd: '' }); return; }
     const [sku, dose] = variantKey.split('|');
-    const opt = variantOptions.find((o) => o.sku === sku && o.dose === dose);
-    if (!opt) return;
-    update(key, { sku: opt.sku, product_name: opt.name, unitUsd: (opt.priceCents / 100).toFixed(2) });
+    for (const opts of byCompound.values()) {
+      const opt = opts.find((o) => o.sku === sku && o.dose === dose);
+      if (opt) { update(key, { sku: opt.sku, dose: opt.dose, product_name: opt.name, unitUsd: (opt.priceCents / 100).toFixed(2) }); return; }
+    }
   }
 
   async function save() {
@@ -985,6 +993,7 @@ function ItemizedEditor({
       quantity: parseInt(r.quantity, 10),
       unit_price_cents: r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100),
       item_note: null,
+      fast_ship: r.fastShip,
     }));
 
     try {
@@ -1013,42 +1022,50 @@ function ItemizedEditor({
           const cents = r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100);
           const qty = parseInt(r.quantity, 10);
           const lineCents = Number.isFinite(cents) && Number.isFinite(qty) ? cents * qty : 0;
-          const variantKey = (() => {
-            const opt = variantByName.get(r.product_name.trim());
-            return opt ? `${opt.sku}|${opt.dose}` : '';
-          })();
-          const familyOptions = byFamily.get(r.family) ?? [];
+          const variantKey = r.sku && r.dose ? `${r.sku}|${r.dose}` : '';
+          const doseOptions = byCompound.get(r.compound) ?? [];
           return (
           <div key={r.key} className="space-y-1.5 border-b border-ink/[0.05] pb-[var(--space-2)]">
-            <div className="grid grid-cols-[1fr_1.6fr] gap-1.5">
+            {/* Row 1: Compound + Dose */}
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Type</span>
-                <select value={r.family} onChange={(e) => onPickFamily(r.key, e.target.value)} className={fieldCls}>
-                  <option value="">— Select type —</option>
-                  {families.map((f) => <option key={f} value={f}>{f}</option>)}
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Compound</span>
+                <select value={r.compound} onChange={(e) => onPickCompound(r.key, e.target.value)} className={fieldCls}>
+                  <option value="">— Select compound —</option>
+                  {compoundNames.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Product</span>
+                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Dose / size</span>
                 <select
                   value={variantKey}
-                  onChange={(e) => onPickVariant(r.key, e.target.value)}
-                  disabled={!r.family}
+                  onChange={(e) => onPickDose(r.key, e.target.value)}
+                  disabled={!r.compound}
                   className={`${fieldCls} disabled:opacity-40 disabled:cursor-not-allowed`}
                 >
-                  <option value="">{r.family ? '— Select product —' : '— Pick a type first —'}</option>
-                  {familyOptions.map((o) => (
+                  <option value="">{r.compound ? '— Select dose —' : '— Pick compound first —'}</option>
+                  {doseOptions.map((o) => (
                     <option key={`${o.sku}|${o.dose}`} value={`${o.sku}|${o.dose}`}>
-                      {o.name} · ${(o.priceCents / 100).toFixed(2)}
+                      {o.dose || o.name} &middot; ${(o.priceCents / 100).toFixed(2)}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
+            {/* Row 2: SKU + fast ship + qty + price + delete */}
             <div className="grid grid-cols-[1fr_auto] items-center gap-[var(--space-2)]">
-              <div className="flex items-center gap-2 pl-0.5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">{r.sku ? skuSuffix(r.sku) : '—'}</span>
-                {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/40">line {fmtUSD(lineCents)}</span>}
+              <div className="flex items-center gap-3 pl-0.5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/40">{r.sku ? skuSuffix(r.sku) : '—'}</span>
+                {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/35">line {fmtUSD(lineCents)}</span>}
+                <label className="flex cursor-pointer items-center gap-1">
+                  <input
+                    type="checkbox"
+                    checked={r.fastShip}
+                    onChange={(e) => update(r.key, { fastShip: e.target.checked })}
+                    className="h-3 w-3 accent-[#B5904B]"
+                  />
+                  <span className="text-[9.5px] text-ink/50">Fast ship</span>
+                </label>
               </div>
               <div className="flex items-center gap-[var(--space-2)]">
                 <label className="block w-[56px]">
