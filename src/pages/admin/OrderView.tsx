@@ -20,20 +20,37 @@
  * re-sends the current invoice email.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { OrderStatusChip } from './AdminOrders';
 import { CARRIERS, carrierRequiresTracking } from '../../lib/tracking';
 import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
-import { tierPriceCents } from '../../lib/pricing';
+import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
+import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
 const productBySku = new Map<string, Product>();
 for (const p of [...productsData, ...generatedCompounds] as unknown as Product[]) {
   if (p.sku) productBySku.set(p.sku, p);
+}
+
+/** The meaningful tail of a SKU — "VSR-RS-5AMQ" → "5AMQ". The shared prefix
+ *  doesn't identify the product, so the admin line editor only shows this. */
+function skuSuffix(sku: string): string {
+  const parts = sku.split('-').filter(Boolean);
+  return parts.length ? parts[parts.length - 1] : sku;
+}
+
+/** A pickable (product, dose) variant with its real admin-set price. */
+interface VariantOption {
+  sku: string;
+  dose: string;
+  /** "5-Amino-1MQ — 10mg" — the human label the admin searches by. */
+  name: string;
+  priceCents: number;
 }
 
 type OrderStatus =
@@ -883,17 +900,40 @@ function ItemizedEditor({
   function add() {
     setRows((rs) => [...rs, { key: `n${Date.now()}-${rs.length}`, sku: '', product_name: '', quantity: '1', unitUsd: '' }]);
   }
-  // Auto-fill name + price from the catalog when a known SKU is entered.
-  function onSkuChange(key: string, sku: string) {
-    const patch: Partial<DraftRow> = { sku };
-    const p = productBySku.get(sku);
-    const row = rows.find((r) => r.key === key);
-    if (p) {
-      if (row && !row.product_name) patch.product_name = p.name;
-      if (row && !row.unitUsd) {
-        const c = tierPriceCents(p, p.name || '');
-        if (c != null) patch.unitUsd = (c / 100).toFixed(2);
+  // Ensure the per-variant admin prices are loaded so the picker shows real
+  // prices (not a $0 placeholder) even if the admin lands here cold. Idempotent.
+  useEffect(() => { useProductOverrides.getState().load(); }, []);
+
+  // Pickable variants with their REAL admin-set prices (per (sku, dose) override
+  // via effectiveTierPriceCents). Subscribing to the overrides store rebuilds
+  // this once prices hydrate, so the picker is never stuck on an empty price.
+  const variantBySku = useProductOverrides((s) => s.variantBySku);
+  const { options: variantOptions, byName: variantByName } = useMemo(() => {
+    const options: VariantOption[] = [];
+    const byName = new Map<string, VariantOption>();
+    for (const p of productBySku.values()) {
+      for (const v of p.variants ?? []) {
+        if (!isVariantPublic(p.sku, v.dose)) continue;
+        const cents = effectiveTierPriceCents(p, v.dose);
+        if (cents == null) continue;
+        const name = v.dose ? `${p.name} — ${v.dose}` : p.name;
+        const opt: VariantOption = { sku: p.sku, dose: v.dose, name, priceCents: cents };
+        options.push(opt);
+        byName.set(name, opt);
       }
+    }
+    options.sort((a, b) => a.name.localeCompare(b.name));
+    return { options, byName };
+  }, [variantBySku]);
+
+  // Pick a product by name → fill its SKU + real catalog price. The admin can
+  // still hand-edit the price afterward for a one-off adjustment.
+  function onPickProduct(key: string, name: string) {
+    const patch: Partial<DraftRow> = { product_name: name };
+    const opt = variantByName.get(name.trim());
+    if (opt) {
+      patch.sku = opt.sku;
+      patch.unitUsd = (opt.priceCents / 100).toFixed(2);
     }
     update(key, patch);
   }
@@ -940,15 +980,24 @@ function ItemizedEditor({
 
   return (
     <div className="rounded-sm border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
-      <datalist id="catalog-skus">
-        {Array.from(productBySku.keys()).map((s) => <option key={s} value={s} />)}
+      <datalist id="variant-options">
+        {variantOptions.map((o) => (
+          <option key={`${o.sku}|${o.dose}`} value={o.name}>{`${skuSuffix(o.sku)} · $${(o.priceCents / 100).toFixed(2)}`}</option>
+        ))}
       </datalist>
       <div className="space-y-[var(--space-2)]">
-        {rows.map((r) => (
+        {rows.map((r) => {
+          const cents = r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100);
+          const qty = parseInt(r.quantity, 10);
+          const lineCents = Number.isFinite(cents) && Number.isFinite(qty) ? cents * qty : 0;
+          return (
           <div key={r.key} className="grid grid-cols-[1fr_auto] items-start gap-[var(--space-2)] border-b border-ink/[0.05] pb-[var(--space-2)]">
             <div className="min-w-0 space-y-1">
-              <input list="catalog-skus" value={r.sku} onChange={(e) => onSkuChange(r.key, e.target.value)} placeholder="SKU" className={`${fieldCls} font-mono text-[11px]`} />
-              <input value={r.product_name} onChange={(e) => update(r.key, { product_name: e.target.value })} placeholder="Item name" className={fieldCls} />
+              <input list="variant-options" value={r.product_name} onChange={(e) => onPickProduct(r.key, e.target.value)} placeholder="Search product or dose…" className={fieldCls} />
+              <div className="flex items-center gap-2 pl-0.5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">{r.sku ? skuSuffix(r.sku) : '— no sku —'}</span>
+                {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/40">line {fmtUSD(lineCents)}</span>}
+              </div>
             </div>
             <div className="flex items-start gap-[var(--space-2)]">
               <label className="block w-[56px]">
@@ -962,7 +1011,8 @@ function ItemizedEditor({
               <button type="button" onClick={() => remove(r.key)} aria-label="Remove" className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300">×</button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <button type="button" onClick={add} className="mt-[var(--space-2)] text-[10px] uppercase tracking-[0.16em] text-holo hover:text-holo-light">+ Add item</button>
