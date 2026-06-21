@@ -2,13 +2,9 @@
  * BrandLoader
  *
  * Full-screen brand loader shown during route transitions and the initial
- * page load. The mark itself (V monogram, S strand, orbital rings) sits
- * still, crisp, centered. Only the three bodies animate on entry —
- * starting at ~3.4× their orbital radius and spiraling inward to their
- * resting orbits over 1.6s while continuing to revolve at brand tempo.
- *
- * The mark is rendered via DnaVMark with bodyEntryMs=1600; the entry
- * animation lives inside DnaVMark and respects prefers-reduced-motion.
+ * page load. The logo (V monogram + seal ring + wordmark) sits centered on a
+ * frosted, blurred-cream backdrop; the gold seal ring spins + pulses as the
+ * loading indicator (via DnaVMark's `spin`). The bodies keep their orbit.
  */
 
 import { useEffect, useState } from 'react';
@@ -19,26 +15,19 @@ export interface BrandLoaderProps {
   /** Whether the loader is visible. When flipped to false the loader
    *  fades out over FADE_OUT_MS before unmounting. */
   active: boolean;
-  /** First-entry intro: the three bodies dance alone first, then the V
-   *  monogram rises in behind them. Only true on the very first paint;
-   *  route-transition loaders leave it off and show the full mark. */
-  intro?: boolean;
 }
 
 const FADE_IN_MS = 220;
-// Exit takes a touch longer now: the white doesn't fade uniformly, it
+// Exit takes a touch longer: the frosted backdrop doesn't fade uniformly, it
 // recedes outside-in like a closing vignette that collapses onto the logo.
 const FADE_OUT_MS = 660;
-// Intro only — how long the three bodies dance ALONE before the rest of
-// the mark (DNA strand + V + rings) rises in behind them.
-const V_REVEAL_DELAY_MS = 2000;
 // Shift the loader's mark this many px UP from viewport center so it sits
 // in the upper half of the screen — paired with DisclaimerGate's
 // CARD_DROP_PX so the loader logo and the gate module visually "meet in
 // the middle" of the viewport.
 const MARK_LIFT_PX = 30;
 
-export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
+export function BrandLoader({ active }: BrandLoaderProps) {
   const [mounted, setMounted] = useState(active);
   const [exiting, setExiting] = useState(false);
 
@@ -102,41 +91,24 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           from { -webkit-mask-size: 440% 440%; mask-size: 440% 440%; }
           to   { -webkit-mask-size: 0% 0%;     mask-size: 0% 0%;     }
         }
-        /* Logo holds through the vignette, then fades as the last white
+        /* Logo holds through the vignette, then fades as the backdrop
            collapses onto it. */
         @keyframes vsrl-logo-exit {
           0%   { opacity: 1; }
           64%  { opacity: 1; }
           100% { opacity: 0; }
         }
-        /* Wordmark rises in with the V — same 760ms fade+lift as the
-           DnaVMark V reveal so the two complete the mark together. */
-        @keyframes vsrl-word-reveal {
-          from { opacity: 0; transform: translateY(7px); }
-          to   { opacity: 1; transform: translateY(0);   }
-        }
-        .vsrl-word-reveal {
-          opacity: 0;
-          animation: vsrl-word-reveal 760ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .vsrl-word-reveal {
-            animation: none !important;
-            opacity: 1 !important;
-            transform: none !important;
-          }
-        }
       `}</style>
 
-      {/* White frosted backdrop — masked away outside-in on exit. */}
+      {/* Frosted blurred-cream backdrop — masked away outside-in on exit. */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'rgba(251, 249, 244, 0.94)',
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
+          background: 'rgba(245, 240, 232, 0.6)',
+          backdropFilter: 'blur(18px) saturate(118%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(118%)',
           animation: exiting
             ? `vsrl-bg-vignette ${FADE_OUT_MS}ms ease-in forwards`
             : `vsrl-loader-fade-in ${FADE_IN_MS}ms ease-out`,
@@ -173,20 +145,15 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
           size={78}
           static
           ring
-          bodyEntryMs={1600}
-          vRevealDelayMs={intro ? V_REVEAL_DELAY_MS : undefined}
+          spin
           // The loader vignette is always cream (both themes), so pin the V
           // to ink — never let it follow the theme to silver (invisible here).
           inkColor="#1A1714"
         />
-        {/* Wordmark — identical font / weight / tracking to the header
-            Logo, sitting directly under the V. In intro mode it rises in
-            with the V (same delay + 760ms curve); otherwise it's simply
-            present, matching the always-visible mark on route loaders. */}
+        {/* Wordmark — identical font / weight / tracking to the header Logo,
+            sitting directly under the V. Simply present (no staged reveal). */}
         <span
-          className={`font-serif font-medium uppercase leading-none whitespace-nowrap${
-            intro ? ' vsrl-word-reveal' : ''
-          }`}
+          className="font-serif font-medium uppercase leading-none whitespace-nowrap"
           style={{
             marginTop: 6,
             fontSize: 12,
@@ -194,7 +161,6 @@ export function BrandLoader({ active, intro = false }: BrandLoaderProps) {
             // Cream vignette in both themes → pin wordmark to ink, not the
             // theme's silver content color.
             color: '#1A1714',
-            ...(intro ? { animationDelay: `${V_REVEAL_DELAY_MS}ms` } : null),
           }}
         >
           {BRAND_WORDMARK}

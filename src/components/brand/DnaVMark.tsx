@@ -39,12 +39,15 @@ interface DnaVMarkProps {
   /** Draw a seal ring enclosing the mark (V + orbits). Used by the header
    *  lockup to read the monogram as a badge. */
   ring?: boolean;
+  /** Animate the seal ring as a loading spinner: a bright gold arc rotates
+   *  around a faintly pulsing base ring. Used by the BrandLoader. */
+  spin?: boolean;
 }
 
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
-export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs, inkColor, ring = false }: DnaVMarkProps) {
+export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs, inkColor, ring = false, spin = false }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
   const [spinning, setSpinning] = useState(true);
@@ -111,7 +114,7 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
       {/* Seal — a thin gold ring enclosing the mark. Inside the reveal group,
           so on the intro loader it appears together with the V (not during the
           balls-only phase). */}
-      {ring && (
+      {ring && !spin && (
         <circle
           cx="51"
           cy="46"
@@ -121,6 +124,32 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           strokeWidth="1.4"
           strokeOpacity="0.8"
         />
+      )}
+      {/* Spinner — a faintly pulsing base ring with a bright gold arc that
+          rotates around it as a loading indicator. */}
+      {ring && spin && (
+        <g>
+          <circle
+            className="dna-ring-base"
+            cx="51"
+            cy="46"
+            r="50"
+            fill="none"
+            stroke={`url(#rim-${uid})`}
+            strokeWidth="1.4"
+          />
+          <circle
+            className="dna-ring-arc"
+            cx="51"
+            cy="46"
+            r="50"
+            fill="none"
+            stroke={`url(#rim-${uid})`}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="74 240"
+          />
+        </g>
       )}
       {/* V monogram — currentColor so it tracks --color-content-primary
           (near-black in light, silver in dark). */}
@@ -180,6 +209,18 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }
         @keyframes vsbody-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes vsbody-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        /* Loading spinner: bright gold arc rotates around the seal ring while
+           the faint base ring pulses. */
+        .dna-v-mark .dna-ring-arc {
+          transform-box: view-box;
+          transform-origin: 51px 46px;
+          animation: dna-ring-spin 1.15s linear infinite;
+        }
+        .dna-v-mark .dna-ring-base {
+          animation: dna-ring-pulse 1.9s ease-in-out infinite;
+        }
+        @keyframes dna-ring-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes dna-ring-pulse { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.62; } }
         .dna-v-mark .dna-bodies-enter {
           animation-name: dna-bodies-enter-spread;
           animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -202,6 +243,10 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           .dna-v-mark .dna-bodies-enter { animation: none !important; }
           /* No staged reveal for reduced motion — V is simply present. */
           .dna-v-mark .dna-v-reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
+          /* Spinner holds still — the arc rests, the base ring stays at a
+             readable opacity. */
+          .dna-v-mark .dna-ring-arc { animation: none !important; }
+          .dna-v-mark .dna-ring-base { animation: none !important; opacity: 0.7 !important; }
         }
       `}</style>
     </svg>
