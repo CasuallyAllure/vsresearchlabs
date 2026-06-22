@@ -12,10 +12,12 @@
 
 import { AdminLayout } from './AdminLayout';
 import { AdminStatModules } from './AdminStatModules';
+import { PerformanceSummary } from './PerformanceSummary';
 
 export function AdminDashboard() {
   return (
     <AdminLayout>
+      <PerformanceSummary />
       <AdminStatModules />
     </AdminLayout>
   );
