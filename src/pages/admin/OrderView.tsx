@@ -248,22 +248,36 @@ export function OrderView({
     if (!supabase || !order) return false;
     setBusy(true);
     setActionError(null);
-    const { error } = await rpc();
-    if (error) { setBusy(false); setActionError(error.message); return false; }
-    await logEvent(ev.stage, ev.kind, ev.note);
-    // Fire the buyer notification for the stage we just advanced into. The RPC
-    // has already committed, so the edge function re-reads the new status.
-    if (ev.kind === 'advance' && !ev.silent && ev.stage) {
-      const fn = STAGE_EMAIL[ev.stage];
-      if (fn) {
-        const { error: mailErr } = await supabase.functions.invoke(fn, { body: { order_id: order.id } });
-        if (mailErr) setActionError(`Status updated — but the buyer notification failed to send: ${mailErr.message}`);
+    // Everything is wrapped so a thrown rpc()/invoke() (e.g. a flaky mobile
+    // network) can never leave the UI stuck in `busy` with the buttons
+    // disabled — `finally` always clears it and reloads.
+    try {
+      const { error } = await rpc();
+      if (error) { setActionError(error.message); return false; }
+      await logEvent(ev.stage, ev.kind, ev.note);
+      // Fire the buyer notification for the stage we just advanced into. The RPC
+      // has already committed, so the edge function re-reads the new status. The
+      // email is best-effort — its failure must not block the status advance.
+      if (ev.kind === 'advance' && !ev.silent && ev.stage) {
+        const fn = STAGE_EMAIL[ev.stage];
+        if (fn) {
+          try {
+            const { error: mailErr } = await supabase.functions.invoke(fn, { body: { order_id: order.id } });
+            if (mailErr) setActionError(`Status updated — but the buyer notification failed to send: ${mailErr.message}`);
+          } catch {
+            setActionError('Status updated — but the buyer notification could not be sent.');
+          }
+        }
       }
+      onChanged?.();
+      return true;
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Action failed — please try again.');
+      return false;
+    } finally {
+      setBusy(false);
+      reload();
     }
-    setBusy(false);
-    reload();
-    onChanged?.();
-    return true;
   }, [reload, logEvent, onChanged, order]);
 
   if (error) return <p role="alert" className="p-[var(--space-6)] text-[12px] text-red-400">{error}</p>;
