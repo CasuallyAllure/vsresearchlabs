@@ -136,10 +136,24 @@ const STAGES: Array<{ key: StageKey; label: string }> = [
   { key: 'delivered', label: 'Delivered' },
 ];
 
+// Buyer notification fired automatically when an order advances into each
+// stage. Payment received → "order processing"; shipped → tracking; delivered
+// → receipt. Stages without an entry (received / invoiced / claimed) are
+// notified through their own dedicated paths, not here.
+const STAGE_EMAIL: Partial<Record<StageKey, string>> = {
+  paid:      'send-processing-notification',
+  shipped:   'send-shipment-notification',
+  delivered: 'send-delivered-notification',
+};
+
 function reachedMap(o: OrderRecord): Record<StageKey, boolean> {
   return {
     received: true,
-    invoiced: !!o.invoiced_at || ['invoice_sent', 'payment_claimed', 'paid', 'fulfilled'].includes(o.status),
+    // A claimed/paid payment implies the order was invoiced — a buyer can't
+    // claim payment on an order that was never invoiced. Treating
+    // payment_claimed_at as proof-of-invoice prevents the action panel from
+    // getting stuck on "send invoice" if the status drifts.
+    invoiced: !!o.invoiced_at || !!o.payment_claimed_at || ['invoice_sent', 'payment_claimed', 'paid', 'fulfilled'].includes(o.status),
     // "Payment sent" = buyer clicked the I've-sent-payment link (buyer-asserted).
     claimed: !!o.payment_claimed_at || ['payment_claimed', 'paid', 'fulfilled'].includes(o.status),
     paid: !!o.paid_at || ['paid', 'fulfilled'].includes(o.status),
@@ -218,21 +232,30 @@ export function OrderView({
 
   const run = useCallback(async (
     rpc: () => PromiseLike<{ error: { message: string } | null }>,
-    ev: { stage: StageKey | null; kind: string; note: string | null },
+    ev: { stage: StageKey | null; kind: string; note: string | null; silent?: boolean },
     confirmMsg?: string,
   ) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return false;
-    if (!supabase) return false;
+    if (!supabase || !order) return false;
     setBusy(true);
     setActionError(null);
     const { error } = await rpc();
     if (error) { setBusy(false); setActionError(error.message); return false; }
     await logEvent(ev.stage, ev.kind, ev.note);
+    // Fire the buyer notification for the stage we just advanced into. The RPC
+    // has already committed, so the edge function re-reads the new status.
+    if (ev.kind === 'advance' && !ev.silent && ev.stage) {
+      const fn = STAGE_EMAIL[ev.stage];
+      if (fn) {
+        const { error: mailErr } = await supabase.functions.invoke(fn, { body: { order_id: order.id } });
+        if (mailErr) setActionError(`Status updated — but the buyer notification failed to send: ${mailErr.message}`);
+      }
+    }
     setBusy(false);
     reload();
     onChanged?.();
     return true;
-  }, [reload, logEvent, onChanged]);
+  }, [reload, logEvent, onChanged, order]);
 
   if (error) return <p role="alert" className="p-[var(--space-6)] text-[12px] text-red-400">{error}</p>;
   if (!order) return <p className="p-[var(--space-6)] holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>;
@@ -508,18 +531,17 @@ function StageActions({
 }: {
   order: OrderRecord;
   busy: boolean;
-  run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null }, confirmMsg?: string) => Promise<boolean>;
+  run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null; silent?: boolean }, confirmMsg?: string) => Promise<boolean>;
   onAddEvent: (stage: StageKey | null, kind: string, note: string) => Promise<void>;
   orderNotesText: string;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
 }) {
   const reached = reachedMap(order);
-  const initialDiscount = order.subtotal_cents != null && order.invoice_amount_cents != null
-    ? Math.max(0, (order.subtotal_cents + (order.shipping_cents ?? 0)) - order.invoice_amount_cents) : 0;
+  // Invoice total comes straight from the itemized lines (save_order_lines
+  // recomputes subtotal_cents on every edit). Shipping and discounts are
+  // settled before invoicing, so the action panel exposes one amount only.
   const [subUsd, setSubUsd] = useState(order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2) : '');
-  const [shipUsd, setShipUsd] = useState(order.shipping_cents != null ? (order.shipping_cents / 100).toFixed(2) : '');
-  const [discUsd, setDiscUsd] = useState(initialDiscount > 0 ? (initialDiscount / 100).toFixed(2) : '');
 
   // Subtotal sync: when the line editor saves, the parent reloads the order
   // and the new server-side subtotal_cents lands on this prop. Re-init the
@@ -547,12 +569,10 @@ function StageActions({
 
   if (!reached.invoiced) {
     title = 'Confirm received → send invoice';
-    detail = 'Set the amounts and email the buyer a branded invoice with payment instructions.';
+    detail = 'Confirm the total from the itemized lines, then email the buyer a branded invoice with payment instructions.';
     inputs = (
-      <div className="mb-[var(--space-3)] grid grid-cols-3 gap-[var(--space-3)]">
-        <MoneyInput label="Subtotal" value={subUsd} onChange={setSubUsd} />
-        <MoneyInput label="Shipping" value={shipUsd} onChange={setShipUsd} />
-        <MoneyInput label="Discount" value={discUsd} onChange={setDiscUsd} />
+      <div className="mb-[var(--space-3)] grid grid-cols-1 gap-[var(--space-3)]">
+        <MoneyInput label="Invoice total" value={subUsd} onChange={setSubUsd} />
       </div>
     );
     forward = { label: 'Send invoice', act: sendInvoice };
@@ -582,23 +602,21 @@ function StageActions({
         )}
       </div>
     );
-    forward = {
-      label: needsTracking ? 'Mark shipped' : 'Mark hand-delivered',
-      act: () => advance(
-        () => supabase!.rpc('confirm_order_fulfilled', {
-          p_order_id: order.id,
-          p_tracking_number: needsTracking ? (tracking.trim() || null) : null,
-          p_carrier: carrier,
-        }),
-        'shipped',
-        needsTracking
-          ? (tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped')
-          : 'Hand delivered',
-        needsTracking
-          ? 'Mark shipped? This deducts stock for every line.'
-          : 'Mark hand-delivered? This deducts stock for every line and notifies the buyer the order is in transit.',
-      ),
-    };
+    forward = needsTracking
+      ? {
+          label: 'Mark shipped',
+          act: () => advance(
+            () => supabase!.rpc('confirm_order_fulfilled', {
+              p_order_id: order.id,
+              p_tracking_number: tracking.trim() || null,
+              p_carrier: carrier,
+            }),
+            'shipped',
+            tracking.trim() ? `Shipped · ${carrier} ${tracking.trim()}` : 'Shipped',
+            'Mark shipped? This deducts stock for every line and emails the buyer tracking.',
+          ),
+        }
+      : { label: 'Mark hand-delivered', act: handDeliver };
   } else if (!reached.delivered) {
     title = 'Shipped — awaiting delivery';
     detail = 'Mark delivered once the carrier confirms; this emails the buyer their PAID receipt.';
@@ -663,17 +681,15 @@ function StageActions({
   async function sendInvoice() {
     if (!supabase) return;
     const subC = Math.round(parseFloat(subUsd) * 100);
-    if (!Number.isFinite(subC) || subC < 0) { setActionError('Enter a valid subtotal.'); return; }
-    const shipC = Number.isFinite(Math.round(parseFloat(shipUsd) * 100)) ? Math.round(parseFloat(shipUsd) * 100) : 0;
-    const discC = Number.isFinite(Math.round(parseFloat(discUsd) * 100)) ? Math.max(0, Math.round(parseFloat(discUsd) * 100)) : 0;
-    const totalC = Math.max(0, subC + shipC - discC);
+    if (!Number.isFinite(subC) || subC < 0) { setActionError('Enter a valid total.'); return; }
+    const totalC = Math.max(0, subC);
     const ok = await run(
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
         p_invoice_amount_cents: totalC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
-        p_subtotal_cents: subC, p_shipping_cents: shipC,
+        p_subtotal_cents: subC, p_shipping_cents: 0,
       }),
-      { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}${discC > 0 ? ` (−${fmtUSD(discC)} discount)` : ''}` },
+      { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}` },
     );
     if (ok) {
       setNote('');
@@ -681,6 +697,25 @@ function StageActions({
       if (error) setActionError(`Invoice marked sent, but the email failed: ${error.message}`);
       onChanged?.();
     }
+  }
+
+  // Hand delivery skips the carrier leg: fulfill (deducts stock) without a
+  // "shipped" email, then mark delivered — which fires the single delivered
+  // receipt the buyer should get.
+  async function handDeliver() {
+    const ok = await run(
+      () => supabase!.rpc('confirm_order_fulfilled', {
+        p_order_id: order.id, p_tracking_number: null, p_carrier: carrier,
+      }),
+      { stage: 'shipped', kind: 'advance', note: note.trim() || 'Hand delivered', silent: true },
+      'Mark hand-delivered? This deducts stock for every line and emails the buyer their delivered receipt.',
+    );
+    if (!ok) return;
+    await run(
+      () => supabase!.rpc('mark_order_delivered', { p_order_id: order.id }),
+      { stage: 'delivered', kind: 'advance', note: 'Delivered (hand delivery)' },
+    );
+    setNote('');
   }
 
   async function stepBack() {
