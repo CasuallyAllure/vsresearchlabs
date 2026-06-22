@@ -180,6 +180,11 @@ export function OrderView({
   const [editing, setEditing] = useState(false);
   const [editWarn, setEditWarn] = useState<string | null>(null);
   const [pendingSend, setPendingSend] = useState(false);
+  // In-app confirmation. Native window.confirm() is unreliable on mobile —
+  // iOS silently suppresses it once the user taps "Block Alerts" — which made
+  // "Mark shipped" (and other confirmed actions) do nothing. This modal can't
+  // be blocked by the browser.
+  const [confirmReq, setConfirmReq] = useState<{ message: string; resolve: (ok: boolean) => void } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -235,7 +240,11 @@ export function OrderView({
     ev: { stage: StageKey | null; kind: string; note: string | null; silent?: boolean },
     confirmMsg?: string,
   ) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return false;
+    if (confirmMsg) {
+      const ok = await new Promise<boolean>((resolve) => setConfirmReq({ message: confirmMsg, resolve }));
+      setConfirmReq(null);
+      if (!ok) return false;
+    }
     if (!supabase || !order) return false;
     setBusy(true);
     setActionError(null);
@@ -484,6 +493,14 @@ export function OrderView({
           orderNotes={orderNotesText}
           onCancel={() => setShowSend(false)}
           onSend={async (opts) => { await sendToClient(opts); setShowSend(false); }}
+        />
+      )}
+
+      {confirmReq && (
+        <ConfirmModal
+          message={confirmReq.message}
+          onConfirm={() => confirmReq.resolve(true)}
+          onCancel={() => confirmReq.resolve(false)}
         />
       )}
     </div>
@@ -938,6 +955,36 @@ function SendNoteModal({
             <Pill primary onClick={() => onSend({ includeNotes: true, note })} disabled={busy}>
               {busy ? 'Sending…' : `Send with notes${noteCount ? ` (${noteCount})` : ''}`}
             </Pill>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── In-app confirmation (mobile-safe replacement for window.confirm) ─────── */
+
+function ConfirmModal({
+  message, onConfirm, onCancel,
+}: { message: string; onConfirm: () => void; onCancel: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+      if (e.key === 'Enter') onConfirm();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel, onConfirm]);
+
+  return (
+    <>
+      <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[320] bg-ink/60 backdrop-blur-[3px]" />
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[321] flex items-center justify-center p-4 pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-[400px] research-surface-solid p-[var(--space-5)]">
+          <p className="mb-[var(--space-4)] text-[13px] leading-relaxed text-ink/85">{message}</p>
+          <div className="flex items-center justify-end gap-[var(--space-2)]">
+            <Pill onClick={onCancel}>Cancel</Pill>
+            <Pill primary onClick={onConfirm}>Confirm</Pill>
           </div>
         </div>
       </div>
