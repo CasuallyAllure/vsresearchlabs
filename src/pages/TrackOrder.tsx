@@ -64,7 +64,7 @@ export function TrackOrder() {
   const token = params.get('t');
   return (
     <section className="py-[var(--space-8)] max-w-[760px] mx-auto px-[var(--space-4)]">
-      {token ? <InvoiceByToken token={token} /> : <StatusLookup />}
+      {token ? <InvoiceByToken token={token} justClaimed={params.get('claimed') === '1'} /> : <StatusLookup />}
     </section>
   );
 }
@@ -77,7 +77,7 @@ type InvoiceState =
   | { kind: 'missing' }
   | { kind: 'error'; message: string };
 
-function InvoiceByToken({ token }: { token: string }) {
+function InvoiceByToken({ token, justClaimed = false }: { token: string; justClaimed?: boolean }) {
   const [state, setState] = useState<InvoiceState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
 
@@ -129,6 +129,21 @@ function InvoiceByToken({ token }: { token: string }) {
 
   return (
     <>
+      {/* Payment-recorded confirmation — shown when the buyer arrives from the
+          "I've sent payment" email link (mark-payment-claimed redirect). */}
+      {justClaimed && !o.paid && (
+        <div className="mb-[var(--space-4)] flex items-start gap-[var(--space-3)] rounded-sm border border-holo/30 bg-holo/[0.07] p-[var(--space-4)]">
+          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-holo text-[13px] font-bold text-white">✓</span>
+          <div>
+            <p className="text-[13px] font-medium text-ink">Payment recorded — thank you.</p>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-ink/65">
+              We'll confirm the deposit landed and start fulfillment within one business day.
+              You'll get a shipment notification with tracking when your order ships.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="mb-[var(--space-5)]">
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">

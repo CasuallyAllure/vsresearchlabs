@@ -46,6 +46,15 @@ function paymentCode(orderNumber: string): string {
   return parts[parts.length - 1] || orderNumber;
 }
 
+// 302 redirect to the branded site. Redirects carry no body, so the edge
+// runtime's HTML sandbox doesn't apply — the buyer lands on the real page.
+function redirect(location: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { Location: location, ...CORS_HEADERS },
+  });
+}
+
 function htmlResponse(body: string, status = 200): Response {
   return new Response(body, {
     status,
@@ -219,11 +228,17 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
+  // Supabase's edge runtime force-sandboxes anonymous HTML responses
+  // (content-type → text/plain, CSP → sandbox) so functions can't be used as
+  // HTML hosts — which means a page rendered here shows up as raw source in the
+  // browser. So instead of serving HTML, we redirect the buyer to the real
+  // branded site (/track), which renders their order natively. The token in the
+  // link is the buyer's authorization to view it.
   if (!token || token.length < 32) {
-    return htmlResponse(buildErrorPage("Missing or malformed token."), 400);
+    return redirect(`${SITE_URL}/track`);
   }
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    return htmlResponse(buildErrorPage("Service not configured."), 500);
+    return redirect(`${SITE_URL}/track?t=${encodeURIComponent(token)}&error=1`);
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -236,14 +251,15 @@ Deno.serve(async (req: Request) => {
     .single();
 
   if (orderErr || !order) {
-    return htmlResponse(buildErrorPage("This payment link is no longer valid."), 404);
+    // Invalid/expired token — let /track render its own branded "link invalid".
+    return redirect(`${SITE_URL}/track?t=${encodeURIComponent(token)}`);
   }
 
   // Advance status (idempotent at the RPC level)
   const { error: rpcErr } = await supabase.rpc("mark_payment_claimed", { p_order_id: order.id });
   if (rpcErr) {
     console.error("mark_payment_claimed failed:", rpcErr);
-    return htmlResponse(buildErrorPage("We couldn't record your payment notification — please reply to the invoice email."), 500);
+    return redirect(`${SITE_URL}/track?t=${encodeURIComponent(token)}&error=1`);
   }
 
   // Fire admin notification (best-effort; failure here doesn't break the buyer flow)
@@ -254,10 +270,6 @@ Deno.serve(async (req: Request) => {
     totalCents: order.invoice_amount_cents ?? order.subtotal_cents ?? null,
   });
 
-  return htmlResponse(
-    buildConfirmationPage(
-      order.order_number,
-      order.invoice_amount_cents ?? order.subtotal_cents ?? null,
-    ),
-  );
+  // Land the buyer on their branded order page with a "payment recorded" banner.
+  return redirect(`${SITE_URL}/track?t=${encodeURIComponent(token)}&claimed=1`);
 });
