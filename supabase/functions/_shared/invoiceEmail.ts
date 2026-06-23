@@ -190,14 +190,15 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Invoice ${escapeHtml(order.order_number)}</title></head>
 <body style="margin:0;padding:0;background:#F4EFE6;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1A1714;">
-  <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
+  <div style="max-width:640px;margin:0 auto;padding:28px 14px;">
 
-    <!-- Centered brand hero -->
+    <!-- Editorial masthead — tasteful gold accents, serif wordmark -->
+    <div style="height:3px;background:#B5904B;width:180px;margin:0 auto 22px;font-size:0;line-height:0;">&nbsp;</div>
     <div style="text-align:center;margin:0 0 28px;">
-      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="96" height="96" style="display:inline-block;width:96px;height:96px;margin-bottom:14px;border:0;" />
-      <div style="font-size:12px;letter-spacing:0.30em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:4px;">VS Research Labs</div>
-      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:14px;">Northern California Biopeptide Sciences</div>
-      <span style="display:inline-block;padding:5px 13px;border-radius:999px;background:#FBF9F4;border:0.5px solid rgba(26,23,20,0.18);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;letter-spacing:0.18em;color:#1A1714;text-transform:uppercase;">Invoice</span>
+      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="68" height="68" style="display:inline-block;width:68px;height:68px;margin-bottom:14px;border:0;" />
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;letter-spacing:0.02em;color:#1A1714;margin-bottom:5px;">VS Research Labs</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:18px;">Northern California Biopeptide Sciences</div>
+      <span style="display:inline-block;border-top:1px solid #B5904B;border-bottom:1px solid #B5904B;padding:7px 24px;font-size:10px;letter-spacing:0.34em;text-transform:uppercase;color:#1A1714;font-weight:600;">Invoice</span>
     </div>
 
     <!-- Order card -->
@@ -346,8 +347,10 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
     </div>
     <p style="margin:0 4px 16px;font-size:13px;color:#1A1714;line-height:1.6;">Questions? Simply reply to this email — your message lands on the same reference thread.</p>
 
-    <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">
-      <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:#6F665C;margin-bottom:4px;">VS Research Labs · Northern California Biopeptide Sciences</div>
+    <div style="padding-top:22px;margin-top:24px;text-align:center;">
+      <div style="height:1px;background:#B5904B;width:120px;margin:0 auto 18px;font-size:0;line-height:0;">&nbsp;</div>
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:0.02em;color:#1A1714;margin-bottom:6px;">VS Research Labs</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:8px;">Northern California Biopeptide Sciences · vsresearchlabs.com</div>
       <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
       <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(order.order_number)}</div>
     </div>
