@@ -807,6 +807,7 @@ function PrintableInvoice({
       <div className="fixed inset-0 z-[300] overflow-y-auto bg-ink/60 backdrop-blur-[3px]" onClick={onClose} />
       <div className="fixed inset-0 z-[301] overflow-y-auto p-4 sm:p-8 pointer-events-none">
         <div className="print-doc pointer-events-auto mx-auto max-w-[760px] bg-white text-[#1A1714] shadow-[0_24px_60px_-20px_rgba(26,23,20,0.5)]">
+          <div className="h-[3px] bg-[#B5904B]" />
           <div className="no-print flex items-center justify-between gap-3 border-b border-ink/10 px-6 py-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">Invoice preview</span>
             <div className="flex items-center gap-2">
@@ -825,8 +826,8 @@ function PrintableInvoice({
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-serif text-[22px] leading-none text-[#1A1714]">Invoice</p>
-                <p className="mt-1.5 font-mono text-[11px] tabular-nums text-[#6B635A]">{order.order_number}</p>
+                <span className="inline-block border-y border-[#B5904B] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#1A1714]">Invoice</span>
+                <p className="mt-2 font-mono text-[12px] tabular-nums text-[#1A1714]">{order.order_number}</p>
                 <p className="font-mono text-[10px] tabular-nums text-[#9A9186]">{fmtDateShort(order.created_at)}</p>
               </div>
             </div>
@@ -906,9 +907,13 @@ function PrintableInvoice({
               </div>
             )}
 
-            <p className="mt-8 border-t border-[#1A1714]/10 pt-4 text-[10px] leading-relaxed text-[#9A9186]">
-              VS Research Labs · inquire@vsresearchlabs.com · All products are sold for laboratory research use only and are not for human consumption.
-            </p>
+            <div className="mt-8 pt-5 text-center">
+              <div className="mx-auto mb-3 h-px w-[120px] bg-[#B5904B]" />
+              <p className="font-serif text-[14px] text-[#1A1714]">VS Research Labs</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-[#9A9186]">
+                inquire@vsresearchlabs.com · All products are sold for laboratory research use only and are not for human consumption.
+              </p>
+            </div>
           </div>
         </div>
       </div>
