@@ -106,8 +106,19 @@ function stamp(prefix: string): string {
   const seq = String(Math.floor(now.getTime() / 100) % 1000).padStart(3, "0");
   return `${prefix}-${yy}${mm}${dd}-${seq}`;
 }
+
+// Order numbers are short, unguessable codes (VSR-XXXXXX). Alphabet excludes
+// ambiguous characters (O/0/I/1/L) so they read cleanly aloud. Matches the
+// DB-side gen_order_number() used by the admin path.
+const ORDER_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function randomCode(len: number): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(len));
+  let s = "";
+  for (let i = 0; i < len; i++) s += ORDER_ALPHABET[bytes[i] % ORDER_ALPHABET.length];
+  return s;
+}
 const generateReferenceId = () => stamp("VSR-REQ");
-const generateOrderNumber = () => stamp("VSR-ORD");
+const generateOrderNumber = () => `VSR-${randomCode(6)}`;
 
 // ---------------------------------------------------------------------------
 // Helpers
