@@ -71,8 +71,8 @@ export function CompoundVisualizerModal({ open, onClose }: CompoundVisualizerMod
         }`}
         style={{
           background: 'var(--visualizer-backdrop)',
-          backdropFilter: 'blur(16px) saturate(140%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+          backdropFilter: 'blur(10px) saturate(118%)',
+          WebkitBackdropFilter: 'blur(10px) saturate(118%)',
         }}
       />
 

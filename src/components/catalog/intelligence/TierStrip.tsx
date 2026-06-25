@@ -90,14 +90,14 @@ export function TierStrip(props: TierStripProps) {
               aria-checked={active}
               onClick={() => onSelect(i)}
               title={isFast ? `${v.dose} · ships fast` : v.dose}
-              className="rounded-[3px] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 active:scale-[0.96] transition-colors"
+              className="rounded-[var(--radius-procurement)] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 transition-colors"
               style={{
                 padding: sm ? '3px 7px' : '5px 10px',
                 fontSize: sm ? '8.5px' : '10px',
                 letterSpacing: '0.16em',
                 backgroundColor: active ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                 color: active ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
-                border: active ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.12)',
+                border: active ? '1px solid var(--color-content-primary)' : '1px solid var(--color-border-default)',
               }}
             >
               {dosePresentation(v.dose)}
@@ -125,14 +125,14 @@ export function TierStrip(props: TierStripProps) {
           <span
             key={v.dose}
             role="listitem"
-            className="font-mono leading-none rounded-[3px]"
+            className="font-mono leading-none rounded-[var(--radius-procurement)]"
             style={{
               padding: '2px 6px',
               fontSize: '9px',
               letterSpacing: '0.16em',
               backgroundColor: isActive ? 'var(--color-content-primary)' : 'transparent',
               color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-tertiary)',
-              border: isActive ? '1px solid #1A1714' : '1px solid rgba(26,23,20,0.10)',
+              border: isActive ? '1px solid var(--color-content-primary)' : '1px solid var(--color-border-default)',
             }}
           >
             {dosePresentation(v.dose)}

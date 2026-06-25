@@ -98,11 +98,11 @@ export function ClassificationFilter({
       : [];
 
   return (
-    <div className="mb-[var(--space-3)] rounded-xl border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-2)]">
-      {/* One line, no wrap: search (shrinks) · category · in-stock dot */}
-      <div className="flex items-center gap-1.5">
+    <div className="mb-[var(--space-3)] rounded-[var(--radius-procurement)] border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-2)]">
+      {/* Mobile: search on its own row, controls beneath. sm+: one line. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-1.5">
         {onSearch && (
-          <div ref={searchRef} className="relative min-w-0 flex-1">
+          <div ref={searchRef} className="relative min-w-0 w-full sm:flex-1">
             <svg
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/35"
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -119,7 +119,7 @@ export function ClassificationFilter({
               onChange={(e) => { onSearch(e.target.value); setSugOpen(true); }}
               onFocus={() => setSugOpen(true)}
               placeholder={searchPlaceholder}
-              className="w-full rounded-lg border border-ink/15 bg-base-700 py-1.5 pl-8 pr-7 text-[12.5px] text-ink placeholder:text-ink/35 transition-colors hover:border-ink/25 focus:outline-none focus:border-holo/40"
+              className="w-full rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 py-1.5 pl-8 pr-7 text-[12.5px] text-ink placeholder:text-ink/35 transition-colors hover:border-ink/25 focus:outline-none focus:border-holo/40"
             />
             {search && (
               <button
@@ -136,7 +136,7 @@ export function ClassificationFilter({
             {sugOpen && matches.length > 0 && (
               <ul
                 role="listbox"
-                className="absolute z-40 mt-1 max-h-[240px] w-full overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
+                className="absolute z-40 mt-1 max-h-[240px] w-full overflow-y-auto rounded-[var(--radius-procurement)] border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
                 style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
               >
                 {matches.map((m) => (
@@ -155,13 +155,15 @@ export function ClassificationFilter({
           </div>
         )}
 
+        {/* Controls row — below the search on mobile, inline on sm and up */}
+        <div className="flex items-center gap-1.5 sm:shrink-0">
         <div ref={catRef} className="relative shrink-0">
           <button
             type="button"
             aria-haspopup="listbox"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="flex min-w-[92px] items-center justify-between gap-1.5 rounded-lg border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            className="flex min-w-[92px] items-center justify-between gap-1.5 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span className="truncate font-medium">{currentLabel}</span>
             <span aria-hidden="true" className={`shrink-0 text-[10px] text-ink/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
@@ -171,7 +173,7 @@ export function ClassificationFilter({
             <ul
               role="listbox"
               aria-label="Categories"
-              className="absolute right-0 z-40 mt-1 max-h-[260px] w-[220px] max-w-[80vw] overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
+              className="absolute right-0 z-40 mt-1 max-h-[260px] w-[220px] max-w-[80vw] overflow-y-auto rounded-[var(--radius-procurement)] border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
               style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
             >
               {tabs.map((tab) => {
@@ -208,7 +210,7 @@ export function ClassificationFilter({
             className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             style={
               inStock.on
-                ? { borderColor: `${stockColor}99`, color: stockColor, backgroundColor: `${stockColor}14`, boxShadow: `0 0 9px ${stockColor}55` }
+                ? { borderColor: `${stockColor}99`, color: stockColor, backgroundColor: `${stockColor}14` }
                 : { borderColor: 'rgba(26,23,20,0.18)', color: 'rgba(26,23,20,0.4)' }
             }
           >
@@ -217,12 +219,13 @@ export function ClassificationFilter({
               className="inline-block h-[6px] w-[6px] rounded-full transition-all"
               style={{
                 backgroundColor: inStock.on ? stockColor : 'rgba(26,23,20,0.28)',
-                boxShadow: inStock.on ? `0 0 5px ${stockColor}cc, inset 0 0 0 0.5px rgba(255,255,255,0.35)` : undefined,
+                boxShadow: inStock.on ? 'inset 0 0 0 0.5px rgba(255,255,255,0.35)' : undefined,
               }}
             />
             In stock
           </button>
         )}
+        </div>
       </div>
 
       {/* Description — compact, wraps, with plain/technical swap */}

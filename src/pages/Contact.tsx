@@ -17,6 +17,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Turnstile } from '../components/security/Turnstile';
+import { Button } from '../components/ui/Button';
 
 type Topic = 'general' | 'procurement' | 'documentation' | 'partnership' | 'media' | 'other';
 
@@ -103,7 +104,7 @@ export function Contact() {
           </p>
           <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-3)]">
             <span className="font-light text-ink/85">Thanks, </span>
-            <span className="font-medium text-ink">we got it.</span>
+            <span className="font-light text-ink">we got it.</span>
           </h1>
         </header>
 
@@ -134,7 +135,7 @@ export function Contact() {
         </p>
         <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)]">
           <span className="font-light text-ink/85">Tell us </span>
-          <span className="font-medium text-ink">what you need.</span>
+          <span className="font-light text-ink">what you need.</span>
         </h1>
         <p className="holo-text-body text-[13px] sm:text-[14px] leading-relaxed max-w-[58ch]">
           A few questions about who you are and why you're reaching out — the
@@ -276,13 +277,15 @@ export function Contact() {
         <Turnstile onToken={setTsToken} />
 
         <div className="pt-[var(--space-2)]">
-          <button
+          <Button
+            variant="primary"
+            size="lg"
             type="submit"
             disabled={formInvalid || submit.kind === 'submitting'}
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-ink/[0.12] border border-ink/35 px-[var(--space-8)] py-[var(--space-4)] text-[11px] uppercase tracking-[0.25em] font-medium text-ink hover:bg-ink/[0.18] hover:border-ink/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+            className="w-full sm:w-auto"
           >
             {submit.kind === 'submitting' ? 'Sending…' : 'Send message'}
-          </button>
+          </Button>
         </div>
       </form>
 

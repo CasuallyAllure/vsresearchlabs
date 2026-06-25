@@ -293,7 +293,6 @@ function BondMesh({
 function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolean; placement: { right: boolean; top: boolean } }) {
   const accent = scan.accent;
   const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(181,144,75,0.9)';
-  const glow = accent ? 'rgba(196,163,90,0.30)' : 'rgba(52, 114, 122,0.30)';
   const tint = accent ? '#9A7B3A' : '#2D6168';
 
   // Open the card toward screen-centre so it never bleeds off an edge,
@@ -311,7 +310,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
         <circle cx="0" cy="0" r="2" fill={tint} />
       </svg>
 
-      <div className={`holo-scouter-card${reduced ? '' : ' holo-live'}`} style={{ borderColor: edge, boxShadow: `0 0 0 1px ${glow}, 0 5px 18px rgba(26,23,20,0.22), 0 0 22px ${glow}`, ...pos }}>
+      <div className={`holo-scouter-card${reduced ? '' : ' holo-live'}`} style={{ borderColor: edge, boxShadow: `0 0 0 1px ${edge}, 0 5px 18px rgba(26,23,20,0.18)`, ...pos }}>
         <i className="holo-cnr tl" style={{ borderColor: edge }} />
         <i className="holo-cnr tr" style={{ borderColor: edge }} />
         <i className="holo-cnr bl" style={{ borderColor: edge }} />
@@ -319,7 +318,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
 
         <div className="holo-status">
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: tint }}>
-            <span className={reduced ? '' : 'holo-blink'} style={{ width: 5, height: 5, borderRadius: '50%', background: tint, boxShadow: `0 0 6px ${tint}` }} />
+            <span className={reduced ? '' : 'holo-blink'} style={{ width: 5, height: 5, borderRadius: '50%', background: tint }} />
             LOCKED
           </span>
           <span style={{ color: 'rgba(26,23,20,0.35)' }}>{scan.kind === 'atom' ? 'ATOM' : 'BOND'}</span>
@@ -328,7 +327,7 @@ function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolea
         {scan.kind === 'atom' ? (
           <>
             <div className="holo-head">
-              <span className="holo-sym" style={{ color: tint, borderColor: edge, boxShadow: `inset 0 0 10px ${glow}` }}>{scan.symbol}</span>
+              <span className="holo-sym" style={{ color: tint, borderColor: edge }}>{scan.symbol}</span>
               <div style={{ minWidth: 0 }}>
                 <div className="holo-title">{scan.elementName}</div>
                 <div className="holo-sub">Z {scan.z} · {scan.mass.toFixed(2)} u · χ {scan.eneg.toFixed(2)}</div>
@@ -697,27 +696,15 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
           border: 1px solid; border-radius: 7px; overflow: hidden;
           -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
         }
-        .holo-live { animation: holoPop 170ms cubic-bezier(0.2,0.9,0.25,1) both, holoFlicker 6s linear 200ms infinite; }
+        /* Strict register: the scouter is a STILL readout — entry pop only.
+           Flicker, CRT scanlines, vertical scan, blink, and reticle spin are
+           retired so the 3D molecule reads as an instrument, not sci-fi UI. */
+        .holo-live { animation: holoPop 170ms cubic-bezier(0.2,0.9,0.25,1) both; }
         @keyframes holoPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes holoFlicker {
-          0%, 100% { opacity: 1; }
-          3% { opacity: 0.96; } 4% { opacity: 1; }
-          41% { opacity: 1; } 42% { opacity: 0.82; } 43% { opacity: 1; }
-          71% { opacity: 0.93; } 72% { opacity: 1; }
-          88% { opacity: 1; } 89% { opacity: 0.87; } 90% { opacity: 1; }
-        }
-        .holo-crt {
-          position: absolute; inset: 0; pointer-events: none; border-radius: 8px;
-          background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 1.6px, rgba(26,23,20,0.05) 2px, rgba(26,23,20,0.05) 3px);
-          opacity: 0.5; animation: holoCrt 3.4s ease-in-out infinite;
-        }
-        @keyframes holoCrt { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.58; } }
-        .holo-sweep { position: absolute; left: 0; right: 0; top: 0; height: 42%; opacity: 0.10; pointer-events: none; animation: holoSweep 2.6s linear infinite; }
-        @keyframes holoSweep { 0% { transform: translateY(-120%); } 100% { transform: translateY(360%); } }
-        .holo-blink { animation: holoBlink 0.9s steps(2, jump-none) infinite; }
-        @keyframes holoBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-        .holo-reticle { transform-box: fill-box; transform-origin: center; animation: holoSpin 4s linear infinite; }
-        @keyframes holoSpin { to { transform: rotate(360deg); } }
+        .holo-crt { display: none; }
+        .holo-sweep { display: none; }
+        .holo-blink { opacity: 1; }
+        .holo-reticle { transform-box: fill-box; transform-origin: center; }
         .holo-cnr { position: absolute; width: 6px; height: 6px; border: 0 solid; opacity: 0.9; z-index: 2; }
         .holo-cnr.tl { left: 4px; top: 4px; border-left-width: 1px; border-top-width: 1px; }
         .holo-cnr.tr { right: 4px; top: 4px; border-right-width: 1px; border-top-width: 1px; }
@@ -740,7 +727,6 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
           font-size: 8px; font-weight: 600; letter-spacing: 0.08em; white-space: nowrap;
           color: #8a6d34; padding: 1px 5px; border-radius: 4px;
           background: rgba(251,249,244,0.82); border: 1px solid rgba(196,163,90,0.55);
-          box-shadow: 0 0 8px rgba(196,163,90,0.35);
           -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
         }
         @media (max-width: 640px) {

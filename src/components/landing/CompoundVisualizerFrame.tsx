@@ -43,8 +43,8 @@ export function CompoundVisualizerFrame({
       }`}
       style={{
         background: 'var(--visualizer-glass)',
-        backdropFilter: 'blur(26px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(26px) saturate(150%)',
+        backdropFilter: 'blur(10px) saturate(118%)',
+        WebkitBackdropFilter: 'blur(10px) saturate(118%)',
         border: '1px solid var(--visualizer-glass-border)',
         boxShadow:
           '0 26px 64px -30px rgba(26,23,20,0.28), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(26,23,20,0.05)',

@@ -43,6 +43,7 @@ import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
+import { Button } from '../ui/Button';
 
 // ─── Overlay-local icons ──────────────────────────────────────────────────────
 
@@ -345,7 +346,7 @@ export function CompoundIntelligenceOverlay({
                 <div className="flex items-center gap-2 min-w-0 mb-2">
                   <AbbreviationChip value={ci.abbreviation} />
                 </div>
-                <h2 className="text-ink font-medium leading-tight" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
+                <h2 className="text-ink font-normal leading-tight" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
                   {ci.substance}
                 </h2>
                 {(ci.casNumber || ci.molecularWeight) && (
@@ -398,13 +399,9 @@ export function CompoundIntelligenceOverlay({
                   </div>
                   <div className="mt-3 flex items-center gap-2">
                     <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                    <button
-                      type="button"
-                      onClick={handleAddToInquiry}
-                      className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-medium uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
-                    >
+                    <Button variant="primary" size="sm" type="button" onClick={handleAddToInquiry} className="flex-1">
                       Add to Inquiry
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -435,7 +432,7 @@ export function CompoundIntelligenceOverlay({
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="lg:hidden shrink-0"><AbbreviationChip value={ci.abbreviation} /></span>
                   <div className="min-w-0">
-                    <h3 className="text-ink font-medium truncate" style={{ fontSize: '13px', letterSpacing: '-0.005em' }}>{ci.substance}</h3>
+                    <h3 className="text-ink font-normal truncate" style={{ fontSize: '13px', letterSpacing: '-0.005em' }}>{ci.substance}</h3>
                     <p className="text-ink/28 font-mono tabular-nums mt-0.5 truncate" style={{ fontSize: '9px', letterSpacing: '0.18em' }}>
                       {ci.sku}
                       {ci.classificationLabel && <span className="ml-2 text-ink/16">·</span>}
@@ -503,7 +500,7 @@ export function CompoundIntelligenceOverlay({
                         <button
                           type="button"
                           onClick={handleAddToInquiry}
-                          className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-medium uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
+                          className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-normal uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
                         >
                           Add to Inquiry
                         </button>

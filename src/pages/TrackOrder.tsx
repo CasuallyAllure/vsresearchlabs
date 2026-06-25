@@ -32,6 +32,7 @@ import productsData from '../data/products.json';
 import generatedCompounds from '../data/biopeptideCompounds.generated.json';
 import type { Product } from '../types';
 import { tierPriceCents } from '../lib/pricing';
+import { Button } from '../components/ui/Button';
 
 /** SKU → catalog product, to resolve a unit price when a line has none stored. */
 const productBySku = new Map<string, Product>();
@@ -135,7 +136,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         <div className="mb-[var(--space-4)] flex items-start gap-[var(--space-3)] rounded-sm border border-holo/30 bg-holo/[0.07] p-[var(--space-4)]">
           <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-holo text-[13px] font-bold text-white">✓</span>
           <div>
-            <p className="text-[13px] font-medium text-ink">Payment recorded — thank you.</p>
+            <p className="text-[13px] font-light text-ink">Payment recorded — thank you.</p>
             <p className="mt-0.5 text-[12px] leading-relaxed text-ink/65">
               We'll confirm the deposit landed and start fulfillment within one business day.
               You'll get a shipment notification with tracking when your order ships.
@@ -151,7 +152,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         </p>
         <h1 className="text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
           <span className="font-light text-ink/85">Order </span>
-          <span className="font-medium text-ink">{o.order_number}</span>
+          <span className="font-light text-ink">{o.order_number}</span>
         </h1>
         <div className="mt-[var(--space-2)] flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1 text-[12px] text-ink/55">
           {o.buyer_name && <span>{o.buyer_name}</span>}
@@ -364,8 +365,8 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
           <div className="no-print flex items-center justify-between gap-3 border-b border-ink/10 px-6 py-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">{title} preview</span>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => window.print()} className="rounded-full border border-ink/25 bg-ink/[0.05] px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] text-ink/80 hover:border-ink/40">Print / Save PDF</button>
-              <button type="button" onClick={onClose} className="rounded-full border border-ink/15 px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] text-ink/60 hover:border-ink/30">Close</button>
+              <Button variant="secondary" size="sm" type="button" onClick={() => window.print()}>Print / Save PDF</Button>
+              <Button variant="secondary" size="sm" type="button" onClick={onClose}>Close</Button>
             </div>
           </div>
           <div className="px-8 py-8 sm:px-10 sm:py-10">
@@ -482,7 +483,7 @@ function StatusLookup() {
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">Order status</p>
         <h1 className="text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
           <span className="font-light text-ink/85">Track your </span>
-          <span className="font-medium text-ink">order.</span>
+          <span className="font-light text-ink">order.</span>
         </h1>
         <p className="mt-[var(--space-3)] text-[13px] leading-relaxed text-ink/70 max-w-[58ch]">
           Enter your order number or the email you ordered with, plus the shipping ZIP code.
@@ -502,9 +503,9 @@ function StatusLookup() {
           </div>
         </div>
         <div className="mt-[var(--space-4)] flex items-center gap-[var(--space-3)]">
-          <button type="submit" disabled={state.kind === 'loading' || !identifier.trim() || !zip.trim()} className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <Button variant="primary" size="md" type="submit" disabled={state.kind === 'loading' || !identifier.trim() || !zip.trim()}>
             {state.kind === 'loading' ? 'Searching…' : 'Track'}
-          </button>
+          </Button>
         </div>
         {state.kind === 'error' && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{state.message}</p>}
       </form>
@@ -535,7 +536,7 @@ function StatusCard({ order }: { order: OrderLookupResult }) {
       <div className="flex items-start justify-between gap-[var(--space-4)] flex-wrap mb-[var(--space-4)]">
         <div>
           <p className="font-mono text-[11px] tracking-[0.06em] text-ink/55">{order.order_number}</p>
-          <h2 className="mt-1 text-[1.15rem] font-medium text-ink">{pres.label}</h2>
+          <h2 className="mt-1 text-[1.15rem] font-light text-ink">{pres.label}</h2>
           {pres.detail && <p className="mt-1 text-[12px] text-ink/65 max-w-[52ch]">{pres.detail}</p>}
         </div>
         {placed && (

@@ -73,7 +73,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
             Wave 7c — chip prefixes the family for quick procurement scanning. */}
         <div className="flex items-center gap-[var(--space-2)] min-w-0">
           <AbbreviationChip value={product.abbreviation} />
-          <h3 className="text-sm font-medium text-ink truncate flex-1 min-w-0 group-hover:text-holo-light transition-colors">
+          <h3 className="text-sm font-normal text-ink truncate flex-1 min-w-0 group-hover:text-holo-light transition-colors">
             {family}
           </h3>
           {dose && (

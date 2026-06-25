@@ -135,7 +135,6 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           disabled={submitting || email.length === 0 || password.length === 0}
           className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
         >
-          <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
           <span className="relative">{submitting ? 'Signing in…' : 'Sign in'}</span>
         </button>
       </form>

@@ -539,7 +539,7 @@ export function Landing() {
                   Bay Area biopeptide sciences.
                 </span>
                 <br />
-                <span className="font-medium text-ink">Highest purity, on demand.</span>
+                <span className="font-light text-ink">Highest purity, on demand.</span>
               </h1>
 
               <p
@@ -591,7 +591,7 @@ export function Landing() {
                 style={{ ['--op-delay' as string]: '240ms' }}
               >
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
                   heading="Begin inquiry — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Peptide sciences', to: '/research-supplies/biopeptide' },
@@ -603,7 +603,7 @@ export function Landing() {
                   <span className="relative">Begin Inquiry</span>
                 </HeroSegmentMenu>
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] uppercase tracking-[0.22em] text-holo-light transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] uppercase tracking-[0.18em] text-teal focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
                   heading="View research — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Compound library', to: '/research' },
@@ -675,11 +675,10 @@ export function Landing() {
               }
             }
             .hero-whatsapp-cta {
-              transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-                          box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+              transition: box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+                          border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
             }
             .hero-whatsapp-cta:hover {
-              transform: translateY(-0.5px);
               border-color: rgba(26, 23, 20, 0.3) !important;
               box-shadow: 0 2px 8px rgba(26, 23, 20, 0.12) !important;
             }
@@ -692,72 +691,53 @@ export function Landing() {
               .hero-whatsapp-cta:hover { transform: none; }
             }
 
-            /* Begin Inquiry — cool holo-mint, drawn from the compound
-               brand palette (gold #B5904B / teal #34727A). */
+            /* Begin Inquiry — refined gold gradient (mirrors .cta-mint):
+               top highlight, settled base, tight contact shadow. */
             .hero-cta-gold {
-              background: linear-gradient(180deg, #C7A463 0%, #B5904B 55%, #8C6A2A 100%);
+              background: linear-gradient(
+                180deg,
+                var(--color-accent-gold-light) 0%,
+                var(--color-accent-gold) 54%,
+                var(--color-accent-gold-dark) 100%
+              );
               box-shadow:
-                0 0 0 0.5px rgba(199,164,99, 0.6),
-                0 0 12px rgba(181, 144, 75, 0.35),
-                0 3px 10px rgba(181, 144, 75, 0.22),
-                inset 0 0.5px 0 rgba(199, 164, 99, 0.6),
-                inset 0 -0.5px 0 rgba(26,23,20, 0.2);
+                inset 0 1px 0 rgba(255, 255, 255, 0.24),
+                inset 0 -1px 0 rgba(26, 23, 20, 0.12),
+                0 1px 1px rgba(26, 23, 20, 0.10),
+                0 2px 6px -1px rgba(140, 106, 42, 0.28);
+              transition:
+                filter 180ms var(--easing-easeOut),
+                box-shadow 180ms var(--easing-easeOut);
             }
             .hero-cta-gold:hover {
+              filter: brightness(1.045);
               box-shadow:
-                0 0 0 0.5px rgba(199, 164, 99, 0.9),
-                0 0 22px rgba(199, 164, 99, 0.6),
-                0 5px 14px rgba(181, 144, 75, 0.35),
-                inset 0 0.5px 0 rgba(199, 164, 99, 0.7),
-                inset 0 -0.5px 0 rgba(26,23,20, 0.18);
-              transform: translateY(-0.5px);
+                inset 0 1px 0 rgba(255, 255, 255, 0.30),
+                inset 0 -1px 0 rgba(26, 23, 20, 0.12),
+                0 1px 1px rgba(26, 23, 20, 0.10),
+                0 3px 11px -1px rgba(140, 106, 42, 0.36);
             }
-            .hero-cta-gold-sheen {
-              background: linear-gradient(110deg, transparent 35%, rgba(199, 164, 99,0.55) 50%, transparent 65%);
-              transform: translateX(-140%);
-              transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .hero-cta-gold:hover .hero-cta-gold-sheen {
-              transform: translateX(140%);
-            }
+            .hero-cta-gold:active { filter: brightness(0.97); }
 
-            /* View Research — refined cyan, thinner profile */
+            /* View Research — refined teal outline: faint gradient fill + fine
+               top highlight so it reads crafted, not a plain hairline box. */
             .hero-cta-holo {
-              background: linear-gradient(180deg, rgba(20,50,92,0.88) 0%, rgba(12,32,62,0.82) 100%);
-              -webkit-backdrop-filter: blur(5px);
-              backdrop-filter: blur(5px);
-              border: 0.5px solid rgba(52, 114, 122, 0.4);
-              box-shadow:
-                inset 0 0 10px rgba(52, 114, 122, 0.08),
-                inset 0 0.5px 0 rgba(98, 160, 166, 0.22),
-                0 0 12px rgba(52, 114, 122, 0.2),
-                0 2px 10px rgba(52, 114, 122, 0.1);
+              background: linear-gradient(180deg, rgba(52, 114, 122, 0.05) 0%, rgba(52, 114, 122, 0.015) 100%);
+              border: 1px solid var(--color-accent-teal);
+              box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+              transition:
+                border-color 180ms var(--easing-easeOut),
+                background 180ms var(--easing-easeOut),
+                box-shadow 180ms var(--easing-easeOut);
             }
             .hero-cta-holo:hover {
-              border-color: rgba(98, 160, 166, 0.8);
-              background: linear-gradient(180deg, rgba(52, 114, 122,0.13) 0%, rgba(52, 114, 122,0.04) 100%);
-              box-shadow:
-                inset 0 0 16px rgba(52, 114, 122, 0.18),
-                inset 0 0.5px 0 rgba(98, 160, 166, 0.35),
-                0 0 22px rgba(52, 114, 122, 0.45),
-                0 3px 14px rgba(52, 114, 122, 0.2);
-              transform: translateY(-0.5px);
-            }
-            .hero-cta-holo-sheen {
-              background: linear-gradient(110deg, transparent 35%, rgba(98, 160, 166,0.35) 50%, transparent 65%);
-              transform: translateX(-140%);
-              transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .hero-cta-holo:hover .hero-cta-holo-sheen {
-              transform: translateX(140%);
+              border-color: var(--color-accent-teal-dark);
+              background: linear-gradient(180deg, rgba(52, 114, 122, 0.10) 0%, rgba(52, 114, 122, 0.04) 100%);
             }
 
-            @media (prefers-reduced-motion: reduce) {
-              .hero-cta-gold:hover,
-              .hero-cta-holo:hover { transform: none; }
-              .hero-cta-gold-sheen,
-              .hero-cta-holo-sheen { transition: none; transform: none; }
-            }
+            /* Sheen retired — inert no-op for legacy markup. */
+            .hero-cta-gold-sheen,
+            .hero-cta-holo-sheen { display: none; }
           `}</style>
         </div>
       </section>
@@ -932,7 +912,7 @@ export function Landing() {
           </div>
           <Link
             to="/contact"
-            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.22em] text-ink transition-all duration-300 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Begin inquiry</span>

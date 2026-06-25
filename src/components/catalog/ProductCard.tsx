@@ -89,7 +89,6 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         className="inline-block h-[5px] w-[5px] rounded-full"
         style={{
           backgroundColor: stocked ? STOCK_GREEN : STOCK_RED,
-          boxShadow: `0 0 4px ${(stocked ? STOCK_GREEN : STOCK_RED)}aa`,
         }}
       />
       {stocked ? 'In stock' : 'Out'}
@@ -130,7 +129,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
       </div>
       <div className="flex items-center gap-2 min-w-0">
         <AbbreviationChip value={product.abbreviation} />
-        <h3 className="text-sm font-medium text-ink truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
+        <h3 className="text-sm font-normal text-ink truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
           {product.name}
         </h3>
       </div>
@@ -203,7 +202,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               type="button"
               onClick={handleAdd}
               aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-              className="rounded-full uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+              className="rounded-full uppercase tracking-[0.14em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
               style={{
                 padding: '5px 11px',
                 fontSize: '8.5px',
