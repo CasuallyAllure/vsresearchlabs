@@ -268,7 +268,7 @@ function SlidePanel({
   const add = useCart((s) => s.add);
   const driftRef = useDriftScroll<HTMLDivElement>();
   return (
-    <div className="grid h-full grid-cols-1 grid-rows-[112px_1fr] md:grid-cols-5 md:grid-rows-none">
+    <div className="grid h-full grid-cols-1 grid-rows-[200px_1fr] md:grid-cols-5 md:grid-rows-none">
       {/* Specimen plate — generated vial + real PubChem structure, side by side.
           Identifier rides a header strip so it never lands on the artwork. */}
       <div className="relative flex min-h-0 min-w-0 flex-col border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
@@ -280,21 +280,29 @@ function SlidePanel({
             Vial / 2D
           </span>
         </div>
-        <div className="grid min-h-0 flex-1 grid-cols-2">
-          {/* Left — generated specimen vial */}
-          <div className="relative flex min-h-0 items-center justify-center overflow-hidden border-r border-ink/[0.06]">
+        {/* Specimen viewer — a fixed LIGHT surface in both themes (product +
+            molecule read best on light), so the two windows always share one
+            colour. Split by a prominent fixed-dark divider; each image fills
+            its window to the edges. */}
+        <div className="grid min-h-0 flex-1 grid-cols-2 bg-[#ECEEEF]">
+          {/* Left — generated specimen vial. object-contain so the square
+              studio shot is never zoom-cropped or squished; it sits centered
+              on the shared light surface. */}
+          <div className="relative min-h-0 overflow-hidden border-r-2 border-[rgba(26,23,20,0.16)]">
             {ci.specimenImage ? (
               <img
                 src={ci.specimenImage}
                 alt={`${ci.substance} specimen vial`}
-                className="h-full w-full object-contain p-2 md:p-3"
-                style={{ opacity: 0.94 }}
+                className="h-full w-full object-contain"
+                style={{ opacity: 0.96 }}
               />
             ) : null}
           </div>
-          {/* Right — real 2D molecular structure (PubChem) */}
+          {/* Right — real 2D molecular structure (PubChem). `lightbox` keeps it
+              on the light viewer (light compositing + dark labels) in both
+              themes so it matches the vial window exactly. */}
           <div className="relative min-h-0 overflow-hidden">
-            <MolecularStructurePanel substance={ci.substance} abbreviation={ci.abbreviation} />
+            <MolecularStructurePanel substance={ci.substance} abbreviation={ci.abbreviation} bare lightbox />
           </div>
         </div>
         <CornerMarks />
@@ -387,7 +395,10 @@ function ModuleBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0 border-t border-ink/[0.06] py-5">
+    <div className="relative min-w-0 border-t border-ink/[0.06] py-5">
+      {/* Accent channel-marker — same instrumentation language as the
+          landing sequence strip and section rails. */}
+      <span aria-hidden className="absolute left-0 top-0 h-px w-6 bg-gold/45" />
       <div className="flex min-w-0 items-baseline gap-3">
         <span className="font-mono text-[10px] tabular-nums text-gold/70">
           {index}

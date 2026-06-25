@@ -61,20 +61,23 @@ interface ModuleRailProps {
 
 function ModuleRail({ index, label, meta }: ModuleRailProps) {
   return (
-    <div className="lg:col-span-3 lg:border-r lg:border-ink/[0.1] lg:pr-[var(--space-8)]">
-      <div className="flex items-baseline gap-[var(--space-3)] lg:flex-col lg:items-start lg:gap-[var(--space-4)]">
-        <span className="holo-text-display font-mono text-[13px] tabular-nums tracking-[0.1em]">
+    <div className="lg:col-span-3 lg:pr-[var(--space-8)]">
+      <div className="flex items-center gap-[var(--space-4)] lg:flex-col lg:items-start lg:gap-[var(--space-3)]">
+        {/* Large editorial numeral — anchors the section, breaks the
+            templated look without adding a loud color. */}
+        <span className="font-serif text-[2.6rem] font-light leading-[0.85] tabular-nums text-ink/[0.16] lg:text-[3.4rem]">
           {index}
         </span>
-        <span className="holo-text-caption text-[11px] uppercase tracking-[0.3em]">
+        <span className="holo-text-caption flex items-center gap-[var(--space-2)] text-[11px] uppercase tracking-[0.3em]">
+          <span aria-hidden="true" className="h-px w-5 bg-holo/40" />
           {label}
         </span>
       </div>
-      <dl className="mt-[var(--space-5)] hidden gap-[var(--space-3)] lg:grid">
+      <dl className="mt-[var(--space-6)] hidden gap-0 lg:grid">
         {meta.map(([k, v]) => (
           <div
             key={k}
-            className="flex items-baseline justify-between gap-[var(--space-3)] border-t border-holo/10 pt-[var(--space-2)]"
+            className="flex items-baseline justify-between gap-[var(--space-3)] border-t border-ink/[0.07] py-[var(--space-2-5)]"
           >
             <dt className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">
               {k}
@@ -142,46 +145,52 @@ function RouteRow({
   onClick,
 }: RouteRowProps) {
   const cls = [
-    'research-surface-solid group flex items-center gap-[var(--space-5)]',
-    'px-[var(--space-5)] py-[var(--space-5)]',
+    'research-surface-solid group flex items-stretch overflow-hidden',
     'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25',
   ].join(' ');
 
   const inner = (
     <>
-      <div className="hidden h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-procurement)] border border-ink/[0.08] bg-[var(--surface-specimen-bay)] sm:block">
+      {/* Specimen bay — a full-height plate flush to the card's left edge, so
+          the row reads as an instrument panel rather than a thumbnail card. */}
+      <div className="relative hidden w-24 shrink-0 self-stretch overflow-hidden border-r border-ink/[0.08] bg-[var(--surface-specimen-bay)] sm:block lg:w-32">
         <img
           src={specimen}
           alt={specimenAlt}
           loading="lazy"
-          className="h-full w-full scale-[1.55] object-cover opacity-80 transition-opacity duration-150 group-hover:opacity-100"
+          className="h-full w-full scale-[1.5] object-cover opacity-70 transition duration-300 ease-out group-hover:scale-[1.58] group-hover:opacity-100"
         />
+        {/* Registration ticks — corner instrumentation detail. */}
+        <span aria-hidden="true" className="pointer-events-none absolute left-2 top-2 h-2 w-2 border-l border-t border-ink/25" />
+        <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 h-2 w-2 border-b border-r border-ink/25" />
       </div>
-      <span className="font-mono text-[11px] tabular-nums text-ink/30">
-        {index}
-      </span>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-base font-light tracking-tight text-ink sm:text-lg">
-          {title}
-        </h3>
-        <p className="mt-[var(--space-1-5)] text-[13px] leading-relaxed text-ink/45">
-          {scope}
-        </p>
+      <div className="flex min-w-0 flex-1 items-center gap-[var(--space-4)] px-[var(--space-5)] py-[var(--space-5)] sm:gap-[var(--space-5)]">
+        <span className="font-mono text-[10px] tabular-nums tracking-[0.1em] text-ink/30">
+          {index}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-[17px] font-light leading-tight tracking-tight text-ink sm:text-[20px]">
+            {title}
+          </h3>
+          <p className="mt-[var(--space-2)] max-w-[42ch] text-[13px] leading-relaxed text-ink/45">
+            {scope}
+          </p>
+        </div>
+        <div className="hidden shrink-0 text-right md:block">
+          <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink/45">
+            {readout}
+          </p>
+          <p className="mt-[var(--space-1)] text-[9.5px] uppercase tracking-[0.26em] text-ink/25">
+            Indexed
+          </p>
+        </div>
+        <span
+          aria-hidden="true"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink/[0.08] text-[13px] text-ink/30 transition-all duration-200 group-hover:border-holo/40 group-hover:text-holo-light"
+        >
+          →
+        </span>
       </div>
-      <div className="hidden shrink-0 text-right md:block">
-        <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink/45">
-          {readout}
-        </p>
-        <p className="mt-[var(--space-1)] text-[10px] uppercase tracking-[0.24em] text-ink/25">
-          Indexed
-        </p>
-      </div>
-      <span
-        aria-hidden="true"
-        className="shrink-0 text-lg text-ink/25 transition-colors duration-150 group-hover:text-holo-light"
-      >
-        →
-      </span>
     </>
   );
 
@@ -867,29 +876,23 @@ export function Landing() {
           release.
         </p>
 
-        {/* Sequence strip */}
-        <ol className="mt-[var(--space-10)] grid grid-cols-1 border-t border-ink/[0.1] sm:grid-cols-2 lg:grid-cols-4">
-          {SEQUENCE.map((step, i) => (
-            <li
-              key={step.code}
-              className={[
-                'border-b border-ink/[0.1] px-0 py-[var(--space-6)] sm:px-[var(--space-5)]',
-                'sm:border-b-0 sm:border-t',
-                i % 2 === 0 ? 'sm:border-r sm:border-ink/[0.1]' : '',
-                'lg:border-r',
-                i === SEQUENCE.length - 1 ? 'lg:border-r-0' : '',
-                i === 0 ? 'sm:pl-0 lg:pl-0' : '',
-              ].join(' ')}
-            >
-              <div className="flex items-baseline gap-[var(--space-3)]">
-                <span className="holo-text-display font-mono text-[12px] tabular-nums">
+        {/* Sequence strip — each step is a channel: a hairline rule capped
+            with a short accent segment, then code · title · body. Reads as an
+            instrument scale, not a bordered table. */}
+        <ol className="mt-[var(--space-10)] grid grid-cols-1 gap-x-[var(--space-6)] gap-y-[var(--space-8)] sm:grid-cols-2 lg:grid-cols-4">
+          {SEQUENCE.map((step) => (
+            <li key={step.code} className="relative pt-[var(--space-5)]">
+              <span aria-hidden="true" className="absolute left-0 top-0 h-px w-full bg-ink/[0.1]" />
+              <span aria-hidden="true" className="absolute left-0 top-0 h-px w-8 bg-holo/55" />
+              <div className="flex items-baseline gap-[var(--space-2-5)]">
+                <span className="holo-text-display font-mono text-[11px] tabular-nums">
                   {step.code}
                 </span>
-                <span className="text-[15px] font-light tracking-tight text-ink">
+                <span className="text-[16px] font-light tracking-tight text-ink">
                   {step.title}
                 </span>
               </div>
-              <p className="mt-[var(--space-3)] max-w-[32ch] text-[13px] leading-relaxed text-ink/55">
+              <p className="mt-[var(--space-3)] max-w-[30ch] text-[13px] leading-relaxed text-ink/55">
                 {step.body}
               </p>
             </li>

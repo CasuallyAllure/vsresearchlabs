@@ -1230,7 +1230,68 @@
       },
       {
         "dose": "1500mg"
+      }
+    ],
+    "priceCents": null,
+    "stock": null,
+    "tags": [
+      "antioxidant-beauty",
+      "compound",
+      "research"
+    ],
+    "featured": false,
+    "createdAt": "2026-06-01T00:00:00.000Z",
+    "updatedAt": "2026-06-01T00:00:00.000Z",
+    "manufacturer": "Vetted global production partners",
+    "countryOfOrigin": "Global partner network",
+    "storageCondition": "−20°C, desiccated, light-protected",
+    "shelfLifeMonths": 24,
+    "unitOfMeasure": "vial",
+    "leadTimeDays": 7,
+    "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+    "shippingCondition": "Dry ice required",
+    "researchClassification": "antioxidant-beauty",
+    "casNumber": "70-18-8",
+    "molecularWeight": "307.32 g/mol",
+    "mechanismSummary": "An endogenous tripeptide (γ-Glu-Cys-Gly) and the body’s principal intracellular antioxidant. It neutralises reactive oxygen species and serves as a cofactor for detoxification and redox enzymes.",
+    "receptorActivity": "Not a receptor ligand; an enzyme substrate/cofactor (glutathione peroxidases, S-transferases) and a direct reducing agent.",
+    "pathwaySummary": "Central to cellular redox homeostasis, the glutathione/glutathione-disulfide cycle, and phase-II detoxification pathways.",
+    "fdaStatus": "OTC supplement / compounded injectable — skin-lightening use not FDA-approved",
+    "humanTrialsConfirmed": true
+  },
+  {
+    "id": "rs-korean-glutathione",
+    "slug": "korean-glutathione",
+    "name": "Korean Glutathione",
+    "category": "biopeptide-research-supplies",
+    "shortDescription": "Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification. Lyophilized, research grade.",
+    "laymanSummary": "Glutathione is the body's **master antioxidant** — a tripeptide that neutralizes free radicals and powers *detoxification* in every cell. Studied for ~oxidative-stress defense~, liver support, and skin-brightening.",
+    "longDescription": "Korean Glutathione — Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "images": [
+      "/specimens/korean-glutathione.svg"
+    ],
+    "specs": [
+      {
+        "label": "Purity (HPLC)",
+        "value": "≥ 98%"
       },
+      {
+        "label": "Form",
+        "value": "Lyophilized powder"
+      },
+      {
+        "label": "Mass",
+        "value": "1200 mg"
+      },
+      {
+        "label": "Storage",
+        "value": "−20°C, desiccated"
+      }
+    ],
+    "sku": "VSR-RS-GSK",
+    "abbreviation": "GSK",
+    "family": "Antioxidant Tripeptide",
+    "variants": [
       {
         "dose": "1200mg"
       }

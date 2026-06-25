@@ -557,6 +557,19 @@ html[data-theme="dark"] {
 [data-theme="dark"] .mol-structure-fade {
   background: linear-gradient(to top, var(--color-surface-base) 0%, transparent 100%);
 }
+/* Lightbox — the molecular panel sits on a fixed LIGHT specimen viewer even
+   in dark mode, so keep light (multiply) compositing, dark labels, and no
+   dark fade. More specific than the [data-theme=dark] rules above. */
+[data-theme="dark"] .mol-lightbox .mol-structure-img {
+  filter: contrast(0.96) saturate(0.6);
+  mix-blend-mode: multiply;
+}
+[data-theme="dark"] .mol-lightbox .mol-structure-fade {
+  background: none;
+}
+[data-theme="dark"] .mol-lightbox .mol-structure-fade p {
+  color: rgba(26, 23, 20, 0.42) !important;
+}
 
 /* ─── Procurement typography tokens (R1) ─── */
 :root {

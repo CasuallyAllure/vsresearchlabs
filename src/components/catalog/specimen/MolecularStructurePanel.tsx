@@ -25,9 +25,17 @@ import { pubchemImageUrl } from '../../../lib/pubchem';
 interface MolecularStructurePanelProps {
   substance: string;
   abbreviation: string;
+  /** Drop the panel's own cream bay background and tighten the structure
+   *  padding, so it sits flush on a parent that already owns the surface
+   *  (e.g. the terminal's unified specimen plate). */
+  bare?: boolean;
+  /** Render on a fixed LIGHT viewer surface in both themes — forces light
+   *  (multiply) compositing, dark labels, and no dark fade even under
+   *  [data-theme=dark]. Pair with a light parent background. */
+  lightbox?: boolean;
 }
 
-export function MolecularStructurePanel({ substance, abbreviation }: MolecularStructurePanelProps) {
+export function MolecularStructurePanel({ substance, abbreviation, bare = false, lightbox = false }: MolecularStructurePanelProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -35,7 +43,7 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
   const pubchemUrl = pubchemImageUrl(substance);
 
   return (
-    <div className="mol-structure-bay relative w-full h-full overflow-hidden">
+    <div className={`relative w-full h-full overflow-hidden ${bare ? '' : 'mol-structure-bay'} ${lightbox ? 'mol-lightbox' : ''}`}>
       {/* Fallback / loading state — always in DOM, fades out when real structure loads */}
       <div
         className="absolute inset-0 flex items-center justify-center transition-opacity duration-700"
@@ -58,7 +66,7 @@ export function MolecularStructurePanel({ substance, abbreviation }: MolecularSt
             // Compositing (multiply on light / invert+screen on dark) lives
             // in theme.css keyed off [data-theme] so the molecule reads on
             // both the cream bay (light) and bare black (dark).
-            padding: '10px',
+            padding: bare ? '4px' : '10px',
             opacity: loaded ? 1 : 0,
           }}
         />
