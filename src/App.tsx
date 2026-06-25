@@ -31,6 +31,7 @@ const Research = lazyPage(() => import('./pages/Research'), 'Research');
 const CartPage = lazyPage(() => import('./pages/CartPage'), 'CartPage');
 const Contact = lazyPage(() => import('./pages/Contact'), 'Contact');
 const TrackOrder = lazyPage(() => import('./pages/TrackOrder'), 'TrackOrder');
+const Account = lazyPage(() => import('./pages/Account'), 'Account');
 const Documentation = lazyPage(() => import('./pages/Documentation'), 'Documentation');
 const DocumentDetail = lazyPage(() => import('./pages/DocumentDetail'), 'DocumentDetail');
 const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
@@ -87,6 +88,9 @@ export default function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/track" element={<TrackOrder />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/login" element={<Navigate to="/account" replace />} />
+                <Route path="/signup" element={<Navigate to="/account" replace />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/documentation/:id" element={<DocumentDetail />} />
                 <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
