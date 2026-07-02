@@ -97,12 +97,13 @@ export function AdminInquiries() {
   async function createOrder(inquiryId: string) {
     if (!supabase) return;
     setCreating(inquiryId);
+    setError(null);
     const { data, error } = await supabase.rpc('create_order_from_inquiry', {
       p_inquiry_id: inquiryId,
     });
     setCreating(null);
     if (error) {
-      alert(`Failed to create order: ${error.message}`);
+      setError(`Failed to create order: ${error.message}`);
       return;
     }
     if (typeof data === 'string') {

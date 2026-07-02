@@ -27,6 +27,7 @@ import productsData from '../../data/products.json';
 import manifestData from '../../data/biopeptideManifest.json';
 import type { Product } from '../../types';
 import { OrderStatusChip } from './AdminOrders';
+import { useConfirm } from '../../components/admin/ConfirmModal';
 
 const products = productsData as unknown as Product[];
 
@@ -321,6 +322,7 @@ function InquiriesDetail({ rows, onClose }: { rows: InquiryRow[]; onClose: () =>
   const [expanded, setExpanded] = useState<string | null>(null);
   const [items, setItems] = useState<Record<string, InquiryItemRow[]>>({});
   const [creating, setCreating] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const toggle = useCallback(async (id: string) => {
     setExpanded((cur) => (cur === id ? null : id));
@@ -333,9 +335,10 @@ function InquiriesDetail({ rows, onClose }: { rows: InquiryRow[]; onClose: () =>
   async function createOrder(id: string) {
     if (!supabase) return;
     setCreating(id);
+    setActionError(null);
     const { data, error } = await supabase.rpc('create_order_from_inquiry', { p_inquiry_id: id });
     setCreating(null);
-    if (error) return alert(`Failed to create order: ${error.message}`);
+    if (error) { setActionError(`Failed to create order: ${error.message}`); return; }
     if (typeof data === 'string') { onClose(); navigate(`/admin/orders/${data}`); }
   }
 
@@ -343,6 +346,7 @@ function InquiriesDetail({ rows, onClose }: { rows: InquiryRow[]; onClose: () =>
 
   return (
     <div>
+      {actionError && <p role="alert" className="px-[var(--space-6)] pt-[var(--space-4)] text-[12px] text-red-400">{actionError}</p>}
       <ul className="divide-y divide-ink/[0.05]">
         {rows.map((row) => {
           const open = expanded === row.id;
@@ -414,6 +418,8 @@ function OrdersDetail({
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lines, setLines] = useState<Record<string, OrderLineRow[]>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { confirm, prompt, modal: confirmModal } = useConfirm();
 
   const toggle = useCallback(async (id: string) => {
     setExpanded((cur) => (cur === id ? null : id));
@@ -424,19 +430,26 @@ function OrdersDetail({
   }, [lines]);
 
   async function run(id: string, rpc: () => PromiseLike<{ error: { message: string } | null }>, confirmMsg?: string) {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    if (confirmMsg && !(await confirm(confirmMsg))) return;
     if (!supabase) return;
     setBusy(id);
+    setActionError(null);
     const { error } = await rpc();
     setBusy(null);
-    if (error) { alert(error.message); return; }
+    if (error) { setActionError(error.message); return; }
     onReload();
+  }
+
+  async function cancelOrder(id: string) {
+    const reason = (await prompt('Reason for cancellation (optional):'))?.trim() || 'Cancelled by admin';
+    await run(id, () => supabase!.rpc('cancel_order', { p_order_id: id, p_reason: reason }), 'Cancel this order?');
   }
 
   if (rows.length === 0) return <DetailMessage>{emptyHint}</DetailMessage>;
 
   return (
     <div>
+      {actionError && <p role="alert" className="px-[var(--space-6)] pt-[var(--space-4)] text-[12px] text-red-400">{actionError}</p>}
       <ul className="divide-y divide-ink/[0.05]">
         {rows.map((row) => {
           const open = expanded === row.id;
@@ -509,7 +522,7 @@ function OrdersDetail({
                     {(row.status === 'pending_invoice' || row.status === 'invoice_sent' || row.status === 'paid') && (
                       <GhostAction
                         danger
-                        onClick={() => run(row.id, () => supabase!.rpc('cancel_order', { p_order_id: row.id, p_reason: (window.prompt('Reason for cancellation (optional):') ?? '').trim() || 'Cancelled by admin' }), 'Cancel this order?')}
+                        onClick={() => cancelOrder(row.id)}
                         disabled={isBusy}
                       >
                         Cancel
@@ -526,6 +539,7 @@ function OrdersDetail({
         })}
       </ul>
       <DetailFooter onClick={() => { onClose(); navigate('/admin/orders'); }}>Open full Orders tab →</DetailFooter>
+      {confirmModal}
     </div>
   );
 }
