@@ -34,6 +34,10 @@ const TrackOrder = lazyPage(() => import('./pages/TrackOrder'), 'TrackOrder');
 const Account = lazyPage(() => import('./pages/Account'), 'Account');
 const Documentation = lazyPage(() => import('./pages/Documentation'), 'Documentation');
 const DocumentDetail = lazyPage(() => import('./pages/DocumentDetail'), 'DocumentDetail');
+const Privacy = lazyPage(() => import('./pages/legal/Privacy'), 'Privacy');
+const Terms = lazyPage(() => import('./pages/legal/Terms'), 'Terms');
+const Shipping = lazyPage(() => import('./pages/legal/Shipping'), 'Shipping');
+const About = lazyPage(() => import('./pages/legal/About'), 'About');
 const NotFound = lazyPage(() => import('./pages/NotFound'), 'NotFound');
 
 const AdminEdit = lazyPage(() => import('./pages/admin/AdminEdit'), 'AdminEdit');
@@ -93,6 +97,10 @@ export default function App() {
                 <Route path="/signup" element={<Navigate to="/account" replace />} />
                 <Route path="/documentation" element={<Documentation />} />
                 <Route path="/documentation/:id" element={<DocumentDetail />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
                 <Route path="/admin/inventory" element={<AdminGate><AdminInventory /></AdminGate>} />
                 <Route path="/admin/import" element={<AdminGate><AdminImport /></AdminGate>} />
