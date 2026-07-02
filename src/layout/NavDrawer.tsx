@@ -166,6 +166,24 @@ const PackageIcon = (
   </svg>
 );
 
+// Account — a simple user glyph (customer portal entry point).
+const UserIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="8" r="3.4" />
+    <path d="M5 20c.9-3.6 3.8-5.8 7-5.8s6.1 2.2 7 5.8" />
+  </svg>
+);
+
+// Full Catalog — a grid glyph (browse-everything entry point).
+const GridIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="1" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="1" />
+  </svg>
+);
+
 const TOP_NAV: NavLinkDef[] = [
   { to: '/', label: 'Home', caption: 'Overview', icon: HomeIcon, match: (p) => p === '/' },
   { to: '/research', label: 'Research Library', caption: 'Compound Intelligence', icon: OwlIcon, match: (p) => p.startsWith('/research') && !p.startsWith('/research-supplies') },
@@ -177,8 +195,15 @@ const RESEARCH_SUPPLIES_CHILDREN: NavLinkDef[] = [
   { to: '/research-supplies/skincare', label: 'Skincare', caption: 'Dermal', icon: DropletIcon, match: (p) => p.startsWith('/research-supplies/skincare') },
 ];
 
+// Full catalog — sits with the Research Supplies group since it's the
+// "browse everything" counterpart to the segmented domain hubs above.
+const CATALOG_NAV: NavLinkDef = {
+  to: '/catalog', label: 'Full Catalog', caption: 'Every product, one list', icon: GridIcon, match: (p) => p.startsWith('/catalog'),
+};
+
 const TAIL_NAV: NavLinkDef[] = [
   { to: '/track', label: 'Track Order', caption: 'Status · Invoice · Receipt', icon: PackageIcon, match: (p) => p.startsWith('/track') },
+  { to: '/account', label: 'Account', caption: 'Sign in · Order history', icon: UserIcon, match: (p) => p.startsWith('/account') },
   { to: '/laboratory-equipment', label: 'Laboratory Equipment', caption: 'Instruments · Consumables', icon: MicroscopeIcon, match: (p) => p.startsWith('/laboratory-equipment') },
   { to: '/documentation', label: 'Documentation', caption: 'COA · HPLC · Assays', icon: DocumentIcon, match: (p) => p.startsWith('/documentation'), comingSoon: true },
   { to: '/contact', label: 'Contact', caption: 'Open inquiries', icon: MailIcon, match: (p) => p.startsWith('/contact') },
@@ -399,6 +424,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                 pathname={location.pathname}
                 onClick={onClose}
               />
+              <NavItem item={CATALOG_NAV} pathname={location.pathname} onClick={onClose} />
             </ul>
             {/* Domains hang off a vertical guide rule aligned under the
                 parent's icon. Each carries its own signature glyph. */}
