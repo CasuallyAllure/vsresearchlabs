@@ -344,7 +344,7 @@ export function ProductPage() {
                           isActive ? 'border-ink' : 'border-ink/[0.06] hover:border-ink/20',
                         ].join(' ')}
                       >
-                        <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <img src={url} alt={`${product.name} - image ${idx + 1}`} className="h-full w-full object-cover" loading="lazy" />
                       </button>
                     );
                   })}

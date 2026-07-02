@@ -167,7 +167,7 @@ export function VideoIntroModule() {
               aria-label={`Play: ${tab.title}`}
               className="group absolute inset-0 h-full w-full"
             >
-              <img src={mediaSrc(tab.id, 'jpg')} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <img src={mediaSrc(tab.id, 'jpg')} alt={`Video poster for ${tab.title}`} className="absolute inset-0 h-full w-full object-cover" />
               <span className="absolute inset-0 flex items-center justify-center bg-ink/10 transition-colors group-hover:bg-ink/20">
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -179,7 +179,7 @@ export function VideoIntroModule() {
           ) : (
             // No poster yet → clean "coming soon" plate (never looks broken).
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-3)] text-ink/55">
-              <img src="/brand/vs-dna-s-full-colour.png" alt="" width="64" height="64" style={{ width: 64, height: 64 }} />
+              <img src="/brand/vs-dna-s-full-colour.png" alt="" aria-hidden="true" width="64" height="64" style={{ width: 64, height: 64 }} />
               <p className="text-[10px] uppercase tracking-[0.3em] text-ink/40">Coming soon</p>
             </div>
           )}
@@ -193,6 +193,7 @@ export function VideoIntroModule() {
               key={t.id}
               src={mediaSrc(t.id, 'jpg')}
               alt=""
+              aria-hidden="true"
               onLoad={() => setPosterOk((p) => (p[t.id] ? p : { ...p, [t.id]: true }))}
               onError={() => setPosterOk((p) => (p[t.id] === false ? p : { ...p, [t.id]: false }))}
             />

@@ -57,10 +57,9 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
         {document.thumbnailUrl ? (
           <img
             src={document.thumbnailUrl}
-            alt=""
+            alt={`${document.documentType} for ${document.productName}`}
             className="h-full w-full object-cover opacity-90 transition-opacity duration-300 group-hover:opacity-100"
             loading="lazy"
-            aria-hidden="true"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-[10px] uppercase tracking-widest text-ink/20">

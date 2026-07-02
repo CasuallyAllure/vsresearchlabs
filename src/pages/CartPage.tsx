@@ -596,7 +596,7 @@ export function CartPage() {
                 <button
                   type="button"
                   onClick={() => remove(item.product.id)}
-                  aria-label="Remove item"
+                  aria-label={`Remove ${item.product.name}`}
                   className="ml-[var(--space-2)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove

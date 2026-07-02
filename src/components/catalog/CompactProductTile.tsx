@@ -94,7 +94,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt=""
+              alt={product.name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               loading="lazy"
             />
