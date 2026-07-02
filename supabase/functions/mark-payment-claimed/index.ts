@@ -20,6 +20,7 @@
 //   ZELLE_HANDLE                             — recipient hint in the admin email
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -29,11 +30,7 @@ const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquire@vsrese
 const SITE_URL             = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
 const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const CORS_HEADERS = buildCorsHeaders("GET, POST, OPTIONS");
 
 function escapeHtml(s: string): string {
   return s

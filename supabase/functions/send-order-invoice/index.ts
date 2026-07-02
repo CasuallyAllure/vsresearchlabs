@@ -10,9 +10,13 @@
 // Required env vars:
 //   SUPABASE_URL              (auto-injected)
 //   SUPABASE_SERVICE_ROLE_KEY (auto-injected)
+//   SUPABASE_ANON_KEY         (auto-injected; used for the admin auth gate)
 //   RESEND_API_KEY
 //   RESEND_FROM_EMAIL
 //   ALLOWED_ORIGIN
+//
+// Admin-only: requires a valid session JWT for an active admin (see
+// ../_shared/adminGate.ts).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -23,18 +27,15 @@ import {
   type OrderRow,
   type OrderLine,
 } from "../_shared/invoiceEmail.ts";
+import { buildCorsHeaders } from "../_shared/cors.ts";
+import { requireAdmin } from "../_shared/adminGate.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
-const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const CORS_HEADERS = buildCorsHeaders();
 
 interface InvoicePayload {
   order_id: string;
@@ -66,6 +67,10 @@ async function sendResendEmail(args: { to: string; subject: string; html: string
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
+
+  const gate = await requireAdmin(req);
+  if (!gate.ok) return jsonResponse(gate.body, gate.status);
+
   if (req.method !== "POST")    return jsonResponse({ error: "Method not allowed." }, 405);
   if (!RESEND_API_KEY)          return jsonResponse({ error: "Email service not configured." }, 500);
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return jsonResponse({ error: "Database service not configured." }, 500);
