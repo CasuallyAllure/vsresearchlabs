@@ -20,9 +20,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export type NavRole = 'guest' | 'owner';
 
-/* Bound to theme tokens so nav accents warm-shift in dark mode.
-   info = #34727A (light) → #4C97A0 (dark); gold = #B5904B (light) → #C49A48 (dark). */
-const ACCENT = 'var(--color-status-info)';
+/* Monochrome-instrument: active nav accents use brushed silver (the "gold"
+   token now holds silver). Both were distinct accents (teal + gold); unified
+   to one neutral silver so the nav reads monochrome. */
+const ACCENT = 'rgb(var(--c-gold))';
 const GOLD = 'rgb(var(--c-gold))';
 
 /* ── prefers-reduced-motion hook ────────────────────────────────────────── */
