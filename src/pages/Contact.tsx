@@ -97,8 +97,8 @@ export function Contact() {
   // ── Success view ────────────────────────────────────────────────────────
   if (submit.kind === 'success') {
     return (
-      <section className="py-[var(--space-12)] max-w-[60ch]">
-        <header className="mb-[var(--space-8)]">
+      <section className="pt-[var(--space-4)] pb-[var(--space-10)] max-w-[60ch]">
+        <header className="mb-[var(--space-5)]">
           <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
             Message Filed
           </p>
@@ -128,8 +128,8 @@ export function Contact() {
 
   // ── Form view ───────────────────────────────────────────────────────────
   return (
-    <section className="py-[var(--space-10)] max-w-[64ch] mx-auto">
-      <header className="mb-[var(--space-8)]">
+    <section className="pt-[var(--space-4)] pb-[var(--space-10)] max-w-[64ch] mx-auto">
+      <header className="mb-[var(--space-5)]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Open Inquiries
         </p>

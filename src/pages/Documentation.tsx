@@ -61,8 +61,8 @@ export function Documentation() {
   return (
     <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
       {/* Header */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
+      <header className="mb-[var(--space-4)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+        <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Documentation
         </p>
         <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
