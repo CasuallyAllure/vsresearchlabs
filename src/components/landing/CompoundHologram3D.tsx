@@ -56,6 +56,9 @@ export interface CompoundStructure {
 
 interface CompoundHologram3DProps {
   structure?: CompoundStructure;
+  /** VIVID CPK peptide coloring instead of the monochrome inline render.
+   *  Set true only for the expanded modal — the "spectacle" view. */
+  vivid?: boolean;
 }
 
 // ── Element data (real chemistry) + holographic CPK palette ───────────────
@@ -69,27 +72,79 @@ const ELEMENTS: Record<string, { name: string; z: number; mass: number; eneg: nu
   P: { name: 'Phosphorus', z: 15, mass: 30.97, eneg: 2.19 },
 };
 
-const ELEMENT_STYLE: Record<string, { color: string; emissive: string }> = {
-  C: { color: '#34727A', emissive: '#1F7878' }, // teal
-  N: { color: '#34727A', emissive: '#274C9C' }, // blue
-  O: { color: '#C7A463', emissive: '#9C3A48' }, // coral (oxygen)
-  S: { color: '#E8D6A8', emissive: '#9C7C3E' }, // gold
-  P: { color: '#C7A463', emissive: '#9C5A20' }, // orange
+/* WebGL scene palette — two registers. three.js material/emissive colors (not
+ * UI tokens); the molecule sits on a near-black inset in both themes so these
+ * don't flip. Do NOT migrate into theme.css.
+ *
+ * MONO (default, inline FIG-01): silver/steel; elements differ by LIGHTNESS so
+ *   the structure reads as a calm instrument inside the monochrome page.
+ * VIVID (expanded modal only): real CPK element coloring so the blown-up view
+ *   bursts into an actual-peptide render — carbon cyan, N blue, O red, S yellow,
+ *   P orange — a deliberate spectacle that rewards the expand. */
+interface AtomStyle { color: string; emissive: string }
+
+const ELEMENT_STYLE_MONO: Record<string, AtomStyle> = {
+  C: { color: '#9AA0A6', emissive: '#3A3E42' }, // carbon — mid silver
+  N: { color: '#BCC0C5', emissive: '#3A3E42' }, // lighter silver
+  O: { color: '#DBDDE0', emissive: '#4A4E52' }, // brightest — the highlight element
+  S: { color: '#868B90', emissive: '#33373B' }, // darker steel
+  P: { color: '#A8ACB2', emissive: '#3A3E42' },
 };
-const ELEMENT_FALLBACK = { color: '#8FD4FF', emissive: '#2A6A9C' };
+const ELEMENT_STYLE_VIVID: Record<string, AtomStyle> = {
+  C: { color: '#57C7D8', emissive: '#175863' }, // carbon — cyan (protein-render feel)
+  N: { color: '#4E82F0', emissive: '#1F3A82' }, // nitrogen — blue
+  O: { color: '#F0554A', emissive: '#7A211C' }, // oxygen — red
+  S: { color: '#ECCB4E', emissive: '#7A6620' }, // sulfur — yellow
+  P: { color: '#F0954A', emissive: '#7A4820' }, // phosphorus — orange
+};
+
+const ELEMENT_FALLBACK_MONO: AtomStyle = { color: '#9CA0A6', emissive: '#2E3236' };
+const ELEMENT_FALLBACK_VIVID: AtomStyle = { color: '#57C7D8', emissive: '#175863' };
 
 // Procedural-helix palette (fallback only)
-const ATOM_PALETTE = [
-  { color: '#34727A', emissive: '#1E444A' },
-  { color: '#62A0A6', emissive: '#1E444A' },
-  { color: '#34727A', emissive: '#1E444A' },
-  { color: '#C7A463', emissive: '#8C6A2A' },
-  { color: '#62A0A6', emissive: '#1E444A' },
-  { color: '#34727A', emissive: '#1E444A' },
-] as const;
-const ACCENT_ATOM = { color: '#E8D6A8', emissive: '#9C7C3E' };
-const BOND_COLOR = '#34727A';
-const ACCENT_BOND_COLOR = '#C4A35A';
+const ATOM_PALETTE_MONO: readonly AtomStyle[] = [
+  { color: '#9AA0A6', emissive: '#2E3236' },
+  { color: '#BCC0C5', emissive: '#2E3236' },
+  { color: '#868B90', emissive: '#2E3236' },
+  { color: '#D6D8DB', emissive: '#3A3E42' },
+  { color: '#A8ACB2', emissive: '#2E3236' },
+  { color: '#7E8288', emissive: '#2E3236' },
+];
+const ATOM_PALETTE_VIVID: readonly AtomStyle[] = [
+  { color: '#57C7D8', emissive: '#1E4A50' },
+  { color: '#4E82F0', emissive: '#1F3A82' },
+  { color: '#57C7D8', emissive: '#1E4A50' },
+  { color: '#6FD0A0', emissive: '#1E5040' },
+  { color: '#ECCB4E', emissive: '#7A6620' },
+  { color: '#4E82F0', emissive: '#1F3A82' },
+];
+
+const ACCENT_ATOM_MONO: AtomStyle = { color: '#E4E6E8', emissive: '#4A4E52' };
+const ACCENT_ATOM_VIVID: AtomStyle = { color: '#F2CE72', emissive: '#8C6A2A' };
+const BOND_COLOR_MONO = '#6E7276';
+const BOND_COLOR_VIVID = '#8FB2C0';
+const ACCENT_BOND_COLOR_MONO = '#BCC0C5';
+const ACCENT_BOND_COLOR_VIVID = '#E2C274';
+
+interface Palette {
+  style: Record<string, AtomStyle>;
+  fallback: AtomStyle;
+  atoms: readonly AtomStyle[];
+  accentAtom: AtomStyle;
+  bond: string;
+  accentBond: string;
+}
+function getPalette(vivid: boolean): Palette {
+  return vivid
+    ? {
+        style: ELEMENT_STYLE_VIVID, fallback: ELEMENT_FALLBACK_VIVID, atoms: ATOM_PALETTE_VIVID,
+        accentAtom: ACCENT_ATOM_VIVID, bond: BOND_COLOR_VIVID, accentBond: ACCENT_BOND_COLOR_VIVID,
+      }
+    : {
+        style: ELEMENT_STYLE_MONO, fallback: ELEMENT_FALLBACK_MONO, atoms: ATOM_PALETTE_MONO,
+        accentAtom: ACCENT_ATOM_MONO, bond: BOND_COLOR_MONO, accentBond: ACCENT_BOND_COLOR_MONO,
+      };
+}
 
 const RES_NAMES: Record<string, string> = {
   ALA: 'Ala', ARG: 'Arg', ASN: 'Asn', ASP: 'Asp', CYS: 'Cys', GLN: 'Gln', GLU: 'Glu',
@@ -191,13 +246,14 @@ function proceduralAtomScan(index: number, total: number, accent: boolean): Atom
 // ── Atom mesh ─────────────────────────────────────────────────────────────
 
 function AtomMesh({
-  atom, index, dense, paletteIndex, groupHot, onHover, onClear,
+  atom, index, dense, paletteIndex, groupHot, vivid, onHover, onClear,
 }: {
-  atom: Atom; index: number; dense: boolean; paletteIndex: number; groupHot?: boolean;
+  atom: Atom; index: number; dense: boolean; paletteIndex: number; groupHot?: boolean; vivid: boolean;
   onHover: (kind: 'atom', index: number) => void; onClear: () => void;
 }) {
   const accent = atom.type === 'accent';
-  const style = atom.el ? (ELEMENT_STYLE[atom.el] ?? ELEMENT_FALLBACK) : accent ? ACCENT_ATOM : ATOM_PALETTE[paletteIndex % ATOM_PALETTE.length];
+  const P = getPalette(vivid);
+  const style = atom.el ? (P.style[atom.el] ?? P.fallback) : accent ? P.accentAtom : P.atoms[paletteIndex % P.atoms.length];
   const coreRadius = dense ? (atom.el === 'O' || atom.el === 'N' ? 0.07 : 0.078) : accent ? 0.14 : 0.1;
   const haloRadius = dense ? 0.135 : accent ? 0.32 : 0.26;
   const haloOpacity = dense ? 0.13 : accent ? 0.22 : 0.18;
@@ -237,10 +293,10 @@ function AtomMesh({
 // ── Bond mesh ─────────────────────────────────────────────────────────────
 
 function BondMesh({
-  from, to, accent, dense, index, groupHot, onHover, onClear,
+  from, to, accent, dense, index, groupHot, vivid, onHover, onClear,
 }: {
   from: [number, number, number]; to: [number, number, number]; accent: boolean; dense: boolean;
-  index: number; groupHot?: boolean; onHover: (kind: 'bond', index: number) => void; onClear: () => void;
+  index: number; groupHot?: boolean; vivid: boolean; onHover: (kind: 'bond', index: number) => void; onClear: () => void;
 }) {
   const { position, quaternion, length } = useMemo(() => {
     const start = new Vector3(...from), end = new Vector3(...to);
@@ -251,7 +307,8 @@ function BondMesh({
     return { position: mid.toArray() as [number, number, number], quaternion: q, length: len };
   }, [from, to]);
 
-  const color = accent ? ACCENT_BOND_COLOR : BOND_COLOR;
+  const P = getPalette(vivid);
+  const color = accent ? P.accentBond : P.bond;
   const coreR = dense ? 0.02 : 0.018;
   const hitR = dense ? 0.06 : 0.13;
   const [hot, setHot] = useState(false);
@@ -293,7 +350,7 @@ function BondMesh({
 function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolean; placement: { right: boolean; top: boolean } }) {
   const accent = scan.accent;
   const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(181,144,75,0.9)';
-  const tint = accent ? '#9A7B3A' : '#2D6168';
+  const tint = accent ? '#BCC0C5' : '#7E8288';
 
   // Open the card toward screen-centre so it never bleeds off an edge,
   // hugging the atom with a small offset.
@@ -419,7 +476,7 @@ function cylTransform(a: Vector3, b: Vector3) {
   return { position: mid.toArray() as [number, number, number], quaternion: q, length: len };
 }
 
-const CALIPER_COLOR = '#C4A35A';
+const CALIPER_COLOR = '#BCC0C5';
 const TICK_LEN = 0.2;
 
 function ResidueCaliper({ caliper, reduced }: { caliper: Caliper; reduced: boolean }) {
@@ -470,13 +527,14 @@ function ResidueCaliper({ caliper, reduced }: { caliper: Caliper; reduced: boole
 // ── Scene ─────────────────────────────────────────────────────────────────
 
 function MolecularScene({
-  structure, hovered, onHover, onClear, reduced,
+  structure, hovered, onHover, onClear, reduced, vivid,
 }: {
   structure: CompoundStructure;
   hovered: { kind: 'atom' | 'bond'; index: number } | null;
   onHover: (kind: 'atom' | 'bond', index: number) => void;
   onClear: () => void;
   reduced: boolean;
+  vivid: boolean;
 }) {
   const groupRef = useRef<Group>(null);
   const { camera } = useThree();
@@ -591,6 +649,7 @@ function MolecularScene({
           dense={dense}
           paletteIndex={i}
           groupHot={hotResidue != null && atom.resSeq === hotResidue}
+          vivid={vivid}
           onHover={onHover}
           onClear={onClear}
         />
@@ -608,6 +667,7 @@ function MolecularScene({
             structure.atoms[bond[0]]?.resSeq === hotResidue &&
             structure.atoms[bond[1]]?.resSeq === hotResidue
           }
+          vivid={vivid}
           onHover={onHover}
           onClear={onClear}
         />
@@ -626,7 +686,7 @@ function MolecularScene({
 
 // ── Public component ─────────────────────────────────────────────────────
 
-export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) {
+export function CompoundHologram3D({ structure, vivid = false }: CompoundHologram3DProps = {}) {
   const resolved = useMemo(() => structure ?? buildHelixStructure(), [structure]);
   const dense = useMemo(() => resolved.atoms.some((a) => !!a.el), [resolved]);
   const [hovered, setHovered] = useState<{ kind: 'atom' | 'bond'; index: number } | null>(null);
@@ -651,16 +711,18 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
             scene.background = null;
             scene.fog = null;
             scene.environment = null;
-            const tint = new Color('#04101a');
+            const tint = new Color('#0B0C0D');
             scene.background = null;
             void tint;
           }}
         >
-          <ambientLight intensity={0.45} color="#3A8CB8" />
-          <pointLight position={[3, 4, 5]} intensity={1.6} color="#34727A" />
-          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#62A0A6" />
-          <pointLight position={[0, 4, -3]} intensity={0.5} color="#C4A35A" />
-          <pointLight position={[2, -3, -2]} intensity={0.4} color="#62A0A6" />
+          {/* Neutral white-ish lights so material color reads true — a touch
+              brighter in vivid so the CPK colors read as a lit specimen. */}
+          <ambientLight intensity={vivid ? 0.62 : 0.45} color="#FBFCFD" />
+          <pointLight position={[3, 4, 5]} intensity={vivid ? 1.8 : 1.6} color="#FFFFFF" />
+          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#EEF1F4" />
+          <pointLight position={[0, 4, -3]} intensity={0.5} color="#FFFFFF" />
+          <pointLight position={[2, -3, -2]} intensity={0.4} color="#EEF1F4" />
 
           <MolecularScene
             structure={resolved}
@@ -668,6 +730,7 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
             onHover={(kind, index) => setHovered({ kind, index })}
             onClear={() => setHovered(null)}
             reduced={reduced}
+            vivid={vivid}
           />
 
           <OrbitControls
@@ -725,8 +788,8 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-caliper {
           font-family: ui-monospace, "SF Mono", Menlo, monospace;
           font-size: 8px; font-weight: 600; letter-spacing: 0.08em; white-space: nowrap;
-          color: #8a6d34; padding: 1px 5px; border-radius: 4px;
-          background: rgba(251,249,244,0.82); border: 1px solid rgba(196,163,90,0.55);
+          color: #55585c; padding: 1px 5px; border-radius: 4px;
+          background: rgba(251,249,244,0.82); border: 1px solid rgba(110,114,118,0.5);
           -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
         }
         @media (max-width: 640px) {

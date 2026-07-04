@@ -40,7 +40,7 @@ export function SameDayDeliveryBadge() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label="View same-day delivery zones"
-        className="inline-flex items-center gap-0.5 cursor-pointer rounded-[2px] px-0.5 font-semibold text-holo underline decoration-holo/70 decoration-2 underline-offset-2 transition-colors hover:text-holo-light hover:decoration-holo focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+        className="inline-flex items-center gap-0.5 cursor-pointer rounded-[2px] px-0.5 font-semibold text-ink underline decoration-ink/40 decoration-2 underline-offset-2 transition-colors hover:decoration-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
       >
         same-day
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mb-[1px]">

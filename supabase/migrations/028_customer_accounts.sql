@@ -50,20 +50,26 @@ create table if not exists customer_profiles (
 alter table customer_profiles enable row level security;
 
 -- A customer can read / create / update ONLY their own profile.
+-- (drop-if-exists guards keep this migration re-runnable if the objects were
+--  ever created out-of-band via the dashboard — create policy is not idempotent.)
+drop policy if exists "Customers read own profile" on customer_profiles;
 create policy "Customers read own profile"
   on customer_profiles for select
   using (user_id = auth.uid());
 
+drop policy if exists "Customers insert own profile" on customer_profiles;
 create policy "Customers insert own profile"
   on customer_profiles for insert
   with check (user_id = auth.uid());
 
+drop policy if exists "Customers update own profile" on customer_profiles;
 create policy "Customers update own profile"
   on customer_profiles for update
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
 -- Admins (ops) can read every profile for support / CRM.
+drop policy if exists "Admins read all profiles" on customer_profiles;
 create policy "Admins read all profiles"
   on customer_profiles for select
   using (is_admin());
@@ -85,10 +91,12 @@ create trigger trg_touch_customer_profile
   for each row execute function touch_customer_profile_updated_at();
 
 -- ── 3. Customer-owned order visibility (additive to admin-only policies) ───
+drop policy if exists "Customers read own orders" on orders;
 create policy "Customers read own orders"
   on orders for select
   using (user_id = auth.uid());
 
+drop policy if exists "Customers read own order_lines" on order_lines;
 create policy "Customers read own order_lines"
   on order_lines for select
   using (

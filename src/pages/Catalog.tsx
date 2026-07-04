@@ -92,14 +92,14 @@ export function Catalog() {
   return (
     <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
       {/* Header */}
-      <header className="mb-[var(--space-8)] pb-[var(--space-6)] border-b border-ink/[0.06]">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-[var(--space-3)]">
+      <header className="mb-[var(--space-4)] pb-[var(--space-4)] border-b border-ink/[0.06]">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-ink/40 mb-[var(--space-2)]">
           Catalog
         </p>
-        <h1 className="text-3xl sm:text-4xl font-light text-ink tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-light text-ink tracking-tight">
           Inventory
         </h1>
-        <p className="mt-[var(--space-3)] text-sm text-ink/55 max-w-[52ch]">
+        <p className="mt-[var(--space-2)] text-[13px] leading-relaxed text-ink/55 max-w-[52ch]">
           Full SKU list across all categories. Click any row to open compound
           intelligence. Add directly to inquiry.
         </p>
@@ -134,7 +134,7 @@ export function Catalog() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, SKU, or description…"
-            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-2xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
+            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-[10px] pl-9 pr-9 py-2 text-[13px] text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
           />
           {query && (
             <button

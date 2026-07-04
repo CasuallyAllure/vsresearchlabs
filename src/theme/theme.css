@@ -40,13 +40,17 @@
   --c-ink: 26 23 20;           /* #1A1714 primary content */
   --c-ink-light: 107 99 90;    /* #6B635A secondary */
   --c-ink-muted: 154 145 134;  /* #9A9186 tertiary */
-  --c-gold-light: 199 164 99;  /* #C7A463 */
-  --c-gold: 181 144 75;        /* #B5904B */
-  --c-gold-dark: 140 106 42;   /* #8C6A2A */
-  --c-gold-muted: 169 151 112; /* #A99770 */
-  --c-teal-light: 111 156 154; /* #6F9C9A — muted, less "hyper blue" */
-  --c-teal: 59 108 106;        /* #3B6C6A */
-  --c-teal-dark: 36 78 77;     /* #244E4D */
+  /* Monochrome-instrument direction: "gold" tokens now hold BRUSHED SILVER
+     (primary actions / active states); "teal" tokens hold GRAPHITE (links /
+     secondary). Token names retained to avoid a 50-file rename — the values
+     are neutral. Status success/warning/error (green/amber/red) are kept. */
+  --c-gold-light: 185 188 192; /* #B9BCC0 silver light */
+  --c-gold: 154 160 166;       /* #9AA0A6 brushed silver */
+  --c-gold-dark: 108 113 118;  /* #6C7176 silver dark */
+  --c-gold-muted: 160 163 167; /* #A0A3A7 */
+  --c-teal-light: 139 143 148; /* #8B8F94 graphite light */
+  --c-teal: 86 91 96;          /* #565B60 graphite (link text) */
+  --c-teal-dark: 59 64 69;     /* #3B4045 graphite dark */
   --c-display: 251 249 244;    /* #FBF9F4 */
   --c-display-elevated: 255 255 255; /* #FFFFFF */
   --c-text-primary: 26 23 20;   /* #1A1714 */
@@ -98,9 +102,9 @@
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Interactive
      ───────────────────────────────────────────────────────────────────────── */
-  --color-interactive-primary: #B5904B;
-  --color-interactive-primaryHover: #C7A463;
-  --color-interactive-primaryActive: #8C6A2A;
+  --color-interactive-primary: #9AA0A6;
+  --color-interactive-primaryHover: #B9BCC0;
+  --color-interactive-primaryActive: #6C7176;
   --color-interactive-secondary: rgba(26, 23, 20, 0.06);
   --color-interactive-secondaryHover: rgba(26, 23, 20, 0.10);
 
@@ -113,23 +117,23 @@
   --color-status-warningMuted: rgba(181, 116, 11, 0.14);
   --color-status-error: #B23A3A;
   --color-status-errorMuted: rgba(178, 58, 58, 0.12);
-  --color-status-info: #34727A;
-  --color-status-infoMuted: rgba(52, 114, 122, 0.14);
+  --color-status-info: #565B60;
+  --color-status-infoMuted: rgba(86, 91, 96, 0.14);
 
   /* ─────────────────────────────────────────────────────────────────────────
      COLORS — Accent Palette (Gold)
      ───────────────────────────────────────────────────────────────────────── */
-  --color-accent-gold-light: #C7A463;
-  --color-accent-gold: #B5904B;
-  --color-accent-gold-dark: #8C6A2A;
-  --color-accent-gold-muted: #A99770;
+  --color-accent-gold-light: #B9BCC0;
+  --color-accent-gold: #9AA0A6;
+  --color-accent-gold-dark: #6C7176;
+  --color-accent-gold-muted: #A0A3A7;
 
   /* ───────────────────────────────────────────────────────────────────────
      COLORS — Accent Palette (Teal) — secondary accent, replaces holo cyan
      ─────────────────────────────────────────────────────────────────────── */
-  --color-accent-teal-light: #6F9C9A;
-  --color-accent-teal: #3B6C6A;
-  --color-accent-teal-dark: #244E4D;
+  --color-accent-teal-light: #8B8F94;
+  --color-accent-teal: #565B60;
+  --color-accent-teal-dark: #3B4045;
 
   /* ───────────────────────────────────────────────────────────────────────
      COLORS — Display insets — the near-black "display case" surfaces that
@@ -332,15 +336,15 @@ html[data-theme="dark"] {
   --c-ink: 233 233 236;       /* #E9E9EC primary (silver-white) */
   --c-ink-light: 168 169 173; /* #A8A9AD secondary (mid silver) */
   --c-ink-muted: 110 111 115; /* #6E6F73 tertiary (dim silver) */
-  /* Gold — warm, brightened a touch for black bg. */
-  --c-gold-light: 216 185 120; /* #D8B978 */
-  --c-gold: 196 154 72;        /* #C49A48 */
-  --c-gold-dark: 168 125 45;   /* #A87D2D */
-  --c-gold-muted: 156 138 99;  /* #9C8A63 */
-  /* Teal — warm, brightened for black bg. */
-  --c-teal-light: 133 178 175; /* #85B2AF — muted teal for black bg */
-  --c-teal: 90 145 141;        /* #5A918D */
-  --c-teal-dark: 51 93 91;     /* #335D5B */
+  /* Brushed silver (was gold) — brightened for black bg. */
+  --c-gold-light: 198 201 206; /* #C6C9CE */
+  --c-gold: 168 172 178;       /* #A8ACB2 brushed silver */
+  --c-gold-dark: 126 130 136;  /* #7E8288 */
+  --c-gold-muted: 157 160 165; /* #9DA0A5 */
+  /* Graphite (was teal) — links / secondary on black. */
+  --c-teal-light: 156 160 166; /* #9CA0A6 */
+  --c-teal: 134 138 144;       /* #868A90 */
+  --c-teal-dark: 106 110 116;  /* #6A6E74 */
   /* Image bays / display insets — stay dark. */
   --c-display: 22 22 24;       /* #161618 */
   --c-display-elevated: 30 30 33; /* #1E1E21 */
@@ -380,19 +384,19 @@ html[data-theme="dark"] {
   --color-border-subtle: rgba(233, 233, 236, 0.07);
   --color-border-strong: rgba(233, 233, 236, 0.26);
 
-  --color-interactive-primary: #C49A48;
-  --color-interactive-primaryHover: #D8B978;
-  --color-interactive-primaryActive: #A87D2D;
+  --color-interactive-primary: #A8ACB2;
+  --color-interactive-primaryHover: #C6C9CE;
+  --color-interactive-primaryActive: #7E8288;
   --color-interactive-secondary: rgba(233, 233, 236, 0.07);
   --color-interactive-secondaryHover: rgba(233, 233, 236, 0.12);
 
-  --color-accent-gold-light: #D8B978;
-  --color-accent-gold: #C49A48;
-  --color-accent-gold-dark: #A87D2D;
-  --color-accent-gold-muted: #9C8A63;
-  --color-accent-teal-light: #85B2AF;
-  --color-accent-teal: #5A918D;
-  --color-accent-teal-dark: #335D5B;
+  --color-accent-gold-light: #C6C9CE;
+  --color-accent-gold: #A8ACB2;
+  --color-accent-gold-dark: #7E8288;
+  --color-accent-gold-muted: #9DA0A5;
+  --color-accent-teal-light: #9CA0A6;
+  --color-accent-teal: #868A90;
+  --color-accent-teal-dark: #6A6E74;
 
   --color-display-base: #0A0A0B;
   --color-display-elevated: #161618;
@@ -404,8 +408,8 @@ html[data-theme="dark"] {
   --color-status-warningMuted: rgba(216, 154, 58, 0.16);
   --color-status-error: #D96565;
   --color-status-errorMuted: rgba(217, 101, 101, 0.16);
-  --color-status-info: #4C97A0;
-  --color-status-infoMuted: rgba(76, 151, 160, 0.16);
+  --color-status-info: #868A90;
+  --color-status-infoMuted: rgba(134, 138, 144, 0.16);
 
   /* ── Research surface tokens (E1/E2) ─────────────────────────────────── */
   --surface-product: #161618;
@@ -513,6 +517,17 @@ html[data-theme="dark"] {
       0 2px 6px rgba(26, 23, 20, 0.06),
       0 16px 40px -16px rgba(26, 23, 20, 0.22);
   }
+  /* Press feedback — opt-in via `.is-interactive` so only tappable modules
+     (cards, rows) respond; receipts / static data modules stay inert. The
+     press FLATTENS the signature lift (drop shadow collapses) so the module
+     reads as pressed into the surface. No transform, no bounce — on register. */
+  .research-surface-solid.is-interactive:active {
+    background-color: var(--surface-product-hover);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 1px 2px rgba(26, 23, 20, 0.05);
+    transition-duration: 80ms;
+  }
   .research-surface-elevated {
     background-color: var(--surface-elevated-research);
     border: 1px solid var(--border-product-hover);
@@ -545,13 +560,13 @@ html[data-theme="dark"] {
    directly on the black, with hue-rotate restoring the heteroatom colors.
    ─────────────────────────────────────────────────────────────────────────── */
 .mol-structure-bay  { background-color: #F4EFE6; }
-.mol-structure-img  { filter: contrast(0.96) saturate(0.6); mix-blend-mode: multiply; }
+.mol-structure-img  { filter: contrast(0.96) saturate(0) brightness(0.98); mix-blend-mode: multiply; }
 .mol-structure-fade {
   background: linear-gradient(to top, rgba(244, 239, 230, 0.92) 0%, rgba(244, 239, 230, 0.4) 60%, transparent 100%);
 }
 [data-theme="dark"] .mol-structure-bay  { background-color: transparent; }
 [data-theme="dark"] .mol-structure-img  {
-  filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.95) saturate(0.75);
+  filter: invert(1) brightness(1.1) contrast(0.95) saturate(0);
   mix-blend-mode: screen;
 }
 [data-theme="dark"] .mol-structure-fade {
@@ -561,7 +576,7 @@ html[data-theme="dark"] {
    in dark mode, so keep light (multiply) compositing, dark labels, and no
    dark fade. More specific than the [data-theme=dark] rules above. */
 [data-theme="dark"] .mol-lightbox .mol-structure-img {
-  filter: contrast(0.96) saturate(0.6);
+  filter: contrast(0.96) saturate(0);
   mix-blend-mode: multiply;
 }
 [data-theme="dark"] .mol-lightbox .mol-structure-fade {
@@ -729,39 +744,27 @@ html[data-theme="dark"] {
 
 /* ── CTA — Mint (primary) ────────────────────────────────────────────────── */
 
-/* Refined gold: a soft vertical gradient (light catches the top edge, weight
-   settles at the base) with a fine inset highlight and a tight contact shadow
-   — premium depth, NOT the retired neon glow/sheen. Hover brightens only;
-   no transform lift. See DESIGN.md §4. */
+/* Monochrome-instrument primary: a FLAT brushed-silver fill (no gradient, no
+   glow) with fixed dark ink text and a hairline machined top edge. The silver
+   fill is light-toned in both themes, so fixed dark text stays legible. Reads
+   as a quiet sibling of the .cta-holo outline, not a poppy gold slab. */
 .cta-mint {
-  background: linear-gradient(
-    180deg,
-    var(--color-accent-gold-light) 0%,
-    var(--color-accent-gold) 54%,
-    var(--color-accent-gold-dark) 100%
-  );
-  color: var(--color-content-inverse);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -1px 0 rgba(26, 23, 20, 0.12),
-    0 1px 1px rgba(26, 23, 20, 0.10),
-    0 2px 6px -1px rgba(140, 106, 42, 0.28);
+  background: var(--color-accent-gold);
+  color: #16130F;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition:
-    filter 180ms var(--easing-easeOut),
-    box-shadow 180ms var(--easing-easeOut);
+    background-color 180ms var(--easing-easeOut),
+    border-color 180ms var(--easing-easeOut);
 }
 
 .cta-mint:hover {
-  filter: brightness(1.045);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.30),
-    inset 0 -1px 0 rgba(26, 23, 20, 0.12),
-    0 1px 1px rgba(26, 23, 20, 0.10),
-    0 3px 11px -1px rgba(140, 106, 42, 0.36);
+  background: var(--color-accent-gold-light);
+  border-color: rgba(0, 0, 0, 0.22);
 }
 
 .cta-mint:active {
-  filter: brightness(0.97);
+  background: var(--color-accent-gold-dark);
 }
 
 /* Sheen retired. Kept as an inert no-op so legacy

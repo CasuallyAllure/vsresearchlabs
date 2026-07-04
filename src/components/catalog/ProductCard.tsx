@@ -118,9 +118,9 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
           <span
             className="text-[10px] uppercase tracking-[0.22em] px-1.5 py-0.5 rounded-[3px] border"
             style={{
-              color: '#8A6E2E',
-              borderColor: 'rgba(181,144,75,0.45)',
-              backgroundColor: 'rgba(181,144,75,0.08)',
+              color: 'var(--color-content-secondary)',
+              borderColor: 'var(--color-border-default)',
+              backgroundColor: 'var(--color-interactive-secondary)',
             }}
           >
             “{product.nickname}”
@@ -206,8 +206,8 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               style={{
                 padding: '5px 11px',
                 fontSize: '8.5px',
-                backgroundColor: added ? 'rgba(52, 114, 122,0.14)' : 'var(--color-interactive-secondary)',
-                border: added ? '1px solid rgba(52, 114, 122,0.40)' : '1px solid var(--color-border-default)',
+                backgroundColor: added ? 'rgba(140, 144, 148,0.14)' : 'var(--color-interactive-secondary)',
+                border: added ? '1px solid rgba(140, 144, 148,0.40)' : '1px solid var(--color-border-default)',
                 color: added ? '#9BD8FF' : 'var(--color-content-secondary)',
               }}
             >
@@ -226,7 +226,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
       onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}
       className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
     >
-      <div className="research-surface-solid overflow-hidden group">
+      <div className="research-surface-solid is-interactive overflow-hidden group">
         {imageBlock}
         <div className="border-t border-ink/[0.06] px-4 py-3 space-y-1.5">
           {identity}

@@ -53,8 +53,10 @@ export function PillTabs({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        'inline-flex items-center flex-wrap gap-1 p-1.5',
-        'bg-ink/[0.04] backdrop-blur-sm border border-ink/[0.09] rounded-xl',
+        // Single scrollable row on phones instead of wrapping into stacked
+        // rows; scrolls horizontally when the tabs exceed the width.
+        'flex items-center flex-nowrap gap-1 p-1 max-w-full overflow-x-auto',
+        'bg-ink/[0.04] border border-ink/[0.09] rounded-xl',
         className,
       )}
     >
@@ -70,20 +72,12 @@ export function PillTabs({
               if (!isActive) onChange(tab.id);
             }}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs transition-all duration-150',
-              'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
+              'shrink-0 whitespace-nowrap px-2.5 py-1 rounded-lg text-[11px] transition-colors duration-150',
+              'focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/45',
               isActive
-                ? 'bg-holo/[0.12] text-holo-light font-medium border border-holo/30'
-                : 'text-ink/55 font-normal hover:text-holo-light border border-transparent',
+                ? 'bg-gold/[0.16] text-ink font-medium border border-gold/45'
+                : 'text-ink/55 font-normal hover:text-ink border border-transparent',
             )}
-            style={
-              isActive
-                ? {
-                    boxShadow:
-                      '0 0 8px rgba(52, 114, 122, 0.28), inset 0 0 6px rgba(52, 114, 122, 0.08)',
-                  }
-                : undefined
-            }
           >
             {tab.label}
           </button>

@@ -373,29 +373,29 @@ export const META = {
 export const LAYMAN = {
   // incretin-metabolic-agonists
   cagrilintide:
-    "Cagrilintide is a long-acting **amylin** analogue — a satiety hormone that works *alongside* GLP-1. On its own it ~curbs appetite~, and paired with semaglutide (CagriSema) it's one of the most promising *next-generation weight-research* combinations.",
+    "Cagrilintide is a long-acting **amylin** analogue — an amylin-receptor agonist studied *alongside* GLP-1 agonists. It is investigated for **satiety signaling**, and paired with semaglutide (CagriSema) it is a widely studied *next-generation metabolic* research combination.",
   cagrisema:
-    "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — hitting *two appetite pathways at once*. It's one of the most-watched next-generation ~weight-research~ combinations.",
+    "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — engaging *two complementary appetite pathways*. It is one of the most-studied next-generation *metabolic-research* combinations.",
   mazdutide:
-    "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon arm adds an ~energy-burning~ boost on top of GLP-1's appetite control — studied for *weight and metabolic* outcomes.",
+    "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon component adds *energy-expenditure* signaling on top of GLP-1 activity — studied in *metabolic research* models.",
   survodutide:
-    "Survodutide is a **glucagon + GLP-1** dual agonist drawing attention in *liver (MASH) and obesity* research — the glucagon component is thought to ~directly reduce liver fat~ alongside weight loss.",
+    "Survodutide is a **glucagon + GLP-1** dual agonist studied in *liver (MASH) and metabolic* research — the glucagon component is investigated for effects on *hepatic lipid metabolism*.",
 
   // metabolic-cofactor
   'nad-plus':
-    "NAD+ is the cell's master **energy and repair** coenzyme — it powers the mitochondria and fuels the *sirtuin* longevity enzymes. Levels ~fall with age~, which is why it anchors so much *anti-aging and metabolic* research aimed at ~restoring cellular energy~.",
+    "NAD+ is a central **energy and repair** coenzyme — it drives mitochondrial redox reactions and is a required substrate for the *sirtuin* enzymes. Cellular levels *decline with age*, which is why it anchors much *cellular-aging and metabolic* research.",
   'ss-31':
     "SS-31 is a **mitochondria-targeting** peptide that homes in on *cardiolipin*, a lipid inside the cell's power plants. By ~stabilizing failing mitochondria~ and ~cutting oxidative stress~ it's studied for heart, muscle, and *age-related energy* decline.",
   'mots-c':
     "MOTS-c is a rare **mitochondrial-derived peptide** — encoded by the mitochondria themselves. It switches on **AMPK**, the body's metabolic master-sensor, and is studied as an *exercise-mimetic* that ~improves insulin sensitivity~.",
   'l-carnitine':
-    "L-Carnitine is the **shuttle** that carries fat into the mitochondria to be burned for energy. A staple of *fat-metabolism and endurance* research, studied for ~better fat utilization~ and ~exercise recovery~.",
+    "L-Carnitine is the **carnitine shuttle** that transports long-chain fatty acids into mitochondria for β-oxidation. A staple of *fat-metabolism and exercise-physiology* research.",
   aicar:
     "AICAR is an **AMPK activator** — it flips the cell into 'energy-burning' mode as if it had just exercised. Famous as an *exercise-mimetic*, it's studied for ~endurance~ and ~glucose metabolism~.",
   adipotide:
-    "Adipotide is an experimental **fat-targeting** peptide that homes to the blood supply of fat tissue and ~triggers it to recede~. A pre-clinical *obesity-research* tool with a distinct vascular mechanism.",
+    "Adipotide is an experimental **pro-apoptotic peptidomimetic** that homes to the vasculature of adipose tissue. A pre-clinical *metabolic-research* tool with a distinct vascular-targeting mechanism.",
   '5-amino-1mq':
-    "5-Amino-1MQ is a small-molecule **NNMT inhibitor** studied in *fat-metabolism* research — blocking NNMT is thought to ~raise cellular NAD+~ and ~shrink fat cells~.",
+    "5-Amino-1MQ is a small-molecule **NNMT inhibitor** studied in *adipocyte-metabolism* research — NNMT inhibition is investigated for effects on *cellular NAD+* and *adipocyte lipid metabolism*.",
 
   // regenerative
   'bpc-tb-blend':
@@ -417,7 +417,7 @@ export const LAYMAN = {
   'cjc-ipamorelin-blend':
     "The classic **CJC-1295 (No DAC) + Ipamorelin** stack — a GHRH paired with a GHRP. Together they ~produce a larger, cleaner growth-hormone pulse~ than either peptide alone.",
   tesamorelin:
-    "Tesamorelin is a stabilized **GHRH** analogue best known in research for ~reducing deep visceral belly fat~. It raises the body's own GH and IGF-1, and is the GHRH peptide with the most *human-trial* backing.",
+    "Tesamorelin is a stabilized **GHRH** analogue studied in research for ~reduction of visceral adipose tissue~. It stimulates endogenous GH and IGF-1 and has the most *human-trial* backing among the GHRH peptides.",
   sermorelin:
     "Sermorelin is the classic **GHRH** peptide — the first 29 amino acids of the natural releasing hormone. It gently prompts the pituitary to ~release its own growth hormone~ in a *natural rhythm*.",
   'hexarelin-acetate':
@@ -435,35 +435,35 @@ export const LAYMAN = {
   dsip:
     "DSIP (Delta Sleep-Inducing Peptide) is a natural brain peptide tied to **deep sleep** rhythms. It's studied for ~promoting restful sleep~ and *stress resilience*.",
   dermorphin:
-    "Dermorphin is a naturally occurring peptide with extraordinarily strong **mu-opioid** activity — many times that of morphine in models. A *pain-research* tool for potent peptide-based analgesia.",
+    "Dermorphin is a naturally occurring heptapeptide and a potent, selective **µ-opioid receptor** agonist. Studied in *analgesia and opioid-pharmacology* research.",
 
   // antioxidant-beauty
   'ghk-cu':
     "GHK-Cu is the famous **copper peptide** of skin science. It ~signals collagen and elastin repair~, ~drives new blood vessels~, and acts as an antioxidant — the backbone of *skin-remodeling, hair, and wound-healing* research.",
   'pt-141':
-    "PT-141 (bremelanotide) is a **melanocortin** peptide studied for *sexual function* — uniquely, it works through the **brain** rather than the vascular system.",
+    "PT-141 (bremelanotide) is a **melanocortin receptor** agonist that acts centrally through the **brain** rather than the vascular system. Studied in *CNS and behavioral* research.",
   'melanotan-1':
-    "Melanotan I is an **α-MSH** analogue that ~stimulates the skin's own pigment~ for *photoprotection* research — more targeted than Melanotan II, acting mainly on tanning pathways.",
+    "Melanotan I is an **α-MSH** analogue studied for ~melanogenesis~ in *photoprotection* research — more targeted than Melanotan II, acting mainly on pigmentation pathways.",
   'melanotan-2':
-    "Melanotan II is a broad **melanocortin** agonist studied for ~skin tanning~ and, through brain receptors, *libido* — more potent and less selective than Melanotan I.",
+    "Melanotan II is a broad, non-selective **melanocortin** agonist studied for ~melanogenesis~ and central melanocortin signaling — more potent and less selective than Melanotan I.",
   glutathione:
-    "Glutathione is the body's **master antioxidant** — a tripeptide that neutralizes free radicals and powers *detoxification* in every cell. Studied for ~oxidative-stress defense~, liver support, and skin-brightening.",
+    "Glutathione is a key intracellular **antioxidant** — a tripeptide (γ-Glu-Cys-Gly) that neutralizes reactive oxygen species and serves as a cofactor in redox and detoxification enzymes. Studied in *oxidative-stress and redox* research.",
   'snap-8':
-    "SNAP-8 is a topical **expression-line peptide** (acetyl octapeptide-3). It's studied for ~softening expression wrinkles~ by gently dampening the nerve-muscle signal that creates them.",
+    "SNAP-8 is a topical cosmetic peptide (acetyl octapeptide-3) studied for **SNARE-complex modulation** — investigated in *topical cosmetic* research for effects on expression-related muscle signaling.",
 
   // growth-factor-anabolic
   hgh:
-    "HGH (somatropin) is **recombinant human growth hormone** itself — the full 191-amino-acid hormone. It's the reference compound for *growth, recovery, and body-composition* research that the secretagogue peptides aim to stimulate indirectly.",
+    "HGH (somatropin) is **recombinant human growth hormone** — the full 191-amino-acid hormone. It is the reference compound for *growth-factor and tissue-anabolism* research that the secretagogue peptides stimulate indirectly.",
   'igf-1-lr3':
-    "IGF-1 LR3 is a long-acting version of **insulin-like growth factor-1**, the hormone that carries out many of growth hormone's *muscle-building* effects. The 'LR3' tweak makes it last far longer — a potent *anabolic-signaling* tool.",
+    "IGF-1 LR3 is a long-acting analogue of **insulin-like growth factor-1** with reduced IGF-binding-protein affinity, giving it an extended half-life. A potent *anabolic-signaling* research tool.",
   mgf:
-    "MGF (Mechano Growth Factor) is a **muscle-repair** splice variant of IGF-1 released when muscle is stressed. Studied for ~activating muscle stem cells~ and local regeneration.",
+    "MGF (Mechano Growth Factor) is an IGF-1 splice variant expressed in response to mechanical loading. Studied for ~satellite (muscle stem) cell activation~ and local tissue repair.",
   'peg-mgf':
-    "PEG-MGF is **MGF** with a PEG coating that makes the fragile muscle-repair peptide last far longer in circulation — studied for ~muscle recovery and growth~ signaling.",
+    "PEG-MGF is **MGF** conjugated to PEG for extended circulating stability — studied for *satellite-cell activation and tissue-repair* signaling.",
 
   // bioregulator
   'foxo4-dri':
-    "FOXO4-DRI is a **senolytic** research peptide — designed to ~clear 'zombie' senescent cells~ that build up with age, by breaking the FOXO4–p53 partnership that keeps them alive. A headline *longevity* tool.",
+    "FOXO4-DRI is a **senolytic** research peptide designed to ~target senescent ('zombie') cells~ by disrupting the FOXO4–p53 interaction. A widely studied *cellular-senescence and longevity* research tool.",
 
   // reproductive-hormonal
   hmg:

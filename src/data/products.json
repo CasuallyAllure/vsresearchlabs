@@ -1,7 +1,7 @@
 [
   {
     "id": "rs-aod9604-5mg",
-    "laymanSummary": "AOD-9604 is a small **fat-loss fragment** of growth hormone. It ~triggers fat breakdown and burning~ through the β-3 receptor *without* touching blood sugar or the IGF-1 growth pathway — so it targets **fat metabolism specifically**, without the broader effects of full growth hormone.",
+    "laymanSummary": "AOD-9604 is a **C-terminal fragment** of human growth hormone studied in *lipolysis (fat-metabolism)* research. It is investigated for effects on fat metabolism that are *proposed* to occur without activating the GH receptor or the IGF-1 growth pathway — used in research models where those axes need to be excluded as variables.",
     "slug": "aod9604-5mg",
     "name": "AOD-9604",
     "category": "biopeptide-research-supplies",
@@ -67,9 +67,9 @@
     "molecularWeight": "1815.14 g/mol",
     "productType": "peptide",
     "researchClassification": "metabolic-cofactor",
-    "mechanismSummary": "C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine at position 176. Activates β-3 adrenergic receptors to stimulate lipolysis in adipocytes without binding the GH receptor or affecting IGF-1 levels. Selective lipolytic profile without growth-promoting or diabetogenic effects.",
-    "receptorActivity": "Selective β-3 adrenergic receptor (ADRB3) agonist in adipocytes. Does not bind GH receptor (GHR) or IGF-1R. No demonstrable interaction with insulin receptor or insulin-like growth factor pathway components.",
-    "pathwaySummary": "ADRB3 → Gs → cAMP → PKA → hormone-sensitive lipase (HSL) phosphorylation → triglyceride hydrolysis in white adipocytes. Simultaneously activates UCP-1 in brown adipose tissue (BAT) for thermogenesis. Bypasses the growth hormone receptor — no IGF-1 axis involvement."
+    "mechanismSummary": "C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine at position 176. Studied in adipocyte lipolysis models; its precise molecular mechanism is not fully established. A β-3 adrenergic-linked lipolytic action has been proposed in preclinical work, and the fragment is reported not to bind the GH receptor or to raise IGF-1 levels. Note: a Phase 2 human obesity trial did not meet its primary weight endpoint.",
+    "receptorActivity": "A selective β-3 adrenergic (ADRB3) lipolytic action has been proposed in preclinical models but is not firmly established for the intact fragment. Reported not to bind the GH receptor (GHR) or IGF-1R. Receptor-level interactions require further verification.",
+    "pathwaySummary": "Proposed (not confirmed): β-3 adrenergic → Gs → cAMP → PKA → hormone-sensitive lipase (HSL) signaling in adipocytes, with reported independence from the GH receptor and IGF-1 axis. Specific downstream pathways for the fragment remain incompletely characterized in the literature."
   },
   {
     "id": "rs-bpc157-5mg",
@@ -262,7 +262,7 @@
   },
   {
     "id": "rs-epitalon-10mg",
-    "laymanSummary": "Epitalon is a four-amino-acid **pineal peptide** at the center of *longevity research*. In studies it ~activates telomerase~ — the enzyme that maintains the protective caps on our DNA — and ~helps restore natural melatonin rhythms~. Because of this it's explored as an **anti-aging and circadian** bioregulator.",
+    "laymanSummary": "Epitalon is a four-amino-acid **pineal peptide** studied in *aging and circadian* research. In published studies it has been *reported to* ~activate telomerase~ — the enzyme that maintains the protective caps (telomeres) on chromosomes — and to influence melatonin rhythms. On that basis it is studied as a **circadian and cellular-aging** bioregulator. These findings derive largely from a limited number of research groups and warrant independent verification.",
     "slug": "epitalon-10mg",
     "name": "Epitalon",
     "category": "biopeptide-research-supplies",
@@ -328,8 +328,8 @@
     "molecularWeight": "390.35 g/mol",
     "productType": "peptide",
     "researchClassification": "bioregulator",
-    "mechanismSummary": "Tetrapeptide (Ala-Glu-Asp-Gly) derived from the bovine pineal peptide preparation Epithalamin. Activates telomerase (hTERT) in aging somatic cells and upregulates pineal melatonin synthesis via N-acetyltransferase. Primary research applications in longevity biology, circadian regulation, and neuroendocrine aging models.",
-    "receptorActivity": "Activates telomerase (hTERT) in aging somatic cells. Upregulates melatonin synthesis via pinealocyte N-acetyltransferase. No direct receptor identification for the intact tetrapeptide; activity mediated through intranuclear chromatin-modifying mechanisms.",
+    "mechanismSummary": "Tetrapeptide (Ala-Glu-Asp-Gly) derived from the bovine pineal peptide preparation Epithalamin. Reported in preclinical studies to activate telomerase (hTERT) in somatic cells and to influence pineal melatonin synthesis via N-acetyltransferase. Research applications in cellular-aging, circadian-regulation, and neuroendocrine models. Independent replication of the telomerase findings remains limited.",
+    "receptorActivity": "Reported to activate telomerase (hTERT) in somatic cells and to influence melatonin synthesis via pinealocyte N-acetyltransferase in preclinical models. No direct receptor has been identified for the intact tetrapeptide; proposed activity is attributed to intranuclear chromatin-modifying mechanisms and requires further verification.",
     "pathwaySummary": "hTERT (telomerase reverse transcriptase) activation → telomere elongation in somatic cells. Pineal N-acetyltransferase upregulation → melatonin synthesis restoration. Chromatin decondensation in aging cells → re-expression of silenced gene clusters."
   },
   {
@@ -514,7 +514,7 @@
     "pathwaySummary": "MC1R/MC3R → cAMP → inhibition of NF-κB (IKKβ phosphorylation suppression) → reduced pro-inflammatory cytokine transcription. Blocks STAT3 (Tyr705) phosphorylation → reduced IL-6 and IL-17 signaling. Inhibits neutrophil and macrophage recruitment at inflammatory foci."
   },
   {
-    "laymanSummary": "Epitalon is a four-amino-acid **pineal peptide** at the center of *longevity research*. In studies it ~activates telomerase~ — the enzyme that maintains the protective caps on our DNA — and ~helps restore natural melatonin rhythms~. Because of this it's explored as an **anti-aging and circadian** bioregulator.",
+    "laymanSummary": "Pinealon is a short **Glu-Asp-Arg** (EDR) tripeptide developed as a pineal-gland **bioregulator**. It is studied in research contexts for **neuronal protection, cognitive function, and circadian regulation** — a distinct compound from the tetrapeptide Epitalon.",
     "category": "biopeptide-research-supplies",
     "specs": [
       {
@@ -527,7 +527,7 @@
       },
       {
         "label": "Mass",
-        "value": "10 mg / vial"
+        "value": "5 mg / vial"
       },
       {
         "label": "Storage",
@@ -540,7 +540,7 @@
     "tags": [
       "peptide",
       "bio-regulator",
-      "telomerase",
+      "neuroprotective",
       "research"
     ],
     "featured": false,
@@ -550,16 +550,16 @@
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
     "leadTimeDays": 7,
-    "batchReference": "EPT-BATCH-2026-060",
+    "batchReference": "PIN-BATCH-2026-264",
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "casNumber": "307297-39-8",
-    "molecularWeight": "390.35 g/mol",
+    "casNumber": "175175-23-2",
+    "molecularWeight": "418.40 g/mol",
     "productType": "peptide",
     "researchClassification": "bioregulator",
-    "mechanismSummary": "Tetrapeptide (Ala-Glu-Asp-Gly) derived from the bovine pineal peptide preparation Epithalamin. Activates telomerase (hTERT) in aging somatic cells and upregulates pineal melatonin synthesis via N-acetyltransferase. Primary research applications in longevity biology, circadian regulation, and neuroendocrine aging models.",
-    "receptorActivity": "Activates telomerase (hTERT) in aging somatic cells. Upregulates melatonin synthesis via pinealocyte N-acetyltransferase. No direct receptor identification for the intact tetrapeptide; activity mediated through intranuclear chromatin-modifying mechanisms.",
-    "pathwaySummary": "hTERT (telomerase reverse transcriptase) activation → telomere elongation in somatic cells. Pineal N-acetyltransferase upregulation → melatonin synthesis restoration. Chromatin decondensation in aging cells → re-expression of silenced gene clusters.",
+    "mechanismSummary": "Synthetic tripeptide (Glu-Asp-Arg, also written EDR). Investigated as a short-peptide bioregulator in neuroprotection, cognitive-function, and circadian-regulation research models. Proposed mechanisms involve tissue-specific regulation of gene expression; a single validated receptor target has not been established for the intact tripeptide.",
+    "receptorActivity": "No single validated receptor target has been established for the intact Glu-Asp-Arg tripeptide. Reported activity is attributed to short-peptide bioregulator mechanisms in preclinical models rather than to a defined receptor interaction.",
+    "pathwaySummary": "Proposed short-peptide bioregulator activity in neuronal and circadian research models. Specific downstream pathways for the intact tripeptide are not well characterized and warrant further verification before any mechanistic claim is published.",
     "id": "rs-pinealon-5mg",
     "slug": "pinealon-5mg",
     "name": "Pinealon",
@@ -573,7 +573,7 @@
     "shortDescription": "Tri-peptide pineal bioregulator (Glu-Asp-Arg). 5mg lyophilized vial.",
     "longDescription": "Pinealon is a short synthetic tri-peptide (Glu-Asp-Arg) developed by Khavinson et al. as a pineal-gland bioregulator for research into neuronal protection, cognitive function, and circadian regulation.\n\nSupplied as lyophilized powder in a sealed vial for laboratory reconstitution. Not for human use. For research purposes only.",
     "images": [
-      "/specimens/epitalon.svg"
+      "/specimens/pinealon-5mg.svg"
     ],
     "createdAt": "2026-06-19T00:00:00.000Z",
     "updatedAt": "2026-06-19T00:00:00.000Z",
@@ -586,7 +586,7 @@
     "category": "biopeptide-research-supplies",
     "shortDescription": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
     "longDescription": "Retatrutide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-    "laymanSummary": "Retatrutide is the newest and most powerful peptide in the **GLP-1 weight-research** family. In *human clinical trials*, participants lost up to ~24% of their body weight~ over roughly 11 months — the largest reduction reported for any compound in this class so far. It works by switching on **three receptors at once** — GLP-1, GIP, and glucagon — which together ~curb appetite~, ~steady blood sugar~, and ~raise how many calories the body burns~. In plain terms, it is a step beyond *semaglutide* (Ozempic) and *tirzepatide* (Mounjaro).",
+    "laymanSummary": "Retatrutide is an investigational **triple receptor agonist** that activates the **GLP-1, GIP, and glucagon** receptors together. In published *Phase 2 clinical research*, a mean body-weight reduction of approximately ~24%~ was reported over 48 weeks — among the largest reported for this class. The three receptor pathways are studied for their combined effects on *appetite signaling*, *glucose regulation*, and *energy expenditure*.",
     "images": [
       "/specimens/retatrutide-5mg.svg"
     ],
@@ -660,8 +660,8 @@
     "batchReference": "RTT-BATCH-2026-007",
     "testingStandard": "HPLC VSR-QC-001 · USP <62>",
     "shippingCondition": "Dry ice required",
-    "casNumber": "2381931-85-5",
-    "molecularWeight": "~4960 g/mol",
+    "casNumber": "2381089-83-2",
+    "molecularWeight": "4731.33 g/mol",
     "productType": "peptide",
     "researchClassification": "incretin-metabolic-agonists",
     "mechanismSummary": "Triple GIP/GLP-1/glucagon receptor agonist. The glucagon component drives hepatic glucose output reduction and direct energy expenditure increase via brown adipose tissue thermogenesis, amplifying the metabolic efficacy of the dual GIP/GLP-1 axis. Highest efficacy metabolic profile in the incretin class.",
@@ -727,7 +727,7 @@
   },
   {
     "id": "rs-semaglutide-5mg",
-    "laymanSummary": "Semaglutide is the **GLP-1** peptide behind *Ozempic* and *Wegovy* — the compound that kicked off the modern weight-research wave. It copies a gut hormone the body releases after eating, so it ~curbs appetite~, ~slows stomach emptying~, and ~steadies blood sugar~. In large human trials people saw up to ~15% body-weight reduction~ over roughly 16 months. A built-in fatty-acid chain lets it last about a week per dose, so it's studied as a *once-weekly* peptide.",
+    "laymanSummary": "Semaglutide is a **GLP-1 receptor agonist** — the peptide studied under the brand names *Ozempic* and *Wegovy*. It mimics a gut hormone released after eating, and is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. Phase 3 clinical trials reported a mean body-weight reduction of approximately ~15%~. A fatty-acid chain extends its half-life to about a week, supporting *once-weekly* research dosing.",
     "slug": "semaglutide-5mg",
     "name": "Semaglutide",
     "category": "biopeptide-research-supplies",
@@ -878,8 +878,8 @@
         "value": "−20°C, desiccated"
       }
     ],
-    "sku": "VSR-RS-SEX-030",
-    "abbreviation": "SEX",
+    "sku": "VSR-RS-SMX-030",
+    "abbreviation": "SMX",
     "family": "Nootropic Peptide",
     "variants": [
       {
@@ -910,7 +910,7 @@
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
     "leadTimeDays": 7,
-    "batchReference": "SEX-BATCH-2026-057",
+    "batchReference": "SMX-BATCH-2026-057",
     "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
     "shippingCondition": "Dry ice required",
     "casNumber": "80714-61-0",
@@ -995,7 +995,7 @@
   },
   {
     "id": "rs-tirzepatide-10mg",
-    "laymanSummary": "Tirzepatide is the **dual GIP + GLP-1** peptide behind *Mounjaro* and *Zepbound*. By switching on **two gut-hormone receptors at once**, it ~suppresses appetite~ and ~improves how the body handles sugar and fat~ more powerfully than GLP-1 alone. In head-to-head human trials it reached up to ~22% body-weight reduction~ — beating *semaglutide*. Like the rest of its class, it's a *once-weekly* compound.",
+    "laymanSummary": "Tirzepatide is a **dual GIP + GLP-1 receptor agonist** — the peptide studied under the brand names *Mounjaro* and *Zepbound*. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. In head-to-head Phase 3 trials it reported a mean body-weight reduction of up to ~22%~, greater than semaglutide in the study population. Like its class, it is a *once-weekly* research compound.",
     "slug": "tirzepatide-10mg",
     "name": "Tirzepatide",
     "category": "biopeptide-research-supplies",

@@ -47,6 +47,21 @@ interface DnaVMarkProps {
 // Shared orbit center (view-box units) — the centroid of the three bodies.
 const ORBIT = '67px 26px';
 
+/* Space-dust motes for the seal ring (view-box coords, tilt applied by the
+   wrapping group; a mask clears the badge interior so the V never fogs).
+   Brighter/larger at the two ansae (x≈-10 and x≈107) — the tips of a ring
+   seen at an angle catch the most light, like Saturn's ring ears. */
+const DUST: ReadonlyArray<{ x: number; y: number; r: number; o: number }> = [
+  { x: -11, y: 47, r: 1.2, o: 0.95 }, { x: -7, y: 50, r: 0.8, o: 0.8 },
+  { x: -4, y: 44, r: 0.6, o: 0.62 }, { x: -9, y: 53, r: 0.5, o: 0.55 }, { x: 1, y: 48, r: 0.5, o: 0.5 },
+  { x: 107, y: 49, r: 1.2, o: 0.95 }, { x: 103, y: 45, r: 0.8, o: 0.8 },
+  { x: 100, y: 52, r: 0.6, o: 0.62 }, { x: 105, y: 43, r: 0.5, o: 0.55 }, { x: 95, y: 48, r: 0.5, o: 0.5 },
+  { x: 8, y: 39, r: 0.5, o: 0.5 }, { x: 16, y: 59, r: 0.55, o: 0.5 }, { x: 26, y: 35, r: 0.4, o: 0.42 },
+  { x: 36, y: 62, r: 0.45, o: 0.45 }, { x: 60, y: 34, r: 0.4, o: 0.42 }, { x: 70, y: 62, r: 0.5, o: 0.46 },
+  { x: 80, y: 37, r: 0.45, o: 0.42 }, { x: 88, y: 59, r: 0.55, o: 0.5 }, { x: 48, y: 31, r: 0.4, o: 0.4 },
+  { x: 48, y: 65, r: 0.42, o: 0.42 },
+];
+
 export function DnaVMark({ size = 60, className = '', static: isStatic = false, bodyEntryMs, vRevealDelayMs, inkColor, ring = false, spin = false }: DnaVMarkProps) {
   const uid = useId().replace(/[:]/g, '');
   const grad = `sStrand-${uid}`;
@@ -92,12 +107,23 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           <stop offset="0.55" stopColor="#C49A48" />
           <stop offset="1" stopColor="#A87D2D" />
         </linearGradient>
-        {/* Metallic rim — top-lit gold band so the seal ring catches light. */}
+        {/* Metallic rim — top-lit BRUSHED SILVER band so the seal ring reads as
+            a flat, cold, out-of-this-world metal that still catches the light.
+            Monochrome-instrument direction (was gold). */}
         <linearGradient id={`rim-${uid}`} x1="0.5" y1="0" x2="0.5" y2="1">
-          <stop offset="0" stopColor="#E1C57E" />
-          <stop offset="0.5" stopColor="#B5904B" />
-          <stop offset="1" stopColor="#8C6A2A" />
+          <stop offset="0" stopColor="#EDEEF0" />
+          <stop offset="0.5" stopColor="#A8ACB2" />
+          <stop offset="1" stopColor="#70747A" />
         </linearGradient>
+        {/* Space-dust glow + a mask that clears the badge interior (r44 around
+            the seal center) so the tilted ring/dust reads only OUTSIDE the V. */}
+        <filter id={`dustBlur-${uid}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.9" />
+        </filter>
+        <mask id={`dustMask-${uid}`} maskUnits="userSpaceOnUse" x="-40" y="-40" width="180" height="180">
+          <rect x="-40" y="-40" width="180" height="180" fill="white" />
+          <circle cx="51" cy="46" r="44" fill="black" />
+        </mask>
       </defs>
 
       {/* Mark body (V monogram + DNA strand + orbit rings + seal ring). On
@@ -115,15 +141,46 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           so on the intro loader it appears together with the V (not during the
           balls-only phase). */}
       {ring && !spin && (
-        <circle
-          cx="51"
-          cy="46"
-          r="50"
-          fill="none"
-          stroke={`url(#rim-${uid})`}
-          strokeWidth="1.4"
-          strokeOpacity="0.8"
-        />
+        <>
+          {/* Space-dust ring — a tilted elliptical band of glowing silver motes
+              behind the badge, masked to the exterior so the V stays crisp. The
+              badge itself stays a true circle; the DUST band is what's tilted,
+              so the seal reads like a ringed body seen at an angle. */}
+          <g className="dna-dust" mask={`url(#dustMask-${uid})`} aria-hidden="true">
+            <g transform="rotate(-16 48 48)">
+              {/* Glow band — thick blurred silver ellipse stroke. */}
+              <ellipse
+                cx="48" cy="48" rx="58" ry="17" fill="none"
+                stroke="#B7BEC9" strokeWidth="6" opacity="0.16"
+                filter={`url(#dustBlur-${uid})`}
+              />
+              {/* Ring edges — two faint crisp silver arcs. */}
+              <ellipse cx="48" cy="48" rx="59" ry="18" fill="none" stroke="#D2D5DA" strokeWidth="0.5" opacity="0.22" />
+              <ellipse cx="48" cy="48" rx="51" ry="13.5" fill="none" stroke="#C6C9CE" strokeWidth="0.4" opacity="0.14" />
+              {/* Motes — a blurred glow layer under a crisp bright core. */}
+              <g filter={`url(#dustBlur-${uid})`} fill="#E6E9EE">
+                {DUST.map((d, i) => (
+                  <circle key={`dg${i}`} cx={d.x} cy={d.y} r={d.r} opacity={d.o * 0.9} />
+                ))}
+              </g>
+              <g fill="#F6F7F8">
+                {DUST.map((d, i) => (
+                  <circle key={`dc${i}`} cx={d.x} cy={d.y} r={d.r * 0.55} opacity={d.o} />
+                ))}
+              </g>
+            </g>
+          </g>
+          {/* Seal — a thin brushed-silver ring enclosing the mark (true circle). */}
+          <circle
+            cx="51"
+            cy="46"
+            r="50"
+            fill="none"
+            stroke={`url(#rim-${uid})`}
+            strokeWidth="1.4"
+            strokeOpacity="0.85"
+          />
+        </>
       )}
       {/* Spinner — a faintly pulsing base ring with a bright gold arc that
           rotates around it as a loading indicator. */}
@@ -204,6 +261,11 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         /* currentColor for the V / rings / body-1 tracks the active theme's
            primary content color: near-black in light, silver in dark. */
         .dna-v-mark { color: var(--color-content-primary); }
+        /* Space-dust is a dark-mode-only spectacle — silver motes need a black
+           backdrop to glow. On the cream (light) page the badge is just the
+           clean silver seal ring; the dust reveals when the site goes dark. */
+        .dna-v-mark .dna-dust { display: none; }
+        html[data-theme="dark"] .dna-v-mark .dna-dust { display: block; }
         .dna-v-mark .vsbody-1 { animation: vsbody-cw  7s  linear infinite; }
         .dna-v-mark .vsbody-2 { animation: vsbody-ccw 11s linear infinite; }
         .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }

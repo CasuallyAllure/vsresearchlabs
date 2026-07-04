@@ -139,9 +139,9 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
         aria-label={`Add ${product.name} ${activeDose} to inquiry`}
         className="shrink-0 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
         style={{
-          backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
-          border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',
-          color: added ? '#34727A' : 'rgba(26,23,20,0.78)',
+          backgroundColor: added ? 'rgba(140,144,148,0.16)' : 'rgba(26,23,20,0.05)',
+          border: added ? '1px solid rgba(140,144,148,0.45)' : '1px solid rgba(26,23,20,0.14)',
+          color: added ? '#868A90' : 'rgba(26,23,20,0.78)',
         }}
       >
         {added ? '✓' : '+ Add'}

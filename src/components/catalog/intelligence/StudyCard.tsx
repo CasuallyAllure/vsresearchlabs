@@ -73,9 +73,9 @@ export function StudyCard({ study, index }: StudyCardProps) {
           className="uppercase"
           style={{
             fontSize: '8px', letterSpacing: '0.14em', padding: '1px 4px', borderRadius: '2px',
-            backgroundColor: isHumanTrial ? 'rgba(52, 114, 122,0.08)' : 'var(--color-interactive-secondary)',
-            border: isHumanTrial ? '1px solid rgba(52, 114, 122,0.18)' : '1px solid var(--color-border-subtle)',
-            color: isHumanTrial ? 'rgba(52,114,122,0.75)' : 'var(--color-content-tertiary)',
+            backgroundColor: isHumanTrial ? 'rgba(140, 144, 148,0.08)' : 'var(--color-interactive-secondary)',
+            border: isHumanTrial ? '1px solid rgba(140, 144, 148,0.18)' : '1px solid var(--color-border-subtle)',
+            color: isHumanTrial ? 'rgba(140,144,148,0.75)' : 'var(--color-content-tertiary)',
           }}>
           {STUDY_MODEL_LABEL[study.model]}
         </span>

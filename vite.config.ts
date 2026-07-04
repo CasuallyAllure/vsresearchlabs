@@ -4,6 +4,11 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Honor a harness-assigned port (PORT env) so the dev server can avoid a
+  // busy 5173; falls back to Vite's default when PORT is unset.
+  server: {
+    port: process.env.PORT ? Number(process.env.PORT) : undefined,
+  },
   build: {
     // The only chunks over 500 kB are the React/Supabase core and the
     // three.js 3D viz — and the viz is lazy-loaded (its own chunk, fetched
