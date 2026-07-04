@@ -4,9 +4,12 @@
  * Stabilization + Final Polish — Institutional terminal state.
  *
  * Quiet, restrained footer rendered globally beneath every route as a
- * peer of <AnimatedPortalShell />. Owns the bottom-nav clearance on
- * mobile (`pb-14 lg:pb-0`), so <AnimatedPortalShell /> no longer needs
- * to over-pad its own bottom edge.
+ * peer of <AnimatedPortalShell />. Owns the bottom-nav clearance so
+ * <AnimatedPortalShell /> no longer needs to over-pad its own bottom
+ * edge. The BottomNav pill is a floating fixed element shown at ALL
+ * viewports, so the clearance (`pb-14`) applies at every breakpoint —
+ * without it, the legal/copyright row sits behind the pill on long
+ * desktop pages.
  *
  * Operationally minimal: identifier, role caption with RUO compliance
  * note, and copyright. No social links, no newsletter pattern, no
@@ -33,7 +36,7 @@ const FOOTER_LINKS: Array<{ to: string; label: string }> = [
 export function GlobalFooter() {
   return (
     <footer
-      className="border-t border-ink/[0.08] pb-14 lg:pb-0"
+      className="border-t border-ink/[0.08] pb-14"
       role="contentinfo"
     >
       <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-4)]">
