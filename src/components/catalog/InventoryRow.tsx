@@ -63,7 +63,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
   }
 
   return (
-    <div className="research-surface-solid relative group">
+    <div className="research-surface-solid is-interactive relative group">
       <Link
         to={`/product/${product.id}`}
         onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}

@@ -226,7 +226,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
       onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}
       className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
     >
-      <div className="research-surface-solid overflow-hidden group">
+      <div className="research-surface-solid is-interactive overflow-hidden group">
         {imageBlock}
         <div className="border-t border-ink/[0.06] px-4 py-3 space-y-1.5">
           {identity}
