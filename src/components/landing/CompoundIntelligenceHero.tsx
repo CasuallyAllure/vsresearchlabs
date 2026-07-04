@@ -836,7 +836,7 @@ export function CompoundIntelligenceHero() {
                 <span
                   aria-hidden
                   className={`absolute inset-x-0 bottom-0 h-px transition-colors ${
-                    on ? 'bg-holo shadow-[0_0_10px_rgba(52, 114, 122,0.55)]' : 'bg-transparent'
+                    on ? 'bg-holo shadow-[0_0_10px_rgba(140, 144, 148,0.55)]' : 'bg-transparent'
                   }`}
                 />
               </button>
@@ -881,7 +881,7 @@ export function CompoundIntelligenceHero() {
                 <span
                   key={s.key}
                   className={`h-px w-6 transition-colors duration-200 ${
-                    i === active ? 'bg-holo shadow-[0_0_8px_rgba(52, 114, 122,0.5)]' : 'bg-ink/15'
+                    i === active ? 'bg-holo shadow-[0_0_8px_rgba(140, 144, 148,0.5)]' : 'bg-ink/15'
                   }`}
                 />
               ))}

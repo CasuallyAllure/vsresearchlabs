@@ -154,9 +154,9 @@ export function Tooltip({ content, children, maxWidth = 280, ariaId }: TooltipPr
             style={{
               background:
                 'linear-gradient(180deg, rgba(28, 28, 28, 0.96) 0%, rgba(14, 14, 14, 0.97) 100%)',
-              border: '0.5px solid rgba(52, 114, 122, 0.28)',
+              border: '0.5px solid rgba(140, 144, 148, 0.28)',
               boxShadow:
-                '0 0 0 0.5px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 14px rgba(52, 114, 122, 0.15)',
+                '0 0 0 0.5px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 14px rgba(140, 144, 148, 0.15)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               maxHeight: 'inherit',

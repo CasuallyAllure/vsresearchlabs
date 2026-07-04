@@ -124,9 +124,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
               <span
                 className="shrink-0 font-mono text-[8px] uppercase tracking-[0.16em] px-1 py-0 rounded-[2px] border"
                 style={{
-                  color: '#8A6E2E',
-                  borderColor: 'rgba(181,144,75,0.40)',
-                  backgroundColor: 'rgba(181,144,75,0.10)',
+                  color: '#7E8288',
+                  borderColor: 'rgba(140,144,148,0.40)',
+                  backgroundColor: 'rgba(140,144,148,0.10)',
                 }}
               >
                 {product.nickname}
@@ -200,9 +200,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
-              border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',
-              color: added ? '#34727A' : 'rgba(26,23,20,0.78)',
+              backgroundColor: added ? 'rgba(140,144,148,0.16)' : 'rgba(26,23,20,0.05)',
+              border: added ? '1px solid rgba(140,144,148,0.45)' : '1px solid rgba(26,23,20,0.14)',
+              color: added ? '#868A90' : 'rgba(26,23,20,0.78)',
             }}
           >
             {added ? '✓' : '+ Add'}

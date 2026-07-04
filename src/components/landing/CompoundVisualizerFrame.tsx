@@ -76,7 +76,7 @@ export function CompoundVisualizerFrame({
         <span aria-hidden="true" className="text-ink/25">·</span>
         <span className="text-ink/45">Compound of the Month</span>
         <span aria-hidden="true" className="text-ink/25">·</span>
-        <span className="font-bold tracking-[0.18em]" style={{ color: '#8C6A2A' }}>
+        <span className="font-bold tracking-[0.18em]" style={{ color: 'var(--color-accent-gold)' }}>
           Retatrutide
         </span>
       </div>
@@ -90,10 +90,10 @@ export function CompoundVisualizerFrame({
       >
         <defs>
           <pattern id="hero-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(52, 114, 122,0.05)" strokeWidth="0.4" />
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(140, 144, 148,0.05)" strokeWidth="0.4" />
           </pattern>
           <radialGradient id="hero-glow" cx="50%" cy="55%" r="55%">
-            <stop offset="0%" stopColor="rgba(52, 114, 122,0.12)" />
+            <stop offset="0%" stopColor="rgba(140, 144, 148,0.12)" />
             <stop offset="100%" stopColor="rgba(0,0,0,0)" />
           </radialGradient>
         </defs>
@@ -120,7 +120,7 @@ export function CompoundVisualizerFrame({
         className="hero-holo-scan pointer-events-none absolute inset-0"
         style={{
           background:
-            'repeating-linear-gradient(to bottom, transparent 0px, rgba(52, 114, 122,0.05) 1px, transparent 2px, transparent 3px)',
+            'repeating-linear-gradient(to bottom, transparent 0px, rgba(140, 144, 148,0.05) 1px, transparent 2px, transparent 3px)',
           mixBlendMode: 'screen',
         }}
       />

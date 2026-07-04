@@ -500,7 +500,7 @@ export function Landing() {
                           x2={x}
                           y2={92}
                           pathLength={1}
-                          stroke="rgba(52,114,122,0.85)"
+                          stroke="rgba(140,144,148,0.85)"
                           strokeWidth={1.8}
                           strokeLinecap="round"
                           style={{ ['--op-delay' as string]: `${i * 80}ms` }}
@@ -516,7 +516,7 @@ export function Landing() {
                         x2={x}
                         y2={92}
                         pathLength={1}
-                        stroke="rgba(98, 160, 166,0.95)"
+                        stroke="rgba(150, 154, 158,0.95)"
                         strokeWidth={0.75}
                         strokeLinecap="round"
                         style={{ ['--op-delay' as string]: `${i * 80}ms` }}
@@ -683,7 +683,7 @@ export function Landing() {
             }
             .hero-whatsapp-cta:focus-visible {
               outline: none;
-              box-shadow: 0 0 0 2px rgba(52, 114, 122, 0.5) !important;
+              box-shadow: 0 0 0 2px rgba(140, 144, 148, 0.5) !important;
             }
             @media (prefers-reduced-motion: reduce) {
               .hero-whatsapp-cta { animation: none !important; background-position: 50% 0% !important; }

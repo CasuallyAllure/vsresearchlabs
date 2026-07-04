@@ -146,7 +146,7 @@ export function HeroHoloCarousel() {
                 aria-label={`View ${SLIDE_LABEL[key]}`}
                 className="h-1.5 w-1.5 rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/50"
                 style={{
-                  backgroundColor: on ? 'rgba(52, 114, 122,0.85)' : 'rgba(26,23,20,0.18)',
+                  backgroundColor: on ? 'rgba(140, 144, 148,0.85)' : 'rgba(26,23,20,0.18)',
                   transform: on ? 'scale(1.1)' : 'scale(1)',
                 }}
               />

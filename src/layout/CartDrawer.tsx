@@ -233,9 +233,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <span
               aria-hidden="true"
               className="flex h-12 w-12 items-center justify-center rounded-full border"
-              style={{ borderColor: 'rgba(52, 114, 122,0.4)', boxShadow: '0 0 18px rgba(52, 114, 122,0.25)' }}
+              style={{ borderColor: 'rgba(140, 144, 148,0.4)', boxShadow: '0 0 18px rgba(140, 144, 148,0.25)' }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(52,114,122,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(140,144,148,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </span>
@@ -365,7 +365,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   checked={human}
                   onChange={(e) => setHuman(e.target.checked)}
                   className="mt-0.5 h-3.5 w-3.5 shrink-0"
-                  style={{ accentColor: '#34727A' }}
+                  style={{ accentColor: '#868A90' }}
                 />
                 <span className="text-[11px] leading-relaxed text-ink/55">
                   I confirm I'm a real person acquiring these materials for legitimate research use.

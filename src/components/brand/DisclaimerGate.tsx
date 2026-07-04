@@ -106,7 +106,7 @@ export function DisclaimerGate() {
           border: '1px solid var(--color-border-default)',
           borderRadius: '16px',
           boxShadow:
-            '0 24px 60px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.65), 0 0 0 1px rgba(52,114,122,0.10)',
+            '0 24px 60px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.65), 0 0 0 1px rgba(140,144,148,0.10)',
           backdropFilter: 'blur(16px) saturate(150%)',
           WebkitBackdropFilter: 'blur(16px) saturate(150%)',
           animation: 'vsrl-dgate-rise 340ms cubic-bezier(0.22, 0.61, 0.36, 1)',
@@ -122,7 +122,7 @@ export function DisclaimerGate() {
             right: 0,
             height: '2px',
             background:
-              'linear-gradient(90deg, transparent, rgba(98,160,166,0.9), rgba(255,255,255,0.95), rgba(98,160,166,0.9), transparent)',
+              'linear-gradient(90deg, transparent, rgba(150,154,158,0.9), rgba(255,255,255,0.95), rgba(150,154,158,0.9), transparent)',
             animation: 'vsrl-dgate-gleam 3.6s ease-in-out infinite',
           }}
         />
@@ -135,7 +135,7 @@ export function DisclaimerGate() {
             borderRadius: '16px',
             pointerEvents: 'none',
             background:
-              'linear-gradient(135deg, rgba(98,160,166,0.16) 0%, transparent 40%, transparent 60%, rgba(52,114,122,0.12) 100%)',
+              'linear-gradient(135deg, rgba(150,154,158,0.16) 0%, transparent 40%, transparent 60%, rgba(140,144,148,0.12) 100%)',
             mixBlendMode: 'overlay',
           }}
         />
@@ -163,7 +163,7 @@ export function DisclaimerGate() {
             fontFamily: '"IBM Plex Mono", "Courier New", monospace',
             fontSize: '10px',
             letterSpacing: '0.3em',
-            color: '#34727A',
+            color: '#868A90',
             textTransform: 'uppercase',
             textAlign: 'center',
             marginBottom: '6px',
@@ -230,7 +230,7 @@ export function DisclaimerGate() {
             checked={age}
             onChange={(e) => setAge(e.target.checked)}
             style={{
-              accentColor: '#34727A',
+              accentColor: '#868A90',
               marginTop: '2px',
               width: 16,
               height: 16,
@@ -263,7 +263,7 @@ export function DisclaimerGate() {
             checked={terms}
             onChange={(e) => setTerms(e.target.checked)}
             style={{
-              accentColor: '#34727A',
+              accentColor: '#868A90',
               marginTop: '2px',
               width: 16,
               height: 16,
