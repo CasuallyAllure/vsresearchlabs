@@ -10,6 +10,7 @@ import { RouteTransitionLoader } from './components/brand/RouteTransitionLoader'
 import { DisclaimerGate } from './components/brand/DisclaimerGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteMeta } from './components/RouteMeta';
+import { RouteFallback } from './components/system/RouteFallback';
 
 // Route-level code splitting. Each page (and the heavy admin cluster) becomes
 // its own chunk loaded on demand, so the initial bundle is just the router +
@@ -53,16 +54,6 @@ const AdminCustomers = lazyPage(() => import('./pages/admin/AdminCustomers'), 'A
 const AdminCustomerDetail = lazyPage(() => import('./pages/admin/AdminCustomerDetail'), 'AdminCustomerDetail');
 const AdminSystemHealth = lazyPage(() => import('./pages/admin/AdminSystemHealth'), 'AdminSystemHealth');
 const AdminReports = lazyPage(() => import('./pages/admin/AdminReports'), 'AdminReports');
-
-function RouteFallback() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/35">
-        Loading…
-      </span>
-    </div>
-  );
-}
 
 export default function App() {
   return (
