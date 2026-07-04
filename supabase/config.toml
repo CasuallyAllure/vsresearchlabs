@@ -1,0 +1,20 @@
+# Supabase CLI config.
+#
+# Minimal by design: this project is managed from the hosted dashboard, and
+# this file exists so that `supabase functions deploy` applies the correct
+# per-function JWT settings instead of the CLI default (verify_jwt = ON for
+# every function).
+#
+# NOTE: this does not push auth/db/storage settings — only `supabase config
+# push` would do that, and it is not part of the normal deploy flow.
+
+project_id = "ufaajzfuppohbxebftwp"
+
+# mark-payment-claimed is a PUBLIC endpoint: the "I've sent payment" button in
+# the invoice email links here with ?t=<lookup_token>. That request carries no
+# Supabase JWT, so platform JWT verification must be OFF — the 256-bit
+# lookup_token (migration 019) is the authorization. With verify_jwt on, the
+# gateway 401s the email click before the function runs, so the payment never
+# advances. Keep this false.
+[functions.mark-payment-claimed]
+verify_jwt = false
