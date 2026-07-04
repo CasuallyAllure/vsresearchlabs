@@ -5,7 +5,7 @@
     "name": "5-Amino-1MQ",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism. Lyophilized, research grade.",
-    "laymanSummary": "5-Amino-1MQ is a small-molecule **NNMT inhibitor** studied in *fat-metabolism* research — blocking NNMT is thought to ~raise cellular NAD+~ and ~shrink fat cells~.",
+    "laymanSummary": "5-Amino-1MQ is a small-molecule **NNMT inhibitor** studied in *adipocyte-metabolism* research — NNMT inhibition is investigated for effects on *cellular NAD+* and *adipocyte lipid metabolism*.",
     "longDescription": "5-Amino-1MQ — Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/5-amino-1mq.svg"
@@ -81,7 +81,7 @@
     "name": "Adipotide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Pro-apoptotic peptidomimetic (FTPP) targeting the adipose vasculature in research models. Lyophilized, research grade.",
-    "laymanSummary": "Adipotide is an experimental **fat-targeting** peptide that homes to the blood supply of fat tissue and ~triggers it to recede~. A pre-clinical *obesity-research* tool with a distinct vascular mechanism.",
+    "laymanSummary": "Adipotide is an experimental **pro-apoptotic peptidomimetic** that homes to the vasculature of adipose tissue. A pre-clinical *metabolic-research* tool with a distinct vascular-targeting mechanism.",
     "longDescription": "Adipotide — Pro-apoptotic peptidomimetic (FTPP) targeting the adipose vasculature in research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/adipotide.svg"
@@ -372,7 +372,7 @@
     "name": "Cagrilintide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Long-acting amylin receptor agonist investigated in appetite-regulation research models. Lyophilized, research grade.",
-    "laymanSummary": "Cagrilintide is a long-acting **amylin** analogue — a satiety hormone that works *alongside* GLP-1. On its own it ~curbs appetite~, and paired with semaglutide (CagriSema) it's one of the most promising *next-generation weight-research* combinations.",
+    "laymanSummary": "Cagrilintide is a long-acting **amylin** analogue — an amylin-receptor agonist studied *alongside* GLP-1 agonists. It is investigated for **satiety signaling**, and paired with semaglutide (CagriSema) it is a widely studied *next-generation metabolic* research combination.",
     "longDescription": "Cagrilintide — Long-acting amylin receptor agonist investigated in appetite-regulation research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/cagrilintide.svg"
@@ -456,7 +456,7 @@
     "name": "Cagrilintide + Semaglutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide. Lyophilized, research grade.",
-    "laymanSummary": "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — hitting *two appetite pathways at once*. It's one of the most-watched next-generation ~weight-research~ combinations.",
+    "laymanSummary": "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — engaging *two complementary appetite pathways*. It is one of the most-studied next-generation *metabolic-research* combinations.",
     "longDescription": "Cagrilintide + Semaglutide — Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/cagrisema.svg"
@@ -661,7 +661,7 @@
     "name": "Dermorphin",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Naturally-occurring heptapeptide with high-affinity mu-opioid receptor activity, for analgesia research. Lyophilized, research grade.",
-    "laymanSummary": "Dermorphin is a naturally occurring peptide with extraordinarily strong **mu-opioid** activity — many times that of morphine in models. A *pain-research* tool for potent peptide-based analgesia.",
+    "laymanSummary": "Dermorphin is a naturally occurring heptapeptide and a potent, selective **µ-opioid receptor** agonist. Studied in *analgesia and opioid-pharmacology* research.",
     "longDescription": "Dermorphin — Naturally-occurring heptapeptide with high-affinity mu-opioid receptor activity, for analgesia research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/dermorphin.svg"
@@ -797,7 +797,7 @@
     "name": "FOXO4-DRI",
     "category": "biopeptide-research-supplies",
     "shortDescription": "FOXO4 D-retro-inverso peptide that disrupts the FOXO4–p53 interaction in senescence research. Lyophilized, research grade.",
-    "laymanSummary": "FOXO4-DRI is a **senolytic** research peptide — designed to ~clear 'zombie' senescent cells~ that build up with age, by breaking the FOXO4–p53 partnership that keeps them alive. A headline *longevity* tool.",
+    "laymanSummary": "FOXO4-DRI is a **senolytic** research peptide designed to ~target senescent ('zombie') cells~ by disrupting the FOXO4–p53 interaction. A widely studied *cellular-senescence and longevity* research tool.",
     "longDescription": "FOXO4-DRI — FOXO4 D-retro-inverso peptide that disrupts the FOXO4–p53 interaction in senescence research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/foxo4-dri.svg"
@@ -1198,7 +1198,7 @@
     "name": "Glutathione",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification. Lyophilized, research grade.",
-    "laymanSummary": "Glutathione is the body's **master antioxidant** — a tripeptide that neutralizes free radicals and powers *detoxification* in every cell. Studied for ~oxidative-stress defense~, liver support, and skin-brightening.",
+    "laymanSummary": "Glutathione is a key intracellular **antioxidant** — a tripeptide (γ-Glu-Cys-Gly) that neutralizes reactive oxygen species and serves as a cofactor in redox and detoxification enzymes. Studied in *oxidative-stress and redox* research.",
     "longDescription": "Glutathione — Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/glutathione.svg"
@@ -1264,8 +1264,8 @@
     "slug": "korean-glutathione",
     "name": "Korean Glutathione",
     "category": "biopeptide-research-supplies",
-    "shortDescription": "Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification. Lyophilized, research grade.",
-    "laymanSummary": "Glutathione is the body's **master antioxidant** — a tripeptide that neutralizes free radicals and powers *detoxification* in every cell. Studied for ~oxidative-stress defense~, liver support, and skin-brightening.",
+    "shortDescription": "Endogenous thiol tripeptide (γ-Glu-Cys-Gly), Korean-sourced. Central to cellular redox defence and detoxification. Lyophilized, research grade.",
+    "laymanSummary": "Korean Glutathione is a **glutathione** preparation (γ-Glu-Cys-Gly) from a Korean manufacturing source. Like standard glutathione it is a key intracellular **antioxidant** and redox cofactor, studied in *oxidative-stress and redox* research. Offered as a sourcing/origin variant of our glutathione line.",
     "longDescription": "Korean Glutathione — Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/korean-glutathione.svg"
@@ -1535,7 +1535,7 @@
     "name": "HGH",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Recombinant 191-amino-acid human growth hormone (somatropin) for growth-factor research. Lyophilized, research grade.",
-    "laymanSummary": "HGH (somatropin) is **recombinant human growth hormone** itself — the full 191-amino-acid hormone. It's the reference compound for *growth, recovery, and body-composition* research that the secretagogue peptides aim to stimulate indirectly.",
+    "laymanSummary": "HGH (somatropin) is **recombinant human growth hormone** — the full 191-amino-acid hormone. It is the reference compound for *growth-factor and tissue-anabolism* research that the secretagogue peptides stimulate indirectly.",
     "longDescription": "HGH — Recombinant 191-amino-acid human growth hormone (somatropin) for growth-factor research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/hgh.svg"
@@ -1675,7 +1675,7 @@
     "name": "IGF-1 LR3",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Long R3 insulin-like growth factor-1 analogue with reduced IGFBP binding, for anabolic-signaling research. Lyophilized, research grade.",
-    "laymanSummary": "IGF-1 LR3 is a long-acting version of **insulin-like growth factor-1**, the hormone that carries out many of growth hormone's *muscle-building* effects. The 'LR3' tweak makes it last far longer — a potent *anabolic-signaling* tool.",
+    "laymanSummary": "IGF-1 LR3 is a long-acting analogue of **insulin-like growth factor-1** with reduced IGF-binding-protein affinity, giving it an extended half-life. A potent *anabolic-signaling* research tool.",
     "longDescription": "IGF-1 LR3 — Long R3 insulin-like growth factor-1 analogue with reduced IGFBP binding, for anabolic-signaling research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/igf-1-lr3.svg"
@@ -1869,7 +1869,7 @@
     "name": "L-Carnitine",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Quaternary ammonium compound that shuttles long-chain fatty acids into mitochondria for β-oxidation. Supplied as a sterile solution.",
-    "laymanSummary": "L-Carnitine is the **shuttle** that carries fat into the mitochondria to be burned for energy. A staple of *fat-metabolism and endurance* research, studied for ~better fat utilization~ and ~exercise recovery~.",
+    "laymanSummary": "L-Carnitine is the **carnitine shuttle** that transports long-chain fatty acids into mitochondria for β-oxidation. A staple of *fat-metabolism and exercise-physiology* research.",
     "longDescription": "L-Carnitine — Quaternary ammonium compound that shuttles long-chain fatty acids into mitochondria for β-oxidation.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/l-carnitine.svg"
@@ -2129,7 +2129,7 @@
     "name": "Mazdutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Dual GLP-1 and glucagon receptor agonist studied in metabolic research models. Lyophilized, research grade.",
-    "laymanSummary": "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon arm adds an ~energy-burning~ boost on top of GLP-1's appetite control — studied for *weight and metabolic* outcomes.",
+    "laymanSummary": "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon component adds *energy-expenditure* signaling on top of GLP-1 activity — studied in *metabolic research* models.",
     "longDescription": "Mazdutide — Dual GLP-1 and glucagon receptor agonist studied in metabolic research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/mazdutide.svg"
@@ -2213,7 +2213,7 @@
     "name": "Melanotan I",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Linear α-MSH analogue (afamelanotide) studied for melanogenesis and photoprotection research. Lyophilized, research grade.",
-    "laymanSummary": "Melanotan I is an **α-MSH** analogue that ~stimulates the skin's own pigment~ for *photoprotection* research — more targeted than Melanotan II, acting mainly on tanning pathways.",
+    "laymanSummary": "Melanotan I is an **α-MSH** analogue studied for ~melanogenesis~ in *photoprotection* research — more targeted than Melanotan II, acting mainly on pigmentation pathways.",
     "longDescription": "Melanotan I — Linear α-MSH analogue (afamelanotide) studied for melanogenesis and photoprotection research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/melanotan-1.svg"
@@ -2287,7 +2287,7 @@
     "name": "Melanotan II",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Cyclic α-MSH analogue studied for melanogenesis and broad melanocortin-receptor research. Lyophilized, research grade.",
-    "laymanSummary": "Melanotan II is a broad **melanocortin** agonist studied for ~skin tanning~ and, through brain receptors, *libido* — more potent and less selective than Melanotan I.",
+    "laymanSummary": "Melanotan II is a broad, non-selective **melanocortin** agonist studied for ~melanogenesis~ and central melanocortin signaling — more potent and less selective than Melanotan I.",
     "longDescription": "Melanotan II — Cyclic α-MSH analogue studied for melanogenesis and broad melanocortin-receptor research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/melanotan-2.svg"
@@ -2352,7 +2352,7 @@
     "name": "MGF",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Mechano growth factor — an IGF-1 splice variant (IGF-1Ec) studied in muscle-repair research. Lyophilized, research grade.",
-    "laymanSummary": "MGF (Mechano Growth Factor) is a **muscle-repair** splice variant of IGF-1 released when muscle is stressed. Studied for ~activating muscle stem cells~ and local regeneration.",
+    "laymanSummary": "MGF (Mechano Growth Factor) is an IGF-1 splice variant expressed in response to mechanical loading. Studied for ~satellite (muscle stem) cell activation~ and local tissue repair.",
     "longDescription": "MGF — Mechano growth factor — an IGF-1 splice variant (IGF-1Ec) studied in muscle-repair research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/mgf.svg"
@@ -2584,7 +2584,7 @@
     "name": "NAD+",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Nicotinamide adenine dinucleotide — a central redox cofactor in cellular energy metabolism. Lyophilized, research grade.",
-    "laymanSummary": "NAD+ is the cell's master **energy and repair** coenzyme — it powers the mitochondria and fuels the *sirtuin* longevity enzymes. Levels ~fall with age~, which is why it anchors so much *anti-aging and metabolic* research aimed at ~restoring cellular energy~.",
+    "laymanSummary": "NAD+ is a central **energy and repair** coenzyme — it drives mitochondrial redox reactions and is a required substrate for the *sirtuin* enzymes. Cellular levels *decline with age*, which is why it anchors much *cellular-aging and metabolic* research.",
     "longDescription": "NAD+ — Nicotinamide adenine dinucleotide — a central redox cofactor in cellular energy metabolism.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/nad-plus.svg"
@@ -2722,7 +2722,7 @@
     "name": "PEG-MGF",
     "category": "biopeptide-research-supplies",
     "shortDescription": "PEGylated mechano growth factor with extended stability, for muscle-repair research. Lyophilized, research grade.",
-    "laymanSummary": "PEG-MGF is **MGF** with a PEG coating that makes the fragile muscle-repair peptide last far longer in circulation — studied for ~muscle recovery and growth~ signaling.",
+    "laymanSummary": "PEG-MGF is **MGF** conjugated to PEG for extended circulating stability — studied for *satellite-cell activation and tissue-repair* signaling.",
     "longDescription": "PEG-MGF — PEGylated mechano growth factor with extended stability, for muscle-repair research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/peg-mgf.svg"
@@ -2785,7 +2785,7 @@
     "name": "PT-141",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Melanocortin receptor agonist (bremelanotide) investigated for sexual-function and CNS research. Lyophilized, research grade.",
-    "laymanSummary": "PT-141 (bremelanotide) is a **melanocortin** peptide studied for *sexual function* — uniquely, it works through the **brain** rather than the vascular system.",
+    "laymanSummary": "PT-141 (bremelanotide) is a **melanocortin receptor** agonist that acts centrally through the **brain** rather than the vascular system. Studied in *CNS and behavioral* research.",
     "longDescription": "PT-141 — Melanocortin receptor agonist (bremelanotide) investigated for sexual-function and CNS research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/pt-141.svg"
@@ -2995,7 +2995,7 @@
     "name": "SNAP-8",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research. Lyophilized, research grade.",
-    "laymanSummary": "SNAP-8 is a topical **expression-line peptide** (acetyl octapeptide-3). It's studied for ~softening expression wrinkles~ by gently dampening the nerve-muscle signal that creates them.",
+    "laymanSummary": "SNAP-8 is a topical cosmetic peptide (acetyl octapeptide-3) studied for **SNARE-complex modulation** — investigated in *topical cosmetic* research for effects on expression-related muscle signaling.",
     "longDescription": "SNAP-8 — Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/snap-8.svg"
@@ -3137,7 +3137,7 @@
     "name": "Survodutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research. Lyophilized, research grade.",
-    "laymanSummary": "Survodutide is a **glucagon + GLP-1** dual agonist drawing attention in *liver (MASH) and obesity* research — the glucagon component is thought to ~directly reduce liver fat~ alongside weight loss.",
+    "laymanSummary": "Survodutide is a **glucagon + GLP-1** dual agonist studied in *liver (MASH) and metabolic* research — the glucagon component is investigated for effects on *hepatic lipid metabolism*.",
     "longDescription": "Survodutide — Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/survodutide.svg"
@@ -3218,7 +3218,7 @@
     "name": "Tesamorelin",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Stabilized GHRH(1-44) analogue investigated for GH-axis and visceral-adipose research. Lyophilized, research grade.",
-    "laymanSummary": "Tesamorelin is a stabilized **GHRH** analogue best known in research for ~reducing deep visceral belly fat~. It raises the body's own GH and IGF-1, and is the GHRH peptide with the most *human-trial* backing.",
+    "laymanSummary": "Tesamorelin is a stabilized **GHRH** analogue studied in research for ~reduction of visceral adipose tissue~. It stimulates endogenous GH and IGF-1 and has the most *human-trial* backing among the GHRH peptides.",
     "longDescription": "Tesamorelin — Stabilized GHRH(1-44) analogue investigated for GH-axis and visceral-adipose research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/specimens/tesamorelin.svg"
