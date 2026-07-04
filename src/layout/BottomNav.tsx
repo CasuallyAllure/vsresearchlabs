@@ -20,8 +20,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export type NavRole = 'guest' | 'owner';
 
-const ACCENT = '#34727A';
-const GOLD = '#B5904B';
+/* Bound to theme tokens so nav accents warm-shift in dark mode.
+   info = #34727A (light) → #4C97A0 (dark); gold = #B5904B (light) → #C49A48 (dark). */
+const ACCENT = 'var(--color-status-info)';
+const GOLD = 'rgb(var(--c-gold))';
 
 /* ── prefers-reduced-motion hook ────────────────────────────────────────── */
 
@@ -359,8 +361,8 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             <span
               className={`relative inline-block rounded-full px-2 py-[2.5px] text-[7px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
-                color: '#FBF9F4',
-                background: 'linear-gradient(180deg, #B5904B 0%, #8C6A2A 100%)',
+                color: 'var(--color-content-inverse)',
+                background: 'linear-gradient(180deg, rgb(var(--c-gold)) 0%, rgb(var(--c-gold-dark)) 100%)',
                 border: '0.5px solid rgba(140,110,50,0.6)',
                 boxShadow:
                   '0 2px 8px -2px rgba(26,23,20,0.35)',
@@ -377,7 +379,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                   height: 0,
                   borderLeft: '4px solid transparent',
                   borderRight: '4px solid transparent',
-                  borderTop: '4px solid #8C6A2A',
+                  borderTop: '4px solid rgb(var(--c-gold-dark))',
                 }}
               />
             </span>
