@@ -111,7 +111,7 @@ export function CompoundVisualizerFrame({
           </div>
         }
       >
-        <HeroHoloCarousel />
+        <HeroHoloCarousel vivid={expanded} />
       </Suspense>
 
       {/* Scanline overlay — period 90s holo cue */}

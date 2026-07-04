@@ -56,7 +56,7 @@ interface EffectRow {
   study: ProductStudy;
 }
 
-export function HeroHoloCarousel() {
+export function HeroHoloCarousel({ vivid = false }: { vivid?: boolean } = {}) {
   const product = products.find((p) => p.slug === FEATURED_SLUG);
   const ci = product ? getCompoundIntelligence(product) : null;
 
@@ -101,7 +101,7 @@ export function HeroHoloCarousel() {
     };
   }, []);
 
-  if (!ci) return <SlideHologram />;
+  if (!ci) return <SlideHologram vivid={vivid} />;
 
   return (
     <>
@@ -123,6 +123,7 @@ export function HeroHoloCarousel() {
                 fdaStatus={ci.fdaStatus}
                 humanTrials={ci.humanTrials}
                 receptors={ci.receptorTargets}
+                vivid={vivid}
               />
             )}
             {key === 'effects' && <SlideEffects effects={effects} />}
@@ -277,6 +278,8 @@ interface SlideHologramProps {
   fdaStatus?: string;
   humanTrials?: boolean;
   receptors?: ReceptorTargetView[];
+  /** VIVID CPK peptide coloring — passed through to the expanded modal only. */
+  vivid?: boolean;
 }
 
 /** Agonist class implied by the count of distinct receptor targets —
@@ -291,6 +294,7 @@ function SlideHologram({
   fdaStatus,
   humanTrials,
   receptors = [],
+  vivid = false,
 }: SlideHologramProps = {}) {
   const reg = parseFdaInfo(fdaStatus);
   // Compact receptor identity, e.g. "GIP·GLP-1·GCG" (strip the trailing R).
@@ -308,7 +312,7 @@ function SlideHologram({
           for layered SVG, or PDB-driven per-compound structure) is a
           single-component swap; nothing else in this slide depends on
           the rendering technology. */}
-      <CompoundHologram3D structure={retatrutideStructure as unknown as CompoundStructure} />
+      <CompoundHologram3D structure={retatrutideStructure as unknown as CompoundStructure} vivid={vivid} />
 
       {/* Status strip — a single thin lower-third line (slide 1 only),
           sitting just above the carousel dots. Class is derived from the
