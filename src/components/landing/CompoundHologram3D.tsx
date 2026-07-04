@@ -69,6 +69,12 @@ const ELEMENTS: Record<string, { name: string; z: number; mass: number; eneg: nu
   P: { name: 'Phosphorus', z: 15, mass: 30.97, eneg: 2.19 },
 };
 
+/* WebGL scene palette — intentional token-system exception.
+ * These are three.js material/emissive/light colors (not UI surface tokens).
+ * The molecule renders on a near-black display inset in BOTH light and dark
+ * themes, so these values do not need to flip and are kept as literals here
+ * rather than in theme.css. Hues are drawn from the brand gold/teal family.
+ * Do NOT migrate these into theme.css. */
 const ELEMENT_STYLE: Record<string, { color: string; emissive: string }> = {
   C: { color: '#34727A', emissive: '#1F7878' }, // teal
   N: { color: '#34727A', emissive: '#274C9C' }, // blue
