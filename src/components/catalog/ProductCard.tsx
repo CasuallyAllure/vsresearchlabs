@@ -118,9 +118,9 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
           <span
             className="text-[10px] uppercase tracking-[0.22em] px-1.5 py-0.5 rounded-[3px] border"
             style={{
-              color: '#8A6E2E',
-              borderColor: 'rgba(181,144,75,0.45)',
-              backgroundColor: 'rgba(181,144,75,0.08)',
+              color: 'var(--color-content-secondary)',
+              borderColor: 'var(--color-border-default)',
+              backgroundColor: 'var(--color-interactive-secondary)',
             }}
           >
             “{product.nickname}”

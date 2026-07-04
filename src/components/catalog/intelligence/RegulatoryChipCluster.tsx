@@ -50,9 +50,9 @@ export function RegulatoryChipCluster({ humanTrials, fdaStatus }: RegulatoryChip
           <span className="uppercase"
             style={{
               fontSize: '8px', letterSpacing: '0.14em', padding: '1px 5px', borderRadius: '2px',
-              backgroundColor: humanTrials ? 'rgba(100,175,100,0.10)' : 'var(--color-interactive-secondary)',
-              border: humanTrials ? '1px solid rgba(100,175,100,0.22)' : '1px solid var(--color-border-subtle)',
-              color: humanTrials ? 'rgba(140,200,140,0.82)' : 'var(--color-content-tertiary)',
+              backgroundColor: 'var(--color-interactive-secondary)',
+              border: '1px solid var(--color-border-subtle)',
+              color: humanTrials ? 'var(--color-content-secondary)' : 'var(--color-content-tertiary)',
             }}>
             {humanTrials ? 'Confirmed' : 'None known'}
           </span>

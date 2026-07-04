@@ -69,33 +69,32 @@ const ELEMENTS: Record<string, { name: string; z: number; mass: number; eneg: nu
   P: { name: 'Phosphorus', z: 15, mass: 30.97, eneg: 2.19 },
 };
 
-/* WebGL scene palette — intentional token-system exception.
- * These are three.js material/emissive/light colors (not UI surface tokens).
- * The molecule renders on a near-black display inset in BOTH light and dark
- * themes, so these values do not need to flip and are kept as literals here
- * rather than in theme.css. Hues are drawn from the brand gold/teal family.
- * Do NOT migrate these into theme.css. */
+/* WebGL scene palette — MONOCHROME (silver/steel). three.js material/emissive/
+ * light colors, not UI surface tokens. The molecule sits on a near-black display
+ * inset in both themes, so these do not flip. Monochrome-instrument direction:
+ * elements differ by LIGHTNESS in a neutral silver ramp (structure stays legible)
+ * rather than by hue. Do NOT migrate into theme.css. */
 const ELEMENT_STYLE: Record<string, { color: string; emissive: string }> = {
-  C: { color: '#34727A', emissive: '#1F7878' }, // teal
-  N: { color: '#34727A', emissive: '#274C9C' }, // blue
-  O: { color: '#C7A463', emissive: '#9C3A48' }, // coral (oxygen)
-  S: { color: '#E8D6A8', emissive: '#9C7C3E' }, // gold
-  P: { color: '#C7A463', emissive: '#9C5A20' }, // orange
+  C: { color: '#9AA0A6', emissive: '#3A3E42' }, // carbon — mid silver
+  N: { color: '#BCC0C5', emissive: '#3A3E42' }, // lighter silver
+  O: { color: '#DBDDE0', emissive: '#4A4E52' }, // brightest — reads as the highlight element
+  S: { color: '#868B90', emissive: '#33373B' }, // darker steel
+  P: { color: '#A8ACB2', emissive: '#3A3E42' },
 };
-const ELEMENT_FALLBACK = { color: '#8FD4FF', emissive: '#2A6A9C' };
+const ELEMENT_FALLBACK = { color: '#9CA0A6', emissive: '#2E3236' };
 
-// Procedural-helix palette (fallback only)
+// Procedural-helix palette (fallback only) — neutral silver ramp
 const ATOM_PALETTE = [
-  { color: '#34727A', emissive: '#1E444A' },
-  { color: '#62A0A6', emissive: '#1E444A' },
-  { color: '#34727A', emissive: '#1E444A' },
-  { color: '#C7A463', emissive: '#8C6A2A' },
-  { color: '#62A0A6', emissive: '#1E444A' },
-  { color: '#34727A', emissive: '#1E444A' },
+  { color: '#9AA0A6', emissive: '#2E3236' },
+  { color: '#BCC0C5', emissive: '#2E3236' },
+  { color: '#868B90', emissive: '#2E3236' },
+  { color: '#D6D8DB', emissive: '#3A3E42' },
+  { color: '#A8ACB2', emissive: '#2E3236' },
+  { color: '#7E8288', emissive: '#2E3236' },
 ] as const;
-const ACCENT_ATOM = { color: '#E8D6A8', emissive: '#9C7C3E' };
-const BOND_COLOR = '#34727A';
-const ACCENT_BOND_COLOR = '#C4A35A';
+const ACCENT_ATOM = { color: '#E4E6E8', emissive: '#4A4E52' };
+const BOND_COLOR = '#6E7276';
+const ACCENT_BOND_COLOR = '#BCC0C5';
 
 const RES_NAMES: Record<string, string> = {
   ALA: 'Ala', ARG: 'Arg', ASN: 'Asn', ASP: 'Asp', CYS: 'Cys', GLN: 'Gln', GLU: 'Glu',
@@ -299,7 +298,7 @@ function BondMesh({
 function ScouterCard({ scan, reduced, placement }: { scan: Scan; reduced: boolean; placement: { right: boolean; top: boolean } }) {
   const accent = scan.accent;
   const edge = accent ? 'rgba(196,163,90,0.9)' : 'rgba(181,144,75,0.9)';
-  const tint = accent ? '#9A7B3A' : '#2D6168';
+  const tint = accent ? '#BCC0C5' : '#7E8288';
 
   // Open the card toward screen-centre so it never bleeds off an edge,
   // hugging the atom with a small offset.
@@ -425,7 +424,7 @@ function cylTransform(a: Vector3, b: Vector3) {
   return { position: mid.toArray() as [number, number, number], quaternion: q, length: len };
 }
 
-const CALIPER_COLOR = '#C4A35A';
+const CALIPER_COLOR = '#BCC0C5';
 const TICK_LEN = 0.2;
 
 function ResidueCaliper({ caliper, reduced }: { caliper: Caliper; reduced: boolean }) {
@@ -657,16 +656,16 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
             scene.background = null;
             scene.fog = null;
             scene.environment = null;
-            const tint = new Color('#04101a');
+            const tint = new Color('#0B0C0D');
             scene.background = null;
             void tint;
           }}
         >
-          <ambientLight intensity={0.45} color="#3A8CB8" />
-          <pointLight position={[3, 4, 5]} intensity={1.6} color="#34727A" />
-          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#62A0A6" />
-          <pointLight position={[0, 4, -3]} intensity={0.5} color="#C4A35A" />
-          <pointLight position={[2, -3, -2]} intensity={0.4} color="#62A0A6" />
+          <ambientLight intensity={0.45} color="#BFC3C8" />
+          <pointLight position={[3, 4, 5]} intensity={1.6} color="#C6C9CE" />
+          <pointLight position={[-3, -2, 4]} intensity={0.9} color="#A8ACB2" />
+          <pointLight position={[0, 4, -3]} intensity={0.5} color="#D8DADD" />
+          <pointLight position={[2, -3, -2]} intensity={0.4} color="#A8ACB2" />
 
           <MolecularScene
             structure={resolved}
@@ -731,8 +730,8 @@ export function CompoundHologram3D({ structure }: CompoundHologram3DProps = {}) 
         .holo-caliper {
           font-family: ui-monospace, "SF Mono", Menlo, monospace;
           font-size: 8px; font-weight: 600; letter-spacing: 0.08em; white-space: nowrap;
-          color: #8a6d34; padding: 1px 5px; border-radius: 4px;
-          background: rgba(251,249,244,0.82); border: 1px solid rgba(196,163,90,0.55);
+          color: #55585c; padding: 1px 5px; border-radius: 4px;
+          background: rgba(251,249,244,0.82); border: 1px solid rgba(110,114,118,0.5);
           -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
         }
         @media (max-width: 640px) {

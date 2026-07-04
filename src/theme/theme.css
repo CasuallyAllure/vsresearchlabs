@@ -560,13 +560,13 @@ html[data-theme="dark"] {
    directly on the black, with hue-rotate restoring the heteroatom colors.
    ─────────────────────────────────────────────────────────────────────────── */
 .mol-structure-bay  { background-color: #F4EFE6; }
-.mol-structure-img  { filter: contrast(0.96) saturate(0.6); mix-blend-mode: multiply; }
+.mol-structure-img  { filter: contrast(0.96) saturate(0) brightness(0.98); mix-blend-mode: multiply; }
 .mol-structure-fade {
   background: linear-gradient(to top, rgba(244, 239, 230, 0.92) 0%, rgba(244, 239, 230, 0.4) 60%, transparent 100%);
 }
 [data-theme="dark"] .mol-structure-bay  { background-color: transparent; }
 [data-theme="dark"] .mol-structure-img  {
-  filter: invert(1) hue-rotate(180deg) brightness(1.1) contrast(0.95) saturate(0.75);
+  filter: invert(1) brightness(1.1) contrast(0.95) saturate(0);
   mix-blend-mode: screen;
 }
 [data-theme="dark"] .mol-structure-fade {
@@ -576,7 +576,7 @@ html[data-theme="dark"] {
    in dark mode, so keep light (multiply) compositing, dark labels, and no
    dark fade. More specific than the [data-theme=dark] rules above. */
 [data-theme="dark"] .mol-lightbox .mol-structure-img {
-  filter: contrast(0.96) saturate(0.6);
+  filter: contrast(0.96) saturate(0);
   mix-blend-mode: multiply;
 }
 [data-theme="dark"] .mol-lightbox .mol-structure-fade {

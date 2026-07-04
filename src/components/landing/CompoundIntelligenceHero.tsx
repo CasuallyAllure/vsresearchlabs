@@ -120,7 +120,7 @@ function ReceptorMap({ ci }: { ci: CompoundIntelligence }) {
       aria-hidden="true"
     >
       {/* Central compound node */}
-      <circle cx={cx} cy={cy} r="30" fill="#070707" stroke="rgba(196,163,90,0.55)" strokeWidth="1.25" />
+      <circle cx={cx} cy={cy} r="30" fill="#070707" stroke="rgba(140,144,148,0.5)" strokeWidth="1.25" />
       <text x={cx} y={cy - 2} textAnchor="middle" fontFamily="monospace" fontSize="13" fill="rgba(26,23,20,0.85)" letterSpacing="1">
         {ci.abbreviation}
       </text>
@@ -141,7 +141,7 @@ function ReceptorMap({ ci }: { ci: CompoundIntelligence }) {
               className="op-draw"
               style={{ ['--op-delay' as string]: `${360 + i * 160}ms` }}
             />
-            <circle cx={cx + 30} cy={cy} r="2" fill="rgba(196,163,90,0.7)" />
+            <circle cx={cx + 30} cy={cy} r="2" fill="rgba(140,144,148,0.7)" />
             <rect
               x={tx - 8}
               y={ty}
@@ -154,7 +154,7 @@ function ReceptorMap({ ci }: { ci: CompoundIntelligence }) {
             <text x={tx + 4} y={ty + 13} fontFamily="monospace" fontSize="11" fill="rgba(26,23,20,0.82)" letterSpacing="0.5">
               {t.receptor}
             </text>
-            <text x={tx + 4} y={ty + 24} fontFamily="monospace" fontSize="8.5" fill="#C4A35A" opacity="0.8">
+            <text x={tx + 4} y={ty + 24} fontFamily="monospace" fontSize="8.5" fill="#9AA0A6" opacity="0.8">
               EC50 {t.ec50}
             </text>
           </g>
