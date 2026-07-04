@@ -550,19 +550,18 @@ export function Landing() {
                   Velari Systems Research Labs
                 </strong>{' '}
                 is a Northern California research company specializing in{' '}
-                {/* Official category colors — matched to the three orbiting
-                    bodies on the DNA·V mark: peptides=gold, nootropics=teal,
-                    skincare=grey. Laboratory equipment inherits the paragraph
-                    color. Each word links to its supply destination. */}
-                <Link to="/research-supplies/biopeptide" className="font-medium text-gold underline-offset-2 hover:underline">
+                {/* Monochrome-instrument: category words are ink + medium
+                    weight (no color), underlined on hover. Each links to its
+                    supply destination. */}
+                <Link to="/research-supplies/biopeptide" className="font-medium text-ink underline-offset-2 hover:underline">
                   peptides
                 </Link>
                 ,{' '}
-                <Link to="/research-supplies/nootropics" className="font-medium text-holo underline-offset-2 hover:underline">
+                <Link to="/research-supplies/nootropics" className="font-medium text-ink underline-offset-2 hover:underline">
                   nootropics
                 </Link>
                 ,{' '}
-                <Link to="/research-supplies/skincare" className="font-medium text-ink/50 underline-offset-2 hover:underline">
+                <Link to="/research-supplies/skincare" className="font-medium text-ink underline-offset-2 hover:underline">
                   skincare-grade compounds
                 </Link>
                 , and{' '}
@@ -572,13 +571,13 @@ export function Landing() {
                 {' '}— all supplied at research-grade purity.{' '}
                 <SameDayDeliveryBadge />
                 {' '}and{' '}
-                <span className="font-medium text-holo">
+                <span className="font-medium text-ink">
                   next-day
                 </span>
                 {' '}delivery available across the Bay Area on select orders.
                 {' '}But we're a research company first — so we share what we
                 know. Every compound here carries an{' '}
-                <span className="font-medium text-holo">
+                <span className="font-medium text-ink">
                   open research dossier
                 </span>
                 {' '}— mechanism, receptor data, and the published study
@@ -591,7 +590,7 @@ export function Landing() {
                 style={{ ['--op-delay' as string]: '240ms' }}
               >
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
                   heading="Begin inquiry — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Peptide sciences', to: '/research-supplies/biopeptide' },
@@ -603,7 +602,7 @@ export function Landing() {
                   <span className="relative">Begin Inquiry</span>
                 </HeroSegmentMenu>
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] uppercase tracking-[0.18em] text-teal focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                   heading="View research — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Compound library', to: '/research' },
@@ -615,7 +614,7 @@ export function Landing() {
                   <span className="relative">View Research</span>
                   <span
                     aria-hidden="true"
-                    className="relative text-holo/70 transition-colors duration-300 group-hover:text-holo-light"
+                    className="relative text-ink/45 transition-colors duration-300 group-hover:text-ink"
                   >
                     →
                   </span>
@@ -691,48 +690,37 @@ export function Landing() {
               .hero-whatsapp-cta:hover { transform: none; }
             }
 
-            /* Begin Inquiry — refined gold gradient (mirrors .cta-mint):
-               top highlight, settled base, tight contact shadow. */
+            /* Begin Inquiry — flat brushed silver (mirrors .cta-mint):
+               no gradient, no glow, hairline machined top edge. Fixed dark
+               text (display-base is dark in both themes) since the silver
+               fill is light-toned in both. */
             .hero-cta-gold {
-              background: linear-gradient(
-                180deg,
-                var(--color-accent-gold-light) 0%,
-                var(--color-accent-gold) 54%,
-                var(--color-accent-gold-dark) 100%
-              );
-              box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.24),
-                inset 0 -1px 0 rgba(26, 23, 20, 0.12),
-                0 1px 1px rgba(26, 23, 20, 0.10),
-                0 2px 6px -1px rgba(140, 106, 42, 0.28);
+              background: var(--color-accent-gold);
+              color: var(--color-display-base);
+              border: 1px solid rgba(0, 0, 0, 0.16);
+              box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
               transition:
-                filter 180ms var(--easing-easeOut),
-                box-shadow 180ms var(--easing-easeOut);
+                background-color 180ms var(--easing-easeOut),
+                border-color 180ms var(--easing-easeOut);
             }
             .hero-cta-gold:hover {
-              filter: brightness(1.045);
-              box-shadow:
-                inset 0 1px 0 rgba(255, 255, 255, 0.30),
-                inset 0 -1px 0 rgba(26, 23, 20, 0.12),
-                0 1px 1px rgba(26, 23, 20, 0.10),
-                0 3px 11px -1px rgba(140, 106, 42, 0.36);
+              background: var(--color-accent-gold-light);
+              border-color: rgba(0, 0, 0, 0.22);
             }
-            .hero-cta-gold:active { filter: brightness(0.97); }
+            .hero-cta-gold:active { background: var(--color-accent-gold-dark); }
 
-            /* View Research — refined teal outline: faint gradient fill + fine
-               top highlight so it reads crafted, not a plain hairline box. */
+            /* View Research — quiet neutral outline sibling of the silver primary. */
             .hero-cta-holo {
-              background: linear-gradient(180deg, rgba(52, 114, 122, 0.05) 0%, rgba(52, 114, 122, 0.015) 100%);
-              border: 1px solid var(--color-accent-teal);
-              box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+              background: transparent;
+              border: 1px solid var(--color-border-strong);
+              box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
               transition:
                 border-color 180ms var(--easing-easeOut),
-                background 180ms var(--easing-easeOut),
-                box-shadow 180ms var(--easing-easeOut);
+                background 180ms var(--easing-easeOut);
             }
             .hero-cta-holo:hover {
-              border-color: var(--color-accent-teal-dark);
-              background: linear-gradient(180deg, rgba(52, 114, 122, 0.10) 0%, rgba(52, 114, 122, 0.04) 100%);
+              border-color: var(--color-content-primary);
+              background: var(--color-interactive-secondary);
             }
 
             /* Sheen retired — inert no-op for legacy markup. */
@@ -912,7 +900,7 @@ export function Landing() {
           </div>
           <Link
             to="/contact"
-            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Begin inquiry</span>
