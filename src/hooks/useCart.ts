@@ -9,12 +9,28 @@ function clampQty(n: number): number {
   return Math.min(MAX_QTY, Math.max(1, Math.floor(n)));
 }
 
+/** A promo code the buyer applied in the cart. Snapshot of the server's
+ *  validate_coupon response — display/preview only. place-order re-validates
+ *  and re-prices the code server-side; nothing here is trusted for billing. */
+export interface AppliedCoupon {
+  code: string;
+  kind: 'percent' | 'fixed' | 'free_item';
+  percent: number | null;
+  amountCents: number | null;
+  freeSku: string | null;
+  freeDose: string | null;
+  freeLabel: string | null;
+  minSubtotalCents: number;
+}
+
 interface CartStore {
   items: CartItem[];
+  coupon: AppliedCoupon | null;
   add: (product: Product) => void;
   remove: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   setItemNote: (productId: string, note: string) => void;
+  setCoupon: (coupon: AppliedCoupon | null) => void;
   clear: () => void;
   total: () => number;
   itemCount: () => number;
@@ -24,6 +40,7 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      coupon: null,
 
       add: (product) =>
         set((state) => {
@@ -72,7 +89,9 @@ export const useCart = create<CartStore>()(
           }),
         })),
 
-      clear: () => set({ items: [] }),
+      setCoupon: (coupon) => set({ coupon }),
+
+      clear: () => set({ items: [], coupon: null }),
 
       total: () =>
         get().items.reduce(
@@ -87,8 +106,8 @@ export const useCart = create<CartStore>()(
     {
       name: 'vsresearchlabs.cart.v1',
       storage: createJSONStorage(() => localStorage),
-      // Only persist the line items; derived selectors stay in memory.
-      partialize: (state) => ({ items: state.items }),
+      // Persist line items + applied promo; derived selectors stay in memory.
+      partialize: (state) => ({ items: state.items, coupon: state.coupon }),
     }
   )
 );

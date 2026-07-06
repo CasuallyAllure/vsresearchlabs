@@ -50,6 +50,7 @@ const AREAS: Area[] = [
       { to: '/admin/orders',    label: 'Orders',    match: (p) => p.startsWith('/admin/orders') },
       { to: '/admin/inquiries', label: 'Inquiries', match: (p) => p.startsWith('/admin/inquiries') },
       { to: '/admin/customers', label: 'Customers', match: (p) => p.startsWith('/admin/customers') },
+      { to: '/admin/coupons',   label: 'Coupons',   match: (p) => p.startsWith('/admin/coupons') },
     ],
   },
   {
