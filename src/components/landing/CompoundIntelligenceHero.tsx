@@ -366,7 +366,6 @@ function SlidePanel({
             onClick={() => add(variantProduct(product, ci.activeDose))}
             className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.2em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
-            <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Add to inquiry</span>
           </button>
           <button
@@ -575,7 +574,7 @@ function StudyEntry({ study }: { study: ProductStudy }) {
                 key={n}
                 className="holo-text-body flex min-w-0 gap-2.5 text-[12px] leading-relaxed"
               >
-                <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-holo/70" style={{ boxShadow: '0 0 4px rgba(52, 114, 122,0.6)' }} />
+                <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-holo/70" />
                 <span className="min-w-0 flex-1 break-words">{n}</span>
               </li>
             ))}

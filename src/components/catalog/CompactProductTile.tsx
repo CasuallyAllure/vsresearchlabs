@@ -82,7 +82,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
   }
 
   return (
-    <article className="research-surface-solid overflow-hidden rounded-[6px] flex flex-col group">
+    <article className="research-surface-solid overflow-hidden rounded-[4px] flex flex-col group">
       {/* Tappable head: image + identity → inspect overlay */}
       <button
         type="button"
@@ -94,7 +94,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt=""
+              alt={product.name}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               loading="lazy"
             />
@@ -109,7 +109,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             className="absolute right-1.5 top-1.5 inline-block h-[7px] w-[7px] rounded-full"
             style={{
               backgroundColor: stocked ? STOCK_GREEN : STOCK_RED,
-              boxShadow: `0 0 4px ${(stocked ? STOCK_GREEN : STOCK_RED)}aa, inset 0 0 0 0.5px rgba(255,255,255,0.3)`,
+              boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.3)',
             }}
           />
         </div>
@@ -133,7 +133,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
               </span>
             )}
           </div>
-          <p className="text-[11px] font-medium text-ink leading-tight truncate">
+          <p className="text-[11px] font-normal text-ink leading-tight truncate">
             {product.name}
           </p>
         </div>
@@ -198,7 +198,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             onClick={handleAdd}
             disabled={!stocked}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-            className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
               border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',
@@ -215,7 +215,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
 
 export function CompactProductTileSkeleton() {
   return (
-    <article className="research-surface-solid overflow-hidden rounded-[6px]" aria-hidden="true">
+    <article className="research-surface-solid overflow-hidden rounded-[4px]" aria-hidden="true">
       <div className="aspect-square w-full bg-ink/[0.06] animate-pulse" />
       <div className="px-2 py-2 space-y-1.5">
         <div className="h-2 bg-ink/[0.06] rounded animate-pulse w-1/2" />

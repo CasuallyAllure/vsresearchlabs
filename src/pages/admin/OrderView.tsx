@@ -29,6 +29,7 @@ import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
 import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
+import { useConfirm } from '../../components/admin/ConfirmModal';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -180,11 +181,11 @@ export function OrderView({
   const [editing, setEditing] = useState(false);
   const [editWarn, setEditWarn] = useState<string | null>(null);
   const [pendingSend, setPendingSend] = useState(false);
-  // In-app confirmation. Native window.confirm() is unreliable on mobile —
-  // iOS silently suppresses it once the user taps "Block Alerts" — which made
-  // "Mark shipped" (and other confirmed actions) do nothing. This modal can't
-  // be blocked by the browser.
-  const [confirmReq, setConfirmReq] = useState<{ message: string; resolve: (ok: boolean) => void } | null>(null);
+  // In-app confirmation. Native window.confirm()/prompt() are unreliable on
+  // mobile — iOS silently suppresses them once the user taps "Block Alerts" —
+  // which made "Mark shipped" (and other confirmed actions) do nothing. This
+  // modal can't be blocked by the browser.
+  const { confirm, prompt, modal: confirmModal } = useConfirm();
 
   useEffect(() => {
     let cancelled = false;
@@ -241,8 +242,7 @@ export function OrderView({
     confirmMsg?: string,
   ) => {
     if (confirmMsg) {
-      const ok = await new Promise<boolean>((resolve) => setConfirmReq({ message: confirmMsg, resolve }));
-      setConfirmReq(null);
+      const ok = await confirm(confirmMsg);
       if (!ok) return false;
     }
     if (!supabase || !order) return false;
@@ -278,7 +278,7 @@ export function OrderView({
       setBusy(false);
       reload();
     }
-  }, [reload, logEvent, onChanged, order]);
+  }, [reload, logEvent, onChanged, order, confirm]);
 
   if (error) return <p role="alert" className="p-[var(--space-6)] text-[12px] text-red-400">{error}</p>;
   if (!order) return <p className="p-[var(--space-6)] holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>;
@@ -406,7 +406,7 @@ export function OrderView({
         {order.invoice_amount_cents != null && (
           <SmallPill onClick={() => { setPendingSend(false); setShowSend(true); }} disabled={busy}>Send to client</SmallPill>
         )}
-        {order.lookup_token && <CopyClientLinkPill token={order.lookup_token} />}
+        {order.lookup_token && <CopyClientLinkPill token={order.lookup_token} prompt={prompt} />}
       </div>
 
       {/* ── Status bar ─────────────────────────────────────────────────────── */}
@@ -420,11 +420,15 @@ export function OrderView({
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(
-                () => supabase!.rpc('revert_order_status', { p_order_id: order.id, p_reason: promptReason('Reason for reviving this order:') }),
-                { stage: null, kind: 'revert', note: 'Revived from terminal state' },
-                'Revive this order to the start of the pipeline?',
-              )}
+              onClick={async () => {
+                const ok = await confirm('Revive this order to the start of the pipeline?');
+                if (!ok) return;
+                const reason = (await prompt('Reason for reviving this order:'))?.trim() || 'No reason given';
+                await run(
+                  () => supabase!.rpc('revert_order_status', { p_order_id: order.id, p_reason: reason }),
+                  { stage: null, kind: 'revert', note: 'Revived from terminal state' },
+                );
+              }}
               className="mt-[var(--space-3)] rounded-full border border-ink/20 px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/70 hover:border-ink/35 hover:text-ink disabled:opacity-40"
             >
               Revive order
@@ -459,7 +463,7 @@ export function OrderView({
 
             <div className="mt-[var(--space-5)]">
               <StageActions
-                order={order} busy={busy} run={run} onAddEvent={addEvent}
+                order={order} busy={busy} run={run} onAddEvent={addEvent} prompt={prompt}
                 orderNotesText={orderNotesText} onChanged={onChanged} setActionError={setActionError}
               />
             </div>
@@ -510,13 +514,7 @@ export function OrderView({
         />
       )}
 
-      {confirmReq && (
-        <ConfirmModal
-          message={confirmReq.message}
-          onConfirm={() => confirmReq.resolve(true)}
-          onCancel={() => confirmReq.resolve(false)}
-        />
-      )}
+      {confirmModal}
     </div>
   );
 
@@ -558,12 +556,13 @@ export function OrderView({
 /* ── Stage actions — back / forward + inline notes, all in one segment ─────── */
 
 function StageActions({
-  order, busy, run, onAddEvent, orderNotesText, onChanged, setActionError,
+  order, busy, run, onAddEvent, prompt, orderNotesText, onChanged, setActionError,
 }: {
   order: OrderRecord;
   busy: boolean;
   run: (rpc: () => PromiseLike<{ error: { message: string } | null }>, ev: { stage: StageKey | null; kind: string; note: string | null; silent?: boolean }, confirmMsg?: string) => Promise<boolean>;
   onAddEvent: (stage: StageKey | null, kind: string, note: string) => Promise<void>;
+  prompt: (message: string, opts?: { initialValue?: string }) => Promise<string | null>;
   orderNotesText: string;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
@@ -759,9 +758,16 @@ function StageActions({
   }
 
   async function cancel() {
+    const trimmed = note.trim();
+    // The reason prompt is only resolved once the rpc closure actually runs —
+    // i.e. after the "Cancel this order?" confirm has already passed — so the
+    // dialog order matches the original confirm-then-prompt behavior.
     const ok = await run(
-      () => supabase!.rpc('cancel_order', { p_order_id: order.id, p_reason: note.trim() || promptReason('Reason for cancellation:') }),
-      { stage: null, kind: 'system', note: note.trim() || 'Order cancelled' },
+      async () => {
+        const reason = trimmed || (await prompt('Reason for cancellation:'))?.trim() || 'No reason given';
+        return supabase!.rpc('cancel_order', { p_order_id: order.id, p_reason: reason });
+      },
+      { stage: null, kind: 'system', note: trimmed || 'Order cancelled' },
       'Cancel this order?',
     );
     if (ok) setNote('');
@@ -974,36 +980,6 @@ function SendNoteModal({
             <Pill primary onClick={() => onSend({ includeNotes: true, note })} disabled={busy}>
               {busy ? 'Sending…' : `Send with notes${noteCount ? ` (${noteCount})` : ''}`}
             </Pill>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ── In-app confirmation (mobile-safe replacement for window.confirm) ─────── */
-
-function ConfirmModal({
-  message, onConfirm, onCancel,
-}: { message: string; onConfirm: () => void; onCancel: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-      if (e.key === 'Enter') onConfirm();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onCancel, onConfirm]);
-
-  return (
-    <>
-      <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[320] bg-ink/60 backdrop-blur-[3px]" />
-      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[321] flex items-center justify-center p-4 pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-[400px] research-surface-solid p-[var(--space-5)]">
-          <p className="mb-[var(--space-4)] text-[13px] leading-relaxed text-ink/85">{message}</p>
-          <div className="flex items-center justify-end gap-[var(--space-2)]">
-            <Pill onClick={onCancel}>Cancel</Pill>
-            <Pill primary onClick={onConfirm}>Confirm</Pill>
           </div>
         </div>
       </div>
@@ -1248,17 +1224,21 @@ function SmallPill({ onClick, disabled, children }: { onClick: () => void; disab
 /** Copies the customer's secure invoice/receipt link (/track?t=<token>) to the
  *  clipboard so the admin can share it. The token is the order's secret — only
  *  someone with this link can see the itemized invoice. */
-function CopyClientLinkPill({ token }: { token: string }) {
+function CopyClientLinkPill({
+  token, prompt,
+}: { token: string; prompt: (message: string, opts?: { initialValue?: string }) => Promise<string | null> }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
     const url = `${window.location.origin}/track?t=${token}`;
     try {
       await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      window.prompt('Copy this client link:', url);
+      // Clipboard write blocked (e.g. permissions) — surface the link so the
+      // admin can select/copy it manually instead of a silently-dead action.
+      await prompt('Copy this client link:', { initialValue: url });
     }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
   }
   return <SmallPill onClick={copy}>{copied ? 'Link copied ✓' : 'Copy client link'}</SmallPill>;
 }
@@ -1275,10 +1255,6 @@ function currentStageKey(o: OrderRecord): StageKey {
   let last: StageKey = 'received';
   for (const s of STAGES) if (r[s.key]) last = s.key;
   return last;
-}
-
-function promptReason(q: string): string {
-  return (window.prompt(q) ?? '').trim() || 'No reason given';
 }
 
 function fmtUSD(cents: number | null | undefined): string {

@@ -28,7 +28,7 @@
 //   RESEND_API_KEY
 //   INQUIRY_TO_EMAIL        business inbox (default below)
 //   RESEND_FROM_EMAIL       from header (default below)
-//   ALLOWED_ORIGIN          production domain (omit for * in dev)
+//   ALLOWED_ORIGIN          production domain (falls back to vsresearchlabs.com if unset)
 //   ZELLE_HANDLE            <-- SET THIS (phone/email Zelle is registered to)
 //   PAYPAL_HANDLE           OPTIONAL — leave unset to offer Zelle only;
 //                           set (paypal.me link or email) to re-enable PayPal
@@ -37,6 +37,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
+import { buildCorsHeaders } from "../_shared/cors.ts";
 import {
   buildInvoiceHtml,
   buildInvoiceText,
@@ -80,17 +81,12 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsresearchlabs.com";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
-const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "[SET ZELLE_HANDLE]";
 // Empty = PayPal disabled (Zelle-only launch). Set the secret to re-enable.
 const PAYPAL_HANDLE        = Deno.env.get("PAYPAL_HANDLE") ?? "";
 const BRAND_STAMP_URL      = Deno.env.get("BRAND_STAMP_URL") ?? "";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const CORS_HEADERS = buildCorsHeaders();
 
 const INTAKE_CHANNEL  = "VSR-WEB-PORTAL";
 const PROCESSING_NODE = "VSR-HQ-INTAKE";

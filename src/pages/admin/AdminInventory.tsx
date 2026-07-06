@@ -32,6 +32,7 @@ import type { Product } from '../../types';
 import { useProducts, useProductAdmin } from '../../hooks/useProducts';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { useConfirm } from '../../components/admin/ConfirmModal';
 
 const products = productsData as unknown as Product[];
 
@@ -116,6 +117,7 @@ export function AdminInventory() {
   const [clippingSku, setClippingSku] = useState<string | null>(null);
   const [busySku, setBusySku] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const { confirm, modal: confirmModal } = useConfirm();
 
   // Catalog-level state (folded in from the old Catalog tab).
   const { products: catalogProducts } = useProducts();
@@ -186,13 +188,14 @@ export function AdminInventory() {
   async function toggleHidden(row: StockRow) {
     if (!supabase) return;
     setBusySku(row.sku);
+    setError(null);
     const { error } = await supabase.rpc('set_product_hidden', {
       p_sku: row.sku,
       p_hidden: !row.hidden,
     });
     setBusySku(null);
     if (error) {
-      alert(`Failed: ${error.message}`);
+      setError(`Failed: ${error.message}`);
       return;
     }
     setRefreshCounter((c) => c + 1);
@@ -201,17 +204,18 @@ export function AdminInventory() {
   async function deleteOrRestore(row: StockRow) {
     if (!supabase) return;
     const isDeleted = !!row.deleted_at;
-    if (!isDeleted && !window.confirm(`Soft-delete ${row.sku}? It can be restored. Stock data is preserved.`)) {
+    if (!isDeleted && !(await confirm(`Soft-delete ${row.sku}? It can be restored. Stock data is preserved.`))) {
       return;
     }
     setBusySku(row.sku);
+    setError(null);
     const { error } = await supabase.rpc(
       isDeleted ? 'restore_product' : 'mark_product_deleted',
       { p_sku: row.sku },
     );
     setBusySku(null);
     if (error) {
-      alert(`Failed: ${error.message}`);
+      setError(`Failed: ${error.message}`);
       return;
     }
     setRefreshCounter((c) => c + 1);
@@ -272,14 +276,15 @@ export function AdminInventory() {
     if (!file) return;
     const reader = new FileReader();
     reader.onerror = () => setCatalogMsg({ kind: 'err', text: 'Failed to read file.' });
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const parsed = JSON.parse(String(reader.result ?? ''));
         if (!Array.isArray(parsed) || !parsed.every(isProductLike)) {
           setCatalogMsg({ kind: 'err', text: 'Import must be a JSON array of products with id, name, category, sku.' });
           return;
         }
-        if (!window.confirm(`Import ${parsed.length} product(s)? This replaces the current catalog definitions.`)) return;
+        const ok = await confirm(`Import ${parsed.length} product(s)? This replaces the current catalog definitions.`);
+        if (!ok) return;
         setAll(parsed as Product[]);
         setCatalogMsg({ kind: 'ok', text: `Imported ${parsed.length} product${parsed.length === 1 ? '' : 's'}.` });
       } catch (err) {
@@ -289,8 +294,9 @@ export function AdminInventory() {
     reader.readAsText(file);
   }
 
-  function handleReset() {
-    if (!window.confirm('Discard all local catalog edits and reload the shipped seed? Live stock in Supabase is untouched.')) return;
+  async function handleReset() {
+    const ok = await confirm('Discard all local catalog edits and reload the shipped seed? Live stock in Supabase is untouched.');
+    if (!ok) return;
     resetToSeed();
     setCatalogMsg({ kind: 'ok', text: 'Catalog reset to shipped seed.' });
   }
@@ -500,6 +506,7 @@ export function AdminInventory() {
           onSuccess={() => { setClippingSku(null); setRefreshCounter((c) => c + 1); }}
         />
       )}
+      {confirmModal}
     </AdminLayout>
   );
 }
@@ -792,7 +799,7 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
             style={{ background: 'linear-gradient(150deg, #2b2622, #0f0d0b)' }}
           >
             {thumbnail.trim() && (
-              <img src={thumbnail} alt="" className="h-full w-full object-cover" />
+              <img src={thumbnail} alt={`${label} — cited clip thumbnail`} className="h-full w-full object-cover" />
             )}
           </div>
           <div className="min-w-0 flex-1">

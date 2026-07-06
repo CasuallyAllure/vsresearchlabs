@@ -21,11 +21,12 @@
 //   RESEND_API_KEY
 //   INQUIRY_TO_EMAIL
 //   RESEND_FROM_EMAIL
-//   ALLOWED_ORIGIN            (production domain; omit to allow * in dev)
+//   ALLOWED_ORIGIN            (production domain; falls back to vsresearchlabs.com if unset)
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,13 +65,8 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsresearchlabs.com";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
-const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const CORS_HEADERS = buildCorsHeaders();
 
 const INTAKE_CHANNEL  = "VSR-WEB-PORTAL";
 const PROCESSING_NODE = "VSR-HQ-INTAKE";

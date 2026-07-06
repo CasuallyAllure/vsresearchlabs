@@ -6,7 +6,12 @@
   <url><loc>https://vsresearchlabs.com/research-supplies/nootropics</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://vsresearchlabs.com/research-supplies/skincare</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://vsresearchlabs.com/laboratory-equipment</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://vsresearchlabs.com/catalog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://vsresearchlabs.com/research</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://vsresearchlabs.com/documentation</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://vsresearchlabs.com/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vsresearchlabs.com/privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://vsresearchlabs.com/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://vsresearchlabs.com/shipping</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://vsresearchlabs.com/about</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 </urlset>

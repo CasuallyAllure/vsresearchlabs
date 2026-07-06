@@ -118,10 +118,9 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
           {document.thumbnailUrl ? (
             <img
               src={document.thumbnailUrl}
-              alt=""
+              alt={`${slot.label} for ${document.productName}`}
               className="h-full w-full object-cover"
               loading="lazy"
-              aria-hidden="true"
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center">

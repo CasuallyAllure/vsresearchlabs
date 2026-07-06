@@ -13,18 +13,14 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
-const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  ALLOWED_ORIGIN,
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const CORS_HEADERS = buildCorsHeaders();
 
 interface ProcessingPayload {
   order_id: string;

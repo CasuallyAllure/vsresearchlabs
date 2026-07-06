@@ -62,14 +62,14 @@ export function BiopeptideResearchSupplies() {
   );
 
   return (
-    <section className="py-[var(--space-8)]">
+    <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
       <header className="mb-[var(--space-3)]">
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
           Research Supplies · Biopeptide
         </p>
         <h1 className="text-[clamp(1.5rem,2.8vw,2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
           <span className="font-light text-ink/85">Biopeptide </span>
-          <span className="font-medium text-ink">research supplies.</span>
+          <span className="font-light text-ink">research supplies.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[13px] leading-relaxed">
           Lyophilized peptides, sourced for research-grade consistency. Filter to{' '}

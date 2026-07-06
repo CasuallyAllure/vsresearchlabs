@@ -57,10 +57,9 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
         {document.thumbnailUrl ? (
           <img
             src={document.thumbnailUrl}
-            alt=""
+            alt={`${document.documentType} for ${document.productName}`}
             className="h-full w-full object-cover opacity-90 transition-opacity duration-300 group-hover:opacity-100"
             loading="lazy"
-            aria-hidden="true"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-[10px] uppercase tracking-widest text-ink/20">
@@ -75,7 +74,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
         <p className="mb-[var(--space-1)] truncate text-[10px] uppercase tracking-[0.2em] text-ink/45">
           {document.documentType}{document.documentVersion ? ` · ${document.documentVersion}` : ''}
         </p>
-        <h3 className="truncate font-serif text-[19px] font-medium leading-tight text-ink transition-colors group-hover:text-gold">
+        <h3 className="truncate font-serif text-[19px] font-normal leading-tight text-ink transition-colors group-hover:text-gold">
           {document.productName}
         </h3>
         {document.issuer && (

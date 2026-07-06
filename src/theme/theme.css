@@ -44,9 +44,9 @@
   --c-gold: 181 144 75;        /* #B5904B */
   --c-gold-dark: 140 106 42;   /* #8C6A2A */
   --c-gold-muted: 169 151 112; /* #A99770 */
-  --c-teal-light: 98 160 166;  /* #62A0A6 */
-  --c-teal: 52 114 122;        /* #34727A */
-  --c-teal-dark: 30 68 74;     /* #1E444A */
+  --c-teal-light: 111 156 154; /* #6F9C9A — muted, less "hyper blue" */
+  --c-teal: 59 108 106;        /* #3B6C6A */
+  --c-teal-dark: 36 78 77;     /* #244E4D */
   --c-display: 251 249 244;    /* #FBF9F4 */
   --c-display-elevated: 255 255 255; /* #FFFFFF */
   --c-text-primary: 26 23 20;   /* #1A1714 */
@@ -127,9 +127,9 @@
   /* ───────────────────────────────────────────────────────────────────────
      COLORS — Accent Palette (Teal) — secondary accent, replaces holo cyan
      ─────────────────────────────────────────────────────────────────────── */
-  --color-accent-teal-light: #62A0A6;
-  --color-accent-teal: #34727A;
-  --color-accent-teal-dark: #1E444A;
+  --color-accent-teal-light: #6F9C9A;
+  --color-accent-teal: #3B6C6A;
+  --color-accent-teal-dark: #244E4D;
 
   /* ───────────────────────────────────────────────────────────────────────
      COLORS — Display insets — the near-black "display case" surfaces that
@@ -338,9 +338,9 @@ html[data-theme="dark"] {
   --c-gold-dark: 168 125 45;   /* #A87D2D */
   --c-gold-muted: 156 138 99;  /* #9C8A63 */
   /* Teal — warm, brightened for black bg. */
-  --c-teal-light: 127 186 192; /* #7FBAC0 */
-  --c-teal: 76 151 160;        /* #4C97A0 */
-  --c-teal-dark: 42 94 100;    /* #2A5E64 */
+  --c-teal-light: 133 178 175; /* #85B2AF — muted teal for black bg */
+  --c-teal: 90 145 141;        /* #5A918D */
+  --c-teal-dark: 51 93 91;     /* #335D5B */
   /* Image bays / display insets — stay dark. */
   --c-display: 22 22 24;       /* #161618 */
   --c-display-elevated: 30 30 33; /* #1E1E21 */
@@ -390,9 +390,9 @@ html[data-theme="dark"] {
   --color-accent-gold: #C49A48;
   --color-accent-gold-dark: #A87D2D;
   --color-accent-gold-muted: #9C8A63;
-  --color-accent-teal-light: #7FBAC0;
-  --color-accent-teal: #4C97A0;
-  --color-accent-teal-dark: #2A5E64;
+  --color-accent-teal-light: #85B2AF;
+  --color-accent-teal: #5A918D;
+  --color-accent-teal-dark: #335D5B;
 
   --color-display-base: #0A0A0B;
   --color-display-elevated: #161618;
@@ -645,27 +645,14 @@ html[data-theme="dark"] {
     animation-delay: var(--op-delay, 0ms);
   }
 
-  /* Continuous scanning sweep — a single hairline traversing the bay.
-     Slow, linear, restrained. Opacity-and-transform only. */
-  @keyframes op-sweep {
-    0%   { transform: translateX(-6%); opacity: 0; }
-    12%  { opacity: 0.55; }
-    88%  { opacity: 0.55; }
-    100% { transform: translateX(106%); opacity: 0; }
-  }
+  /* Scanning sweep retired (strict register) — the bay reads as a still
+     instrument, not a scanning animation. */
+  .op-sweep { display: none; }
 
-  .op-sweep {
-    animation: op-sweep 7200ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  }
-
-  /* Telemetry tick — the live readout dot. Quiet breathing, not a pulse. */
-  @keyframes op-tick {
-    0%, 100% { opacity: 0.35; }
-    50%      { opacity: 0.9; }
-  }
-
+  /* Telemetry tick — static readout dot (breathing pulse retired). */
   .op-tick {
-    animation: op-tick 2600ms ease-in-out infinite;
+    opacity: 0.7;
+    animation: none;
   }
 
   /* Bay grid — an almost-imperceptible vertical drift so the field reads
@@ -679,29 +666,8 @@ html[data-theme="dark"] {
     animation: op-drift 14s linear infinite alternate;
   }
 
-  /* Bay Lights — a luminous segment trickles down each suspender cable,
-     fading in at the saddle and out at the deck so the loop seam is
-     invisible. pathLength=1 normalizes every rod; the dash travels one
-     full period per cycle. --op-delay (set inline per rod) ripples the
-     cascade across the span. Stroke + opacity only; no layout. */
-  .bay-lights {
-    opacity: 1;
-  }
-
-  @keyframes op-trickle {
-    0%   { stroke-dashoffset: 1; opacity: 0; }
-    22%  { opacity: 1; }
-    78%  { opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 0; }
-  }
-
-  .op-trickle {
-    stroke-dasharray: 0.14 0.86;
-    stroke-dashoffset: 1;
-    opacity: 0;
-    animation: op-trickle 3200ms linear infinite;
-    animation-delay: var(--op-delay, 0ms);
-  }
+  /* Bay Lights retired (strict register) — kept hidden (.bay-lights stays
+     opacity 0); the static micrograph stands on its own. */
 }
 
 /* ============================================================================
@@ -763,31 +729,44 @@ html[data-theme="dark"] {
 
 /* ── CTA — Mint (primary) ────────────────────────────────────────────────── */
 
+/* Refined gold: a soft vertical gradient (light catches the top edge, weight
+   settles at the base) with a fine inset highlight and a tight contact shadow
+   — premium depth, NOT the retired neon glow/sheen. Hover brightens only;
+   no transform lift. See DESIGN.md §4. */
 .cta-mint {
-  background: var(--color-interactive-primary);
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-gold-light) 0%,
+    var(--color-accent-gold) 54%,
+    var(--color-accent-gold-dark) 100%
+  );
   color: var(--color-content-inverse);
-  box-shadow: 0 1px 2px rgba(26, 23, 20, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(26, 23, 20, 0.12),
+    0 1px 1px rgba(26, 23, 20, 0.10),
+    0 2px 6px -1px rgba(140, 106, 42, 0.28);
   transition:
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    filter 180ms var(--easing-easeOut),
+    box-shadow 180ms var(--easing-easeOut);
 }
 
 .cta-mint:hover {
-  background: var(--color-interactive-primaryHover);
-  box-shadow: 0 2px 8px rgba(26, 23, 20, 0.16);
-  transform: translateY(-0.5px);
+  filter: brightness(1.045);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(26, 23, 20, 0.12),
+    0 1px 1px rgba(26, 23, 20, 0.10),
+    0 3px 11px -1px rgba(140, 106, 42, 0.36);
 }
 
-.cta-mint-sheen {
-  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%);
-  transform: translateX(-140%);
-  transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
+.cta-mint:active {
+  filter: brightness(0.97);
 }
 
-.cta-mint:hover .cta-mint-sheen {
-  transform: translateX(140%);
-}
+/* Sheen retired. Kept as an inert no-op so legacy
+   <span class="cta-mint-sheen"> markup renders nothing until removed. */
+.cta-mint-sheen { display: none; }
 
 /* ── CTA — outline (secondary) ───────────────────────────────────────────── */
 
@@ -796,27 +775,17 @@ html[data-theme="dark"] {
   border: 1px solid var(--color-border-strong);
   color: var(--color-content-primary);
   transition:
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    background 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    border-color 180ms var(--easing-easeOut),
+    background-color 180ms var(--easing-easeOut);
 }
 
 .cta-holo:hover {
   border-color: var(--color-interactive-primary);
   background: var(--color-interactive-secondary);
-  transform: translateY(-0.5px);
 }
 
-.cta-holo-sheen {
-  background: linear-gradient(110deg, transparent 35%, rgba(26,23,20,0.06) 50%, transparent 65%);
-  transform: translateX(-140%);
-  transition: transform 750ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cta-holo:hover .cta-holo-sheen {
-  transform: translateX(140%);
-}
+/* Sheen retired — inert no-op for legacy markup (see .cta-mint-sheen). */
+.cta-holo-sheen { display: none; }
 
 /* ── Card / panel surface — slim editorial container ─────────────────────── */
 
@@ -856,15 +825,6 @@ html[data-theme="dark"] {
   .holo-text-warning {
     animation: none;
     opacity: 1;
-  }
-  .cta-mint:hover,
-  .cta-holo:hover {
-    transform: none;
-  }
-  .cta-mint-sheen,
-  .cta-holo-sheen {
-    transition: none;
-    transform: none;
   }
 }
 

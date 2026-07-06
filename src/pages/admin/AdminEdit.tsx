@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useProduct, useProductAdmin } from '../../hooks/useProducts';
 import type { Product, ProductCategory, ProductSpec } from '../../types/product';
+import { useConfirm } from '../../components/admin/ConfirmModal';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'biopeptide-research-supplies', label: 'Biopeptide Research Supplies' },
@@ -172,6 +173,7 @@ export function AdminEdit() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { confirm, modal: confirmModal } = useConfirm();
 
   // Hydrate the form when entering edit mode and product loads.
   useEffect(() => {
@@ -297,11 +299,9 @@ export function AdminEdit() {
     }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!isEdit || !product) return;
-    const ok = window.confirm(
-      `Delete "${product.name}"? This cannot be undone.`
-    );
+    const ok = await confirm(`Delete "${product.name}"? This cannot be undone.`);
     if (!ok) return;
     remove(product.id);
     navigate('/admin');
@@ -592,6 +592,7 @@ export function AdminEdit() {
           )}
         </div>
       </form>
+      {confirmModal}
     </section>
   );
 }

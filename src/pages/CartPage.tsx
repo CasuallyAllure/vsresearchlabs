@@ -436,7 +436,7 @@ export function CartPage() {
           </p>
           <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             <span className="font-light text-ink/85">Your </span>
-            <span className="font-medium text-ink">order.</span>
+            <span className="font-light text-ink">order.</span>
           </h1>
         </header>
 
@@ -474,7 +474,7 @@ export function CartPage() {
         </p>
         <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
           <span className="font-light text-ink/85">Your </span>
-          <span className="font-medium text-ink">order.</span>
+          <span className="font-light text-ink">order.</span>
         </h1>
       </header>
 
@@ -596,7 +596,7 @@ export function CartPage() {
                 <button
                   type="button"
                   onClick={() => remove(item.product.id)}
-                  aria-label="Remove item"
+                  aria-label={`Remove ${item.product.name}`}
                   className="ml-[var(--space-2)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove
@@ -662,7 +662,7 @@ export function CartPage() {
             >
               <span aria-hidden="true" className="text-[13px] leading-none mt-0.5">⚡</span>
               <p className="text-[11.5px] leading-relaxed text-ink/75">
-                <span className="font-medium text-ink">Your order mixes fast-ship and standard items.</span>{' '}
+                <span className="font-light text-ink">Your order mixes fast-ship and standard items.</span>{' '}
                 These ship from different locations and may arrive in{' '}
                 <span className="font-medium">separate shipments</span> — you'll get tracking for each,{' '}
                 <span className="font-medium">at no extra cost to you</span>.
@@ -917,7 +917,6 @@ export function CartPage() {
           disabled={formInvalid || submit.kind === 'submitting'}
           className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
         >
-          <span aria-hidden="true" className="cta-mint-sheen pointer-events-none absolute inset-0" />
           <span className="relative">{submit.kind === 'submitting' ? 'Placing order…' : 'Place Order'}</span>
         </button>
             </form>

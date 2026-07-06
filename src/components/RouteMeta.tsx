@@ -25,6 +25,10 @@ const TITLES: Array<[RegExp, string]> = [
   [/^\/contact/, `Contact — ${BRAND}`],
   [/^\/track/, `Track Order — ${BRAND}`],
   [/^\/documentation/, `Documentation — ${BRAND}`],
+  [/^\/privacy/, `Privacy Policy — ${BRAND}`],
+  [/^\/terms/, `Terms of Sale — ${BRAND}`],
+  [/^\/shipping/, `Shipping & Fulfilment — ${BRAND}`],
+  [/^\/about/, `About — ${BRAND}`],
   [/^\/admin/, `Admin Console — ${BRAND}`],
 ];
 

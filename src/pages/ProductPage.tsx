@@ -52,6 +52,7 @@ import {
 } from '../components/catalog/intelligence/ProcurementSheet';
 import { QuantityStepper } from '../components/catalog/intelligence/QuantityStepper';
 import { SKUCode, ProcurementValue } from '../components/ui/identifiers';
+import { Button } from '../components/ui/Button';
 import { DocumentSlot } from '../components/documents/DocumentSlot';
 import { ErrorState } from '../components/system/ErrorState';
 
@@ -343,7 +344,7 @@ export function ProductPage() {
                           isActive ? 'border-ink' : 'border-ink/[0.06] hover:border-ink/20',
                         ].join(' ')}
                       >
-                        <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <img src={url} alt={`${product.name} - image ${idx + 1}`} className="h-full w-full object-cover" loading="lazy" />
                       </button>
                     );
                   })}
@@ -358,7 +359,7 @@ export function ProductPage() {
               <AbbreviationChip value={ci.abbreviation} />
               <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">{ci.family}</span>
             </div>
-            <h1 className="holo-text-display font-medium leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
+            <h1 className="holo-text-display font-light leading-tight mb-[var(--space-1)]" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>
               {ci.substance}
             </h1>
             <p className="text-ink/60" style={{ fontSize: '11.5px' }}>
@@ -414,23 +415,16 @@ export function ProductPage() {
           <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
             <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-2)]">
               <QuantityStepper quantity={quantity} onChange={setQuantity} />
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 type="button"
                 onClick={handleAddToInquiry}
                 disabled={outOfStock}
-                className="flex-1 h-8 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  fontSize: '11px',
-                  letterSpacing: '0.04em',
-                  backgroundColor: 'rgba(26,23,20,0.08)',
-                  border: '1px solid rgba(26,23,20,0.22)',
-                  transition: 'background-color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out',
-                }}
-                onMouseEnter={(e) => { if (!outOfStock) { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.14)'; el.style.borderColor = 'rgba(26,23,20,0.32)'; } }}
-                onMouseLeave={(e) => { const el = e.currentTarget; el.style.backgroundColor = 'rgba(26,23,20,0.08)'; el.style.borderColor = 'rgba(26,23,20,0.22)'; }}
+                className="flex-1"
               >
                 {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
-              </button>
+              </Button>
             </div>
             {(activeTier || quantity > 1) && (
               <p className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
@@ -503,15 +497,16 @@ export function ProductPage() {
       >
         <div className="mx-auto w-full max-w-[1100px] px-[var(--space-4)] py-[var(--space-3)] flex items-center gap-[var(--space-2)]">
           <QuantityStepper quantity={quantity} onChange={setQuantity} />
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             type="button"
             onClick={handleAddToInquiry}
             disabled={outOfStock}
-            className="flex-1 h-9 text-ink font-medium rounded-[2px] active:scale-[0.97] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ fontSize: '11px', letterSpacing: '0.04em', backgroundColor: 'rgba(26,23,20,0.08)', border: '1px solid rgba(26,23,20,0.22)' }}
+            className="flex-1"
           >
             {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
-          </button>
+          </Button>
         </div>
       </div>
 
