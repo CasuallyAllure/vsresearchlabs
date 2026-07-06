@@ -590,6 +590,7 @@ Deno.serve(async (req: Request) => {
   const couponInput = (payload.coupon_code ?? "").trim().toUpperCase().slice(0, 40);
   let discountCents = 0;
   let appliedCoupon: string | null = null;
+  let freeLineSku: string | null = null;
   if (couponInput) {
     const { data: checkData, error: checkErr } = await supabase.rpc("validate_coupon", {
       p_code: couponInput,
@@ -618,12 +619,13 @@ Deno.serve(async (req: Request) => {
         note: `Free with code ${appliedCoupon}`,
       });
       itemCount += 1;
+      freeLineSku = coupon.free_sku;
     } else {
       const raw = Math.floor(Number(coupon.discount_cents ?? 0));
       discountCents = Math.min(Math.max(Number.isFinite(raw) ? raw : 0, 0), grossSubtotalCents);
     }
   }
-  const totalCents = grossSubtotalCents - discountCents;
+  let totalCents = grossSubtotalCents - discountCents;
 
   // 1) Inquiry row (history + customer trigger)
   const referenceId = generateReferenceId();
@@ -695,9 +697,10 @@ Deno.serve(async (req: Request) => {
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
   // Record the redemption + commission ledger row (service-role-only RPC;
-  // atomically re-checks limits and bumps used_count). The order stands even
-  // if this fails on a rare race — the code is stamped on the order row, so
-  // admin can reconcile from Admin → Coupons.
+  // atomically re-checks limits and bumps used_count). If it fails — e.g. two
+  // concurrent checkouts raced for the last use of a capped code — ROLL THE
+  // COUPON BACK off the order before any email goes out, so the invoice and
+  // billed amount stay truthful and a raced-out code can't leak revenue.
   if (appliedCoupon) {
     const { data: redeemData, error: redeemErr } = await supabase.rpc("redeem_coupon", {
       p_code: appliedCoupon,
@@ -708,7 +711,22 @@ Deno.serve(async (req: Request) => {
     });
     const redeemed = redeemData as { ok?: boolean; reason?: string } | null;
     if (redeemErr || !redeemed?.ok) {
-      console.error("Coupon redemption record failed:", redeemErr ?? redeemed?.reason, appliedCoupon, orderRow.id);
+      console.error("Coupon redemption failed — rolling back discount:", redeemErr ?? redeemed?.reason, appliedCoupon, orderRow.id);
+      // Drop the server-added free line (DB + the in-memory items the emails render).
+      if (freeLineSku) {
+        await supabase.from("order_lines").delete()
+          .eq("order_id", orderRow.id).eq("sku", freeLineSku).eq("unit_price_cents", 0);
+        const freeIdx = items.findIndex((i) => i.product.id === `free-${freeLineSku}`);
+        if (freeIdx >= 0) items.splice(freeIdx, 1);
+      }
+      // Re-price the order without the coupon.
+      totalCents = grossSubtotalCents;
+      discountCents = 0;
+      appliedCoupon = null;
+      const { error: rollbackErr } = await supabase.from("orders")
+        .update({ discount_cents: 0, coupon_code: null, invoice_amount_cents: totalCents })
+        .eq("id", orderRow.id);
+      if (rollbackErr) console.error("Coupon rollback update failed:", rollbackErr, orderRow.id);
     }
   }
 

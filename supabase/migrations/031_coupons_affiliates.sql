@@ -390,6 +390,10 @@ end;
 $$;
 
 grant execute on function save_order_lines(uuid, jsonb) to authenticated;
+-- Close the default PUBLIC execute grant (the 030 lesson): the in-function
+-- is_admin() check already rejects non-admins, but don't leave the RPC as an
+-- anon-enumerable surface at all.
+revoke execute on function save_order_lines(uuid, jsonb) from public, anon;
 
 -- ── Launch seed codes ─────────────────────────────────────────────────────────
 
