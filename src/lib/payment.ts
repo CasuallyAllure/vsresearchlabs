@@ -14,9 +14,15 @@
 
 const env = import.meta.env as Record<string, string | undefined>;
 
-export const PAYMENT_CONFIG = {
+export interface PaymentConfig {
+  zelle: string;
+  /** null = PayPal disabled (Zelle-only launch). Set VITE_PAYPAL_HANDLE to re-enable. */
+  paypal: string | null;
+}
+
+export const PAYMENT_CONFIG: PaymentConfig = {
   zelle: env.VITE_ZELLE_HANDLE || '[Set VITE_ZELLE_HANDLE]',
-  paypal: env.VITE_PAYPAL_HANDLE || '[Set VITE_PAYPAL_HANDLE]',
+  paypal: env.VITE_PAYPAL_HANDLE || null,
 };
 
 /** Format integer cents as USD, e.g. 10500 → "$105.00". */

@@ -30,7 +30,8 @@
 //   RESEND_FROM_EMAIL       from header (default below)
 //   ALLOWED_ORIGIN          production domain (omit for * in dev)
 //   ZELLE_HANDLE            <-- SET THIS (phone/email Zelle is registered to)
-//   PAYPAL_HANDLE           <-- SET THIS (paypal.me link or email)
+//   PAYPAL_HANDLE           OPTIONAL — leave unset to offer Zelle only;
+//                           set (paypal.me link or email) to re-enable PayPal
 //   BRAND_STAMP_URL         optional hosted PNG of the stamp for the email
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -81,7 +82,8 @@ const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsre
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
 const ALLOWED_ORIGIN       = Deno.env.get("ALLOWED_ORIGIN") ?? "*";
 const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "[SET ZELLE_HANDLE]";
-const PAYPAL_HANDLE        = Deno.env.get("PAYPAL_HANDLE") ?? "[SET PAYPAL_HANDLE]";
+// Empty = PayPal disabled (Zelle-only launch). Set the secret to re-enable.
+const PAYPAL_HANDLE        = Deno.env.get("PAYPAL_HANDLE") ?? "";
 const BRAND_STAMP_URL      = Deno.env.get("BRAND_STAMP_URL") ?? "";
 
 const CORS_HEADERS = {
@@ -256,19 +258,19 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
       <h3 style="margin:0 0 10px;font-weight:600;letter-spacing:0.03em;color:#111;">How to pay</h3>
       <p style="margin:0 0 12px;color:#222;">Amount due: <strong>${usd(totalCents)}</strong></p>
       <p style="margin:0 0 10px;color:#333;">
-        Send payment using <strong>one</strong> of the methods below. You
-        <strong>must send it as Friends &amp; Family</strong> — any payment
-        not sent as Friends &amp; Family will be <strong>rejected</strong>.
+        ${PAYPAL_HANDLE
+          ? "Send payment using <strong>one</strong> of the methods below. You <strong>must send it as Friends &amp; Family</strong> — any payment not sent as Friends &amp; Family will be <strong>rejected</strong>."
+          : "Send payment via <strong>Zelle</strong> to the address below. If Zelle asks, send as <strong>Friends &amp; Family</strong> — payments not sent as Friends &amp; Family will be <strong>rejected</strong>."}
       </p>
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px;">
         <tr>
           <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666;width:80px;"><strong>Zelle</strong></td>
           <td style="padding:8px 0;border-bottom:1px solid #eee;font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</td>
         </tr>
-        <tr>
+        ${PAYPAL_HANDLE ? `<tr>
           <td style="padding:8px 0;color:#666;"><strong>PayPal</strong></td>
           <td style="padding:8px 0;font-family:monospace;">${escapeHtml(PAYPAL_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
-        </tr>
+        </tr>` : ""}
       </table>
       <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 12px;background:#fff;text-align:center;">
         <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.3em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
@@ -278,7 +280,7 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
           ${escapeHtml(code)}
         </div>
         <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#666;margin-top:8px;">
-          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+          That's all you type in the payment note — no dashes, no letters.
         </div>
       </div>
       <p style="margin:0 0 6px;color:#444;font-size:12px;">
@@ -440,7 +442,7 @@ function buildBusinessEmailHtml(
       ${mixedShipNoticeHtml(payload.items)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
-        Buyer received their branded invoice with Zelle / PayPal instructions.
+        Buyer received their branded invoice with payment instructions.
         Watch <span style="font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</span>
         for a payment with note
         <span style="font-family:monospace;font-weight:700;font-size:15px;color:#111;">${escapeHtml(paymentCode(orderNumber))}</span>

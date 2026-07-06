@@ -286,7 +286,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
           ${escapeHtml(paymentCode(order.order_number))}
         </div>
         <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#6F665C;margin-top:8px;">
-          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+          That's all you type in the Zelle note — no dashes, no letters.
         </div>
       </div>
 
@@ -306,7 +306,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
          verify the deposit. -->
     <div style="text-align:center;margin-top:20px;">
       <a href="${FUNCTIONS_BASE}/mark-payment-claimed?t=${order.lookup_token}" style="display:inline-block;background:#34727A;color:#FBF9F4;text-decoration:none;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;padding:15px 32px;border-radius:999px;font-weight:600;">✓ I've sent payment</a>
-      <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Click after you send the Zelle / PayPal payment — we'll verify the deposit and start fulfillment.</div>
+      <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Click after you send the Zelle payment — we'll verify the deposit and start fulfillment.</div>
     </div>
 
     <!-- Secondary: view / print invoice -->

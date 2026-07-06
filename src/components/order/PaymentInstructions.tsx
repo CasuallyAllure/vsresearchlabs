@@ -28,9 +28,19 @@ export function PaymentInstructions({ orderNumber, amountCents }: PaymentInstruc
       </p>
 
       <p className="text-[13px] leading-relaxed text-ink/65 print:text-black/70 mb-[var(--space-4)]">
-        Send payment using <strong className="text-ink print:text-black">one</strong> of the
-        methods below. You{' '}
-        <strong className="text-ink print:text-black">must send it as Friends &amp; Family</strong>{' '}
+        {PAYMENT_CONFIG.paypal ? (
+          <>
+            Send payment using <strong className="text-ink print:text-black">one</strong> of the
+            methods below.
+          </>
+        ) : (
+          <>
+            Send payment via <strong className="text-ink print:text-black">Zelle</strong> to the
+            address below.
+          </>
+        )}{' '}
+        If prompted,{' '}
+        <strong className="text-ink print:text-black">send it as Friends &amp; Family</strong>{' '}
         — any payment not sent as Friends &amp; Family will be{' '}
         <strong className="text-ink print:text-black">rejected</strong>.
       </p>
@@ -44,17 +54,19 @@ export function PaymentInstructions({ orderNumber, amountCents }: PaymentInstruc
             {PAYMENT_CONFIG.zelle}
           </dd>
         </div>
-        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
-          <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">
-            PayPal
-          </dt>
-          <dd className="text-sm font-mono text-ink/85 print:text-black text-right break-all">
-            {PAYMENT_CONFIG.paypal}
-            <span className="block text-[11px] font-sans text-ink/40 print:text-black/50">
-              Friends &amp; Family — not Goods &amp; Services
-            </span>
-          </dd>
-        </div>
+        {PAYMENT_CONFIG.paypal && (
+          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06] print:border-black/10">
+            <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 print:text-black/55 shrink-0">
+              PayPal
+            </dt>
+            <dd className="text-sm font-mono text-ink/85 print:text-black text-right break-all">
+              {PAYMENT_CONFIG.paypal}
+              <span className="block text-[11px] font-sans text-ink/40 print:text-black/50">
+                Friends &amp; Family — not Goods &amp; Services
+              </span>
+            </dd>
+          </div>
+        )}
       </dl>
 
       <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80 print:text-black">

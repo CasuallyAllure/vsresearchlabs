@@ -610,8 +610,8 @@ function StageActions({
   } else if (!reached.paid) {
     title = reached.claimed ? 'Buyer marked payment sent' : 'Awaiting payment';
     detail = reached.claimed
-      ? `The buyer clicked “I’ve sent payment.” Verify the deposit landed (Zelle / PayPal F&F), then mark received. No stock moves yet.`
-      : 'Mark paid once funds land (Zelle / PayPal F&F). No stock moves yet.';
+      ? `The buyer clicked “I’ve sent payment.” Verify the deposit landed (Zelle), then mark received. No stock moves yet.`
+      : 'Mark paid once funds land (Zelle). No stock moves yet.';
     forward = { label: 'Payment received', act: () => advance(() => supabase!.rpc('mark_order_paid', { p_order_id: order.id }), 'paid', 'Payment received') };
   } else if (!reached.shipped) {
     title = 'Processing — ready to ship';
