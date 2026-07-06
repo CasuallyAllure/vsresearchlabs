@@ -48,6 +48,10 @@ export interface OrderRow {
   invoice_amount_cents: number | null;
   subtotal_cents: number | null;
   shipping_cents: number | null;
+  /** Explicit coupon discount (migration 031). Optional so callers reading
+   *  pre-031 order rows still typecheck. */
+  discount_cents?: number | null;
+  coupon_code?: string | null;
   payment_method: string | null;
   status: string;
   notes: string | null;
@@ -122,6 +126,10 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
     `Items:`,
     lineText,
     ``,
+    ...((order.discount_cents ?? 0) > 0 ? [
+      `Subtotal: ${fmtUsd(order.subtotal_cents)}`,
+      `Discount${order.coupon_code ? ` (${order.coupon_code})` : ""}: -${fmtUsd(order.discount_cents)}`,
+    ] : []),
     `Total due: ${fmtUsd(order.invoice_amount_cents)}`,
     ``,
     `HOW TO PAY — Zelle to: ${ZELLE_FOR_TEXT}`,
@@ -144,6 +152,13 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
+  // Explicit coupon discount, falling back to the derived value the other
+  // invoice surfaces (/track doc, admin print) already use:
+  //   discount = subtotal + shipping − total
+  const discount = Math.max(
+    order.discount_cents ?? ((subtotal ?? 0) + (shipping ?? 0) - (total ?? (subtotal ?? 0) + (shipping ?? 0))),
+    0,
+  );
 
   const notesBlock = notes && notes.trim()
     ? `<div style="background:#FBF9F4;border:1px solid rgba(26,23,20,0.10);border-radius:12px;padding:22px 24px;margin-top:16px;">
@@ -260,6 +275,8 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
             <td style="padding:5px 14px;text-align:right;width:120px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${fmtUsd(subtotal ?? total)}</td></tr>
         <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Shipping estimate</td>
             <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${shipping !== null && shipping !== undefined ? fmtUsd(shipping) : '<span style="color:#A09689;">TBD</span>'}</td></tr>
+        ${discount > 0 ? `<tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#34727A;">Discount${order.coupon_code ? ` · <span style="font-family:'JetBrains Mono','SF Mono',monospace;">${escapeHtml(order.coupon_code)}</span>` : ""}</td>
+            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#34727A;">−${fmtUsd(discount)}</td></tr>` : ""}
         <tr style="border-top:1px solid #E4DFD5;">
           <td style="padding:14px 14px 6px;text-align:right;font-size:11px;color:#6F665C;letter-spacing:0.2em;text-transform:uppercase;">Total Due</td>
           <td style="padding:14px 14px 6px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:20px;color:#1A1714;font-weight:700;">${fmtUsd(total)}</td>

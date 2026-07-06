@@ -68,6 +68,21 @@ interface OrderPayload {
   ship_zip?: string;
   ship_country?: string;
   items: OrderItemPayload[];
+  /** Promo/affiliate code. Validated + priced SERVER-SIDE via validate_coupon —
+   *  the client never supplies a discount amount, only the code. */
+  coupon_code?: string;
+}
+
+/** Shape returned by the validate_coupon RPC (migration 031). */
+interface CouponCheck {
+  valid: boolean;
+  reason?: string;
+  code?: string;
+  kind?: "percent" | "fixed" | "free_item";
+  discount_cents?: number;
+  free_sku?: string | null;
+  free_dose?: string | null;
+  free_label?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -386,9 +401,20 @@ function buildInvoiceEmailHtml(
 
 function buildBusinessEmailHtml(
   payload: OrderPayload, orderNumber: string, referenceId: string, totalCents: number,
+  promo?: { code: string; discountCents: number },
 ): string {
   const org = payload.organization
     ? `<tr><td style="padding:2px 0;">Organization</td><td style="padding:2px 0;text-align:right;">${escapeHtml(payload.organization)}</td></tr>` : "";
+  const promoRows = promo
+    ? `
+          <tr>
+            <td colspan="4" style="padding:6px 12px;text-align:right;color:#666;">Subtotal</td>
+            <td style="padding:6px 12px;text-align:right;font-family:monospace;color:#666;">${usd(totalCents + promo.discountCents)}</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="padding:6px 12px;text-align:right;color:#2E7D5B;">Code <span style="font-family:monospace;font-weight:700;">${escapeHtml(promo.code)}</span></td>
+            <td style="padding:6px 12px;text-align:right;font-family:monospace;color:#2E7D5B;">${promo.discountCents > 0 ? "−" + usd(promo.discountCents) : "FREE ITEM"}</td>
+          </tr>` : "";
   const notes = payload.notes
     ? `<div style="border:1px solid #eee;border-radius:6px;padding:10px 12px;margin:14px 0;background:#fafafa;color:#333;font-size:13px;"><strong style="display:block;margin-bottom:4px;color:#666;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;font-size:11px;">Buyer notes</strong>${escapeHtml(payload.notes).replace(/\n/g, "<br/>")}</div>` : "";
   return `
@@ -430,7 +456,7 @@ function buildBusinessEmailHtml(
           </tr>
         </thead>
         <tbody>${lineRowsHtml(payload.items)}</tbody>
-        <tfoot>
+        <tfoot>${promoRows}
           <tr>
             <td colspan="4" style="padding:12px;text-align:right;font-weight:600;">Total</td>
             <td style="padding:12px;text-align:right;font-weight:700;font-family:monospace;">${usd(totalCents)}</td>
@@ -530,8 +556,8 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  const itemCount  = items.reduce((s, i) => s + clampQty(i.quantity), 0);
-  const totalCents = items.reduce((s, i) => s + clampCents(i.unitPriceCents) * clampQty(i.quantity), 0);
+  let itemCount = items.reduce((s, i) => s + clampQty(i.quantity), 0);
+  const grossSubtotalCents = items.reduce((s, i) => s + clampCents(i.unitPriceCents) * clampQty(i.quantity), 0);
   const contactIsEmail = EMAIL_REGEX.test(contact);
   const cleanPayload: OrderPayload = {
     name, contact,
@@ -555,6 +581,49 @@ Deno.serve(async (req: Request) => {
   if ((recentCount ?? 0) >= 5) {
     return jsonResponse({ error: "Too many orders from this contact. Please wait before trying again." }, 429);
   }
+
+  // Coupon — the client sends only the CODE; the server validates it and
+  // computes the money. percent/fixed reduce the billed total; free_item
+  // appends a $0 line for the free product. Invalid codes reject the order
+  // (the buyer saw it "applied" in the cart, so silently dropping it would
+  // bill more than they expect).
+  const couponInput = (payload.coupon_code ?? "").trim().toUpperCase().slice(0, 40);
+  let discountCents = 0;
+  let appliedCoupon: string | null = null;
+  if (couponInput) {
+    const { data: checkData, error: checkErr } = await supabase.rpc("validate_coupon", {
+      p_code: couponInput,
+      p_subtotal_cents: grossSubtotalCents,
+      p_contact: contact,
+    });
+    if (checkErr) {
+      console.error("validate_coupon failed:", checkErr);
+      return jsonResponse({ error: "Could not verify the promo code. Please try again." }, 502);
+    }
+    const coupon = checkData as CouponCheck | null;
+    if (!coupon?.valid) {
+      return jsonResponse({ error: coupon?.reason ?? "This code is not valid." }, 400);
+    }
+    appliedCoupon = coupon.code ?? couponInput;
+    if (coupon.kind === "free_item" && coupon.free_sku && coupon.free_label) {
+      items.push({
+        product: {
+          id: `free-${coupon.free_sku}`,
+          name: `${coupon.free_label} (FREE)`,
+          category: null,
+          sku: coupon.free_sku,
+        },
+        quantity: 1,
+        unitPriceCents: 0,
+        note: `Free with code ${appliedCoupon}`,
+      });
+      itemCount += 1;
+    } else {
+      const raw = Math.floor(Number(coupon.discount_cents ?? 0));
+      discountCents = Math.min(Math.max(Number.isFinite(raw) ? raw : 0, 0), grossSubtotalCents);
+    }
+  }
+  const totalCents = grossSubtotalCents - discountCents;
 
   // 1) Inquiry row (history + customer trigger)
   const referenceId = generateReferenceId();
@@ -600,8 +669,10 @@ Deno.serve(async (req: Request) => {
       ship_state:   shipState   || null,
       ship_zip:     shipZip     || null,
       ship_country: shipCountry || null,
-      subtotal_cents:       totalCents,
+      subtotal_cents:       grossSubtotalCents,
       shipping_cents:       null,
+      discount_cents:       discountCents,
+      coupon_code:          appliedCoupon,
       invoice_amount_cents: totalCents,
       payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
       invoiced_at: new Date().toISOString(),
@@ -623,6 +694,24 @@ Deno.serve(async (req: Request) => {
   })));
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
+  // Record the redemption + commission ledger row (service-role-only RPC;
+  // atomically re-checks limits and bumps used_count). The order stands even
+  // if this fails on a rare race — the code is stamped on the order row, so
+  // admin can reconcile from Admin → Coupons.
+  if (appliedCoupon) {
+    const { data: redeemData, error: redeemErr } = await supabase.rpc("redeem_coupon", {
+      p_code: appliedCoupon,
+      p_order_id: orderRow.id,
+      p_contact: contact,
+      p_discount_cents: discountCents,
+      p_order_net_cents: totalCents,
+    });
+    const redeemed = redeemData as { ok?: boolean; reason?: string } | null;
+    if (redeemErr || !redeemed?.ok) {
+      console.error("Coupon redemption record failed:", redeemErr ?? redeemed?.reason, appliedCoupon, orderRow.id);
+    }
+  }
+
   // 3) Emails
   //   Buyer: render the FULL branded invoice from the SHARED template
   //     (_shared/invoiceEmail.ts) and send it INLINE over the same Resend path
@@ -643,6 +732,7 @@ Deno.serve(async (req: Request) => {
         .from("orders")
         .select(`id, order_number, buyer_name, buyer_contact, buyer_organization,
                  invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
+                 discount_cents, coupon_code,
                  payment_method, status, notes,
                  ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
         .eq("id", orderRow.id)
@@ -681,6 +771,10 @@ Deno.serve(async (req: Request) => {
     ``,
     ...items.map((i) => `  - ${i.product.name}${i.fast === true ? " [FAST]" : i.fast === false ? " [STANDARD]" : ""} · qty ${clampQty(i.quantity)} · ${usd(clampCents(i.unitPriceCents))} ea`),
     ``,
+    ...(appliedCoupon ? [
+      `Subtotal: ${usd(grossSubtotalCents)}`,
+      `Code ${appliedCoupon}: ${discountCents > 0 ? "-" + usd(discountCents) : "free item added"}`,
+    ] : []),
     `Total: ${usd(totalCents)}`,
     `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
     `Mark paid in Admin → Orders once confirmed.`,
@@ -688,7 +782,10 @@ Deno.serve(async (req: Request) => {
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
     subject: `New order ${orderNumber} — ${name} (${usd(totalCents)})`,
-    html: buildBusinessEmailHtml(cleanPayload, orderNumber, referenceId, totalCents),
+    html: buildBusinessEmailHtml(
+      cleanPayload, orderNumber, referenceId, totalCents,
+      appliedCoupon ? { code: appliedCoupon, discountCents } : undefined,
+    ),
     text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
   });
