@@ -93,7 +93,7 @@ export function TierStrip(props: TierStripProps) {
               className="rounded-[var(--radius-procurement)] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 transition-colors"
               style={{
                 padding: sm ? '3px 7px' : '5px 10px',
-                fontSize: sm ? '8.5px' : '10px',
+                fontSize: sm ? '9px' : '10px',
                 letterSpacing: '0.16em',
                 backgroundColor: active ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                 color: active ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',

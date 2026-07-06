@@ -207,7 +207,7 @@ export function ClassificationFilter({
             aria-checked={inStock.on}
             onClick={inStock.toggle}
             title={inStock.on ? 'Showing in-stock only — tap to show all' : 'Tap to show in-stock only'}
-            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[10px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
             style={
               inStock.on
                 ? { borderColor: `${stockColor}99`, color: stockColor, backgroundColor: `${stockColor}14` }
@@ -235,14 +235,14 @@ export function ClassificationFilter({
             <button
               type="button"
               onClick={() => setShowTech(false)}
-              className={`rounded-full px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] transition-colors ${!showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] transition-colors ${!showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
             >
               Plain terms
             </button>
             <button
               type="button"
               onClick={() => setShowTech(true)}
-              className={`rounded-full px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] transition-colors ${showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] transition-colors ${showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
             >
               Technical detail
             </button>

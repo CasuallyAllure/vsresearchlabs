@@ -117,12 +117,12 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
         {/* Identity — compact 2-line, with optional gold nickname pip */}
         <div className="px-2 pt-1.5 pb-1">
           <div className="flex items-center gap-1 min-w-0">
-            <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-ink/40 truncate">
+            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/50 truncate">
               {product.abbreviation} · {product.family.split(' ')[0]}
             </p>
             {product.nickname && (
               <span
-                className="shrink-0 font-mono text-[8px] uppercase tracking-[0.16em] px-1 py-0 rounded-[2px] border"
+                className="shrink-0 font-mono text-[9px] uppercase tracking-[0.16em] px-1 py-0 rounded-[2px] border"
                 style={{
                   color: '#8A6E2E',
                   borderColor: 'rgba(181,144,75,0.40)',
@@ -163,7 +163,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                   title={isFast ? `${v.dose} · ships fast` : v.dose}
                   className="font-mono leading-none px-1.5 py-1 rounded-[3px] border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   style={{
-                    fontSize: '8.5px',
+                    fontSize: '9px',
                     letterSpacing: '0.14em',
                     backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                     color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
@@ -198,7 +198,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             onClick={handleAdd}
             disabled={!stocked}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-            className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 rounded-full px-2 py-1 text-[9px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               backgroundColor: added ? 'rgba(52,114,122,0.16)' : 'rgba(26,23,20,0.05)',
               border: added ? '1px solid rgba(52,114,122,0.45)' : '1px solid rgba(26,23,20,0.14)',

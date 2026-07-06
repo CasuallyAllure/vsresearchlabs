@@ -76,7 +76,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
     <span
       aria-label={stocked ? 'In stock' : 'Out of stock'}
       title={stocked ? 'In stock' : 'Out of stock'}
-      className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-1.5 py-[2px] text-[7.5px] uppercase tracking-[0.12em]"
+      className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-1.5 py-[2px] text-[9px] uppercase tracking-[0.12em]"
       style={{
         color: stocked ? STOCK_GREEN : STOCK_RED,
         backgroundColor: 'rgba(0,0,0,0.55)',
@@ -111,7 +111,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
   const identity = (
     <>
       <div className="flex items-center gap-2 flex-wrap">
-        <p className="text-[10px] uppercase tracking-[0.25em] text-ink/40">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-ink/50">
           {product.family}
         </p>
         {product.nickname && (
@@ -133,7 +133,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
           {product.name}
         </h3>
       </div>
-      <p className="text-[11px] tracking-wide text-ink/40 truncate">
+      <p className="text-[11px] tracking-wide text-ink/50 truncate">
         <span className="text-ink/55 tabular-nums">{product.sku}</span>
         {product.shortDescription && (
           <>
@@ -178,7 +178,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         <div className="px-4 pb-3 pt-1.5">
           {variants.length > 0 && (
             <>
-              <p className="mb-1.5 text-[8px] uppercase tracking-[0.22em] text-ink/30">
+              <p className="mb-1.5 text-[9px] uppercase tracking-[0.22em] text-ink/50">
                 Tier
               </p>
               <TierStrip

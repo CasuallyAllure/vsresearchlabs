@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Turnstile } from '../components/security/Turnstile';
 import { Button } from '../components/ui/Button';
+import { Field } from '../components/ui/Field';
 
 type Topic = 'general' | 'procurement' | 'documentation' | 'partnership' | 'media' | 'other';
 
@@ -249,8 +250,10 @@ export function Contact() {
             placeholder="A few sentences on what you're trying to do, the research context, and what you need from us. The more specific you are, the faster we can route the right person."
             aria-invalid={showMessageError || undefined}
             className={[
-              'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-[14px] text-ink placeholder-ink/30 focus:outline-none transition-colors resize-y',
-              showMessageError ? 'border-red-500/60 focus:border-red-400' : 'border-ink/15 focus:border-ink/40',
+              'w-full px-[14px] py-[11px] bg-base-700 border rounded-[10px] text-[14px] text-ink placeholder-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] focus:outline-none transition-[border-color,box-shadow] duration-150 resize-y',
+              showMessageError
+                ? 'border-red-500/55 focus:border-red-500/80 focus:ring-2 focus:ring-red-500/15'
+                : 'border-ink/12 hover:border-ink/20 focus:border-gold/70 focus:ring-2 focus:ring-gold/15',
             ].join(' ')}
           />
           {showMessageError && (
@@ -324,56 +327,5 @@ export function Contact() {
         For Research Purposes Only — Not for Human or Veterinary Use
       </p>
     </section>
-  );
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-interface FieldProps {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  onBlur?: () => void;
-  error?: string | null;
-  required?: boolean;
-  autoComplete?: string;
-  placeholder?: string;
-  type?: string;
-}
-
-function Field({
-  id, label, value, onChange, onBlur, error, required, autoComplete, placeholder, type = 'text',
-}: FieldProps) {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-[11px] uppercase tracking-[0.22em] text-ink/55 mb-[var(--space-2)]"
-      >
-        {label}
-        {required && <span className="text-ink/40 normal-case tracking-normal"> — required</span>}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        required={required}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        aria-invalid={!!error || undefined}
-        className={[
-          'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-[14px] text-ink placeholder-ink/30 focus:outline-none transition-colors',
-          error ? 'border-red-500/60 focus:border-red-400' : 'border-ink/15 focus:border-ink/40',
-        ].join(' ')}
-      />
-      {error && (
-        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }
