@@ -1156,7 +1156,7 @@
     "abbreviation": "BAL",
     "family": "Precision Instrument",
     "variants": [],
-    "priceCents": 245000,
+    "priceCents": 246500,
     "stock": 4,
     "tags": [
       "balance",
@@ -1211,7 +1211,7 @@
     "abbreviation": "CEN",
     "family": "Centrifuge",
     "variants": [],
-    "priceCents": 489000,
+    "priceCents": 490500,
     "stock": 3,
     "tags": [
       "centrifuge",
@@ -1266,7 +1266,7 @@
     "abbreviation": "PHM",
     "family": "Measurement",
     "variants": [],
-    "priceCents": 58500,
+    "priceCents": 60000,
     "stock": 7,
     "tags": [
       "ph",
@@ -1321,7 +1321,7 @@
     "abbreviation": "PIP",
     "family": "Liquid Handling",
     "variants": [],
-    "priceCents": 74500,
+    "priceCents": 76000,
     "stock": 10,
     "tags": [
       "pipette",
@@ -1376,7 +1376,7 @@
     "abbreviation": "VTX",
     "family": "Sample Prep",
     "variants": [],
-    "priceCents": 32500,
+    "priceCents": 34000,
     "stock": 12,
     "tags": [
       "mixer",
@@ -1435,7 +1435,7 @@
         "dose": "3 mL"
       }
     ],
-    "priceCents": 1500,
+    "priceCents": 3000,
     "stock": 0,
     "tags": [
       "solvent",
@@ -1490,7 +1490,7 @@
         "dose": "30 mL"
       }
     ],
-    "priceCents": 1200,
+    "priceCents": 2700,
     "stock": 200,
     "tags": [
       "solvent",
@@ -1549,7 +1549,7 @@
         "dose": "Box of 100"
       }
     ],
-    "priceCents": 2400,
+    "priceCents": 3900,
     "stock": 80,
     "tags": [
       "consumable",
