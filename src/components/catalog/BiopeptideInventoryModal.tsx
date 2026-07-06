@@ -17,6 +17,7 @@ import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useProducts } from '../../hooks/useProducts';
 import { useCart } from '../../hooks/useCart';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
@@ -219,98 +220,155 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
     <>
       <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-[3px]" />
 
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Biopeptide full inventory"
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 pointer-events-none"
-      >
-        <div
-          className="pointer-events-auto flex flex-col w-full max-w-[1080px] max-h-[90vh] overflow-hidden rounded-2xl border border-ink/[0.12] bg-base-800"
-          style={{ boxShadow: '0 24px 60px rgba(26,23,20,0.22), 0 0 0 0.5px rgba(26,23,20,0.06)' }}
-        >
-          {/* Header + filter */}
-          <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.08]">
-            <div className="flex items-start justify-between gap-[var(--space-4)]">
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-ink/45 mb-[var(--space-2)]">
-                  Reference · Master List
-                </p>
-                <h2 className="text-[clamp(1.1rem,2.4vw,1.5rem)] leading-[1.15] tracking-[-0.01em] text-ink">
-                  <span className="font-light text-ink/85">Biopeptide </span>
-                  <span className="font-medium text-ink">full inventory.</span>
-                </h2>
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.22em] text-ink/40">
-                  {filtered.length}
-                  {filtered.length !== products.length ? ` of ${products.length}` : ''} compounds
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close inventory"
-                className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm shrink-0"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Filter — same dropdown grammar as the Biopeptide page */}
-            <div className="mt-[var(--space-4)]">
-              <ClassificationFilter
-                tabs={classificationTabs}
-                value={classFilter}
-                onChange={setClassFilter}
-                allLayman={ALL_LAYMAN}
-                allTechnical={ALL_DESCRIPTION}
-                inStock={{ on: inStockOnly, toggle: () => setInStockOnly((v) => !v) }}
-              />
-            </div>
-          </header>
-
-          {/* Scroll region — compact list */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-2)]">
-            {loading ? (
-              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Loading inventory…</p>
-            ) : error ? (
-              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Inventory could not be loaded.</p>
-            ) : filtered.length === 0 ? (
-              <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">No compounds match the active filter.</p>
-            ) : (
-              <div>
-                {filtered.map((p) => (
-                  <InventoryRow key={p.id} product={p} onInspect={setInspectedId} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <footer className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-3)] border-t border-ink/[0.08] flex items-center justify-between gap-[var(--space-3)] flex-wrap">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">
-              For Research Purposes Only — Not for Human Use
-            </p>
-            <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/45">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: STOCK_GREEN }} aria-hidden="true" />
-                In stock
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: '#B23A3A' }} aria-hidden="true" />
-                Out
-              </span>
-            </div>
-          </footer>
-        </div>
-      </div>
+      <InventoryPanel
+        onClose={onClose}
+        filteredCount={filtered.length}
+        totalCount={products.length}
+        classificationTabs={classificationTabs}
+        classFilter={classFilter}
+        onClassFilterChange={setClassFilter}
+        inStockOnly={inStockOnly}
+        onToggleInStockOnly={() => setInStockOnly((v) => !v)}
+        loading={loading}
+        error={error}
+        filtered={filtered}
+        onInspect={setInspectedId}
+      />
 
       {/* Inspect overlay — renders above the modal */}
       {inspectedProduct && (
         <CompoundIntelligenceOverlay product={inspectedProduct} onClose={() => setInspectedId(null)} />
       )}
     </>
+  );
+}
+
+interface InventoryPanelProps {
+  onClose: () => void;
+  filteredCount: number;
+  totalCount: number;
+  classificationTabs: { id: string; label: string }[];
+  classFilter: string;
+  onClassFilterChange: (value: string) => void;
+  inStockOnly: boolean;
+  onToggleInStockOnly: () => void;
+  loading: boolean;
+  error: unknown;
+  filtered: Product[];
+  onInspect: (id: string) => void;
+}
+
+/**
+ * The actual dialog panel, split out of BiopeptideInventoryModal so the
+ * focus trap hook — which must run unconditionally — only mounts while the
+ * modal is open (the parent early-returns null when closed).
+ */
+function InventoryPanel({
+  onClose,
+  filteredCount,
+  totalCount,
+  classificationTabs,
+  classFilter,
+  onClassFilterChange,
+  inStockOnly,
+  onToggleInStockOnly,
+  loading,
+  error,
+  filtered,
+  onInspect,
+}: InventoryPanelProps) {
+  // This panel is only ever mounted while the modal is open, so the trap is
+  // active for its full lifetime.
+  const panelRef = useFocusTrap(true);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Biopeptide full inventory"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 pointer-events-none"
+    >
+      <div
+        ref={panelRef}
+        className="pointer-events-auto flex flex-col w-full max-w-[1080px] max-h-[90vh] overflow-hidden rounded-2xl border border-ink/[0.12] bg-base-800"
+        style={{ boxShadow: '0 24px 60px rgba(26,23,20,0.22), 0 0 0 0.5px rgba(26,23,20,0.06)' }}
+      >
+        {/* Header + filter */}
+        <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.08]">
+          <div className="flex items-start justify-between gap-[var(--space-4)]">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-ink/45 mb-[var(--space-2)]">
+                Reference · Master List
+              </p>
+              <h2 className="text-[clamp(1.1rem,2.4vw,1.5rem)] leading-[1.15] tracking-[-0.01em] text-ink">
+                <span className="font-light text-ink/85">Biopeptide </span>
+                <span className="font-medium text-ink">full inventory.</span>
+              </h2>
+              <p className="mt-1.5 text-[10px] uppercase tracking-[0.22em] text-ink/40">
+                {filteredCount}
+                {filteredCount !== totalCount ? ` of ${totalCount}` : ''} compounds
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close inventory"
+              className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm shrink-0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Filter — same dropdown grammar as the Biopeptide page */}
+          <div className="mt-[var(--space-4)]">
+            <ClassificationFilter
+              tabs={classificationTabs}
+              value={classFilter}
+              onChange={onClassFilterChange}
+              allLayman={ALL_LAYMAN}
+              allTechnical={ALL_DESCRIPTION}
+              inStock={{ on: inStockOnly, toggle: onToggleInStockOnly }}
+            />
+          </div>
+        </header>
+
+        {/* Scroll region — compact list */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-[var(--space-4)] sm:px-[var(--space-5)] py-[var(--space-2)]">
+          {loading ? (
+            <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Loading inventory…</p>
+          ) : error ? (
+            <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">Inventory could not be loaded.</p>
+          ) : filtered.length === 0 ? (
+            <p className="py-[var(--space-10)] text-center text-[12px] text-ink/45">No compounds match the active filter.</p>
+          ) : (
+            <div>
+              {filtered.map((p) => (
+                <InventoryRow key={p.id} product={p} onInspect={onInspect} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <footer className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-3)] border-t border-ink/[0.08] flex items-center justify-between gap-[var(--space-3)] flex-wrap">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">
+            For Research Purposes Only — Not for Human Use
+          </p>
+          <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/45">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: STOCK_GREEN }} aria-hidden="true" />
+              In stock
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: '#B23A3A' }} aria-hidden="true" />
+              Out
+            </span>
+          </div>
+        </footer>
+      </div>
+    </div>
   );
 }

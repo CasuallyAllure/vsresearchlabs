@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
 import { AbbreviationChip } from './AbbreviationChip';
 import { CompoundVisualZone } from './specimen/CompoundVisualZone';
@@ -74,7 +75,10 @@ export function CompoundIntelligenceOverlay({
   list,
   onNavigate,
 }: CompoundIntelligenceOverlayProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  // Keyboard focus trap — this overlay is only ever mounted while open (the
+  // parent conditionally renders it), so the trap is active for its full
+  // lifetime.
+  const panelRef = useFocusTrap(true);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
 
@@ -186,11 +190,6 @@ export function CompoundIntelligenceOverlay({
     return () => window.removeEventListener('keydown', onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prevProduct?.id, nextProduct?.id]);
-
-  useEffect(() => {
-    const el = panelRef.current?.querySelector<HTMLElement>('button, [href]');
-    el?.focus();
-  }, []);
 
   // ─── Derived values ─────────────────────────────────────────────────────────
 

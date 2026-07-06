@@ -34,6 +34,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { DnaVMark } from '../components/brand/DnaVMark';
 
@@ -329,6 +330,9 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
 
+  // Keyboard focus trap while open — keeps Tab cycling inside the drawer.
+  const panelRef = useFocusTrap(open);
+
   return createPortal(
     <>
       {/* Backdrop */}
@@ -342,6 +346,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
 
       {/* Drawer panel */}
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Primary navigation"

@@ -15,11 +15,17 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VideoIntroModule } from './VideoIntroModule';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useScrollLock } from '../../lib/useScrollLock';
 
 export function IntroModal() {
   const [render, setRender] = useState(true);
   const [open, setOpen] = useState(false);
+
+  // Keyboard focus trap while rendered — called unconditionally (before the
+  // `!render` early return below) so hook order stays stable; `render`
+  // gates the trap's own internal effect.
+  const panelRef = useFocusTrap(render);
 
   // Trigger the enter transition on the next frame after mount.
   useEffect(() => {
@@ -67,6 +73,7 @@ export function IntroModal() {
 
       {/* Panel */}
       <div
+        ref={panelRef}
         className={`relative w-full max-w-[920px] max-h-[90dvh] overflow-y-auto rounded-lg transition-all duration-300 ease-out ${
           open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.98]'
         }`}
