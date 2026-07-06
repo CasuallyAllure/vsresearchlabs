@@ -50,15 +50,19 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
           border: '1px solid rgba(26,23,20,0.18)',
         }}
       >
-        {/* Thumbnail (locally hosted) */}
+        {/* Thumbnail (locally hosted). WebP source with the original
+            format (jpg/png) as fallback for browsers without WebP support. */}
         {thumbnail && (
-          <img
-            src={thumbnail}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <picture>
+            <source srcSet={thumbnail.replace(/\.(jpe?g|png)$/i, '.webp')} type="image/webp" />
+            <img
+              src={thumbnail}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </picture>
         )}
         {/* Darken for play-badge legibility */}
         <span className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.45) 100%)' }} aria-hidden="true" />

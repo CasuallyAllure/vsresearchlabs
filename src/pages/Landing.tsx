@@ -30,22 +30,33 @@
  */
 
 import { Link } from 'react-router-dom';
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
 import { CompoundIntelligenceHero } from '../components/landing/CompoundIntelligenceHero';
-// Heavy (three.js + R3F + drei) — split into its own chunk so it streams in
-// after the page paints instead of blocking the initial bundle.
-import { CompoundVisualizerFrame } from '../components/landing/CompoundVisualizerFrame';
-import { CompoundVisualizerModal } from '../components/landing/CompoundVisualizerModal';
 import { IntroModal } from '../components/landing/IntroModal';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
 import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
 
 const documents = documentsData as unknown as Document[];
+
+// Heavy (three.js + R3F + drei) — split into its own chunk so it streams in
+// after the page paints instead of blocking the initial bundle. Both the
+// inline frame and the expanded modal (which also pulls in the frame)
+// are code-split so neither is part of the Landing route's eager graph.
+const CompoundVisualizerFrame = lazy(() =>
+  import('../components/landing/CompoundVisualizerFrame').then((m) => ({
+    default: m.CompoundVisualizerFrame,
+  })),
+);
+const CompoundVisualizerModal = lazy(() =>
+  import('../components/landing/CompoundVisualizerModal').then((m) => ({
+    default: m.CompoundVisualizerModal,
+  })),
+);
 
 /* ── Module header rail ───────────────────────────────────────────────────
    The persistent asymmetry primitive. A mono index + label + operational
@@ -306,7 +317,11 @@ export function Landing() {
       {/* Floating intro — appears on first entry, must be dismissed. */}
       <IntroModal />
       <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
-      <CompoundVisualizerModal open={compoundExpanded} onClose={() => setCompoundExpanded(false)} />
+      {compoundExpanded && (
+        <Suspense fallback={null}>
+          <CompoundVisualizerModal open={compoundExpanded} onClose={() => setCompoundExpanded(false)} />
+        </Suspense>
+      )}
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
@@ -632,7 +647,24 @@ export function Landing() {
               className="op-reveal md:col-span-6"
               style={{ ['--op-delay' as string]: '210ms' }}
             >
-              <CompoundVisualizerFrame onExpand={() => setCompoundExpanded(true)} />
+              <Suspense
+                fallback={
+                  <div
+                    className="module-aura relative w-full aspect-[5/4] overflow-hidden rounded-2xl"
+                    style={{
+                      background: 'var(--visualizer-glass)',
+                      backdropFilter: 'blur(10px) saturate(118%)',
+                      WebkitBackdropFilter: 'blur(10px) saturate(118%)',
+                      border: '1px solid var(--visualizer-glass-border)',
+                      boxShadow:
+                        '0 26px 64px -30px rgba(26,23,20,0.28), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(26,23,20,0.05)',
+                    }}
+                    aria-label="Compound visualization loading"
+                  />
+                }
+              >
+                <CompoundVisualizerFrame onExpand={() => setCompoundExpanded(true)} />
+              </Suspense>
             </div>
           </div>
 
