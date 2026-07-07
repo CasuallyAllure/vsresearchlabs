@@ -467,19 +467,12 @@ export function CompoundIntelligenceOverlay({
                   </div>
                 )}
 
-                {/* Mobile identity block */}
-                <div className="lg:hidden px-4 py-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.055)' }}>
-                  <div className="flex flex-wrap gap-x-3.5 gap-y-1 mb-3">
-                    {ci.casNumber && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>CAS {ci.casNumber}</span>}
-                    {ci.molecularWeight && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>MW {ci.molecularWeight}</span>}
-                  </div>
-                  {passportStats.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
-                      {passportStats.map((s) => <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />)}
-                    </div>
-                  )}
+                {/* Mobile identity block — buy controls first so price + dose +
+                    Add are reachable without scrolling past the specs; the
+                    identifiers (CAS/MW) + key stats sit just beneath. */}
+                <div className="lg:hidden px-4 py-3" style={{ borderBottom: '1px solid rgba(26,23,20,0.055)' }}>
                   {visibleTiers.length > 0 && (
-                    <div className="mt-3">
+                    <div className="mb-3">
                       <div className="flex items-baseline justify-between mb-2">
                         <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
                           Select mg
@@ -495,6 +488,9 @@ export function CompoundIntelligenceOverlay({
                         selectedIndex={selectedTierIndex}
                         onSelect={setSelectedTierIndex}
                       />
+                      <div className="mt-2.5">
+                        <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
+                      </div>
                       <div className="mt-3 flex items-center gap-2">
                         <QuantityStepper quantity={quantity} onChange={setQuantity} />
                         <button
@@ -505,6 +501,15 @@ export function CompoundIntelligenceOverlay({
                           Add to Inquiry
                         </button>
                       </div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
+                    {ci.casNumber && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>CAS {ci.casNumber}</span>}
+                    {ci.molecularWeight && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>MW {ci.molecularWeight}</span>}
+                  </div>
+                  {passportStats.length > 0 && (
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-1">
+                      {passportStats.map((s) => <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />)}
                     </div>
                   )}
                 </div>

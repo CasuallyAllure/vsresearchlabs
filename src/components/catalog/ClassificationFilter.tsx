@@ -98,11 +98,14 @@ export function ClassificationFilter({
       : [];
 
   return (
-    <div className="mb-[var(--space-3)] rounded-[var(--radius-procurement)] border border-ink/[0.09] bg-ink/[0.025] p-[var(--space-2)]">
-      {/* Mobile: search on its own row, controls beneath. sm+: one line. */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-1.5">
+    <div className="mb-[var(--space-3)] rounded-[var(--radius-procurement)] border border-ink/[0.09] bg-ink/[0.025] p-1.5">
+      {/* One compact row on every breakpoint: the search field grows, the
+          in-stock toggle + category dropdown stay pinned right. The category
+          menu is right-anchored (and viewport-width-capped) so it can never
+          run off the left edge on a narrow phone. */}
+      <div className="flex items-center gap-1.5">
         {onSearch && (
-          <div ref={searchRef} className="relative min-w-0 w-full sm:flex-1">
+          <div ref={searchRef} className="relative min-w-0 flex-1">
             <svg
               className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/35"
               width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -155,51 +158,6 @@ export function ClassificationFilter({
           </div>
         )}
 
-        {/* Controls row — below the search on mobile, inline on sm and up */}
-        <div className="flex items-center gap-1.5 sm:shrink-0">
-        <div ref={catRef} className="relative shrink-0">
-          <button
-            type="button"
-            aria-haspopup="listbox"
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-            className="flex min-w-[92px] items-center justify-between gap-1.5 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
-          >
-            <span className="truncate font-medium">{currentLabel}</span>
-            <span aria-hidden="true" className={`shrink-0 text-[10px] text-ink/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
-          </button>
-
-          {open && (
-            <ul
-              role="listbox"
-              aria-label="Categories"
-              className="absolute right-0 z-40 mt-1 max-h-[260px] w-[220px] max-w-[80vw] overflow-y-auto rounded-[var(--radius-procurement)] border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
-              style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
-            >
-              {tabs.map((tab) => {
-                const active = tab.id === value;
-                return (
-                  <li key={tab.id}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={active}
-                      onClick={() => { onChange(tab.id); setOpen(false); setShowTech(false); }}
-                      className={[
-                        'flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-[12.5px] transition-colors',
-                        active ? 'bg-holo/[0.10] text-holo font-medium' : 'text-ink/70 hover:bg-ink/[0.05] hover:text-ink',
-                      ].join(' ')}
-                    >
-                      {tab.label}
-                      {active && <span aria-hidden="true" className="text-[11px] text-holo">✓</span>}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
         {inStock && (
           <button
             type="button"
@@ -225,6 +183,48 @@ export function ClassificationFilter({
             In stock
           </button>
         )}
+
+        <div ref={catRef} className="relative shrink-0">
+          <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+            className="flex min-w-[68px] max-w-[40vw] items-center justify-between gap-1.5 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+          >
+            <span className="truncate font-medium">{currentLabel}</span>
+            <span aria-hidden="true" className={`shrink-0 text-[10px] text-ink/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
+          </button>
+
+          {open && (
+            <ul
+              role="listbox"
+              aria-label="Categories"
+              className="absolute right-0 z-40 mt-1 max-h-[min(60vh,300px)] w-[min(240px,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-[var(--radius-procurement)] border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.3)]"
+              style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
+            >
+              {tabs.map((tab) => {
+                const active = tab.id === value;
+                return (
+                  <li key={tab.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      onClick={() => { onChange(tab.id); setOpen(false); setShowTech(false); }}
+                      className={[
+                        'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[12.5px] transition-colors',
+                        active ? 'bg-holo/[0.10] text-holo font-medium' : 'text-ink/70 hover:bg-ink/[0.05] hover:text-ink',
+                      ].join(' ')}
+                    >
+                      <span className="truncate">{tab.label}</span>
+                      {active && <span aria-hidden="true" className="shrink-0 text-[11px] text-holo">✓</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
