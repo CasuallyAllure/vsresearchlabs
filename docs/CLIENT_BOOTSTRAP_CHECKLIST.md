@@ -68,6 +68,13 @@ the verification block.
       `RESEND_FROM_EMAIL`, `INQUIRY_TO_EMAIL`, `ZELLE_HANDLE`, `PAYPAL_HANDLE`,
       `TURNSTILE_SECRET`, `ALLOWED_ORIGIN`, `PUBLIC_SITE_URL`,
       optional `BRAND_STAMP_URL`.
+- [ ] Set email-branding secrets (REQUIRED for non-VSR clients — unset values
+      fall back to VS Research Labs strings): `EMAIL_BRAND_NAME`,
+      `EMAIL_BRAND_TAGLINE`, `EMAIL_BRAND_SIGNATURE`, `EMAIL_LOGO_URL`
+      (hosted PNG), `EMAIL_OPS_EMAIL`.
+- [ ] Review remaining email template prose (terms/purity/warehouse copy in
+      `_shared/invoiceEmail.ts` + `place-order`) and reference prefixes
+      (`VSR-ORD`/`VSR-MSG` in `place-order`/`send-contact`) — edit per client.
 - [ ] Configure Supabase Auth email template
       (`supabase/auth-emails/confirm-signup.html`) with client branding.
 - [ ] Create the first admin: Supabase user + row in `admin_users`.

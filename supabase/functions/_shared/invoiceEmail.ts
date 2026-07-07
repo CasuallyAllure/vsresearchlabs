@@ -10,8 +10,10 @@
 //
 // Keep ALL invoice presentation here so the two callers can never drift.
 
+import { EMAIL_BRAND } from "./emailBrand.ts";
+
 const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
-const SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
+const SITE_URL = EMAIL_BRAND.siteUrl;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const FUNCTIONS_BASE = (Deno.env.get("PUBLIC_FUNCTIONS_URL") ?? `${SUPABASE_URL}/functions/v1`).replace(/\/+$/, "");
 
@@ -83,7 +85,7 @@ export function paymentCode(orderNumber: string): string {
 }
 
 export function invoiceSubject(order: Pick<OrderRow, "order_number" | "invoice_amount_cents">): string {
-  return `Invoice ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · VS Research Labs`;
+  return `Invoice ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · ${EMAIL_BRAND.name}`;
 }
 
 const ZELLE_FOR_TEXT = ZELLE_EMAIL;
@@ -109,7 +111,7 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
   }).join("\n");
 
   return [
-    `VS RESEARCH LABS — INVOICE`,
+    `${EMAIL_BRAND.name.toUpperCase()} — INVOICE`,
     ``,
     `Order: ${order.order_number}`,
     `Billed to: ${order.buyer_name} (${order.buyer_contact})`,
@@ -140,10 +142,10 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
     ``,
     `Terms: Research use only — not for human or veterinary use. All sales final;`,
     `if third-party testing comes back below 98–99% purity we replace or refund`,
-    `(send the report to ops@vsresearchlabs.com within 14 days of delivery).`,
+    `(send the report to ${EMAIL_BRAND.opsEmail} within 14 days of delivery).`,
     ``,
     `Questions? Just reply to this email.`,
-    `VS Research Labs · Northern California Biopeptide Sciences`,
+    `${EMAIL_BRAND.name} · ${EMAIL_BRAND.tagline}`,
   ].join("\n");
 }
 
@@ -210,9 +212,9 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
     <!-- Editorial masthead — tasteful gold accents, serif wordmark -->
     <div style="height:3px;background:#B5904B;width:180px;margin:0 auto 22px;font-size:0;line-height:0;">&nbsp;</div>
     <div style="text-align:center;margin:0 0 28px;">
-      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="68" height="68" style="display:inline-block;width:68px;height:68px;margin-bottom:14px;border:0;" />
-      <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;letter-spacing:0.02em;color:#1A1714;margin-bottom:5px;">VS Research Labs</div>
-      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:18px;">Northern California Biopeptide Sciences</div>
+      <img src="${EMAIL_BRAND.logoUrl}" alt="${escapeHtml(EMAIL_BRAND.name)}" width="68" height="68" style="display:inline-block;width:68px;height:68px;margin-bottom:14px;border:0;" />
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;letter-spacing:0.02em;color:#1A1714;margin-bottom:5px;">${escapeHtml(EMAIL_BRAND.name)}</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:18px;">${escapeHtml(EMAIL_BRAND.tagline)}</div>
       <span style="display:inline-block;border-top:1px solid #B5904B;border-bottom:1px solid #B5904B;padding:7px 24px;font-size:10px;letter-spacing:0.34em;text-transform:uppercase;color:#1A1714;font-weight:600;">Invoice</span>
     </div>
 
@@ -358,7 +360,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
         (compound-dependent), we'll either <strong>replace the affected
         product</strong> at our cost or issue a <strong>full refund</strong>,
         your choice. Send the lab report to
-        <a href="mailto:ops@vsresearchlabs.com" style="color:#34727A;text-decoration:underline;">ops@vsresearchlabs.com</a>
+        <a href="mailto:${EMAIL_BRAND.opsEmail}" style="color:#34727A;text-decoration:underline;">${EMAIL_BRAND.opsEmail}</a>
         within 14 days of delivery and we'll handle it.
       </p>
     </div>
@@ -366,8 +368,8 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
 
     <div style="padding-top:22px;margin-top:24px;text-align:center;">
       <div style="height:1px;background:#B5904B;width:120px;margin:0 auto 18px;font-size:0;line-height:0;">&nbsp;</div>
-      <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:0.02em;color:#1A1714;margin-bottom:6px;">VS Research Labs</div>
-      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:8px;">Northern California Biopeptide Sciences · vsresearchlabs.com</div>
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:0.02em;color:#1A1714;margin-bottom:6px;">${escapeHtml(EMAIL_BRAND.name)}</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:8px;">${escapeHtml(EMAIL_BRAND.tagline)} · ${escapeHtml(EMAIL_BRAND.siteHost)}</div>
       <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
       <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(order.order_number)}</div>
     </div>

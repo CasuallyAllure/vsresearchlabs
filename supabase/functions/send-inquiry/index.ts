@@ -27,6 +27,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -172,7 +173,7 @@ function buildBusinessEmailHtml(
         ${escapeHtml(referenceId)}
       </p>
       <h2 style="font-weight:300;letter-spacing:0.05em;margin:0 0 16px;">
-        Procurement Inquiry — VS Research Labs
+        Procurement Inquiry — ${escapeHtml(EMAIL_BRAND.name)}
       </h2>
       <p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>
       <p><strong>Contact:</strong> ${escapeHtml(payload.contact)}</p>
@@ -230,7 +231,7 @@ function buildUserEmailHtml(
         <tbody>${itemRows}</tbody>
       </table>
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        VS Research Labs — For Research Purposes Only
+        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only
       </p>
     </div>`;
 }
@@ -456,7 +457,7 @@ Deno.serve(async (req: Request) => {
   if (contactIsEmail) {
     const userResult = await sendResendEmail({
       to:      contact,
-      subject: `Inquiry ${persistedRef} received — VS Research Labs`,
+      subject: `Inquiry ${persistedRef} received — ${EMAIL_BRAND.name}`,
       html:    buildUserEmailHtml(cleanPayload, persistedRef),
     });
     userCopySent = userResult.ok;

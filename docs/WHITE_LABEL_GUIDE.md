@@ -85,15 +85,24 @@ short version:
 - **Never commit**: `.env`, API keys, service-role keys, payment handles,
   customer data exports.
 
-## Known limitations (intentionally deferred)
+## Email branding (Stage 2)
 
-- **Edge-function fallbacks are still VSR-branded.** Every function reads
-  `RESEND_FROM_EMAIL` etc. from env first, so a correctly configured client
-  project sends correctly — but the *hardcoded fallbacks* and the invoice
-  email template headings in `supabase/functions/_shared/invoiceEmail.ts`
-  ("Northern California Biopeptide Sciences", Zelle recipient constant) still
-  say VS Research Labs. Extracting those touches the live order-email path
-  and needs owner approval + email round-trip testing.
+Edge-function email identity is centralized in
+`supabase/functions/_shared/emailBrand.ts`. Every value reads a Supabase
+secret and falls back to the exact VS Research Labs string, so VSR needs no
+new secrets. **Client projects MUST set:** `EMAIL_BRAND_NAME`,
+`EMAIL_BRAND_TAGLINE`, `EMAIL_BRAND_SIGNATURE`, `EMAIL_LOGO_URL`,
+`EMAIL_OPS_EMAIL`, and `PUBLIC_SITE_URL` (footer host derives from it) —
+alongside the existing `RESEND_FROM_EMAIL`, `INQUIRY_TO_EMAIL`,
+`ZELLE_HANDLE`/`PAYPAL_HANDLE`, `BRAND_STAMP_URL`.
+
+Still template *prose*, edited per client (not config): research-use/terms
+wording, the purity-guarantee block, the warehouse line, the text-stamp
+fallback in `place-order` (set `BRAND_STAMP_URL` and it never renders), and
+reference prefixes (`VSR-ORD`/`VSR-MSG`/`VSR-WEB-PORTAL` in `place-order` /
+`send-contact` / `send-inquiry`).
+
+## Known limitations (intentionally deferred)
 - **SKU prefixes (`VSR-…`) live in catalog data**, not code. A new client's
   catalog simply uses their own prefixes; regenerating the VSR biopeptide
   data is not required.

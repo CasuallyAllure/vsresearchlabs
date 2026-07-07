@@ -37,6 +37,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 import {
   buildInvoiceHtml,
   buildInvoiceText,
@@ -169,12 +170,12 @@ function brandHeaderHtml(): string {
   // text "stamp" that mirrors the on-site mark (no SVG — clients strip it).
   if (BRAND_STAMP_URL) {
     return `<div style="text-align:center;margin:0 0 20px;">
-      <img src="${escapeHtml(BRAND_STAMP_URL)}" alt="VS Research Labs" width="248" style="display:inline-block;max-width:248px;height:auto;" />
+      <img src="${escapeHtml(BRAND_STAMP_URL)}" alt="${escapeHtml(EMAIL_BRAND.name)}" width="248" style="display:inline-block;max-width:248px;height:auto;" />
     </div>`;
   }
   return `
     <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 22px;text-align:center;">
-      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="64" height="64" style="display:block;margin:0 auto;width:64px;height:64px;border:0;" />
+      <img src="${EMAIL_BRAND.logoUrl}" alt="${escapeHtml(EMAIL_BRAND.name)}" width="64" height="64" style="display:block;margin:0 auto;width:64px;height:64px;border:0;" />
       <div style="font-family:'Cormorant Garamond','EB Garamond',Garamond,Georgia,serif;font-weight:500;font-size:26px;letter-spacing:0.02em;color:#1A1714;margin-top:8px;line-height:1;">
         Research Labs
       </div>
@@ -347,7 +348,7 @@ function buildAcknowledgementHtml(
         </div>
       ` : ""}
       <p style="margin-top:24px;color:#888;font-size:12px;text-align:center;">
-        VS Research Labs — For Research Purposes Only · Not for Human Use
+        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only · Not for Human Use
       </p>
     </div>`;
 }
@@ -390,7 +391,7 @@ function buildInvoiceEmailHtml(
       ${shipBlockHtml(payload, { heading: "Ship to · verify before paying" })}
       ${paymentBlockHtml(orderNumber, totalCents)}
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        VS Research Labs — For Research Purposes Only · Not for Human Use
+        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only · Not for Human Use
       </p>
     </div>`;
 }
@@ -470,7 +471,7 @@ function buildBusinessEmailHtml(
         Mark paid in Admin → Orders once confirmed.
       </div>
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        VS Research Labs — Internal notification · Do not forward to buyer
+        ${escapeHtml(EMAIL_BRAND.name)} — Internal notification · Do not forward to buyer
       </p>
     </div>`;
 }

@@ -21,13 +21,14 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquire@vsresearchlabs.com";
-const SITE_URL             = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
+const SITE_URL             = EMAIL_BRAND.siteUrl;
 const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
 
 const CORS_HEADERS = buildCorsHeaders("GET, POST, OPTIONS");
@@ -76,7 +77,7 @@ function buildConfirmationPage(orderNumber: string, totalCents: number | null): 
 <html><head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Payment recorded — VS Research Labs</title>
+<title>Payment recorded — ${escapeHtml(EMAIL_BRAND.name)}</title>
 <style>
   body { margin: 0; padding: 0; background: #F4EFE6;
          font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -110,7 +111,7 @@ function buildConfirmationPage(orderNumber: string, totalCents: number | null): 
         and start fulfillment within one business day. You'll get a shipment
         notification with tracking when the order ships.
       </p>
-      <a class="home" href="${SITE_URL}/">vsresearchlabs.com</a>
+      <a class="home" href="${SITE_URL}/">${escapeHtml(EMAIL_BRAND.siteHost)}</a>
     </div>
   </div>
 </body></html>`;
@@ -121,7 +122,7 @@ function buildErrorPage(message: string): string {
 <html><head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Link expired — VS Research Labs</title>
+<title>Link expired — ${escapeHtml(EMAIL_BRAND.name)}</title>
 <style>
   body { margin: 0; padding: 0; background: #F4EFE6;
          font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -143,7 +144,7 @@ function buildErrorPage(message: string): string {
       <p>${escapeHtml(message)}</p>
       <p>If you've already sent your payment and want to follow up, reply to
          the invoice email and we'll handle it manually.</p>
-      <a class="home" href="${SITE_URL}/">vsresearchlabs.com</a>
+      <a class="home" href="${SITE_URL}/">${escapeHtml(EMAIL_BRAND.siteHost)}</a>
     </div>
   </div>
 </body></html>`;
