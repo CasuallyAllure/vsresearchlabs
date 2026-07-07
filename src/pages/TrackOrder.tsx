@@ -32,6 +32,7 @@ import productsData from '../data/products.json';
 import generatedCompounds from '../data/biopeptideCompounds.generated.json';
 import type { Product } from '../types';
 import { tierPriceCents } from '../lib/pricing';
+import { siteConfig } from '../config';
 import { Button } from '../components/ui/Button';
 
 /** SKU → catalog product, to resolve a unit price when a line has none stored. */
@@ -372,10 +373,10 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
           <div className="px-8 py-8 sm:px-10 sm:py-10">
             <div className="flex items-start justify-between gap-6 border-b border-[#1A1714]/10 pb-6">
               <div className="flex items-center gap-3">
-                <img src="/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" className="h-10 w-auto" />
+                <img src="/brand/vs-dna-s-full-colour.png" alt={siteConfig.brand.name} className="h-10 w-auto" />
                 <div>
-                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">VS Research Labs</p>
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">For Research Purposes Only</p>
+                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">{siteConfig.brand.name}</p>
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">{siteConfig.compliance.shortLine}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -440,9 +441,9 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
 
             <div className="mt-8 pt-5 text-center">
               <div className="mx-auto mb-3 h-px w-[120px] bg-[#B5904B]" />
-              <p className="font-serif text-[14px] text-[#1A1714]">VS Research Labs</p>
+              <p className="font-serif text-[14px] text-[#1A1714]">{siteConfig.brand.name}</p>
               <p className="mt-1 text-[10px] leading-relaxed text-[#9A9186]">
-                inquire@vsresearchlabs.com · All products are sold for laboratory research use only and are not for human consumption.
+                {siteConfig.contact.inquiryEmail} · {siteConfig.compliance.documentLine}
               </p>
             </div>
           </div>
@@ -495,7 +496,7 @@ function StatusLookup() {
         <div className="grid gap-[var(--space-4)] sm:grid-cols-[1fr_140px]">
           <div>
             <label htmlFor="track-id" className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Order number or email</label>
-            <input id="track-id" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="VSR-ORD-… or your email" autoComplete="off" className="w-full rounded-sm border border-ink/15 bg-base-800 px-[var(--space-3)] py-[var(--space-2)] text-[13px] text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/40" />
+            <input id="track-id" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={siteConfig.order.trackingPlaceholder} autoComplete="off" className="w-full rounded-sm border border-ink/15 bg-base-800 px-[var(--space-3)] py-[var(--space-2)] text-[13px] text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/40" />
           </div>
           <div>
             <label htmlFor="track-zip" className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Shipping ZIP</label>

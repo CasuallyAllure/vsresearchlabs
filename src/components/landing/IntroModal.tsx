@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { VideoIntroModule } from './VideoIntroModule';
 import { useScrollLock } from '../../lib/useScrollLock';
+import { siteConfig } from '../../config';
 
 export function IntroModal() {
   const [render, setRender] = useState(true);
@@ -53,7 +54,7 @@ export function IntroModal() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Welcome to VS Research Labs"
+      aria-label={`Welcome to ${siteConfig.brand.name}`}
       className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
     >
       {/* Backdrop */}

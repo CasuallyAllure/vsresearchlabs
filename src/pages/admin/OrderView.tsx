@@ -30,6 +30,8 @@ import type { Product } from '../../types';
 import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 import { useConfirm } from '../../components/admin/ConfirmModal';
+import { siteConfig } from '../../config';
+import { AdminCouponPicker, type AppliedCouponResult } from './AdminCouponPicker';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -70,6 +72,7 @@ interface OrderRecord {
   invoice_url: string | null;
   invoice_amount_cents: number | null;
   subtotal_cents: number | null;
+  coupon_code: string | null;
   shipping_cents: number | null;
   payment_method: string | null;
   tracking_number: string | null;
@@ -110,7 +113,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, lookup_token';
+  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -584,6 +587,23 @@ function StageActions({
       setSubUsd((order.subtotal_cents / 100).toFixed(2));
     }
   }, [order.subtotal_cents, reached.invoiced]);
+
+  // Coupon applied at the invoice stage. Picking a percent/fixed code lowers
+  // the Invoice total off the itemized subtotal; clearing it restores the
+  // subtotal. The code is stamped onto the order when the invoice is sent.
+  const [couponCode, setCouponCode] = useState<string | null>(order.coupon_code ?? null);
+  function onApplyCoupon(applied: AppliedCouponResult | null) {
+    const baseCents = order.subtotal_cents ?? Math.round((parseFloat(subUsd) || 0) * 100);
+    if (!applied) {
+      setCouponCode(null);
+      if (order.subtotal_cents != null) setSubUsd((order.subtotal_cents / 100).toFixed(2));
+      return;
+    }
+    setCouponCode(applied.code);
+    const discounted = Math.max(0, baseCents - applied.discountCents);
+    setSubUsd((discounted / 100).toFixed(2));
+  }
+
   const [tracking, setTracking] = useState(order.tracking_number ?? '');
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
   const [note, setNote] = useState('');
@@ -602,6 +622,11 @@ function StageActions({
     detail = 'Confirm the total from the itemized lines, then email the buyer a branded invoice with payment instructions.';
     inputs = (
       <div className="mb-[var(--space-3)] grid grid-cols-1 gap-[var(--space-3)]">
+        <AdminCouponPicker
+          subtotalCents={order.subtotal_cents ?? Math.round((parseFloat(subUsd) || 0) * 100)}
+          initialCode={couponCode}
+          onApply={onApplyCoupon}
+        />
         <MoneyInput label="Invoice total" value={subUsd} onChange={setSubUsd} />
       </div>
     );
@@ -713,16 +738,23 @@ function StageActions({
     const subC = Math.round(parseFloat(subUsd) * 100);
     if (!Number.isFinite(subC) || subC < 0) { setActionError('Enter a valid total.'); return; }
     const totalC = Math.max(0, subC);
+    // With a coupon, keep subtotal at the pre-discount itemized amount so the
+    // invoice shows a Discount line (discount = subtotal − total).
+    const preSubC = couponCode && order.subtotal_cents != null ? order.subtotal_cents : subC;
     const ok = await run(
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
         p_invoice_amount_cents: totalC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
-        p_subtotal_cents: subC, p_shipping_cents: 0,
+        p_subtotal_cents: preSubC, p_shipping_cents: 0,
       }),
       { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}` },
     );
     if (ok) {
       setNote('');
+      if (couponCode) {
+        const { error: cErr } = await supabase.from('orders').update({ coupon_code: couponCode }).eq('id', order.id);
+        if (cErr) setActionError(`Invoice sent, but saving the coupon code failed: ${cErr.message}`);
+      }
       const { error } = await supabase.functions.invoke('send-order-invoice', { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
       if (error) setActionError(`Invoice marked sent, but the email failed: ${error.message}`);
       onChanged?.();
@@ -825,10 +857,10 @@ function PrintableInvoice({
           <div className="px-8 py-8 sm:px-10 sm:py-10">
             <div className="flex items-start justify-between gap-6 border-b border-[#1A1714]/10 pb-6">
               <div className="flex items-center gap-3">
-                <img src="/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" className="h-10 w-auto" />
+                <img src="/brand/vs-dna-s-full-colour.png" alt={siteConfig.brand.name} className="h-10 w-auto" />
                 <div>
-                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">VS Research Labs</p>
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">For Research Purposes Only</p>
+                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">{siteConfig.brand.name}</p>
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">{siteConfig.compliance.shortLine}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -915,9 +947,9 @@ function PrintableInvoice({
 
             <div className="mt-8 pt-5 text-center">
               <div className="mx-auto mb-3 h-px w-[120px] bg-[#B5904B]" />
-              <p className="font-serif text-[14px] text-[#1A1714]">VS Research Labs</p>
+              <p className="font-serif text-[14px] text-[#1A1714]">{siteConfig.brand.name}</p>
               <p className="mt-1 text-[10px] leading-relaxed text-[#9A9186]">
-                inquire@vsresearchlabs.com · All products are sold for laboratory research use only and are not for human consumption.
+                {siteConfig.contact.inquiryEmail} · {siteConfig.compliance.documentLine}
               </p>
             </div>
           </div>

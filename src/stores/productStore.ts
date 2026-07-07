@@ -18,6 +18,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import seedProducts from '../data/products.json';
 import generatedCompounds from '../data/biopeptideCompounds.generated.json';
+import { siteConfig } from '../config';
 import type { Product } from '../types/product';
 
 // The JSON is typed loosely at import; we narrow here once. The biopeptide
@@ -91,7 +92,7 @@ export const useProductStore = create<ProductStore>()(
       // v4 — product names no longer embed a fixed dose ("BPC-157 — 5mg" →
       // "BPC-157"); the dose comes from the variant/tier. Bump re-hydrates so
       // returning browsers drop the stale dose-in-name catalog.
-      name: 'vsresearchlabs.products.v4',
+      name: siteConfig.storage.productsKey,
       storage: createJSONStorage(() => localStorage),
       // Only persist the products array; everything else is derived.
       partialize: (state) => ({ products: state.products }),

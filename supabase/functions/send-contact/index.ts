@@ -15,6 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { verifyTurnstile, clientIp } from "../_shared/turnstile.ts";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -93,7 +94,7 @@ function buildBusinessEmailHtml(p: ContactPayload, refId: string): string {
       <h3 style="margin-top:20px;font-weight:400;letter-spacing:0.03em;">Message</h3>
       <div style="padding:14px 16px;background:#f6f6f6;border-radius:6px;font-size:14px;color:#333;white-space:pre-wrap;">${escapeHtml(p.message)}</div>
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        VS Research Labs · Northern California Biopeptide Sciences<br/>
+        ${escapeHtml(EMAIL_BRAND.name)} · ${escapeHtml(EMAIL_BRAND.tagline)}<br/>
         For Research Purposes Only — Not for Human or Veterinary Use.
       </p>
     </div>`;
@@ -108,7 +109,7 @@ function buildBuyerEmailHtml(p: ContactPayload, refId: string): string {
       <h2 style="font-weight:300;letter-spacing:0.04em;margin:0 0 16px;">
         Message received, ${escapeHtml(p.name)}.
       </h2>
-      <p>Thank you for reaching out to <strong>VS Research Labs</strong>.</p>
+      <p>Thank you for reaching out to <strong>${escapeHtml(EMAIL_BRAND.name)}</strong>.</p>
       <p>
         Your message has been filed under reference
         <span style="font-family:monospace;font-weight:500;">${escapeHtml(refId)}</span>.
@@ -123,8 +124,8 @@ function buildBuyerEmailHtml(p: ContactPayload, refId: string): string {
       </p>
       <p style="margin-top:28px;color:#666;font-size:13px;">
         Operations<br/>
-        <strong>VS Research Labs</strong><br/>
-        Northern California Biopeptide Sciences<br/>
+        <strong>${escapeHtml(EMAIL_BRAND.name)}</strong><br/>
+        ${escapeHtml(EMAIL_BRAND.tagline)}<br/>
         Warehouses: Sacramento, CA · Vallejo, CA
       </p>
       <p style="margin-top:18px;color:#888;font-size:11px;">

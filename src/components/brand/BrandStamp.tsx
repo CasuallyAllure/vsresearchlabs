@@ -20,6 +20,8 @@
  * (or the table-based HTML mark in the edge-function template).
  */
 
+import { siteConfig } from '../../config';
+
 interface BrandStampProps {
   /** Rendered width in px (height scales with the 320×104 viewBox). */
   width?: number;
@@ -36,7 +38,7 @@ export function BrandStamp({
   width = 240,
   tone = 'currentColor',
   className,
-  title = 'VS Research Labs',
+  title = siteConfig.brand.name,
 }: BrandStampProps) {
   const height = (width * 104) / 320;
   return (
@@ -71,7 +73,7 @@ export function BrandStamp({
       <text x="160" y="26" textAnchor="middle" fill="currentColor" fillOpacity="0.5"
         fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
         letterSpacing="3" style={{ textTransform: 'uppercase' }}>
-        Research-Grade · Bay Area · California
+        {siteConfig.brand.stampCaption}
       </text>
 
       {/* Wordmark row: VS RESEARCH LABS (Cormorant serif) + three bodies */}
@@ -79,7 +81,7 @@ export function BrandStamp({
         fontFamily="'Cormorant Garamond', 'Times New Roman', Georgia, serif"
         fontSize="25" fontWeight="600" letterSpacing="2"
         style={{ textTransform: 'uppercase' }}>
-        VS Research Labs
+        {siteConfig.brand.name}
       </text>
 
       {/* Three bodies — the single accent, sized to the wordmark cap height */}
@@ -100,14 +102,14 @@ export function BrandStamp({
       <text x="160" y="82" textAnchor="middle" fill="currentColor" fillOpacity="0.62"
         fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
         letterSpacing="2.4" style={{ textTransform: 'uppercase' }}>
-        BioPeptide Sciences · Nootropics · Skin-Care
+        {siteConfig.brand.tagline}
       </text>
 
       {/* Bottom micro disclaimer */}
       <text x="160" y="93.5" textAnchor="middle" fill="currentColor" fillOpacity="0.4"
         fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="5.5"
         letterSpacing="2.2" style={{ textTransform: 'uppercase' }}>
-        For Research Use Only · Not For Human Consumption
+        {siteConfig.compliance.stampLine}
       </text>
     </svg>
   );

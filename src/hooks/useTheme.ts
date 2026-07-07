@@ -11,10 +11,12 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { siteConfig } from '../config';
 
 export type ThemeMode = 'light' | 'dark';
 
-const THEME_KEY = 'vsr.theme';
+// Must match the no-flash boot script in index.html, which cannot import this.
+const THEME_KEY = siteConfig.storage.themeKey;
 const DEFAULT_THEME: ThemeMode = 'light';
 
 // Page chrome color for the mobile browser UI, per mode.

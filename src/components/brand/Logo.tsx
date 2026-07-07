@@ -15,6 +15,7 @@
  */
 
 import { Link } from 'react-router-dom';
+import { siteConfig } from '../../config';
 import { DnaVMark } from './DnaVMark';
 
 type LogoVariant = 'mark' | 'lockup' | 'stacked';
@@ -36,11 +37,11 @@ interface LogoProps {
   ariaLabel?: string;
 }
 
-export const BRAND_NAME = 'VS Research Labs';
-/** Visible wordmark — the "VS" lives in the monogram mark, so the text
- *  reads "Research Labs" while the accessible name stays "VS Research Labs". */
-export const BRAND_WORDMARK = 'Research Labs';
-export const BRAND_TAGLINE = 'BioPeptide Sciences · Nootropics · Skin-Care';
+// Brand strings live in siteConfig (white-label layer). The visible wordmark
+// may omit part of the name the mark carries; the accessible name stays full.
+const BRAND_NAME = siteConfig.brand.name;
+const BRAND_WORDMARK = siteConfig.brand.wordmark;
+const BRAND_TAGLINE = siteConfig.brand.tagline;
 
 export function Logo({
   variant = 'lockup',

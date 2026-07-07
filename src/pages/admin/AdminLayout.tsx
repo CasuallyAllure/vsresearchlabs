@@ -10,6 +10,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAdminAuth } from '../../lib/adminAuth';
 import { AdminFilterBar } from './AdminFilterBar';
+import { siteConfig } from '../../config';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -100,8 +101,8 @@ export function AdminLayout({ children, backTo, backLabel = 'Back' }: AdminLayou
         {/* Brand — short on phones, full on wider screens */}
         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[8.5px] uppercase tracking-[0.16em] sm:text-[9px] sm:tracking-[0.2em]">
           <span className="text-ink/70">
-            <span className="sm:hidden">VSR</span>
-            <span className="hidden sm:inline">VS Research Labs</span>
+            <span className="sm:hidden">{siteConfig.brand.shortCode}</span>
+            <span className="hidden sm:inline">{siteConfig.brand.name}</span>
           </span>
           <span aria-hidden="true" className="text-ink/25">/</span>
           <span className="text-ink/40">Admin</span>

@@ -14,6 +14,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -101,10 +102,10 @@ function buildProcessingEmailHtml(args: {
         If you have any questions about your order, please reply to this email
         and our team will be happy to assist.
       </p>
-      <p>Thank you for choosing VS Research Labs.</p>
+      <p>Thank you for choosing ${escapeHtml(EMAIL_BRAND.name)}.</p>
       <p style="margin-top:28px;color:#666;font-size:12px;">
-        Velari Systems Research Labs<br/>
-        Northern California Biopeptide Sciences
+        ${escapeHtml(EMAIL_BRAND.signature)}<br/>
+        ${escapeHtml(EMAIL_BRAND.tagline)}
       </p>
       <p style="margin-top:18px;color:#888;font-size:11px;">
         Reference: <span style="font-family:monospace;">${escapeHtml(args.orderNumber)}</span>

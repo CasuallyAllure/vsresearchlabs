@@ -29,6 +29,7 @@ import productsData from '../../data/products.json';
 import type { Product, ProductStudy, StudyModel } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
+import { siteConfig } from '../../config';
 import {
   getCompoundIntelligence,
   type CompoundIntelligence,
@@ -752,7 +753,7 @@ export function CompoundIntelligenceHero() {
           <div className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="op-tick h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:inline">
-              VS Research Labs · Compound Intelligence
+              {siteConfig.brand.name} · Compound Intelligence
             </span>
             <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 sm:hidden">
               Compound Intel

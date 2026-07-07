@@ -7,6 +7,7 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { siteConfig } from '../config';
 
 interface Props {
   children: ReactNode;
@@ -42,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <div className="w-full max-w-[460px] text-center">
             <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-ink/45">
-              VS Research Labs
+              {siteConfig.brand.name}
             </p>
             <h1 className="mb-3 text-[clamp(1.4rem,3vw,1.9rem)] font-light leading-tight tracking-[-0.01em]">
               Something went sideways.

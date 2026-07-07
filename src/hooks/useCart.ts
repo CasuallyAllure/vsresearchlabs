@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { siteConfig } from '../config';
 import type { CartItem, Product } from '../types';
 
 const MAX_QTY = 999;
@@ -104,7 +105,7 @@ export const useCart = create<CartStore>()(
         get().items.reduce((sum, item) => sum + item.quantity, 0),
     }),
     {
-      name: 'vsresearchlabs.cart.v1',
+      name: siteConfig.storage.cartKey,
       storage: createJSONStorage(() => localStorage),
       // Persist line items + applied promo; derived selectors stay in memory.
       partialize: (state) => ({ items: state.items, coupon: state.coupon }),

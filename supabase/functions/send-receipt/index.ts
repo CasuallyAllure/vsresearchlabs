@@ -17,13 +17,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
 // Public site origin for the customer's secure receipt link.
-const SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") ?? "https://vsresearchlabs.com").replace(/\/+$/, "");
+const SITE_URL = EMAIL_BRAND.siteUrl;
 
 const CORS_HEADERS = buildCorsHeaders();
 
@@ -121,9 +122,9 @@ function buildReceiptHtml(order: OrderRow, lines: OrderLine[]): string {
   <div style="max-width:680px;margin:0 auto;padding:28px 14px;">
 
     <div style="text-align:center;margin:0 0 28px;">
-      <img src="https://vsresearchlabs.pages.dev/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" width="96" height="96" style="display:inline-block;width:96px;height:96px;margin-bottom:14px;border:0;" />
-      <div style="font-size:12px;letter-spacing:0.30em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:4px;">VS Research Labs</div>
-      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:14px;">Northern California Biopeptide Sciences</div>
+      <img src="${EMAIL_BRAND.logoUrl}" alt="${escapeHtml(EMAIL_BRAND.name)}" width="96" height="96" style="display:inline-block;width:96px;height:96px;margin-bottom:14px;border:0;" />
+      <div style="font-size:12px;letter-spacing:0.30em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:4px;">${escapeHtml(EMAIL_BRAND.name)}</div>
+      <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#6F665C;margin-bottom:14px;">${escapeHtml(EMAIL_BRAND.tagline)}</div>
       <span style="display:inline-block;padding:5px 13px;border-radius:999px;background:#2E7D5B;color:#FBF9F4;font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;">Receipt · Paid</span>
     </div>
 
@@ -202,7 +203,7 @@ function buildReceiptHtml(order: OrderRow, lines: OrderLine[]): string {
     <p style="margin:20px 4px 8px;font-size:13px;color:#1A1714;line-height:1.6;">Thank you for your order. Keep this receipt for your records — you can reply to this email anytime with questions about reference <strong>${escapeHtml(order.order_number)}</strong>.</p>
 
     <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">
-      <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:#6F665C;margin-bottom:4px;">VS Research Labs · Northern California Biopeptide Sciences</div>
+      <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:#6F665C;margin-bottom:4px;">${escapeHtml(EMAIL_BRAND.name)} · ${escapeHtml(EMAIL_BRAND.tagline)}</div>
       <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
       <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(order.order_number)}</div>
     </div>
@@ -265,7 +266,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: false, skipped: true, reason: "Buyer contact is not an email address; receipt skipped." });
   }
 
-  const subject = `Receipt ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · VS Research Labs`;
+  const subject = `Receipt ${order.order_number} · ${fmtUsd(order.invoice_amount_cents)} · ${EMAIL_BRAND.name}`;
   const result = await sendResendEmail({ to: order.buyer_contact, subject, html: fullHtml });
   if (!result.ok) {
     console.error("Receipt email failed:", result);

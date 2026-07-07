@@ -21,8 +21,9 @@
 import { useState } from 'react';
 import { DnaVMark } from './DnaVMark';
 import { useScrollLock } from '../../lib/useScrollLock';
+import { siteConfig } from '../../config';
 
-const STORAGE_KEY = 'vsrl_disclaimer_accepted_v1';
+const STORAGE_KEY = siteConfig.storage.disclaimerKey;
 
 // Card geometry. The gate is a normal centered modal — flex-centered in the
 // viewport so it always lands in the middle of the screen on every device,
@@ -311,7 +312,7 @@ export function DisclaimerGate() {
             textTransform: 'uppercase',
           }}
         >
-          For Research Use Only · Not For Human Use
+          {siteConfig.compliance.gateLine}
         </div>
       </div>
     </div>

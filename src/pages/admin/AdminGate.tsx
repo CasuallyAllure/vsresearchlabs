@@ -14,6 +14,7 @@
 import { useState, type ReactNode } from 'react';
 import { useAdminAuth } from '../../lib/adminAuth';
 import { supabase } from '../../lib/supabase';
+import { siteConfig } from '../../config';
 
 export function AdminGate({ children }: { children: ReactNode }) {
   const { loading, user, isAdmin, error, signIn } = useAdminAuth();
@@ -102,7 +103,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors mb-[var(--space-5)]"
-          placeholder="you@vsresearchlabs.com"
+          placeholder={`you@${siteConfig.contact.officialHost}`}
         />
 
         <label

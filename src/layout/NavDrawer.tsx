@@ -35,6 +35,7 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { useScrollLock } from '../lib/useScrollLock';
+import { siteConfig } from '../config';
 import { DnaVMark } from '../components/brand/DnaVMark';
 
 interface NavLinkDef {
@@ -361,7 +362,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           <Link
             to="/"
             onClick={onClose}
-            aria-label="VS Research Labs — Home"
+            aria-label={`${siteConfig.brand.name} — Home`}
             className="group flex items-center gap-3 min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           >
             <DnaVMark size={34} static />
@@ -486,7 +487,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
           <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-ink/35 leading-snug">
-            For research use only<br />Not for human use
+            {siteConfig.compliance.navLines[0]}<br />{siteConfig.compliance.navLines[1]}
           </p>
           <Link
             to="/admin"
