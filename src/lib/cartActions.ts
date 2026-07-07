@@ -27,7 +27,7 @@
 import type { Product } from '../types';
 import { deriveProductDose } from '../types';
 import { effectiveTierPriceCents, tierPriceCents } from './pricing';
-import { variantPriceCents, doseAvailability } from './productOverrides';
+import { variantPriceCents, doseAvailability, isVariantPublic } from './productOverrides';
 
 /**
  * Returns a cart-line product for the given (product, dose). When `dose` is
@@ -49,6 +49,42 @@ export function variantProduct(product: Product, dose?: string): Product {
     name: baseHasDose ? product.name : `${product.name} — ${d}`,
     priceCents: price ?? product.priceCents ?? null,
   };
+}
+
+/**
+ * resolveSellableDose — the dose a quick-add ("+") should actually use.
+ *
+ * The catalog "+" buttons pass the row's spec headline, which is EMPTY for a
+ * multi-dose compound whose display name is just the family ("AOD-9604").
+ * Adding with an empty dose drops the line to $0 (see feedback_cart_variant_dose,
+ * which has hit production). This resolves the product to a real, priced dose.
+ *
+ * Precedence:
+ *   1. the passed dose, if it already resolves to a real price — equipment /
+ *      consumables whose headline IS the sellable spec (e.g. "Benchtop").
+ *   2. the first PUBLICLY-PRICED variant dose — multi-dose compounds.
+ *   3. the passed dose unchanged — genuine single-config with its own priceCents,
+ *      or nothing sellable (the caller guards against adding a $0 line).
+ */
+export function resolveSellableDose(product: Product, preferredDose?: string): string {
+  const d = (preferredDose ?? '').trim();
+  if (d && effectiveTierPriceCents(product, d) != null) return d;
+  const priced = (product.variants ?? []).find(
+    (v) => isVariantPublic(product.sku, v.dose) && effectiveTierPriceCents(product, v.dose) != null,
+  );
+  return priced?.dose ?? d;
+}
+
+/**
+ * canQuickAdd — false when a "+" would add a $0 line for a product that has
+ * variants (no priced dose could be resolved). Callers should open the dose
+ * picker / compound overlay instead of adding a priceless line.
+ */
+export function canQuickAdd(product: Product, dose: string): boolean {
+  if (effectiveTierPriceCents(product, dose) != null) return true;
+  // A dose-less resolution is only acceptable for products with no variants
+  // (single-config items that carry their own priceCents).
+  return (product.variants?.length ?? 0) === 0 && product.priceCents != null;
 }
 
 /**
