@@ -26,6 +26,7 @@ import {
   invoiceSubject,
   type OrderRow,
   type OrderLine,
+  type CouponLine,
 } from "../_shared/invoiceEmail.ts";
 import { buildCorsHeaders } from "../_shared/cors.ts";
 import { requireAdmin } from "../_shared/adminGate.ts";
@@ -104,10 +105,19 @@ Deno.serve(async (req: Request) => {
     .select("sku, product_name, quantity, unit_price_cents, item_note, fast_ship")
     .eq("order_id", order.id);
 
+  // Applied coupons (migrations 036/037) → itemized discount lines that mirror
+  // the admin order editor exactly (one line per code + its amount).
+  const { data: couponRows } = await supabase
+    .from("order_coupons")
+    .select("code, kind, free_label, percent, amount_cents, discount_cents")
+    .eq("order_id", order.id)
+    .order("created_at");
+
   const orderRow = order as OrderRow;
   const orderLines = (lines ?? []) as OrderLine[];
-  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes });
-  const text = buildInvoiceText({ order: orderRow, lines: orderLines });
+  const coupons = (couponRows ?? []) as CouponLine[];
+  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes, coupons });
+  const text = buildInvoiceText({ order: orderRow, lines: orderLines, coupons });
   const result = await sendResendEmail({ to: order.buyer_contact, subject: invoiceSubject(order), html, text });
 
   if (!result.ok) {

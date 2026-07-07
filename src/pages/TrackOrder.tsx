@@ -16,7 +16,7 @@
  * View only — customers never mutate; all status changes stay admin-side.
  */
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -27,6 +27,7 @@ import {
   type OrderLookupResult,
   type OrderInvoice,
   type OrderInvoiceLine,
+  type OrderInvoiceCoupon,
 } from '../lib/tracking';
 import productsData from '../data/products.json';
 import generatedCompounds from '../data/biopeptideCompounds.generated.json';
@@ -39,6 +40,12 @@ import { Button } from '../components/ui/Button';
 const productBySku = new Map<string, Product>();
 for (const p of [...productsData, ...generatedCompounds] as unknown as Product[]) {
   if (p.sku) productBySku.set(p.sku, p);
+}
+/** Discount-line label for an applied coupon — matches the admin editor + email. */
+function invoiceCouponLabel(c: OrderInvoiceCoupon): string {
+  if (c.kind === 'percent' && c.percent != null) return `${c.code} · ${c.percent}% off`;
+  if (c.kind === 'fixed' && c.amount_cents != null) return `${c.code} · $${(c.amount_cents / 100).toFixed(2)} off`;
+  return `${c.code} · Free ${c.free_label ?? 'item'}`;
 }
 function unitOf(l: OrderInvoiceLine): number | null {
   if (l.unit_price_cents != null) return l.unit_price_cents;
@@ -424,9 +431,17 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
               <dl className="grid grid-cols-[auto_auto] gap-x-8 gap-y-1 text-[12px]">
                 <dt className="text-[#6B635A]">Subtotal</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(computedSub)}</dd>
                 <dt className="text-[#6B635A]">Shipping</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(shipping)}</dd>
-                {discount > 0 && (<>
-                  <dt className="text-[#34727A]">Discount</dt><dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(discount)}</dd>
-                </>)}
+                {/* Itemize each coupon so the buyer sees exactly what was discounted. */}
+                {o.coupons && o.coupons.length > 0
+                  ? o.coupons.filter((c) => c.discount_cents > 0).map((c) => (
+                      <Fragment key={c.code}>
+                        <dt className="text-[#34727A]">{invoiceCouponLabel(c)}</dt>
+                        <dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(c.discount_cents)}</dd>
+                      </Fragment>
+                    ))
+                  : discount > 0 && (<>
+                      <dt className="text-[#34727A]">Discount</dt><dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(discount)}</dd>
+                    </>)}
                 <dt className="border-t border-[#1A1714]/15 pt-1 text-[#1A1714]">{docKind === 'receipt' ? 'Paid' : 'Total due'}</dt>
                 <dd className="border-t border-[#1A1714]/15 pt-1 text-right font-mono text-[15px] tabular-nums text-[#1A1714]">{fmtUSD(total)}</dd>
               </dl>

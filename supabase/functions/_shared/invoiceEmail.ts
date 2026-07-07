@@ -66,6 +66,23 @@ export interface OrderRow {
   lookup_token: string | null;
 }
 
+/** One applied coupon on the order (migrations 036/037) — powers itemized
+ *  discount lines that mirror what the admin sees in the order editor. */
+export interface CouponLine {
+  code: string;
+  kind: string;
+  free_label: string | null;
+  percent: number | null;
+  amount_cents: number | null;
+  discount_cents: number;
+}
+/** Human label for a coupon discount line — matches the admin picker exactly. */
+export function couponLabel(c: CouponLine): string {
+  if (c.kind === "percent" && c.percent != null) return `${c.code} · ${c.percent}% off`;
+  if (c.kind === "fixed" && c.amount_cents != null) return `${c.code} · ${fmtUsd(c.amount_cents)} off`;
+  return `${c.code} · Free ${c.free_label ?? "item"}`;
+}
+
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -95,8 +112,8 @@ const ZELLE_FOR_TEXT = ZELLE_EMAIL;
  * instead of html-only materially improves inbox placement — html-only is a
  * common spam-filter penalty. Resend takes both `text` and `html`.
  */
-export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }): string {
-  const { order, lines } = args;
+export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[] }): string {
+  const { order, lines, coupons } = args;
   const speeds = lines.map((l) => l.fast_ship);
   const mixed = speeds.includes(true) && speeds.includes(false);
   const ship = [
@@ -128,10 +145,14 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
     `Items:`,
     lineText,
     ``,
-    ...((order.discount_cents ?? 0) > 0 ? [
-      `Subtotal: ${fmtUsd(order.subtotal_cents)}`,
-      `Discount${order.coupon_code ? ` (${order.coupon_code})` : ""}: -${fmtUsd(order.discount_cents)}`,
-    ] : []),
+    `Subtotal: ${fmtUsd(order.subtotal_cents)}`,
+    // Itemize each coupon so the buyer sees exactly what discounted the order.
+    ...((coupons && coupons.length)
+      ? coupons.filter((c) => c.discount_cents > 0).map((c) => `${couponLabel(c)}: -${fmtUsd(c.discount_cents)}`)
+      : ((order.discount_cents ?? 0) > 0
+          ? [`Discount${order.coupon_code ? ` (${order.coupon_code})` : ""}: -${fmtUsd(order.discount_cents)}`]
+          : [])),
+    ...(((order.shipping_cents ?? 0) > 0) ? [`Shipping: ${fmtUsd(order.shipping_cents)}`] : []),
     `Total due: ${fmtUsd(order.invoice_amount_cents)}`,
     ``,
     `HOW TO PAY — Zelle to: ${ZELLE_FOR_TEXT}`,
@@ -149,8 +170,8 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[] }):
   ].join("\n");
 }
 
-export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string }): string {
-  const { order, lines, notes } = args;
+export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[] }): string {
+  const { order, lines, notes, coupons } = args;
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
@@ -277,8 +298,12 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
             <td style="padding:5px 14px;text-align:right;width:120px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${fmtUsd(subtotal ?? total)}</td></tr>
         <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Shipping estimate</td>
             <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${shipping !== null && shipping !== undefined ? fmtUsd(shipping) : '<span style="color:#A09689;">TBD</span>'}</td></tr>
-        ${discount > 0 ? `<tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#34727A;">Discount${order.coupon_code ? ` · <span style="font-family:'JetBrains Mono','SF Mono',monospace;">${escapeHtml(order.coupon_code)}</span>` : ""}</td>
-            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#34727A;">−${fmtUsd(discount)}</td></tr>` : ""}
+        ${(coupons && coupons.length)
+          ? coupons.filter((c) => c.discount_cents > 0).map((c) =>
+              `<tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#34727A;">${escapeHtml(couponLabel(c))}</td>
+            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#34727A;">−${fmtUsd(c.discount_cents)}</td></tr>`).join("")
+          : (discount > 0 ? `<tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#34727A;">Discount${order.coupon_code ? ` · <span style="font-family:'JetBrains Mono','SF Mono',monospace;">${escapeHtml(order.coupon_code)}</span>` : ""}</td>
+            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#34727A;">−${fmtUsd(discount)}</td></tr>` : "")}
         <tr style="border-top:1px solid #E4DFD5;">
           <td style="padding:14px 14px 6px;text-align:right;font-size:11px;color:#6F665C;letter-spacing:0.2em;text-transform:uppercase;">Total Due</td>
           <td style="padding:14px 14px 6px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:20px;color:#1A1714;font-weight:700;">${fmtUsd(total)}</td>

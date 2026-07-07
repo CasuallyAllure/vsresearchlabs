@@ -88,6 +88,16 @@ export interface OrderInvoiceLine {
   item_note: string | null;
 }
 
+/** One applied coupon (migrations 036/037) — for itemized invoice discount lines. */
+export interface OrderInvoiceCoupon {
+  code: string;
+  kind: string;
+  free_label: string | null;
+  percent: number | null;
+  amount_cents: number | null;
+  discount_cents: number;
+}
+
 /**
  * Full invoice/receipt returned by `get_order_by_token` (migration 019).
  * Reachable only with the order's high-entropy secret token, so it may carry
@@ -108,6 +118,8 @@ export interface OrderInvoice {
   payment_method: string | null;
   paid: boolean;
   lines: OrderInvoiceLine[];
+  discount_cents?: number | null;
+  coupons?: OrderInvoiceCoupon[];
 }
 
 /** Customer-facing label + one-line explanation + a 0–4 step index for a bar. */
