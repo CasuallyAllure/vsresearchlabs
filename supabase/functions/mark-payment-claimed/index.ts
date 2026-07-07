@@ -29,7 +29,7 @@ const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquire@vsresearchlabs.com";
 const SITE_URL             = EMAIL_BRAND.siteUrl;
-const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
+const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "info@velariss.co";
 
 const CORS_HEADERS = buildCorsHeaders("GET, POST, OPTIONS");
 
