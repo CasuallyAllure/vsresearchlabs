@@ -27,7 +27,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { variantProduct } from '../../lib/cartActions';
+import { variantProduct, resolveSellableDose, canQuickAdd } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 import { SKUCode } from '../ui/identifiers';
 
@@ -51,7 +51,15 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
   function handleAdd(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(variantProduct(product, dose));
+    // Resolve to a real priced dose — the row headline is empty for multi-dose
+    // compounds (e.g. "AOD-9604"), which would otherwise add a $0 line.
+    const sellableDose = resolveSellableDose(product, dose);
+    if (!canQuickAdd(product, sellableDose) && onInspect) {
+      // Nothing priced to add — let the buyer pick a dose in the overlay.
+      onInspect(product.id);
+      return;
+    }
+    addToCart(variantProduct(product, sellableDose));
     setAdded(true);
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
