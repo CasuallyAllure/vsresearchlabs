@@ -12,6 +12,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Logo } from '../brand/Logo';
+import { siteConfig } from '../../config';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
 import type { SignUpInput, SignUpResult } from '../../lib/customerAuth';
@@ -114,7 +115,7 @@ export function AuthCard({ signIn, signUp, error }: AuthCardProps) {
         </span>
         <p className="text-[12px] leading-relaxed text-ink/55">
           Our only official website is{' '}
-          <strong className="text-ink/80">vsresearchlabs.com</strong>. Always
+          <strong className="text-ink/80">{siteConfig.contact.officialHost}</strong>. Always
           check the address before entering your details — never sign in or send
           payment anywhere else.
         </p>

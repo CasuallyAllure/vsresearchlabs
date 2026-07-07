@@ -23,6 +23,7 @@
  */
 
 import { Link } from 'react-router-dom';
+import { siteConfig } from '../config';
 import { Logo } from '../components/brand/Logo';
 
 const FOOTER_LINKS: Array<{ to: string; label: string }> = [
@@ -55,10 +56,10 @@ export function GlobalFooter() {
           </nav>
           <div className="flex flex-col items-center gap-0.5 sm:items-end">
             <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-ink/45 tabular-nums">
-              © {new Date().getFullYear()} Velari Systems Research Labs · All rights reserved
+              © {new Date().getFullYear()} {siteConfig.brand.legalEntity} · All rights reserved
             </p>
             <p className="text-[8.5px] uppercase tracking-[0.26em] text-ink/30">
-              For Research Use Only — Not for human or veterinary consumption
+              {siteConfig.compliance.footerLine}
             </p>
           </div>
         </div>

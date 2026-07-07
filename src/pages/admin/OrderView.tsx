@@ -30,6 +30,7 @@ import type { Product } from '../../types';
 import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 import { useConfirm } from '../../components/admin/ConfirmModal';
+import { siteConfig } from '../../config';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -825,10 +826,10 @@ function PrintableInvoice({
           <div className="px-8 py-8 sm:px-10 sm:py-10">
             <div className="flex items-start justify-between gap-6 border-b border-[#1A1714]/10 pb-6">
               <div className="flex items-center gap-3">
-                <img src="/brand/vs-dna-s-full-colour.png" alt="VS Research Labs" className="h-10 w-auto" />
+                <img src="/brand/vs-dna-s-full-colour.png" alt={siteConfig.brand.name} className="h-10 w-auto" />
                 <div>
-                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">VS Research Labs</p>
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">For Research Purposes Only</p>
+                  <p className="font-serif text-[18px] leading-none text-[#1A1714]">{siteConfig.brand.name}</p>
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#6B635A]">{siteConfig.compliance.shortLine}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -915,9 +916,9 @@ function PrintableInvoice({
 
             <div className="mt-8 pt-5 text-center">
               <div className="mx-auto mb-3 h-px w-[120px] bg-[#B5904B]" />
-              <p className="font-serif text-[14px] text-[#1A1714]">VS Research Labs</p>
+              <p className="font-serif text-[14px] text-[#1A1714]">{siteConfig.brand.name}</p>
               <p className="mt-1 text-[10px] leading-relaxed text-[#9A9186]">
-                inquire@vsresearchlabs.com · All products are sold for laboratory research use only and are not for human consumption.
+                {siteConfig.contact.inquiryEmail} · {siteConfig.compliance.documentLine}
               </p>
             </div>
           </div>

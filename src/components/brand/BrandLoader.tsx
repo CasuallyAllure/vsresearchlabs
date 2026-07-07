@@ -9,7 +9,9 @@
 
 import { useEffect, useState } from 'react';
 import { DnaVMark } from './DnaVMark';
-import { BRAND_WORDMARK } from './Logo';
+import { siteConfig } from '../../config';
+
+const BRAND_WORDMARK = siteConfig.brand.wordmark;
 
 export interface BrandLoaderProps {
   /** Whether the loader is visible. When flipped to false the loader

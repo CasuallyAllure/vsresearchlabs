@@ -41,6 +41,7 @@ import { placeOrder } from '../lib/placeOrder';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCode } from '../components/cart/PromoCode';
+import { siteConfig } from '../config';
 
 interface OrderResult {
   orderNumber: string;
@@ -185,8 +186,8 @@ export function CartPage() {
     const server: InquiryServerData = {
       referenceId:          serverResp.orderNumber,
       submittedAt:          serverResp.createdAt ?? new Date().toISOString(),
-      intakeChannel:        'VSR-WEB-PORTAL',
-      processingNode:       'VSR-HQ-INTAKE',
+      intakeChannel:        siteConfig.order.intakeChannel,
+      processingNode:       siteConfig.order.processingNode,
       classificationStatus: 'INVOICE SENT',
     };
 
@@ -238,7 +239,7 @@ export function CartPage() {
             <BrandStamp width={248} />
           </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-ink/35 print:text-black/50 mb-[var(--space-4)]">
-            VS Research Labs · Order Confirmation
+            {siteConfig.brand.name} · Order Confirmation
           </p>
           <p className="text-[11px] uppercase tracking-[0.2em] text-ink/30 print:text-black/45 mb-[var(--space-2)]">
             Order Number
@@ -394,7 +395,7 @@ export function CartPage() {
         {/* Print-only record footer */}
         <div className="hidden print:block mt-[var(--space-8)] pt-[var(--space-4)] border-t border-black/15">
           <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-ink/35">
-            VS Research Labs · Procurement Intake Record · {record.referenceId}
+            {siteConfig.brand.name} · Procurement Intake Record · {record.referenceId}
           </p>
           <p className="mt-[var(--space-2)] text-[9px] font-mono uppercase tracking-[0.2em] text-ink/25">
             For buyer reference only. Does not constitute a confirmed commitment or binding agreement.

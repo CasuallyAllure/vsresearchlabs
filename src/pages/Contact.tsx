@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { siteConfig } from '../config';
 import { supabase } from '../lib/supabase';
 import { Turnstile } from '../components/security/Turnstile';
 import { Button } from '../components/ui/Button';
@@ -298,17 +299,17 @@ export function Contact() {
           <div>
             <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-1)]">Email</p>
             <a
-              href="mailto:inquire@vsresearchlabs.com"
+              href={`mailto:${siteConfig.contact.inquiryEmail}`}
               className="text-ink underline underline-offset-4 decoration-ink/20 hover:decoration-ink/60 transition-colors"
             >
-              inquire@vsresearchlabs.com
+              {siteConfig.contact.inquiryEmail}
             </a>
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-1)]">Operations</p>
             <p className="text-ink/85 leading-relaxed">
-              VS Research Labs<br />
-              Northern California Biopeptide Sciences
+              {siteConfig.brand.name}<br />
+              {siteConfig.brand.operationsLine}
             </p>
           </div>
           <div className="sm:col-span-2">

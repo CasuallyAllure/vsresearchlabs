@@ -8,11 +8,12 @@
 
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { siteConfig } from '../config';
 
-const BRAND = 'VS Research Labs';
+const BRAND = siteConfig.brand.name;
 
 const TITLES: Array<[RegExp, string]> = [
-  [/^\/$/, `${BRAND} — Research Peptides & Laboratory Supplies`],
+  [/^\/$/, siteConfig.seo.defaultTitle],
   [/^\/research-supplies\/biopeptide/, `Biopeptide Research Supplies — ${BRAND}`],
   [/^\/research-supplies\/nootropics/, `Nootropics Research Supplies — ${BRAND}`],
   [/^\/research-supplies\/skincare/, `Skincare Research Supplies — ${BRAND}`],
