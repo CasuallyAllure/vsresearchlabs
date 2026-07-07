@@ -165,20 +165,26 @@ export function ClassificationFilter({
             aria-checked={inStock.on}
             onClick={inStock.toggle}
             title={inStock.on ? 'Showing in-stock only — tap to show all' : 'Tap to show in-stock only'}
-            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+            // Off-state colors use the theme-bound `ink` tokens (NOT a hardcoded
+            // dark rgba) so the control stays visible in dark mode — a fixed
+            // near-black border/text was invisible on the black surface.
+            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+              inStock.on ? '' : 'border-ink/25 text-ink/55'
+            }`}
             style={
               inStock.on
                 ? { borderColor: `${stockColor}99`, color: stockColor, backgroundColor: `${stockColor}14` }
-                : { borderColor: 'rgba(26,23,20,0.18)', color: 'rgba(26,23,20,0.4)' }
+                : undefined
             }
           >
             <span
               aria-hidden="true"
-              className="inline-block h-[6px] w-[6px] rounded-full transition-all"
-              style={{
-                backgroundColor: inStock.on ? stockColor : 'rgba(26,23,20,0.28)',
-                boxShadow: inStock.on ? 'inset 0 0 0 0.5px rgba(255,255,255,0.35)' : undefined,
-              }}
+              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${inStock.on ? '' : 'bg-ink/35'}`}
+              style={
+                inStock.on
+                  ? { backgroundColor: stockColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.35)' }
+                  : undefined
+              }
             />
             In stock
           </button>
