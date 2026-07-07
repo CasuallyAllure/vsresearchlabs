@@ -356,7 +356,6 @@ export function OrderView({
         <ItemizedEditor
           orderId={order.id}
           initial={lines}
-          couponCode={order.coupon_code}
           onOrderChanged={reload}
           onCancel={() => setEditing(false)}
           onSaved={handleItemsSaved}
@@ -733,7 +732,7 @@ function StageActions({
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
         p_invoice_amount_cents: totalC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
-        p_subtotal_cents: preSubC, p_shipping_cents: 0,
+        p_subtotal_cents: preSubC, p_shipping_cents: order.shipping_cents ?? 0,
       }),
       { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}` },
     );
@@ -1008,8 +1007,8 @@ function SendNoteModal({
 interface DraftRow { key: string; id?: string; sku: string; product_name: string; compound: string; dose: string; quantity: string; unitUsd: string; fastShip: boolean }
 
 function ItemizedEditor({
-  orderId, initial, couponCode, onOrderChanged, onCancel, onSaved,
-}: { orderId: string; initial: OrderLine[]; couponCode?: string | null; onOrderChanged?: () => void; onCancel: () => void; onSaved: (summary: string) => void }) {
+  orderId, initial, onOrderChanged, onCancel, onSaved,
+}: { orderId: string; initial: OrderLine[]; onOrderChanged?: () => void; onCancel: () => void; onSaved: (summary: string) => void }) {
   const [rows, setRows] = useState<DraftRow[]>(
     initial.map((l, i) => {
       const catalog = l.sku ? productBySku.get(l.sku) : undefined;
@@ -1191,7 +1190,7 @@ function ItemizedEditor({
           email sent). The discount survives further line edits because
           save_order_lines keeps total = subtotal − discount_cents. */}
       <div className="mt-[var(--space-4)] border-t border-ink/10 pt-[var(--space-3)]">
-        <AdminCouponPicker orderId={orderId} currentCode={couponCode} onApplied={onOrderChanged} />
+        <AdminCouponPicker orderId={orderId} onChanged={onOrderChanged} />
       </div>
 
       {err && <p role="alert" className="mt-[var(--space-2)] text-[11px] text-red-400">{err}</p>}
