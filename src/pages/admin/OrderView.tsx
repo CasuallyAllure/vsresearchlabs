@@ -31,7 +31,7 @@ import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 import { useConfirm } from '../../components/admin/ConfirmModal';
 import { siteConfig } from '../../config';
-import { AdminCouponPicker, type AppliedCouponResult } from './AdminCouponPicker';
+import { AdminCouponPicker } from './AdminCouponPicker';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -356,6 +356,8 @@ export function OrderView({
         <ItemizedEditor
           orderId={order.id}
           initial={lines}
+          couponCode={order.coupon_code}
+          onOrderChanged={reload}
           onCancel={() => setEditing(false)}
           onSaved={handleItemsSaved}
         />
@@ -574,7 +576,11 @@ function StageActions({
   // Invoice total comes straight from the itemized lines (save_order_lines
   // recomputes subtotal_cents on every edit). Shipping and discounts are
   // settled before invoicing, so the action panel exposes one amount only.
-  const [subUsd, setSubUsd] = useState(order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2) : '');
+  const [subUsd, setSubUsd] = useState(
+    order.invoice_amount_cents != null ? (order.invoice_amount_cents / 100).toFixed(2)
+      : order.subtotal_cents != null ? (order.subtotal_cents / 100).toFixed(2)
+      : '',
+  );
 
   // Subtotal sync: when the line editor saves, the parent reloads the order
   // and the new server-side subtotal_cents lands on this prop. Re-init the
@@ -583,27 +589,12 @@ function StageActions({
   // historical value.
   useEffect(() => {
     if (reached.invoiced) return;
-    if (order.subtotal_cents != null) {
-      setSubUsd((order.subtotal_cents / 100).toFixed(2));
-    }
-  }, [order.subtotal_cents, reached.invoiced]);
-
-  // Coupon applied at the invoice stage. Picking a percent/fixed code lowers
-  // the Invoice total off the itemized subtotal; clearing it restores the
-  // subtotal. The code is stamped onto the order when the invoice is sent.
-  const [couponCode, setCouponCode] = useState<string | null>(order.coupon_code ?? null);
-  function onApplyCoupon(applied: AppliedCouponResult | null) {
-    const baseCents = order.subtotal_cents ?? Math.round((parseFloat(subUsd) || 0) * 100);
-    if (!applied) {
-      setCouponCode(null);
-      if (order.subtotal_cents != null) setSubUsd((order.subtotal_cents / 100).toFixed(2));
-      return;
-    }
-    setCouponCode(applied.code);
-    const discounted = Math.max(0, baseCents - applied.discountCents);
-    setSubUsd((discounted / 100).toFixed(2));
-  }
-
+    // Prefer the discounted billed total (invoice_amount_cents = subtotal −
+    // discount, kept in sync by save_order_lines) so an applied coupon flows
+    // into the invoice amount; fall back to the raw subtotal.
+    const cents = order.invoice_amount_cents ?? order.subtotal_cents;
+    if (cents != null) setSubUsd((cents / 100).toFixed(2));
+  }, [order.invoice_amount_cents, order.subtotal_cents, reached.invoiced]);
   const [tracking, setTracking] = useState(order.tracking_number ?? '');
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
   const [note, setNote] = useState('');
@@ -622,11 +613,6 @@ function StageActions({
     detail = 'Confirm the total from the itemized lines, then email the buyer a branded invoice with payment instructions.';
     inputs = (
       <div className="mb-[var(--space-3)] grid grid-cols-1 gap-[var(--space-3)]">
-        <AdminCouponPicker
-          subtotalCents={order.subtotal_cents ?? Math.round((parseFloat(subUsd) || 0) * 100)}
-          initialCode={couponCode}
-          onApply={onApplyCoupon}
-        />
         <MoneyInput label="Invoice total" value={subUsd} onChange={setSubUsd} />
       </div>
     );
@@ -738,9 +724,11 @@ function StageActions({
     const subC = Math.round(parseFloat(subUsd) * 100);
     if (!Number.isFinite(subC) || subC < 0) { setActionError('Enter a valid total.'); return; }
     const totalC = Math.max(0, subC);
-    // With a coupon, keep subtotal at the pre-discount itemized amount so the
-    // invoice shows a Discount line (discount = subtotal − total).
-    const preSubC = couponCode && order.subtotal_cents != null ? order.subtotal_cents : subC;
+    // Keep subtotal at the pre-discount itemized amount (order.subtotal_cents)
+    // so when a coupon discount is on the order the invoice shows a Discount
+    // line (discount = subtotal − total). The coupon is applied/persisted in
+    // the itemized editor, not here — this step only bills the current total.
+    const preSubC = order.subtotal_cents ?? subC;
     const ok = await run(
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
@@ -751,10 +739,6 @@ function StageActions({
     );
     if (ok) {
       setNote('');
-      if (couponCode) {
-        const { error: cErr } = await supabase.from('orders').update({ coupon_code: couponCode }).eq('id', order.id);
-        if (cErr) setActionError(`Invoice sent, but saving the coupon code failed: ${cErr.message}`);
-      }
       const { error } = await supabase.functions.invoke('send-order-invoice', { body: { order_id: order.id, invoice_url: order.invoice_url ?? '' } });
       if (error) setActionError(`Invoice marked sent, but the email failed: ${error.message}`);
       onChanged?.();
@@ -1024,8 +1008,8 @@ function SendNoteModal({
 interface DraftRow { key: string; id?: string; sku: string; product_name: string; compound: string; dose: string; quantity: string; unitUsd: string; fastShip: boolean }
 
 function ItemizedEditor({
-  orderId, initial, onCancel, onSaved,
-}: { orderId: string; initial: OrderLine[]; onCancel: () => void; onSaved: (summary: string) => void }) {
+  orderId, initial, couponCode, onOrderChanged, onCancel, onSaved,
+}: { orderId: string; initial: OrderLine[]; couponCode?: string | null; onOrderChanged?: () => void; onCancel: () => void; onSaved: (summary: string) => void }) {
   const [rows, setRows] = useState<DraftRow[]>(
     initial.map((l, i) => {
       const catalog = l.sku ? productBySku.get(l.sku) : undefined;
@@ -1202,6 +1186,13 @@ function ItemizedEditor({
       </div>
 
       <button type="button" onClick={add} className="mt-[var(--space-2)] text-[10px] uppercase tracking-[0.16em] text-holo hover:text-holo-light">+ Add item</button>
+
+      {/* Discount / coupon — applies to THIS order via admin_apply_coupon (no
+          email sent). The discount survives further line edits because
+          save_order_lines keeps total = subtotal − discount_cents. */}
+      <div className="mt-[var(--space-4)] border-t border-ink/10 pt-[var(--space-3)]">
+        <AdminCouponPicker orderId={orderId} currentCode={couponCode} onApplied={onOrderChanged} />
+      </div>
 
       {err && <p role="alert" className="mt-[var(--space-2)] text-[11px] text-red-400">{err}</p>}
 
