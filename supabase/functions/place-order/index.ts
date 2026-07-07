@@ -292,12 +292,8 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
       </p>
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px;">
         <tr>
-          <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666;width:80px;"><strong>Zelle</strong></td>
-          <td style="padding:8px 0;border-bottom:1px solid #eee;font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#666;"><strong>PayPal</strong></td>
-          <td style="padding:8px 0;font-family:monospace;">${escapeHtml(PAYPAL_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
+          <td style="padding:8px 0;color:#666;width:80px;"><strong>Zelle</strong></td>
+          <td style="padding:8px 0;font-family:monospace;">${escapeHtml(ZELLE_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
         </tr>
       </table>
       <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 12px;background:#fff;text-align:center;">
@@ -308,7 +304,7 @@ function paymentBlockHtml(orderNumber: string, totalCents: number): string {
           ${escapeHtml(code)}
         </div>
         <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#666;margin-top:8px;">
-          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+          That's all you type in the Zelle note — no dashes, no letters.
         </div>
       </div>
       <p style="margin:0 0 6px;color:#444;font-size:12px;">
@@ -785,7 +781,7 @@ Deno.serve(async (req: Request) => {
       discount_cents:       discountCents,
       coupon_code:          appliedCoupon,
       invoice_amount_cents: totalCents,
-      payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
+      payment_method:       `Zelle (${ZELLE_HANDLE})`,
       invoiced_at: new Date().toISOString(),
       idempotency_key: idempotencyKey,
     })

@@ -401,6 +401,21 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
               </div>
             )}
 
+            {/* Discounts applied — surfaced up top, itemized per coupon, matching the email. */}
+            {o.coupons && o.coupons.some((c) => c.discount_cents > 0) && (
+              <div className="mb-3 rounded-[8px] border border-[#34727A]/25 bg-[#34727A]/[0.06] px-4 py-3">
+                <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.22em] text-[#34727A]">Discounts applied</p>
+                <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[12px]">
+                  {o.coupons.filter((c) => c.discount_cents > 0).map((c) => (
+                    <Fragment key={c.code}>
+                      <dt className="text-[#1A1714]">{invoiceCouponLabel(c)}</dt>
+                      <dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(c.discount_cents)}</dd>
+                    </Fragment>
+                  ))}
+                </dl>
+              </div>
+            )}
+
             <table className="mt-2 w-full border-collapse">
               <thead>
                 <tr className="border-y border-[#1A1714]/15">

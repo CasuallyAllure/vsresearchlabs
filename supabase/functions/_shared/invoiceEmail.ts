@@ -264,6 +264,20 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
         <div style="font-size:13px;color:#1A1714;line-height:1.55;">${shipBlock || '<span style="color:#A09689;">— to be provided —</span>'}</div>
       </div>
 
+      <!-- Discounts applied — surfaced up top so the savings are obvious, itemized
+           per coupon exactly like the admin editor. Mirrored in the totals below. -->
+      ${(coupons && coupons.some((c) => c.discount_cents > 0)) ? `
+      <div style="margin-bottom:16px;background:#F0F4F3;border:1px solid rgba(52,114,122,0.22);border-radius:8px;padding:12px 16px;">
+        <div style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#34727A;font-weight:700;margin-bottom:8px;">Discounts applied</div>
+        <table role="presentation" style="width:100%;border-collapse:collapse;">
+          ${coupons.filter((c) => c.discount_cents > 0).map((c) =>
+            `<tr><td style="padding:2px 0;font-size:12.5px;color:#1A1714;">${escapeHtml(couponLabel(c))}</td>
+             <td style="padding:2px 0;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12.5px;color:#34727A;">−${fmtUsd(c.discount_cents)}</td></tr>`).join("")}
+          <tr><td style="padding:6px 0 0;font-size:11px;letter-spacing:0.02em;color:#6F665C;border-top:1px solid rgba(52,114,122,0.18);">Total saved</td>
+              <td style="padding:6px 0 0;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12.5px;font-weight:700;color:#34727A;border-top:1px solid rgba(52,114,122,0.18);">−${fmtUsd(coupons.reduce((s, c) => s + (c.discount_cents > 0 ? c.discount_cents : 0), 0))}</td></tr>
+        </table>
+      </div>` : ""}
+
       <!-- Verify-before-you-pay notice. Last chance for the buyer to correct
            the shipping address or change the line items BEFORE paying. -->
       <div style="margin-bottom:22px;background:#F4EFE6;padding:12px 14px;border-radius:6px;border-left:2px solid #34727A;">
@@ -330,7 +344,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
           ${escapeHtml(paymentCode(order.order_number))}
         </div>
         <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#6F665C;margin-top:8px;">
-          That's all you type in the Zelle / PayPal note — no dashes, no letters.
+          That's all you type in the Zelle note — no dashes, no letters.
         </div>
       </div>
 
@@ -350,7 +364,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
          verify the deposit. -->
     <div style="text-align:center;margin-top:20px;">
       <a href="${FUNCTIONS_BASE}/mark-payment-claimed?t=${order.lookup_token}" style="display:inline-block;background:#34727A;color:#FBF9F4;text-decoration:none;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;padding:15px 32px;border-radius:999px;font-weight:600;">✓ I've sent payment</a>
-      <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Click after you send the Zelle / PayPal payment — we'll verify the deposit and start fulfillment.</div>
+      <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Click after you send the Zelle payment — we'll verify the deposit and start fulfillment.</div>
     </div>
 
     <!-- Secondary: view / print invoice -->

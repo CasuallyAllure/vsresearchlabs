@@ -20,7 +20,7 @@
  * re-sends the current invoice email.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { OrderStatusChip } from './AdminOrders';
 import { CARRIERS, carrierRequiresTracking } from '../../lib/tracking';
@@ -810,6 +810,16 @@ function StageActions({
 
 /* ── Printable branded invoice ────────────────────────────────────────────── */
 
+interface InvoiceCoupon {
+  code: string; kind: string; free_label: string | null;
+  percent: number | null; amount_cents: number | null; discount_cents: number;
+}
+function invoiceCouponLabel(c: InvoiceCoupon): string {
+  if (c.kind === 'percent' && c.percent != null) return `${c.code} · ${c.percent}% off`;
+  if (c.kind === 'fixed' && c.amount_cents != null) return `${c.code} · $${(c.amount_cents / 100).toFixed(2)} off`;
+  return `${c.code} · Free ${c.free_label ?? 'item'}`;
+}
+
 function PrintableInvoice({
   order, lines, events, computedSub, shipping, discount, total, onClose,
 }: {
@@ -821,6 +831,19 @@ function PrintableInvoice({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Itemized coupons for the top "Discounts applied" block — mirrors the emailed
+  // invoice + the /track doc so all three surfaces read identically.
+  const [coupons, setCoupons] = useState<InvoiceCoupon[]>([]);
+  useEffect(() => {
+    if (!supabase) return;
+    void supabase
+      .from('order_coupons')
+      .select('code, kind, free_label, percent, amount_cents, discount_cents')
+      .eq('order_id', order.id)
+      .order('created_at')
+      .then(({ data }) => { if (data) setCoupons(data as InvoiceCoupon[]); });
+  }, [order.id]);
 
   return (
     <>
@@ -874,6 +897,22 @@ function PrintableInvoice({
                 {order.payment_method && <p className="mt-1 text-[11.5px] text-[#6B635A]">{order.payment_method}</p>}
               </div>
             </div>
+
+            {/* Discounts applied — up top, itemized per coupon, identical to the
+                emailed invoice + /track doc. */}
+            {coupons.some((c) => c.discount_cents > 0) && (
+              <div className="mb-5 rounded-[8px] border border-[#34727A]/25 bg-[#34727A]/[0.06] px-4 py-3">
+                <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.22em] text-[#34727A]">Discounts applied</p>
+                <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[12px]">
+                  {coupons.filter((c) => c.discount_cents > 0).map((c) => (
+                    <Fragment key={c.code}>
+                      <dt className="text-[#1A1714]">{invoiceCouponLabel(c)}</dt>
+                      <dd className="text-right font-mono tabular-nums text-[#34727A]">−{fmtUSD(c.discount_cents)}</dd>
+                    </Fragment>
+                  ))}
+                </dl>
+              </div>
+            )}
 
             <table className="w-full border-collapse">
               <thead>
