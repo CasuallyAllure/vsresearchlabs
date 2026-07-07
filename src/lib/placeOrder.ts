@@ -24,6 +24,9 @@ export interface PlaceOrderResponse {
   amountCents?: number;
   invoiceEmailSent?: boolean;
   contactIsEmail?: boolean;
+  /** true when this response is a replay of an order the server already
+   *  created for the same idempotency key (retry after a timeout). */
+  duplicate?: boolean;
   error?: string;
 }
 
@@ -36,14 +39,63 @@ const TIMEOUT_MS = 30_000;
 
 class TimeoutError extends Error {}
 
+// ── Idempotency key ─────────────────────────────────────────────────────────
+// One UUID per logical checkout: a retry after a timeout/network failure
+// re-sends the SAME key, so the server returns the already-created order
+// instead of creating (and re-emailing) a duplicate. The key is bound to a
+// signature of the cart contents — editing the cart rotates the key, so a
+// genuinely different order is never deduped away. sessionStorage scopes it
+// to the tab and clears it on success.
+
+const IDEM_STORAGE_KEY = 'checkout.idempotency.v1';
+
+function cartSignature(payload: Record<string, unknown>): string {
+  const items = Array.isArray(payload.items) ? (payload.items as unknown[]) : [];
+  return JSON.stringify(
+    items.map((raw) => {
+      const r = (raw ?? {}) as { product?: { id?: unknown }; quantity?: unknown; note?: unknown };
+      return [r.product?.id ?? null, r.quantity ?? null, r.note ?? null];
+    }),
+  );
+}
+
+function checkoutIdempotencyKey(payload: Record<string, unknown>): string | null {
+  if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') return null;
+  const sig = cartSignature(payload);
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(IDEM_STORAGE_KEY) ?? 'null') as
+      { key?: string; sig?: string } | null;
+    if (stored?.key && stored.sig === sig) return stored.key;
+  } catch {
+    /* corrupted/unavailable storage — fall through to a fresh key */
+  }
+  const key = crypto.randomUUID();
+  try {
+    sessionStorage.setItem(IDEM_STORAGE_KEY, JSON.stringify({ key, sig }));
+  } catch {
+    /* storage unavailable (private mode) — key still protects this attempt */
+  }
+  return key;
+}
+
+function clearIdempotencyKey(): void {
+  try {
+    sessionStorage.removeItem(IDEM_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function placeOrder(payload: Record<string, unknown>): Promise<PlaceOrderOutcome> {
   if (!supabase) {
     return { ok: false, message: 'Ordering service is not configured. Please try again later.' };
   }
 
+  const idempotencyKey = checkoutIdempotencyKey(payload);
+
   try {
     const invocation = supabase.functions.invoke<PlaceOrderResponse>('place-order', {
-      body: payload,
+      body: idempotencyKey ? { ...payload, idempotency_key: idempotencyKey } : payload,
     });
     const timeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new TimeoutError()), TIMEOUT_MS),
@@ -61,6 +113,7 @@ export async function placeOrder(payload: Record<string, unknown>): Promise<Plac
       return { ok: false, message };
     }
 
+    clearIdempotencyKey();
     return { ok: true, data };
   } catch (err) {
     const message =

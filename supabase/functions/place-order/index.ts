@@ -17,11 +17,17 @@
 //   8. Email the business a copy
 //   9. Return order number + amount to the client
 //
-// SECURITY NOTE: line prices are currently provided by the client (the
-// catalog uses placeholder pricing). Because payment is verified manually
-// (Zelle / PayPal Friends & Family, matched to the order number) this is
-// acceptable for now. When real pricing lands, recompute totals server-side
-// from a trusted price source before billing.
+// SECURITY NOTE: line prices are provided by the client, but every line is
+// now CHECKED server-side against the admin-set price (product_variant_stock
+// per-dose price, else product_stock.price_cents_override). A mismatch does
+// not block the order — payment is verified manually — but it flags the
+// business email subject/body, logs, and writes an order_events warning so
+// the operator verifies before marking paid. Lines without an admin-set
+// price (formula-priced catalog) can't be verified and are skipped.
+//
+// IDEMPOTENCY: the client sends a UUID idempotency_key that is stable across
+// retries of the same checkout; a seen key returns the original order (no
+// duplicate row, no duplicate emails). Requires migration 035.
 //
 // Required env vars:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   (auto-injected)
@@ -73,6 +79,17 @@ interface OrderPayload {
   /** Promo/affiliate code. Validated + priced SERVER-SIDE via validate_coupon —
    *  the client never supplies a discount amount, only the code. */
   coupon_code?: string;
+  /** Client-generated UUID, stable across retries of the SAME checkout —
+   *  a seen key returns the existing order instead of creating a duplicate. */
+  idempotency_key?: string;
+}
+
+/** One order line whose client-sent price disagrees with the admin-set price. */
+interface PriceMismatch {
+  sku: string;
+  name: string;
+  clientCents: number;
+  serverCents: number;
 }
 
 /** Shape returned by the validate_coupon RPC (migration 031). */
@@ -137,6 +154,7 @@ const generateOrderNumber = () => `VSR-${randomCode(6)}`;
 // ---------------------------------------------------------------------------
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UUID_REGEX  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -396,9 +414,21 @@ function buildInvoiceEmailHtml(
     </div>`;
 }
 
+function priceMismatchNoticeHtml(mismatches: PriceMismatch[]): string {
+  if (mismatches.length === 0) return "";
+  const rows = mismatches.map((m) =>
+    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(m.sku)} — billed <strong>${usd(m.clientCents)}</strong>, catalog says <strong>${usd(m.serverCents)}</strong></div>`,
+  ).join("");
+  return `<div style="border:1px solid rgba(196,64,64,0.5);background:rgba(196,64,64,0.08);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
+    <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Price mismatch — verify before marking paid</strong>
+    The cart submitted prices that differ from the admin-set catalog prices.${rows}
+  </div>`;
+}
+
 function buildBusinessEmailHtml(
   payload: OrderPayload, orderNumber: string, referenceId: string, totalCents: number,
   promo?: { code: string; discountCents: number },
+  mismatches: PriceMismatch[] = [],
 ): string {
   const org = payload.organization
     ? `<tr><td style="padding:2px 0;">Organization</td><td style="padding:2px 0;text-align:right;">${escapeHtml(payload.organization)}</td></tr>` : "";
@@ -461,6 +491,7 @@ function buildBusinessEmailHtml(
         </tfoot>
       </table>
       ${mixedShipNoticeHtml(payload.items)}
+      ${priceMismatchNoticeHtml(mismatches)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
         Buyer received their branded invoice with Zelle / PayPal instructions.
@@ -570,6 +601,87 @@ Deno.serve(async (req: Request) => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+  // Idempotency — a retry of the SAME checkout (client re-sends its key after
+  // a timeout/network failure) returns the already-created order instead of
+  // creating and re-emailing a duplicate. Runs before the rate limit so a
+  // legitimate retry can't be 429'd for its own first attempt.
+  const idempotencyKey =
+    typeof payload.idempotency_key === "string" && UUID_REGEX.test(payload.idempotency_key)
+      ? payload.idempotency_key.toLowerCase()
+      : null;
+  if (idempotencyKey) {
+    const { data: dupe } = await supabase
+      .from("orders")
+      .select("order_number, created_at, invoice_amount_cents, inquiry_id")
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (dupe) {
+      let dupeReference = "";
+      if (dupe.inquiry_id) {
+        const { data: inq } = await supabase
+          .from("inquiries").select("reference_id").eq("id", dupe.inquiry_id).maybeSingle();
+        dupeReference = inq?.reference_id ?? "";
+      }
+      return jsonResponse({
+        success: true,
+        duplicate: true,
+        orderNumber: dupe.order_number,
+        referenceId: dupeReference,
+        createdAt: dupe.created_at,
+        amountCents: dupe.invoice_amount_cents ?? 0,
+        invoiceEmailSent: contactIsEmail, // sent on the original attempt
+        contactIsEmail,
+      });
+    }
+  }
+
+  // Server price check — compare each client-sent line price against the
+  // admin-set price where one authoritatively exists (per-dose variant price,
+  // else the per-sku override). FLAG, don't block: payment is verified
+  // manually against the invoice, so the operator gets a loud warning in the
+  // business email + an order_events entry instead of a hard reject. Lines
+  // with no admin-set price (formula-priced catalog) are skipped.
+  const priceMismatches: PriceMismatch[] = [];
+  {
+    const skus = [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s))];
+    if (skus.length > 0) {
+      const [variantRes, stockRes] = await Promise.all([
+        supabase.from("product_variant_stock")
+          .select("sku, dose, price_cents").in("sku", skus).not("price_cents", "is", null),
+        supabase.from("product_stock")
+          .select("sku, price_cents_override").in("sku", skus).not("price_cents_override", "is", null),
+      ]);
+      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const variantsBySku = new Map<string, Array<{ dose: string; price_cents: number }>>();
+      for (const v of variantRes.data ?? []) {
+        const list = variantsBySku.get(v.sku) ?? [];
+        list.push({ dose: v.dose, price_cents: v.price_cents });
+        variantsBySku.set(v.sku, list);
+      }
+      const overrideBySku = new Map<string, number>(
+        (stockRes.data ?? []).map((r) => [r.sku, r.price_cents_override]),
+      );
+      for (const item of items) {
+        const sku = item.product.sku;
+        if (!sku) continue;
+        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
+        const doseMatches = (variantsBySku.get(sku) ?? [])
+          .filter((v) => v.dose && haystack.includes(squash(v.dose)));
+        let serverCents: number | null = null;
+        if (doseMatches.length === 1) serverCents = doseMatches[0].price_cents;
+        else if (doseMatches.length === 0 && overrideBySku.has(sku)) serverCents = overrideBySku.get(sku)!;
+        if (serverCents == null) continue; // no authoritative price — can't verify
+        const clientCents = clampCents(item.unitPriceCents);
+        if (clientCents !== serverCents) {
+          priceMismatches.push({ sku, name: item.product.name, clientCents, serverCents });
+        }
+      }
+      if (priceMismatches.length > 0) {
+        console.error("PRICE MISMATCH on checkout:", JSON.stringify(priceMismatches));
+      }
+    }
+  }
+
   // Rate limit (shared with inquiries by contact)
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count: recentCount } = await supabase
@@ -675,9 +787,31 @@ Deno.serve(async (req: Request) => {
       invoice_amount_cents: totalCents,
       payment_method:       `Zelle (${ZELLE_HANDLE}) or PayPal (${PAYPAL_HANDLE})`,
       invoiced_at: new Date().toISOString(),
+      idempotency_key: idempotencyKey,
     })
     .select("id, order_number, created_at").single();
   if (ordErr || !orderRow) {
+    // Unique violation on the idempotency index = a concurrent retry already
+    // created this order — return the existing one instead of failing.
+    if (idempotencyKey && (ordErr as { code?: string } | null)?.code === "23505") {
+      const { data: raced } = await supabase
+        .from("orders")
+        .select("order_number, created_at, invoice_amount_cents")
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+      if (raced) {
+        return jsonResponse({
+          success: true,
+          duplicate: true,
+          orderNumber: raced.order_number,
+          referenceId,
+          createdAt: raced.created_at,
+          amountCents: raced.invoice_amount_cents ?? 0,
+          invoiceEmailSent: contactIsEmail,
+          contactIsEmail,
+        });
+      }
+    }
     console.error("Order insert failed:", ordErr);
     // Inquiry is recorded; surface a soft failure so the buyer can be followed up.
     return jsonResponse({ error: "Order could not be created. Our team has your request and will follow up.", referenceId }, 502);
@@ -692,6 +826,21 @@ Deno.serve(async (req: Request) => {
     fast_ship: typeof i.fast === "boolean" ? i.fast : null,
   })));
   if (linesErr) console.error("Order lines insert failed:", linesErr);
+
+  // Durable record of a price mismatch — lands on the admin order timeline
+  // (order_events is admin-read-only, so the buyer never sees it).
+  if (priceMismatches.length > 0) {
+    const mismatchNote = priceMismatches
+      .map((m) => `${m.sku}: billed ${usd(m.clientCents)}, catalog ${usd(m.serverCents)}`)
+      .join("; ");
+    const { error: evErr } = await supabase.from("order_events").insert({
+      order_id: orderRow.id,
+      stage: null,
+      kind: "system",
+      note: `⚠ Price mismatch on checkout — ${mismatchNote}. Verify the invoice amount before marking paid.`,
+    });
+    if (evErr) console.error("Price-mismatch event insert failed:", evErr);
+  }
 
   // Record the redemption + commission ledger row (service-role-only RPC;
   // atomically re-checks limits and bumps used_count). If it fails — e.g. two
@@ -791,15 +940,21 @@ Deno.serve(async (req: Request) => {
       `Code ${appliedCoupon}: ${discountCents > 0 ? "-" + usd(discountCents) : "free item added"}`,
     ] : []),
     `Total: ${usd(totalCents)}`,
+    ...(priceMismatches.length > 0 ? [
+      ``,
+      `!! PRICE MISMATCH — verify before marking paid:`,
+      ...priceMismatches.map((m) => `  ${m.sku}: billed ${usd(m.clientCents)}, catalog ${usd(m.serverCents)}`),
+    ] : []),
     `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
     `Mark paid in Admin → Orders once confirmed.`,
   ].join("\n");
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
-    subject: `New order ${orderNumber} — ${name} (${usd(totalCents)})`,
+    subject: `${priceMismatches.length > 0 ? "⚠ " : ""}New order ${orderNumber} — ${name} (${usd(totalCents)})`,
     html: buildBusinessEmailHtml(
       cleanPayload, orderNumber, referenceId, totalCents,
       appliedCoupon ? { code: appliedCoupon, discountCents } : undefined,
+      priceMismatches,
     ),
     text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
