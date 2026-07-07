@@ -12,7 +12,7 @@
 
 import { EMAIL_BRAND } from "./emailBrand.ts";
 
-const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "ops@vsresearchlabs.com";
+const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "info@velariss.co";
 const SITE_URL = EMAIL_BRAND.siteUrl;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const FUNCTIONS_BASE = (Deno.env.get("PUBLIC_FUNCTIONS_URL") ?? `${SUPABASE_URL}/functions/v1`).replace(/\/+$/, "");

@@ -113,7 +113,7 @@ const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsresearchlabs.com";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
-const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "[SET ZELLE_HANDLE]";
+const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "info@velariss.co";
 const PAYPAL_HANDLE        = Deno.env.get("PAYPAL_HANDLE") ?? "[SET PAYPAL_HANDLE]";
 const BRAND_STAMP_URL      = Deno.env.get("BRAND_STAMP_URL") ?? "";
 

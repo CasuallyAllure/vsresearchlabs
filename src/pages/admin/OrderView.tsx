@@ -31,6 +31,7 @@ import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 import { useConfirm } from '../../components/admin/ConfirmModal';
 import { siteConfig } from '../../config';
+import { PAYMENT_CONFIG } from '../../lib/payment';
 import { AdminCouponPicker } from './AdminCouponPicker';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
@@ -731,7 +732,7 @@ function StageActions({
     const ok = await run(
       () => supabase!.rpc('mark_order_invoiced', {
         p_order_id: order.id, p_invoice_url: order.invoice_url ?? '',
-        p_invoice_amount_cents: totalC, p_payment_method: 'Zelle (ops@vsresearchlabs.com)',
+        p_invoice_amount_cents: totalC, p_payment_method: `Zelle (${PAYMENT_CONFIG.zelle})`,
         p_subtotal_cents: preSubC, p_shipping_cents: order.shipping_cents ?? 0,
       }),
       { stage: 'invoiced', kind: 'advance', note: note.trim() || `Invoice sent · ${fmtUSD(totalC)}` },
