@@ -490,7 +490,7 @@ function buildBusinessEmailHtml(
       ${priceMismatchNoticeHtml(mismatches)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
-        Buyer received their branded invoice with Zelle / PayPal instructions.
+        Buyer received their branded invoice with Zelle instructions.
         Watch <span style="font-family:monospace;">${escapeHtml(ZELLE_HANDLE)}</span>
         for a payment with note
         <span style="font-family:monospace;font-weight:700;font-size:15px;color:#111;">${escapeHtml(paymentCode(orderNumber))}</span>
