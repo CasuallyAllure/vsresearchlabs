@@ -37,6 +37,7 @@ import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
+import { PromoCode, submittableCouponCode } from '../components/cart/PromoCode';
 
 const MAX_QTY = 999;
 
@@ -123,6 +124,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       return;
     }
 
+    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
     const payload = {
       name: `${firstName.trim()} ${lastName.trim()}`,
       contact: email.trim(),
@@ -132,6 +134,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       ship_zip: zip.trim(),
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
+      // Only the CODE travels — the server re-validates and prices it.
+      coupon_code: submittableCouponCode(subtotalCents) ?? undefined,
       items: items.map((i) => ({
         product: {
           id: i.product.id,
@@ -529,12 +533,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               )}
               {items.length > 0 && (
-                <div className="mb-2.5 flex items-baseline justify-between">
-                  <span className="text-[9px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
-                  <span className="font-mono text-[12.5px] tabular-nums text-ink">
-                    {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
-                  </span>
-                </div>
+                <>
+                  <div className="mb-2.5 flex items-baseline justify-between">
+                    <span className="text-[9px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+                    <span className="font-mono text-[12.5px] tabular-nums text-ink">
+                      {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
+                    </span>
+                  </div>
+                  <PromoCode
+                    variant="drawer"
+                    subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
+                  />
+                </>
               )}
               <button
                 type="button"

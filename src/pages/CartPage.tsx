@@ -40,6 +40,7 @@ import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
+import { PromoCode, submittableCouponCode } from '../components/cart/PromoCode';
 
 interface OrderResult {
   orderNumber: string;
@@ -130,6 +131,7 @@ export function CartPage() {
     const notesTrim = notes.trim();
     const contactTrim = contact.trim();
 
+    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
     const payload = {
       name:         name.trim(),
       contact:      contactTrim,
@@ -141,6 +143,8 @@ export function CartPage() {
       ship_zip:     shipZip.trim() || undefined,
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
+      // Only the CODE travels — the server re-validates and prices it.
+      coupon_code: submittableCouponCode(subtotalCents) ?? undefined,
       items: items.map((i) => ({
         product: {
           id:       i.product.id,
@@ -647,11 +651,19 @@ export function CartPage() {
           );
         })}
             </ul>
-            <div className="flex items-baseline justify-between gap-[var(--space-4)] px-[var(--space-5)] py-[var(--space-4)] border-t border-ink/[0.1]">
-              <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
-              <span className="text-sm font-mono tabular-nums text-ink">
-                {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
-              </span>
+            <div className="px-[var(--space-5)] py-[var(--space-4)] border-t border-ink/[0.1]">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+                <span className="text-sm font-mono tabular-nums text-ink">
+                  {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
+                </span>
+              </div>
+              <div className="mt-[var(--space-3)]">
+                <PromoCode
+                  variant="page"
+                  subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
+                />
+              </div>
             </div>
           </div>
           {cartHasMixedShipping(items) && (

@@ -86,6 +86,7 @@ Deno.serve(async (req: Request) => {
     .from("orders")
     .select(`id, order_number, buyer_name, buyer_contact, buyer_organization,
              invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
+             discount_cents, coupon_code,
              payment_method, status, notes,
              ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
     .eq("id", payload.order_id)
