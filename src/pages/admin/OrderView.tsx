@@ -849,9 +849,9 @@ function PrintableInvoice({
     <>
       <style>{`@media print { body * { visibility: hidden !important; } .print-doc, .print-doc * { visibility: visible !important; } .print-doc { position: absolute !important; inset: 0 !important; margin: 0 !important; box-shadow: none !important; } .no-print { display: none !important; } }`}</style>
 
-      <div className="fixed inset-0 z-[300] overflow-y-auto bg-ink/60 backdrop-blur-[3px]" onClick={onClose} />
-      <div className="fixed inset-0 z-[301] overflow-y-auto p-4 sm:p-8 pointer-events-none">
-        <div className="print-doc pointer-events-auto mx-auto max-w-[760px] bg-white text-[#1A1714] shadow-[0_24px_60px_-20px_rgba(26,23,20,0.5)]">
+      <div className="fixed inset-0 z-[300] bg-ink/60 backdrop-blur-[3px]" />
+      <div className="fixed inset-0 z-[301] overflow-y-auto overscroll-contain p-4 sm:p-8" onClick={onClose}>
+        <div onClick={(e) => e.stopPropagation()} className="print-doc mx-auto max-w-[760px] bg-white text-[#1A1714] shadow-[0_24px_60px_-20px_rgba(26,23,20,0.5)]">
           <div className="h-[3px] bg-[#B5904B]" />
           <div className="no-print flex items-center justify-between gap-3 border-b border-ink/10 px-6 py-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">Invoice preview</span>
