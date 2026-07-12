@@ -41,7 +41,7 @@ export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
           className="inline-block h-1.5 w-1.5 rounded-full"
           style={{ backgroundColor: '#2E7D5B' }}
         />
-        In stock · fast ship
+        24 Hour Shipping
       </span>
     ) : (
       <span

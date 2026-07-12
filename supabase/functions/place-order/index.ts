@@ -224,7 +224,7 @@ function brandHeaderHtml(): string {
 }
 
 function shipTagBiz(fast: boolean | undefined): string {
-  if (fast === true)  return `<div style="margin-top:3px;"><span style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#2E7D5B;background:rgba(46,125,91,0.10);border:1px solid rgba(46,125,91,0.30);border-radius:3px;padding:1px 5px;">⚡ Fast</span></div>`;
+  if (fast === true)  return `<div style="margin-top:3px;"><span style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#2E7D5B;background:rgba(46,125,91,0.10);border:1px solid rgba(46,125,91,0.30);border-radius:3px;padding:1px 5px;">⚡ 24 HR</span></div>`;
   if (fast === false) return `<div style="margin-top:3px;"><span style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6f76;background:#f3f3f3;border:1px solid #ddd;border-radius:3px;padding:1px 5px;">Standard</span></div>`;
   return "";
 }
@@ -254,7 +254,7 @@ function mixedShipNoticeHtml(items: OrderItemPayload[]): string {
   if (!(speeds.includes(true) && speeds.includes(false))) return "";
   return `<div style="border:1px solid rgba(214,158,46,0.45);background:rgba(214,158,46,0.10);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
     <strong style="display:block;margin-bottom:3px;color:#9A7B1E;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚡ Split shipment</strong>
-    This order mixes fast-ship and standard items — ship them separately.
+    This order mixes 24-hour-shipping and standard items — ship them separately.
   </div>`;
 }
 
@@ -1180,7 +1180,7 @@ Deno.serve(async (req: Request) => {
     `New order ${orderNumber} — ${name} (${usd(totalCents)})`,
     `Contact: ${contact}`,
     ``,
-    ...items.map((i) => `  - ${i.product.name}${i.fast === true ? " [FAST]" : i.fast === false ? " [STANDARD]" : ""} · qty ${clampQty(i.quantity)} · ${usd(clampCents(i.unitPriceCents))} ea`),
+    ...items.map((i) => `  - ${i.product.name}${i.fast === true ? " [24 HR]" : i.fast === false ? " [STANDARD]" : ""} · qty ${clampQty(i.quantity)} · ${usd(clampCents(i.unitPriceCents))} ea`),
     ``,
     ...(appliedCoupon ? [
       `Subtotal: ${usd(grossSubtotalCents)}`,

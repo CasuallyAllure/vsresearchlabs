@@ -575,7 +575,7 @@ export function CartPage() {
                   <p className="mt-1">
                     {lineIsFast(item) ? (
                       <span className="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]">
-                        ⚡ Fast ship
+                        ⚡ 24 Hour Shipping
                       </span>
                     ) : (
                       <span className="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border border-ink/12 text-ink/50 bg-ink/[0.04]">
@@ -718,7 +718,7 @@ export function CartPage() {
             >
               <span aria-hidden="true" className="text-[13px] leading-none mt-0.5">⚡</span>
               <p className="text-[11.5px] leading-relaxed text-ink/75">
-                <span className="font-light text-ink">Your order mixes fast-ship and standard items.</span>{' '}
+                <span className="font-light text-ink">Your order mixes 24-hour-shipping and standard items.</span>{' '}
                 These ship from different locations and may arrive in{' '}
                 <span className="font-medium">separate shipments</span> — you'll get tracking for each,{' '}
                 <span className="font-medium">at no extra cost to you</span>.

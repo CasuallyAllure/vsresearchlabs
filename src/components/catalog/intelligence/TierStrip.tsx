@@ -56,10 +56,11 @@ function FastBadge({ active, size }: { active: boolean; size: 'sm' | 'md' }) {
         marginLeft: '4px',
         color: active ? 'color-mix(in srgb, var(--color-status-success) 55%, white)' : 'var(--color-status-success)',
         fontSize: size === 'sm' ? '10px' : '11px',
-        letterSpacing: '0.20em',
+        letterSpacing: '0.16em',
+        whiteSpace: 'nowrap',
       }}
     >
-      · FAST
+      · 24 HR
     </span>
   );
 }
@@ -89,7 +90,7 @@ export function TierStrip(props: TierStripProps) {
               role="radio"
               aria-checked={active}
               onClick={() => onSelect(i)}
-              title={isFast ? `${v.dose} · ships fast` : v.dose}
+              title={isFast ? `${v.dose} · 24 hour shipping` : v.dose}
               className="rounded-[var(--radius-procurement)] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 transition-colors"
               style={{
                 padding: sm ? '4px 8px' : '5px 10px',

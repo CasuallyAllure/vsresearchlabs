@@ -399,7 +399,7 @@ export function OrderView({
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
-                    {l.fast_ship && <span className="shrink-0 rounded-full bg-[color:var(--color-status-warningMuted)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[color:var(--color-status-warning)]">Fast</span>}
+                    {l.fast_ship && <span className="shrink-0 rounded-full bg-[color:var(--color-status-warningMuted)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[color:var(--color-status-warning)]">24 HR</span>}
                   </div>
                   <p className="truncate font-mono text-[10px] text-holo-light/70">
                     {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
@@ -965,7 +965,7 @@ function PrintableInvoice({
                       <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
                       <td className="py-2 pr-3 text-[12px] text-[#1A1714]">
                         {l.product_name}
-                        {l.fast_ship && <span className="ml-1.5 rounded-sm bg-[#B5904B]/12 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8C6A2F]">Fast ship</span>}
+                        {l.fast_ship && <span className="ml-1.5 rounded-sm bg-[#B5904B]/12 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8C6A2F]">24 HR</span>}
                         {d > 0 && <span className="block text-[10.5px] text-[#34727A]">−{fmtUSD(d)}</span>}
                       </td>
                       <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
@@ -1264,7 +1264,7 @@ function ItemizedEditor({
                     onChange={(e) => update(r.key, { fastShip: e.target.checked })}
                     className="h-3 w-3 accent-[color:var(--color-status-warning)]"
                   />
-                  <span className="text-[10px] text-ink/50">Fast ship</span>
+                  <span className="text-[10px] text-ink/50">24 Hour Shipping</span>
                 </label>
               </div>
               <div className="flex items-center gap-[var(--space-2)]">

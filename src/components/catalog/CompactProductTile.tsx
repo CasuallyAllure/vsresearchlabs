@@ -160,7 +160,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                   role="radio"
                   aria-checked={isActive}
                   onClick={(e) => { e.stopPropagation(); setTierIndex(i); }}
-                  title={isFast ? `${v.dose} · ships fast` : v.dose}
+                  title={isFast ? `${v.dose} · 24 hour shipping` : v.dose}
                   className="font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   style={{
                     fontSize: '10px',
@@ -180,7 +180,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                         letterSpacing: '0.16em',
                       }}
                     >
-                      · FAST
+                      · 24 HR
                     </span>
                   )}
                 </button>

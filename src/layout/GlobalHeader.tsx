@@ -33,11 +33,11 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
   return (
     <>
       <header
-        className="sticky top-0 z-40 backdrop-blur-md border-b border-ink/[0.08]"
+        className="sticky top-0 z-40 backdrop-blur-md border-b border-ink/[0.05]"
         data-role={role}
         style={{ backgroundColor: 'var(--header-bg)' }}
       >
-        <div className="relative z-10 h-[72px] sm:h-[72px] px-[var(--space-6)] flex items-center">
+        <div className="relative z-10 h-[64px] sm:h-[60px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}
           <button
             type="button"
@@ -81,33 +81,50 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
           />
 
           {/* RIGHT — Cart */}
+          {/* Dimensional chip: gradient fill + lit top edge + soft drop shadow
+              so the bag reads as a raised control — the header's one action. */}
           <button
             type="button"
             onClick={() => setCartOpen(true)}
             aria-label="Open inquiry list"
             aria-expanded={cartOpen}
             aria-controls="inquiry-cart-drawer"
-            className="relative ml-auto shrink-0 p-2 -mr-2 text-ink/60 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+            className="relative ml-auto shrink-0 flex h-10 w-10 items-center justify-center rounded-full border border-ink/[0.12] text-ink/70 hover:text-ink transition-[color,box-shadow,transform] duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
+            style={{
+              background:
+                'linear-gradient(180deg, var(--color-surface-elevated), var(--surface-product))',
+              boxShadow:
+                'var(--surface-highlight), 0 1px 2px rgba(30,28,24,0.08), 0 6px 16px -6px rgba(30,28,24,0.22)',
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="19"
+              height="19"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.3"
+              strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M6.5 8.5h11l-.8 11a2 2 0 0 1-2 1.85H9.3a2 2 0 0 1-2-1.85z" />
+              <defs>
+                <linearGradient id="vsr-bag-depth" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="currentColor" stopOpacity="0.16" />
+                  <stop offset="100%" stopColor="currentColor" stopOpacity="0.04" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M6.5 8.5h11l-.8 11a2 2 0 0 1-2 1.85H9.3a2 2 0 0 1-2-1.85z"
+                fill="url(#vsr-bag-depth)"
+              />
               <path d="M9 8.5V6.2a3 3 0 0 1 6 0v2.3" />
             </svg>
             {itemCount > 0 && (
               <span
                 aria-label={`${itemCount} item${itemCount === 1 ? '' : 's'} in inquiry`}
-                className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-gold rounded-sm text-[10px] font-medium text-ink flex items-center justify-center tabular-nums"
+                className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-gold rounded-full text-[10px] font-medium text-ink flex items-center justify-center tabular-nums shadow-[0_1px_3px_rgba(30,28,24,0.25)] ring-2 ring-[color:var(--header-bg)]"
               >
                 {itemCount}
               </span>

@@ -494,7 +494,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           </p>
                           <p className="mt-1">
                             {lineIsFast(item) ? (
-                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ Fast</span>
+                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ 24 HR</span>
                             ) : (
                               <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}>Standard</span>
                             )}
@@ -547,7 +547,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 >
                   <span aria-hidden="true" className="text-[11px] leading-none mt-0.5">⚡</span>
                   <p className="text-[10px] leading-relaxed text-ink/75">
-                    Fast-ship + standard items may arrive in <span className="font-medium">separate shipments</span> — <span className="font-medium">no extra charge</span>.
+                    24-hour-shipping + standard items may arrive in <span className="font-medium">separate shipments</span> — <span className="font-medium">no extra charge</span>.
                   </p>
                 </div>
               )}

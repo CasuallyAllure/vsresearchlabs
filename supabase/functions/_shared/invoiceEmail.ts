@@ -32,7 +32,7 @@ export interface OrderLine {
 /** Email-safe per-line ship-speed tag. Renders nothing when speed is unknown. */
 function shipTag(fast: boolean | null | undefined): string {
   if (fast === true) {
-    return `<div style="margin-top:4px;"><span style="display:inline-block;font-family:'JetBrains Mono','SF Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#2E7D5B;background:rgba(46,125,91,0.10);border:1px solid rgba(46,125,91,0.30);border-radius:3px;padding:1px 6px;">⚡ Fast ship</span></div>`;
+    return `<div style="margin-top:4px;"><span style="display:inline-block;font-family:'JetBrains Mono','SF Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#2E7D5B;background:rgba(46,125,91,0.10);border:1px solid rgba(46,125,91,0.30);border-radius:3px;padding:1px 6px;">⚡ 24 HR</span></div>`;
   }
   if (fast === false) {
     return `<div style="margin-top:4px;"><span style="display:inline-block;font-family:'JetBrains Mono','SF Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#6F665C;background:rgba(26,23,20,0.04);border:1px solid rgba(26,23,20,0.12);border-radius:3px;padding:1px 6px;">Standard ship</span></div>`;
@@ -123,7 +123,7 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
   ].filter(Boolean).join("\n");
 
   const lineText = lines.map((l) => {
-    const speed = l.fast_ship === true ? " [FAST]" : l.fast_ship === false ? " [STANDARD]" : "";
+    const speed = l.fast_ship === true ? " [24 HR]" : l.fast_ship === false ? " [STANDARD]" : "";
     return `  - ${l.product_name}${speed} · qty ${l.quantity} · ${fmtUsd(l.unit_price_cents)} ea`;
   }).join("\n");
 
@@ -143,7 +143,7 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
     // Buyer double-confirm shipping (migration 041) — only passed in while the
     // order is not yet ship-confirmed.
     confirmShippingUrl ? `\nConfirm your shipping address online: ${confirmShippingUrl}` : ``,
-    mixed ? `\nNote: this order mixes fast-ship and standard items — they may arrive in separate shipments, at no extra cost to you.` : ``,
+    mixed ? `\nNote: this order mixes 24-hour-shipping and standard items — they may arrive in separate shipments, at no extra cost to you.` : ``,
     ``,
     `Items:`,
     lineText,
@@ -205,7 +205,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
   const mixedShipBlock = mixedShip
     ? `<div style="margin-top:16px;background:rgba(214,158,46,0.10);border:1px solid rgba(214,158,46,0.40);border-radius:10px;padding:14px 18px;">
         <div style="font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;color:#9A7B1E;font-weight:700;margin-bottom:6px;">⚡ Separate shipments</div>
-        <div style="font-size:12.5px;color:#1A1714;line-height:1.6;">This order mixes <strong>fast-ship</strong> and <strong>standard</strong> items. They ship from different locations and may arrive separately — you'll get tracking for each shipment, <strong>at no extra cost to you</strong>.</div>
+        <div style="font-size:12.5px;color:#1A1714;line-height:1.6;">This order mixes <strong>24-hour-shipping</strong> and <strong>standard</strong> items. They ship from different locations and may arrive separately — you'll get tracking for each shipment, <strong>at no extra cost to you</strong>.</div>
       </div>`
     : "";
 

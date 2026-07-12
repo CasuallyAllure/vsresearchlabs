@@ -97,7 +97,7 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
                 role="radio"
                 aria-checked={isActive}
                 onClick={() => setTierIndex(i)}
-                title={isFast ? `${v.dose} · ships fast` : v.dose}
+                title={isFast ? `${v.dose} · 24 hour shipping` : v.dose}
                 className="font-mono leading-none px-1.5 py-1 rounded-[3px] border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                 style={{
                   fontSize: '9px',
@@ -117,7 +117,7 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
                       letterSpacing: '0.20em',
                     }}
                   >
-                    · FAST
+                    · 24 HR
                   </span>
                 )}
               </button>
