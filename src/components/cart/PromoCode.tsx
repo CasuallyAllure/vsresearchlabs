@@ -16,9 +16,9 @@ import { useState } from 'react';
 import { useCart, type AppliedCoupon } from '../../hooks/useCart';
 import {
   checkCoupon,
-  couponDiscountCents,
+  couponBreakdown,
   couponStillQualifies,
-  couponsDiscountCents,
+  freeItemLineValue,
   submittableCouponCodes as pickSubmittableCodes,
 } from '../../lib/coupons';
 import { formatUsd } from '../../lib/payment';
@@ -32,6 +32,7 @@ interface PromoCodeProps {
 
 export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
   const coupons = useCart((s) => s.coupons);
+  const items = useCart((s) => s.items);
   const addCoupon = useCart((s) => s.addCoupon);
   const removeCoupon = useCart((s) => s.removeCoupon);
   const [draft, setDraft] = useState('');
@@ -47,7 +48,8 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
     : 'font-mono text-sm tabular-nums text-ink';
 
   const hasApplied = coupons.length > 0;
-  const stackedDiscount = couponsDiscountCents(coupons, subtotalCents);
+  const breakdown = couponBreakdown(coupons, subtotalCents, items);
+  const stackedDiscount = breakdown.total;
   const netTotal = Math.max(subtotalCents - stackedDiscount, 0);
 
   async function handleApply() {
@@ -70,8 +72,11 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
   }
 
   function appliedValue(c: AppliedCoupon, qualifies: boolean): string {
-    if (c.kind === 'free_item') return 'FREE ITEM';
-    return `−${formatUsd(qualifies ? couponDiscountCents(c, subtotalCents) : 0)}`;
+    const v = qualifies ? (breakdown.perCode[c.code] ?? 0) : 0;
+    // free_item with the item NOT in the cart contributes $0 here (it's added
+    // free) — show FREE ITEM; otherwise show the dollar value coming off.
+    if (c.kind === 'free_item' && v === 0) return 'FREE ITEM';
+    return `−${formatUsd(v)}`;
   }
 
   return (
@@ -99,7 +104,9 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
             </div>
             {c.kind === 'free_item' && qualifies && (
               <p className={`mt-1 text-ink/55 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
-                Free — {c.freeLabel ?? 'item'} will be added to your order at checkout.
+                {freeItemLineValue(c, items) > 0
+                  ? `One ${c.freeLabel ?? 'item'} in your order is free.`
+                  : `Free — ${c.freeLabel ?? 'item'} will be added to your order at checkout.`}
               </p>
             )}
             {!qualifies && (

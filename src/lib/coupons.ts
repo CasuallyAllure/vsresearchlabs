@@ -12,6 +12,8 @@
 
 import { supabase } from './supabase';
 import type { AppliedCoupon } from '../hooks/useCart';
+import type { CartItem } from '../types';
+import { lineUnitCents } from './cartActions';
 
 interface ValidateCouponRow {
   valid: boolean;
@@ -62,15 +64,37 @@ export async function checkCoupon(code: string, subtotalCents: number): Promise<
   };
 }
 
-/** Preview discount for the summary rows. free_item codes subtract nothing —
- *  their value is the free line the server adds to the order. */
-export function couponDiscountCents(coupon: AppliedCoupon | null, subtotalCents: number): number {
+/** For a free_item coupon: the value of ONE matching line already in the cart,
+ *  so applying the code makes that item free. Returns 0 when the item isn't in
+ *  the cart — the server then adds it as a $0 line instead. Matches on SKU and,
+ *  when the coupon names a dose, the line whose name carries that dose. */
+export function freeItemLineValue(coupon: AppliedCoupon, items: CartItem[]): number {
+  if (coupon.kind !== 'free_item' || !coupon.freeSku) return 0;
+  const match = items.find(
+    (i) =>
+      i.product.sku === coupon.freeSku &&
+      (!coupon.freeDose || (i.product.name ?? '').includes(coupon.freeDose)),
+  );
+  return match ? Math.max(lineUnitCents(match), 0) : 0;
+}
+
+/** Preview discount for the summary rows. For free_item, the discount is the
+ *  price of the matching item in the cart (it becomes free); if that item isn't
+ *  in the cart the server adds it free, so the preview discount is 0. */
+export function couponDiscountCents(
+  coupon: AppliedCoupon | null,
+  subtotalCents: number,
+  items: CartItem[] = [],
+): number {
   if (!coupon || subtotalCents <= 0) return 0;
   if (coupon.kind === 'percent' && coupon.percent != null) {
     return Math.min(Math.round((subtotalCents * coupon.percent) / 100), subtotalCents);
   }
   if (coupon.kind === 'fixed' && coupon.amountCents != null) {
     return Math.min(coupon.amountCents, subtotalCents);
+  }
+  if (coupon.kind === 'free_item') {
+    return Math.min(freeItemLineValue(coupon, items), subtotalCents);
   }
   return 0;
 }
@@ -82,21 +106,65 @@ export function couponStillQualifies(coupon: AppliedCoupon | null, subtotalCents
   return subtotalCents >= coupon.minSubtotalCents;
 }
 
-/** Stacked discount preview across all applied coupons. Additive rule: each
- *  qualifying percent/fixed code is computed off the ORIGINAL subtotal, summed,
- *  and the running total is capped at the subtotal so it never goes below $0.
- *  free_item codes subtract nothing here (the server adds a $0 line). This
- *  mirrors the server math in place-order so preview == billed. */
-export function couponsDiscountCents(coupons: AppliedCoupon[], subtotalCents: number): number {
-  let remaining = Math.max(subtotalCents, 0);
-  let total = 0;
+export interface CouponBreakdown {
+  /** code → discount cents attributed to that coupon (drives the cart line + invoice). */
+  perCode: Record<string, number>;
+  /** sum of all discounts, capped at the subtotal so an order never goes < $0. */
+  total: number;
+}
+
+/**
+ * Compute the stacked discount with a COMPOUNDING order (this mirrors the
+ * place-order server math exactly, so the cart preview equals what's billed):
+ *   1. free_item + fixed codes reduce the base first. A free_item whose item is
+ *      already in the cart contributes that item's price (it becomes free);
+ *      otherwise the server adds it as a $0 line and it contributes nothing here.
+ *   2. percent codes then apply to the REMAINING base (subtotal − step 1), not
+ *      to the original subtotal.
+ *   3. the grand total is capped at the subtotal.
+ */
+export function couponBreakdown(
+  coupons: AppliedCoupon[],
+  subtotalCents: number,
+  items: CartItem[] = [],
+): CouponBreakdown {
+  const sub = Math.max(subtotalCents, 0);
+  const perCode: Record<string, number> = {};
+  const percentCoupons: AppliedCoupon[] = [];
+  let flat = 0; // free_item line values + fixed amounts
+
+  // Pass 1 — flat reductions (free_item, fixed).
   for (const c of coupons) {
-    if (!couponStillQualifies(c, subtotalCents)) continue;
-    const d = Math.min(couponDiscountCents(c, subtotalCents), remaining);
-    total += d;
-    remaining -= d;
+    if (!couponStillQualifies(c, sub)) { perCode[c.code] = 0; continue; }
+    if (c.kind === 'percent') { percentCoupons.push(c); continue; }
+    let v = 0;
+    if (c.kind === 'fixed' && c.amountCents != null) v = c.amountCents;
+    else if (c.kind === 'free_item') v = freeItemLineValue(c, items);
+    v = Math.max(Math.min(v, sub - flat), 0);
+    perCode[c.code] = v;
+    flat += v;
   }
-  return total;
+
+  // Pass 2 — percents on the reduced base.
+  const baseAfterFlat = Math.max(sub - flat, 0);
+  let percentUsed = 0;
+  for (const c of percentCoupons) {
+    const raw = c.percent != null ? Math.round((baseAfterFlat * c.percent) / 100) : 0;
+    const v = Math.max(Math.min(raw, baseAfterFlat - percentUsed), 0);
+    perCode[c.code] = v;
+    percentUsed += v;
+  }
+
+  return { perCode, total: Math.min(flat + percentUsed, sub) };
+}
+
+/** Total stacked discount (see couponBreakdown for the rule). */
+export function couponsDiscountCents(
+  coupons: AppliedCoupon[],
+  subtotalCents: number,
+  items: CartItem[] = [],
+): number {
+  return couponBreakdown(coupons, subtotalCents, items).total;
 }
 
 /** Codes to submit at checkout — only those still qualifying for the current

@@ -707,9 +707,15 @@ Deno.serve(async (req: Request) => {
       .filter((c) => c.length > 0),
   )].slice(0, 10);
 
-  let discountCents = 0;
-  // Per-code ledger — drives redemption + per-code rollback below.
-  const appliedList: { code: string; contribution: number; freeSku: string | null }[] = [];
+  // Per-code ledger — drives redemption + per-code rollback below. `fullDiscount`
+  // holds a percent code's discount off the FULL subtotal; pass 2 re-scales it
+  // onto the post-flat base so percents apply AFTER free_item/fixed reductions.
+  const appliedList: {
+    code: string; kind: string; contribution: number; freeSku: string | null; fullDiscount: number;
+  }[] = [];
+  let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
+
+  // Pass 1 — validate every code; apply the flat reductions now.
   for (const code of couponCodes) {
     const { data: checkData, error: checkErr } = await supabase.rpc("validate_coupon", {
       p_code: code,
@@ -727,31 +733,61 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: coupon?.reason ?? `Code ${code} is not valid.` }, 400);
     }
     const appliedCode = coupon.code ?? code;
+
+    if (coupon.kind === "percent") {
+      const full = Math.max(Math.floor(Number(coupon.discount_cents ?? 0)), 0);
+      appliedList.push({ code: appliedCode, kind: "percent", contribution: 0, freeSku: null, fullDiscount: full });
+      continue; // handled in pass 2
+    }
+
     if (coupon.kind === "free_item" && coupon.free_sku && coupon.free_label) {
-      items.push({
-        product: {
-          id: `free-${coupon.free_sku}`,
-          name: `${coupon.free_label} (FREE)`,
-          category: null,
-          sku: coupon.free_sku,
-        },
-        quantity: 1,
-        unitPriceCents: 0,
-        note: `Free with code ${appliedCode}`,
-      });
-      itemCount += 1;
-      appliedList.push({ code: appliedCode, contribution: 0, freeSku: coupon.free_sku });
+      // If the buyer already has this item, make ONE unit free (discount = its
+      // price) instead of adding a duplicate free line.
+      const matchIdx = items.findIndex((i) =>
+        (i.product.sku ?? i.product.id) === coupon.free_sku &&
+        clampCents(i.unitPriceCents) > 0 &&
+        (!coupon.free_dose || (i.product.name ?? "").includes(coupon.free_dose))
+      );
+      if (matchIdx >= 0) {
+        const unit = clampCents(items[matchIdx].unitPriceCents);
+        const contribution = Math.max(Math.min(unit, grossSubtotalCents - flatCents), 0);
+        flatCents += contribution;
+        appliedList.push({ code: appliedCode, kind: "free_item", contribution, freeSku: null, fullDiscount: 0 });
+      } else {
+        items.push({
+          product: { id: `free-${coupon.free_sku}`, name: `${coupon.free_label} (FREE)`, category: null, sku: coupon.free_sku },
+          quantity: 1,
+          unitPriceCents: 0,
+          note: `Free with code ${appliedCode}`,
+        });
+        itemCount += 1;
+        appliedList.push({ code: appliedCode, kind: "free_item", contribution: 0, freeSku: coupon.free_sku, fullDiscount: 0 });
+      }
     } else {
-      // Additive off the ORIGINAL subtotal, capped so the running total can
-      // never exceed the subtotal (order never goes below $0).
+      // fixed — flat dollars off, capped at the remaining subtotal.
       const raw = Math.floor(Number(coupon.discount_cents ?? 0));
       const safe = Math.max(Number.isFinite(raw) ? raw : 0, 0);
-      const room = Math.max(grossSubtotalCents - discountCents, 0);
-      const contribution = Math.min(safe, room);
-      discountCents += contribution;
-      appliedList.push({ code: appliedCode, contribution, freeSku: null });
+      const contribution = Math.max(Math.min(safe, grossSubtotalCents - flatCents), 0);
+      flatCents += contribution;
+      appliedList.push({ code: appliedCode, kind: "fixed", contribution, freeSku: null, fullDiscount: 0 });
     }
   }
+
+  // Pass 2 — percents apply to the base AFTER the flat reductions. A percent's
+  // discount off the full subtotal, scaled by (baseAfterFlat / subtotal), equals
+  // `percent × baseAfterFlat`.
+  const baseAfterFlat = Math.max(grossSubtotalCents - flatCents, 0);
+  let percentUsed = 0;
+  for (const a of appliedList) {
+    if (a.kind !== "percent") continue;
+    const scaled = grossSubtotalCents > 0
+      ? Math.round((a.fullDiscount * baseAfterFlat) / grossSubtotalCents)
+      : 0;
+    a.contribution = Math.max(Math.min(scaled, baseAfterFlat - percentUsed), 0);
+    percentUsed += a.contribution;
+  }
+
+  let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
   // Comma-joined label for the order row, invoice, and emails (all read this).
   let appliedCoupon: string | null = appliedList.length
     ? appliedList.map((a) => a.code).join(", ")
