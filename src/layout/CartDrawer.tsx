@@ -37,7 +37,7 @@ import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
-import { PromoCode, submittableCouponCode } from '../components/cart/PromoCode';
+import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 
 const MAX_QTY = 999;
 
@@ -134,8 +134,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       ship_zip: zip.trim(),
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
-      // Only the CODE travels — the server re-validates and prices it.
-      coupon_code: submittableCouponCode(subtotalCents) ?? undefined,
+      // Only the CODES travel — the server re-validates and prices each,
+      // stacks them (additive, capped at subtotal), and adds any free items.
+      coupon_codes: submittableCouponCodes(subtotalCents),
       items: items.map((i) => ({
         product: {
           id: i.product.id,

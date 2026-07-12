@@ -13,8 +13,14 @@
  */
 
 import { useState } from 'react';
-import { useCart } from '../../hooks/useCart';
-import { checkCoupon, couponDiscountCents, couponStillQualifies } from '../../lib/coupons';
+import { useCart, type AppliedCoupon } from '../../hooks/useCart';
+import {
+  checkCoupon,
+  couponDiscountCents,
+  couponStillQualifies,
+  couponsDiscountCents,
+  submittableCouponCodes as pickSubmittableCodes,
+} from '../../lib/coupons';
 import { formatUsd } from '../../lib/payment';
 
 interface PromoCodeProps {
@@ -25,8 +31,9 @@ interface PromoCodeProps {
 }
 
 export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
-  const coupon = useCart((s) => s.coupon);
-  const setCoupon = useCart((s) => s.setCoupon);
+  const coupons = useCart((s) => s.coupons);
+  const addCoupon = useCart((s) => s.addCoupon);
+  const removeCoupon = useCart((s) => s.removeCoupon);
   const [draft, setDraft] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,130 +46,127 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
     ? 'font-mono text-[12.5px] tabular-nums text-ink'
     : 'font-mono text-sm tabular-nums text-ink';
 
-  const discount = couponDiscountCents(coupon, subtotalCents);
-  const qualifies = couponStillQualifies(coupon, subtotalCents);
-  const netTotal = Math.max(subtotalCents - (qualifies ? discount : 0), 0);
+  const hasApplied = coupons.length > 0;
+  const stackedDiscount = couponsDiscountCents(coupons, subtotalCents);
+  const netTotal = Math.max(subtotalCents - stackedDiscount, 0);
 
   async function handleApply() {
-    if (isChecking || draft.trim().length === 0) return;
+    const code = draft.trim().toUpperCase();
+    if (isChecking || code.length === 0) return;
+    if (coupons.some((c) => c.code === code)) {
+      setError('That code is already applied.');
+      return;
+    }
     setIsChecking(true);
     setError(null);
-    const result = await checkCoupon(draft, subtotalCents);
+    const result = await checkCoupon(code, subtotalCents);
     setIsChecking(false);
     if (!result.ok) {
       setError(result.reason);
       return;
     }
-    setCoupon(result.coupon);
+    addCoupon(result.coupon);
     setDraft('');
   }
 
-  function handleRemove() {
-    setCoupon(null);
-    setError(null);
-  }
-
-  function couponSummaryLabel(): string {
-    if (!coupon) return '';
-    if (coupon.kind === 'percent') return `${coupon.percent}% off`;
-    if (coupon.kind === 'fixed') return `${formatUsd(coupon.amountCents ?? 0)} off`;
-    return coupon.freeLabel ? `Free — ${coupon.freeLabel}` : 'Free item';
+  function appliedValue(c: AppliedCoupon, qualifies: boolean): string {
+    if (c.kind === 'free_item') return 'FREE ITEM';
+    return `−${formatUsd(qualifies ? couponDiscountCents(c, subtotalCents) : 0)}`;
   }
 
   return (
     <div className={compact ? 'mb-2.5' : 'mb-4'}>
-      {!coupon && (
-        <div className="flex items-stretch gap-2">
-          <input
-            type="text"
-            value={draft}
-            onChange={(e) => {
-              setDraft(e.target.value.toUpperCase());
-              if (error) setError(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                void handleApply();
-              }
-            }}
-            placeholder="PROMO CODE"
-            aria-label="Promo code"
-            autoCapitalize="characters"
-            autoCorrect="off"
-            spellCheck={false}
-            maxLength={40}
-            className={`min-w-0 flex-1 rounded-[5px] border border-ink/15 bg-transparent px-2.5 font-mono uppercase tracking-[0.12em] text-ink placeholder:text-ink/30 focus:border-ink/40 focus:outline-none ${
-              compact ? 'py-1.5 text-[11px]' : 'py-2 text-[13px]'
-            }`}
-          />
-          <button
-            type="button"
-            onClick={() => void handleApply()}
-            disabled={isChecking || draft.trim().length === 0}
-            className={`shrink-0 rounded-[5px] border border-ink/20 px-3 uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-ink/45 hover:text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${
-              compact ? 'text-[9px]' : 'text-[10px]'
-            }`}
-          >
-            {isChecking ? 'Checking…' : 'Apply'}
-          </button>
-        </div>
-      )}
+      {/* Applied codes — each independently removable (stackable) */}
+      {coupons.map((c) => {
+        const qualifies = couponStillQualifies(c, subtotalCents);
+        return (
+          <div key={c.code} className={compact ? 'mb-1.5' : 'mb-2'}>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className={labelCls}>
+                Code <span className="font-mono normal-case tracking-[0.08em] text-ink/70">{c.code}</span>
+              </span>
+              <span className="flex items-baseline gap-2">
+                <span className={valueCls}>{appliedValue(c, qualifies)}</span>
+                <button
+                  type="button"
+                  onClick={() => removeCoupon(c.code)}
+                  aria-label={`Remove code ${c.code}`}
+                  className="text-[9px] uppercase tracking-[0.2em] text-ink/35 transition-colors hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                >
+                  Remove
+                </button>
+              </span>
+            </div>
+            {c.kind === 'free_item' && qualifies && (
+              <p className={`mt-1 text-ink/55 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
+                Free — {c.freeLabel ?? 'item'} will be added to your order at checkout.
+              </p>
+            )}
+            {!qualifies && (
+              <p role="alert" className={`mt-1 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
+                {c.kind === 'free_item'
+                  ? `Add a product to your order to use ${c.code}.`
+                  : `Your order no longer meets the minimum for ${c.code}.`}
+              </p>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Code input — always available so buyers can stack another code */}
+      <div className="flex items-stretch gap-2">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value.toUpperCase());
+            if (error) setError(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              void handleApply();
+            }
+          }}
+          placeholder={hasApplied ? 'ADD ANOTHER CODE' : 'PROMO CODE'}
+          aria-label={hasApplied ? 'Add another promo code' : 'Promo code'}
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={40}
+          className={`min-w-0 flex-1 rounded-[5px] border border-ink/15 bg-transparent px-2.5 font-mono uppercase tracking-[0.12em] text-ink placeholder:text-ink/30 focus:border-ink/40 focus:outline-none ${
+            compact ? 'py-1.5 text-[11px]' : 'py-2 text-[13px]'
+          }`}
+        />
+        <button
+          type="button"
+          onClick={() => void handleApply()}
+          disabled={isChecking || draft.trim().length === 0}
+          className={`shrink-0 rounded-[5px] border border-ink/20 px-3 uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-ink/45 hover:text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${
+            compact ? 'text-[9px]' : 'text-[10px]'
+          }`}
+        >
+          {isChecking ? 'Checking…' : hasApplied ? 'Add' : 'Apply'}
+        </button>
+      </div>
       {error && (
         <p role="alert" className={`mt-1.5 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
           {error}
         </p>
       )}
 
-      {coupon && (
-        <>
-          <div className="flex items-baseline justify-between gap-2">
-            <span className={labelCls}>
-              Code <span className="font-mono normal-case tracking-[0.08em] text-ink/70">{coupon.code}</span>
-            </span>
-            <span className="flex items-baseline gap-2">
-              <span className={valueCls}>
-                {coupon.kind === 'free_item' ? 'FREE ITEM' : `−${formatUsd(qualifies ? discount : 0)}`}
-              </span>
-              <button
-                type="button"
-                onClick={handleRemove}
-                aria-label={`Remove code ${coupon.code}`}
-                className="text-[9px] uppercase tracking-[0.2em] text-ink/35 transition-colors hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
-              >
-                Remove
-              </button>
-            </span>
-          </div>
-
-          {coupon.kind === 'free_item' && qualifies && (
-            <p className={`mt-1 text-ink/55 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
-              {couponSummaryLabel()} will be added to your order at checkout.
-            </p>
-          )}
-          {!qualifies && (
-            <p role="alert" className={`mt-1 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
-              {coupon.kind === 'free_item'
-                ? `Add a product to your order to use ${coupon.code}.`
-                : `Your order no longer meets the minimum for ${coupon.code}.`}
-            </p>
-          )}
-
-          {coupon.kind !== 'free_item' && qualifies && discount > 0 && (
-            <div className={`flex items-baseline justify-between ${compact ? 'mt-1.5' : 'mt-2'}`}>
-              <span className={labelCls}>Total</span>
-              <span className={valueCls}>{formatUsd(netTotal)}</span>
-            </div>
-          )}
-        </>
+      {/* Stacked total after all qualifying discounts */}
+      {hasApplied && stackedDiscount > 0 && (
+        <div className={`flex items-baseline justify-between ${compact ? 'mt-2' : 'mt-2.5'}`}>
+          <span className={labelCls}>Total</span>
+          <span className={valueCls}>{formatUsd(netTotal)}</span>
+        </div>
       )}
     </div>
   );
 }
 
-/** The code string checkout should submit — null when nothing applies. */
-export function submittableCouponCode(subtotalCents: number): string | null {
-  const { coupon } = useCart.getState();
-  if (!coupon) return null;
-  return couponStillQualifies(coupon, subtotalCents) ? coupon.code : null;
+/** The codes checkout should submit — the qualifying, deduped set (may be empty). */
+export function submittableCouponCodes(subtotalCents: number): string[] {
+  return pickSubmittableCodes(useCart.getState().coupons, subtotalCents);
 }

@@ -50,7 +50,6 @@ import {
   invoiceSubject,
   type OrderRow,
   type OrderLine,
-  type CouponLine,
 } from "../_shared/invoiceEmail.ts";
 
 // ---------------------------------------------------------------------------
@@ -80,6 +79,10 @@ interface OrderPayload {
   /** Promo/affiliate code. Validated + priced SERVER-SIDE via validate_coupon —
    *  the client never supplies a discount amount, only the code. */
   coupon_code?: string;
+  /** Stackable promo codes — the buyer may apply more than one. Superset of
+   *  `coupon_code`; each is validated + priced SERVER-SIDE and stacked
+   *  (additive off the original subtotal, capped so the order never < $0). */
+  coupon_codes?: string[];
   /** Client-generated UUID, stable across retries of the SAME checkout —
    *  a seen key returns the existing order instead of creating a duplicate. */
   idempotency_key?: string;
@@ -693,13 +696,23 @@ Deno.serve(async (req: Request) => {
   // appends a $0 line for the free product. Invalid codes reject the order
   // (the buyer saw it "applied" in the cart, so silently dropping it would
   // bill more than they expect).
-  const couponInput = (payload.coupon_code ?? "").trim().toUpperCase().slice(0, 40);
+  // Accept one OR many codes (coupon_codes supersedes the legacy coupon_code).
+  // Normalize, dedupe, and cap the count so a payload can't spam validation.
+  const rawCodes = Array.isArray(payload.coupon_codes)
+    ? payload.coupon_codes
+    : (payload.coupon_code ? [payload.coupon_code] : []);
+  const couponCodes = [...new Set(
+    rawCodes
+      .map((c) => String(c ?? "").trim().toUpperCase().slice(0, 40))
+      .filter((c) => c.length > 0),
+  )].slice(0, 10);
+
   let discountCents = 0;
-  let appliedCoupon: string | null = null;
-  let freeLineSku: string | null = null;
-  if (couponInput) {
+  // Per-code ledger — drives redemption + per-code rollback below.
+  const appliedList: { code: string; contribution: number; freeSku: string | null }[] = [];
+  for (const code of couponCodes) {
     const { data: checkData, error: checkErr } = await supabase.rpc("validate_coupon", {
-      p_code: couponInput,
+      p_code: code,
       p_subtotal_cents: grossSubtotalCents,
       p_contact: contact,
     });
@@ -709,9 +722,11 @@ Deno.serve(async (req: Request) => {
     }
     const coupon = checkData as CouponCheck | null;
     if (!coupon?.valid) {
-      return jsonResponse({ error: coupon?.reason ?? "This code is not valid." }, 400);
+      // The buyer saw it "applied" in the cart, so silently dropping it would
+      // bill more than they expect — reject and let them fix the code.
+      return jsonResponse({ error: coupon?.reason ?? `Code ${code} is not valid.` }, 400);
     }
-    appliedCoupon = coupon.code ?? couponInput;
+    const appliedCode = coupon.code ?? code;
     if (coupon.kind === "free_item" && coupon.free_sku && coupon.free_label) {
       items.push({
         product: {
@@ -722,15 +737,25 @@ Deno.serve(async (req: Request) => {
         },
         quantity: 1,
         unitPriceCents: 0,
-        note: `Free with code ${appliedCoupon}`,
+        note: `Free with code ${appliedCode}`,
       });
       itemCount += 1;
-      freeLineSku = coupon.free_sku;
+      appliedList.push({ code: appliedCode, contribution: 0, freeSku: coupon.free_sku });
     } else {
+      // Additive off the ORIGINAL subtotal, capped so the running total can
+      // never exceed the subtotal (order never goes below $0).
       const raw = Math.floor(Number(coupon.discount_cents ?? 0));
-      discountCents = Math.min(Math.max(Number.isFinite(raw) ? raw : 0, 0), grossSubtotalCents);
+      const safe = Math.max(Number.isFinite(raw) ? raw : 0, 0);
+      const room = Math.max(grossSubtotalCents - discountCents, 0);
+      const contribution = Math.min(safe, room);
+      discountCents += contribution;
+      appliedList.push({ code: appliedCode, contribution, freeSku: null });
     }
   }
+  // Comma-joined label for the order row, invoice, and emails (all read this).
+  let appliedCoupon: string | null = appliedList.length
+    ? appliedList.map((a) => a.code).join(", ")
+    : null;
   let totalCents = grossSubtotalCents - discountCents;
 
   // 1) Inquiry row (history + customer trigger)
@@ -844,30 +869,38 @@ Deno.serve(async (req: Request) => {
   // concurrent checkouts raced for the last use of a capped code — ROLL THE
   // COUPON BACK off the order before any email goes out, so the invoice and
   // billed amount stay truthful and a raced-out code can't leak revenue.
-  if (appliedCoupon) {
-    const { data: redeemData, error: redeemErr } = await supabase.rpc("redeem_coupon", {
-      p_code: appliedCoupon,
-      p_order_id: orderRow.id,
-      p_contact: contact,
-      p_discount_cents: discountCents,
-      p_order_net_cents: totalCents,
-    });
-    const redeemed = redeemData as { ok?: boolean; reason?: string } | null;
-    if (redeemErr || !redeemed?.ok) {
-      console.error("Coupon redemption failed — rolling back discount:", redeemErr ?? redeemed?.reason, appliedCoupon, orderRow.id);
-      // Drop the server-added free line (DB + the in-memory items the emails render).
-      if (freeLineSku) {
-        await supabase.from("order_lines").delete()
-          .eq("order_id", orderRow.id).eq("sku", freeLineSku).eq("unit_price_cents", 0);
-        const freeIdx = items.findIndex((i) => i.product.id === `free-${freeLineSku}`);
-        if (freeIdx >= 0) items.splice(freeIdx, 1);
+  if (appliedList.length > 0) {
+    const failedCodes: string[] = [];
+    for (const a of appliedList) {
+      const { data: redeemData, error: redeemErr } = await supabase.rpc("redeem_coupon", {
+        p_code: a.code,
+        p_order_id: orderRow.id,
+        p_contact: contact,
+        p_discount_cents: a.contribution,
+        p_order_net_cents: totalCents,
+      });
+      const redeemed = redeemData as { ok?: boolean; reason?: string } | null;
+      if (redeemErr || !redeemed?.ok) {
+        console.error("Coupon redemption failed — rolling back:", redeemErr ?? redeemed?.reason, a.code, orderRow.id);
+        failedCodes.push(a.code);
+        discountCents -= a.contribution;
+        // Drop the server-added free line (DB + the in-memory items the emails render).
+        if (a.freeSku) {
+          await supabase.from("order_lines").delete()
+            .eq("order_id", orderRow.id).eq("sku", a.freeSku).eq("unit_price_cents", 0);
+          const freeIdx = items.findIndex((i) => i.product.id === `free-${a.freeSku}`);
+          if (freeIdx >= 0) items.splice(freeIdx, 1);
+        }
       }
-      // Re-price the order without the coupon.
-      totalCents = grossSubtotalCents;
-      discountCents = 0;
-      appliedCoupon = null;
+    }
+    // Re-price the order keeping only the coupons that redeemed successfully.
+    if (failedCodes.length > 0) {
+      discountCents = Math.max(discountCents, 0);
+      totalCents = grossSubtotalCents - discountCents;
+      const survivors = appliedList.filter((a) => !failedCodes.includes(a.code));
+      appliedCoupon = survivors.length ? survivors.map((a) => a.code).join(", ") : null;
       const { error: rollbackErr } = await supabase.from("orders")
-        .update({ discount_cents: 0, coupon_code: null, invoice_amount_cents: totalCents })
+        .update({ discount_cents: discountCents, coupon_code: appliedCoupon, invoice_amount_cents: totalCents })
         .eq("id", orderRow.id);
       if (rollbackErr) console.error("Coupon rollback update failed:", rollbackErr, orderRow.id);
     }
@@ -910,30 +943,11 @@ Deno.serve(async (req: Request) => {
           item_note: i.note ?? null,
           fast_ship: typeof i.fast === "boolean" ? i.fast : null,
         }));
-        // Surface the checkout discount on the buyer's FIRST invoice: synthesize
-        // one coupon line so the "Discounts applied" block + per-line "was $X,
-        // now $Y" render, footing exactly to orders.discount_cents. A percent
-        // coupon shows as the concrete applied amount here (validate_coupon only
-        // returns the computed cents); admin re-sends render the itemized codes.
-        // Free-item coupons carry discountCents === 0 → excluded (they already
-        // appear as their own $0 "FREE" line). Rollback nulls appliedCoupon, so
-        // a rolled-back coupon yields no line.
-        const invoiceCoupons: CouponLine[] | undefined =
-          appliedCoupon && discountCents > 0
-            ? [{
-                code: appliedCoupon,
-                kind: "fixed",
-                free_label: null,
-                percent: null,
-                amount_cents: discountCents,
-                discount_cents: discountCents,
-              }]
-            : undefined;
         const invRes = await sendResendEmail({
           to: contact,
           subject: invoiceSubject(invOrder),
-          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines, coupons: invoiceCoupons }),
-          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines, coupons: invoiceCoupons }),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines }),
+          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;

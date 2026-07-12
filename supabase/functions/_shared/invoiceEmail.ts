@@ -83,52 +83,6 @@ export function couponLabel(c: CouponLine): string {
   return `${c.code} · Free ${c.free_label ?? "item"}`;
 }
 
-/**
- * Allocates each coupon's authoritative `discount_cents` (computed server-side
- * off the full subtotal, migration 037) across paid order lines, proportional
- * to each line's retail subtotal, for per-line "was $X, now $Y" display.
- * Free-item coupons are skipped — they already show as their own $0 line.
- * The last paid line absorbs the rounding remainder so the sum of the
- * returned array always equals the sum of non-free coupons' `discount_cents`.
- *
- * Duplicated (behaviorally identical) from `src/lib/lineDiscounts.ts` because
- * this Deno edge function cannot import from `src/`.
- */
-function allocateLineDiscounts(
-  lines: readonly { quantity: number }[],
-  retailUnitCents: readonly number[],
-  coupons: readonly { kind: string; discount_cents: number }[],
-): number[] {
-  const perLine = lines.map(() => 0);
-  const base = lines.map((l, i) => (retailUnitCents[i] ?? 0) * l.quantity);
-
-  for (const c of coupons) {
-    if (c.kind === "free_item") continue;
-    const target = c.discount_cents;
-    if (!target || target <= 0) continue;
-
-    const paidIdx = base
-      .map((b, i): [number, number] => [b, i])
-      .filter(([b]) => b > 0)
-      .map(([, i]) => i);
-    const totalBase = paidIdx.reduce((s, i) => s + base[i], 0);
-    if (totalBase <= 0) continue;
-
-    let allocated = 0;
-    paidIdx.forEach((i, k) => {
-      if (k === paidIdx.length - 1) {
-        perLine[i] += target - allocated;
-      } else {
-        const share = Math.round((target * base[i]) / totalBase);
-        perLine[i] += share;
-        allocated += share;
-      }
-    });
-  }
-
-  return perLine;
-}
-
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -158,8 +112,8 @@ const ZELLE_FOR_TEXT = ZELLE_EMAIL;
  * instead of html-only materially improves inbox placement — html-only is a
  * common spam-filter penalty. Resend takes both `text` and `html`.
  */
-export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
-  const { order, lines, coupons, confirmShippingUrl } = args;
+export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[] }): string {
+  const { order, lines, coupons } = args;
   const speeds = lines.map((l) => l.fast_ship);
   const mixed = speeds.includes(true) && speeds.includes(false);
   const ship = [
@@ -168,20 +122,9 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
     order.ship_country,
   ].filter(Boolean).join("\n");
 
-  // Per-line discount allocation (render-time only — the stored per-coupon
-  // discount_cents is authoritative; this just splits it across lines).
-  const retailUnits = lines.map((l) => l.unit_price_cents ?? 0);
-  const perLineDiscount = allocateLineDiscounts(lines, retailUnits, coupons ?? []);
-
-  const lineText = lines.map((l, i) => {
+  const lineText = lines.map((l) => {
     const speed = l.fast_ship === true ? " [FAST]" : l.fast_ship === false ? " [STANDARD]" : "";
-    const d = perLineDiscount[i];
-    const retailUnit = retailUnits[i];
-    const discUnit = l.quantity > 0 ? Math.round((retailUnit * l.quantity - d) / l.quantity) : retailUnit * l.quantity - d;
-    const priceText = d > 0
-      ? `${fmtUsd(discUnit)} ea (was ${fmtUsd(retailUnit)})`
-      : `${fmtUsd(l.unit_price_cents)} ea`;
-    return `  - ${l.product_name}${speed} · qty ${l.quantity} · ${priceText}`;
+    return `  - ${l.product_name}${speed} · qty ${l.quantity} · ${fmtUsd(l.unit_price_cents)} ea`;
   }).join("\n");
 
   return [
@@ -193,14 +136,6 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
     `Ship to:`,
     ship || "  — to be provided —",
     ``,
-    ...(confirmShippingUrl
-      ? [
-          `CONFIRM YOUR SHIPPING ADDRESS (required before we ship):`,
-          confirmShippingUrl,
-          `Research compounds are non-returnable — we cannot reship orders sent to a wrong or incomplete address you provided.`,
-          ``,
-        ]
-      : []),
     `Before you pay: confirm the shipping address above is correct — we're not`,
     `responsible for orders sent to a wrong/incomplete address you provided.`,
     `This is also your chance to add or remove items: reply to this email before`,
@@ -235,8 +170,8 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
   ].join("\n");
 }
 
-export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
-  const { order, lines, notes, coupons, confirmShippingUrl } = args;
+export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[] }): string {
+  const { order, lines, notes, coupons } = args;
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
@@ -271,19 +206,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
       </div>`
     : "";
 
-  // Per-line discount allocation (render-time only — the stored per-coupon
-  // discount_cents is authoritative; this just splits it across lines).
-  const retailUnits = lines.map((l) => l.unit_price_cents ?? 0);
-  const perLineDiscount = allocateLineDiscounts(lines, retailUnits, coupons ?? []);
-
-  const lineRows = lines.map((l, i) => {
-    const d = perLineDiscount[i];
-    const retailUnit = retailUnits[i];
-    const discUnit = l.quantity > 0 ? Math.round((retailUnit * l.quantity - d) / l.quantity) : retailUnit * l.quantity - d;
-    const unitCell = d > 0
-      ? `<span style="text-decoration:line-through;opacity:0.5;">${fmtUsd(retailUnit)}</span> ${fmtUsd(discUnit)}`
-      : fmtUsd(l.unit_price_cents);
-    return `
+  const lineRows = lines.map((l) => `
     <tr>
       <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:#6F665C;">
         ${escapeHtml(l.sku)}
@@ -291,18 +214,16 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
       <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;color:#1A1714;font-size:13px;">
         ${escapeHtml(l.product_name)}
         ${l.item_note ? `<div style="color:#6F665C;font-size:11px;margin-top:2px;">Note: ${escapeHtml(l.item_note)}</div>` : ""}
-        ${d > 0 ? `<div style="color:#34727A;font-size:11px;margin-top:2px;">−${fmtUsd(d)}</div>` : ""}
         ${shipTag(l.fast_ship)}
       </td>
       <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#1A1714;">
         ${l.quantity}
       </td>
       <td style="padding:10px 14px;border-bottom:1px solid #E4DFD5;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#6F665C;">
-        ${unitCell}
+        ${fmtUsd(l.unit_price_cents)}
       </td>
     </tr>
-  `;
-  }).join("");
+  `).join("");
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Invoice ${escapeHtml(order.order_number)}</title></head>
@@ -355,15 +276,6 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
           <tr><td style="padding:6px 0 0;font-size:11px;letter-spacing:0.02em;color:#6F665C;border-top:1px solid rgba(52,114,122,0.18);">Total saved</td>
               <td style="padding:6px 0 0;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12.5px;font-weight:700;color:#34727A;border-top:1px solid rgba(52,114,122,0.18);">−${fmtUsd(coupons.reduce((s, c) => s + (c.discount_cents > 0 ? c.discount_cents : 0), 0))}</td></tr>
         </table>
-      </div>` : ""}
-
-      <!-- Confirm-shipping-address CTA. Gold-bordered to stand apart from the
-           teal "I've sent payment" CTA further down — this one gates fulfillment,
-           not payment. -->
-      ${confirmShippingUrl ? `
-      <div style="margin-bottom:16px;text-align:center;background:#FBF9F4;border:2px solid #B5904B;border-radius:10px;padding:18px 16px;">
-        <a href="${confirmShippingUrl}" style="display:inline-block;background:#B5904B;color:#FBF9F4;text-decoration:none;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;padding:13px 28px;border-radius:999px;font-weight:600;">Confirm shipping address →</a>
-        <div style="font-size:11px;color:#6F665C;margin-top:10px;line-height:1.5;">Required before we ship. Research compounds are non-returnable — we cannot reship orders sent to a wrong or incomplete address you provided.</div>
       </div>` : ""}
 
       <!-- Verify-before-you-pay notice. Last chance for the buyer to correct

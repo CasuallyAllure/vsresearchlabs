@@ -81,3 +81,34 @@ export function couponStillQualifies(coupon: AppliedCoupon | null, subtotalCents
   if (!coupon) return true;
   return subtotalCents >= coupon.minSubtotalCents;
 }
+
+/** Stacked discount preview across all applied coupons. Additive rule: each
+ *  qualifying percent/fixed code is computed off the ORIGINAL subtotal, summed,
+ *  and the running total is capped at the subtotal so it never goes below $0.
+ *  free_item codes subtract nothing here (the server adds a $0 line). This
+ *  mirrors the server math in place-order so preview == billed. */
+export function couponsDiscountCents(coupons: AppliedCoupon[], subtotalCents: number): number {
+  let remaining = Math.max(subtotalCents, 0);
+  let total = 0;
+  for (const c of coupons) {
+    if (!couponStillQualifies(c, subtotalCents)) continue;
+    const d = Math.min(couponDiscountCents(c, subtotalCents), remaining);
+    total += d;
+    remaining -= d;
+  }
+  return total;
+}
+
+/** Codes to submit at checkout — only those still qualifying for the current
+ *  subtotal, deduped, order preserved. */
+export function submittableCouponCodes(coupons: AppliedCoupon[], subtotalCents: number): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const c of coupons) {
+    if (!couponStillQualifies(c, subtotalCents)) continue;
+    if (seen.has(c.code)) continue;
+    seen.add(c.code);
+    out.push(c.code);
+  }
+  return out;
+}

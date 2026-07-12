@@ -26,12 +26,16 @@ export interface AppliedCoupon {
 
 interface CartStore {
   items: CartItem[];
-  coupon: AppliedCoupon | null;
+  /** Applied promo codes (stackable). Snapshots for display only — place-order
+   *  re-validates + re-prices every code server-side. */
+  coupons: AppliedCoupon[];
   add: (product: Product) => void;
   remove: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   setItemNote: (productId: string, note: string) => void;
-  setCoupon: (coupon: AppliedCoupon | null) => void;
+  /** Add a code if it isn't already applied (dedupe by code). */
+  addCoupon: (coupon: AppliedCoupon) => void;
+  removeCoupon: (code: string) => void;
   clear: () => void;
   total: () => number;
   itemCount: () => number;
@@ -41,7 +45,7 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      coupon: null,
+      coupons: [],
 
       add: (product) =>
         set((state) => {
@@ -90,9 +94,19 @@ export const useCart = create<CartStore>()(
           }),
         })),
 
-      setCoupon: (coupon) => set({ coupon }),
+      addCoupon: (coupon) =>
+        set((state) =>
+          state.coupons.some((c) => c.code === coupon.code)
+            ? state
+            : { coupons: [...state.coupons, coupon] }
+        ),
 
-      clear: () => set({ items: [], coupon: null }),
+      removeCoupon: (code) =>
+        set((state) => ({
+          coupons: state.coupons.filter((c) => c.code !== code),
+        })),
+
+      clear: () => set({ items: [], coupons: [] }),
 
       total: () =>
         get().items.reduce(
@@ -107,8 +121,20 @@ export const useCart = create<CartStore>()(
     {
       name: siteConfig.storage.cartKey,
       storage: createJSONStorage(() => localStorage),
-      // Persist line items + applied promo; derived selectors stay in memory.
-      partialize: (state) => ({ items: state.items, coupon: state.coupon }),
+      // v1: single `coupon` became a stackable `coupons` array. Migrate old
+      // persisted carts so a returning buyer keeps (or cleanly drops) their code.
+      version: 1,
+      migrate: (persisted, version) => {
+        if (persisted && typeof persisted === 'object' && version < 1) {
+          const { coupon, ...rest } = persisted as Record<string, unknown> & {
+            coupon?: AppliedCoupon | null;
+          };
+          return { ...rest, coupons: coupon ? [coupon] : [] };
+        }
+        return persisted as Partial<CartStore>;
+      },
+      // Persist line items + applied promos; derived selectors stay in memory.
+      partialize: (state) => ({ items: state.items, coupons: state.coupons }),
     }
   )
 );
