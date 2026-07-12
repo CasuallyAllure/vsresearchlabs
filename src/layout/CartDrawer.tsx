@@ -220,17 +220,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       >
         {/* Header — identity + close */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.06]">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-holo-light/70">
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-serif text-[17px] leading-none tracking-[-0.01em] text-ink">
               {submit.kind === 'success'
-                ? 'Inquiry Filed'
+                ? 'Inquiry filed'
                 : view === 'form'
-                ? 'Buyer Details'
-                : 'Inquiry List'}
+                ? 'Buyer details'
+                : 'Inquiry'}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/35">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/40 tabular-nums">
               {itemCount > 0
-                ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending`
+                ? `${itemCount} item${itemCount === 1 ? '' : 's'}`
                 : submit.kind === 'success'
                 ? 'Invoice on its way'
                 : 'Empty'}
@@ -459,9 +459,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     return (
                       <li
                         key={item.product.id}
-                        className="flex items-center gap-3 px-3 py-3 border-b border-ink/[0.05] last:border-b-0"
+                        className="flex items-start gap-3.5 px-4 py-4 border-b border-ink/[0.05] last:border-b-0"
                       >
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[8px] border border-ink/[0.09] bg-display">
+                        <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[10px] border border-ink/[0.09] bg-display shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)]">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
@@ -477,54 +477,58 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[12.5px] tracking-tight text-ink/85">
-                            {item.product.name}
-                          </p>
-                          <p className="mt-0.5 truncate">
-                            <SKUCode value={item.product.sku} className="text-ink/35" />
-                          </p>
-                          <p className="mt-0.5 font-mono text-[11px] tabular-nums text-ink/60">
-                            {formatUsd(lineUnitCents(item))}
-                            {item.quantity > 1 && (
-                              <span className="text-ink/35">
-                                {' '}× {item.quantity} ={' '}
-                                <span className="text-ink/75">{formatUsd(lineUnitCents(item) * item.quantity)}</span>
-                              </span>
-                            )}
-                          </p>
-                          <p className="mt-1">
+                          {/* Name + price on one baseline */}
+                          <div className="flex items-baseline justify-between gap-3">
+                            <p className="truncate text-[13.5px] font-medium tracking-[-0.01em] text-ink">
+                              {item.product.name}
+                            </p>
+                            <p className="shrink-0 font-mono text-[12.5px] tabular-nums text-ink/85">
+                              {formatUsd(lineUnitCents(item) * item.quantity)}
+                            </p>
+                          </div>
+                          {/* SKU + ship class, one quiet meta line */}
+                          <p className="mt-1 flex items-center gap-2 truncate">
+                            <SKUCode value={item.product.sku} className="text-[10px] text-ink/40" />
                             {lineIsFast(item) ? (
-                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ 24 HR</span>
-                            ) : (
-                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}>Standard</span>
-                            )}
+                              <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)] border border-[color:var(--color-status-success)]/25">
+                                ⚡ 24 hr
+                              </span>
+                            ) : null}
                           </p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                              aria-label="Decrease quantity"
-                              className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                            >
-                              −
-                            </button>
-                            <span className="w-5 text-center text-[12.5px] tabular-nums text-ink" aria-live="polite">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                              disabled={atMax}
-                              aria-label="Increase quantity"
-                              className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                            >
-                              +
-                            </button>
+                          {item.quantity > 1 && (
+                            <p className="mt-0.5 font-mono text-[10.5px] tabular-nums text-ink/40">
+                              {formatUsd(lineUnitCents(item))} each
+                            </p>
+                          )}
+                          {/* Controls: one segmented stepper + quiet remove */}
+                          <div className="mt-2.5 flex items-center">
+                            <div className="inline-flex items-center rounded-full border border-ink/[0.12] bg-ink/[0.03]">
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                aria-label="Decrease quantity"
+                                className="flex h-7 w-7 items-center justify-center rounded-l-full text-[13px] text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                              >
+                                −
+                              </button>
+                              <span className="w-7 text-center text-[12.5px] tabular-nums text-ink border-x border-ink/[0.08]" aria-live="polite">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                disabled={atMax}
+                                aria-label="Increase quantity"
+                                className="flex h-7 w-7 items-center justify-center rounded-r-full text-[13px] text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                              >
+                                +
+                              </button>
+                            </div>
                             <button
                               type="button"
                               onClick={() => remove(item.product.id)}
                               aria-label={`Remove ${item.product.name}`}
-                              className="ml-auto text-[10px] uppercase tracking-[0.2em] text-ink/35 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                              className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-ink/35 underline decoration-ink/20 underline-offset-4 hover:text-ink hover:decoration-ink/50 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                             >
                               Remove
                             </button>
