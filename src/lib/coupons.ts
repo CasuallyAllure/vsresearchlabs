@@ -78,27 +78,6 @@ export function freeItemLineValue(coupon: AppliedCoupon, items: CartItem[]): num
   return match ? Math.max(lineUnitCents(match), 0) : 0;
 }
 
-/** Preview discount for the summary rows. For free_item, the discount is the
- *  price of the matching item in the cart (it becomes free); if that item isn't
- *  in the cart the server adds it free, so the preview discount is 0. */
-export function couponDiscountCents(
-  coupon: AppliedCoupon | null,
-  subtotalCents: number,
-  items: CartItem[] = [],
-): number {
-  if (!coupon || subtotalCents <= 0) return 0;
-  if (coupon.kind === 'percent' && coupon.percent != null) {
-    return Math.min(Math.round((subtotalCents * coupon.percent) / 100), subtotalCents);
-  }
-  if (coupon.kind === 'fixed' && coupon.amountCents != null) {
-    return Math.min(coupon.amountCents, subtotalCents);
-  }
-  if (coupon.kind === 'free_item') {
-    return Math.min(freeItemLineValue(coupon, items), subtotalCents);
-  }
-  return 0;
-}
-
 /** A coupon can stop qualifying when the cart shrinks (e.g. the buyer removes
  *  the paid item a free_item code required). */
 export function couponStillQualifies(coupon: AppliedCoupon | null, subtotalCents: number): boolean {
@@ -156,15 +135,6 @@ export function couponBreakdown(
   }
 
   return { perCode, total: Math.min(flat + percentUsed, sub) };
-}
-
-/** Total stacked discount (see couponBreakdown for the rule). */
-export function couponsDiscountCents(
-  coupons: AppliedCoupon[],
-  subtotalCents: number,
-  items: CartItem[] = [],
-): number {
-  return couponBreakdown(coupons, subtotalCents, items).total;
 }
 
 /** Codes to submit at checkout — only those still qualifying for the current
