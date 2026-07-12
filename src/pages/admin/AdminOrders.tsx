@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
@@ -156,6 +157,12 @@ export function AdminOrders() {
             Orders
           </h2>
           <div className="ml-auto flex min-w-0 items-center gap-1.5">
+            <Link
+              to="/admin/orders/new"
+              className="shrink-0 rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
+            >
+              + New order
+            </Link>
             <AdminFilterBar label="" options={SORT_OPTIONS} value={sort} onChange={setSort} dense />
             <AdminFilterBar label="" options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
             <AdminFilterBar label="" options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense />

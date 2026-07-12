@@ -24,10 +24,10 @@ import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
 import { AdminLayout } from './AdminLayout';
-import { downloadXlsx, downloadCsv, stamp, type Column } from '../../lib/exporters';
+import { downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
 import { parseCsvRecords } from '../../lib/csv';
 import { useProductOverrides } from '../../lib/productOverrides';
-import { tierPriceCents } from '../../lib/pricing';
+import { INVENTORY_COLUMNS, buildInventoryRows, type TemplateRow } from '../../lib/inventorySheet';
 
 // The full sellable catalog — exactly what the storefront renders (see
 // stores/productStore.ts: seed products + the generated biopeptide compounds).
@@ -60,26 +60,6 @@ interface VariantRow {
   price_cents: number | null;
   cost_cents: number | null;
   lead_days: number | null;
-}
-
-/** One row of the downloadable template (current live values pre-filled).
- *  The sheet is one row per dose; product-level fields (hidden, clip) repeat. */
-interface TemplateRow {
-  sku: string;
-  name: string;
-  klass: string;
-  dose: string;
-  current_price: number | null; // reference only — ignored on import
-  cost_usd: number | null;      // admin-only COGS (never public)
-  on_hand: number | null;
-  price_usd: number | null;
-  lead_days: number | null;     // blank = local stock; N = order-on-demand (ships in N days)
-  hidden: string;
-  reorder_at: number | null;
-  video_url: string;
-  video_title: string;
-  video_description: string;
-  video_thumbnail: string;
 }
 
 /** The payload we send per row to import_inventory (only set keys included). */
@@ -118,26 +98,6 @@ function collectSkus(): string[] {
   for (const p of products) if (p.sku) set.add(p.sku);
   return Array.from(set).sort();
 }
-
-// ── Template columns (headers are the exact import keys → clean round-trip) ────
-
-const TEMPLATE_COLUMNS: Column<TemplateRow>[] = [
-  { header: 'sku', value: (r) => r.sku },
-  { header: 'name', value: (r) => r.name },
-  { header: 'class', value: (r) => r.klass },
-  { header: 'dose', value: (r) => r.dose },
-  { header: 'current_price', value: (r) => r.current_price, type: 'currency' },
-  { header: 'cost_usd', value: (r) => r.cost_usd, type: 'currency' },
-  { header: 'on_hand', value: (r) => r.on_hand, type: 'number' },
-  { header: 'price_usd', value: (r) => r.price_usd, type: 'currency' },
-  { header: 'lead_days', value: (r) => r.lead_days, type: 'number' },
-  { header: 'hidden', value: (r) => r.hidden },
-  { header: 'reorder_at', value: (r) => r.reorder_at, type: 'number' },
-  { header: 'video_url', value: (r) => r.video_url },
-  { header: 'video_title', value: (r) => r.video_title },
-  { header: 'video_description', value: (r) => r.video_description },
-  { header: 'video_thumbnail', value: (r) => r.video_thumbnail },
-];
 
 interface ParsedRow {
   sku: string;
@@ -195,53 +155,15 @@ export function AdminImport() {
   // Build the template rows: one row per dose, pre-filled with live values.
   // current_price is the price the storefront shows today (override or formula)
   // for reference; price_usd is left blank so you only set what you change.
-  const templateRows = useMemo<TemplateRow[]>(() => {
-    const map = stockBySku ?? {};
-    const rows: TemplateRow[] = [];
-    const sorted = [...products].filter((p) => p.sku).sort((a, b) => a.sku.localeCompare(b.sku));
-    for (const p of sorted) {
-      const s = map[p.sku];
-      const klass =
-        (p as { family?: string; researchClassification?: string }).family ??
-        (p as { researchClassification?: string }).researchClassification ??
-        p.category ?? '';
-      const variants = Array.isArray(p.variants) && p.variants.length > 0
-        ? p.variants
-        : [{ dose: '' }];
-      let first = true;
-      for (const variant of variants) {
-        const dose = variant.dose ?? '';
-        const v = dose ? variantBySku[p.sku]?.[dose] : undefined;
-        const storedCents = v?.price_cents ?? (dose ? null : s?.price_cents_override ?? null);
-        const formula = dose ? tierPriceCents(p, dose) : (p.priceCents ?? null);
-        rows.push({
-          sku: p.sku,
-          name: p.name,
-          klass,
-          dose,
-          current_price: storedCents != null ? storedCents / 100 : (formula != null ? formula / 100 : null),
-          cost_usd: v && v.cost_cents != null ? v.cost_cents / 100 : null,
-          on_hand: v ? v.on_hand : (dose ? null : s?.on_hand ?? null),
-          price_usd: null,
-          lead_days: v && v.lead_days != null ? v.lead_days : null,
-          // hidden / clip are product-level — surface them on the first dose row only.
-          hidden: first && s && s.hidden ? 'true' : '',
-          reorder_at: v && v.reorder_at != null ? v.reorder_at : (first && s && s.reorder_at != null ? s.reorder_at : null),
-          video_url: first ? (s?.video_url ?? '') : '',
-          video_title: first ? (s?.video_title ?? '') : '',
-          video_description: first ? (s?.video_description ?? '') : '',
-          video_thumbnail: first ? (s?.video_thumbnail ?? '') : '',
-        });
-        first = false;
-      }
-    }
-    return rows;
-  }, [stockBySku, variantBySku]);
+  const templateRows = useMemo<TemplateRow[]>(
+    () => buildInventoryRows({ products, stockBySku: stockBySku ?? {}, variantBySku, fillPrice: false }),
+    [stockBySku, variantBySku],
+  );
 
   function downloadTemplate(kind: 'xlsx' | 'csv') {
     const fname = `vsr-inventory-${stamp(new Date())}`;
-    if (kind === 'xlsx') downloadXlsx(fname, 'Inventory', TEMPLATE_COLUMNS, templateRows);
-    else downloadCsv(fname, TEMPLATE_COLUMNS, templateRows);
+    if (kind === 'xlsx') downloadXlsx(fname, 'Inventory', INVENTORY_COLUMNS, templateRows);
+    else downloadCsv(fname, INVENTORY_COLUMNS, templateRows);
   }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {

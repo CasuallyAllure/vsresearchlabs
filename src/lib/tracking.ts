@@ -120,6 +120,13 @@ export interface OrderInvoice {
   lines: OrderInvoiceLine[];
   discount_cents?: number | null;
   coupons?: OrderInvoiceCoupon[];
+  // Shipping address + buyer double-confirmation (migration 041).
+  ship_street: string | null;
+  ship_city: string | null;
+  ship_state: string | null;
+  ship_zip: string | null;
+  ship_country: string | null;
+  ship_confirmed_at: string | null;
 }
 
 /** Customer-facing label + one-line explanation + a 0–4 step index for a bar. */

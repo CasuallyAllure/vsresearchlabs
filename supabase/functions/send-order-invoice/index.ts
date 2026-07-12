@@ -30,11 +30,16 @@ import {
 } from "../_shared/invoiceEmail.ts";
 import { buildCorsHeaders } from "../_shared/cors.ts";
 import { requireAdmin } from "../_shared/adminGate.ts";
+import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>";
+// Same derivation invoiceEmail.ts uses for its /track links (EMAIL_BRAND.siteUrl,
+// backed by the PUBLIC_SITE_URL secret) — kept in sync so both CTAs point at
+// the same host.
+const SITE_BASE            = EMAIL_BRAND.siteUrl;
 
 const CORS_HEADERS = buildCorsHeaders();
 
@@ -89,7 +94,7 @@ Deno.serve(async (req: Request) => {
              invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
              discount_cents, coupon_code,
              payment_method, status, notes,
-             ship_street, ship_city, ship_state, ship_zip, ship_country, created_at, lookup_token`)
+             ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, created_at, lookup_token`)
     .eq("id", payload.order_id)
     .single();
   if (orderError || !order) return jsonResponse({ error: "Order not found." }, 404);
@@ -116,8 +121,15 @@ Deno.serve(async (req: Request) => {
   const orderRow = order as OrderRow;
   const orderLines = (lines ?? []) as OrderLine[];
   const coupons = (couponRows ?? []) as CouponLine[];
-  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes, coupons });
-  const text = buildInvoiceText({ order: orderRow, lines: orderLines, coupons });
+  // "Confirm shipping address" CTA — only while the buyer hasn't confirmed yet
+  // (migration 041). Lands on the /track confirm card via the #confirm-address
+  // anchor; the token is the same one the payment CTA already uses.
+  const shipConfirmedAt = (order as { ship_confirmed_at?: string | null }).ship_confirmed_at ?? null;
+  const confirmShippingUrl = order.lookup_token && !shipConfirmedAt
+    ? `${SITE_BASE}/track?t=${order.lookup_token}#confirm-address`
+    : undefined;
+  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes, coupons, confirmShippingUrl });
+  const text = buildInvoiceText({ order: orderRow, lines: orderLines, coupons, confirmShippingUrl });
   const result = await sendResendEmail({ to: order.buyer_contact, subject: invoiceSubject(order), html, text });
 
   if (!result.ok) {

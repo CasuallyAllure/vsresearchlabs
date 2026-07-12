@@ -33,6 +33,10 @@ import { useProducts, useProductAdmin } from '../../hooks/useProducts';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
 import { useConfirm } from '../../components/admin/ConfirmModal';
+import { downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
+import { INVENTORY_COLUMNS, buildInventoryRows, type StockLike } from '../../lib/inventorySheet';
+import { effectiveTierPriceCents } from '../../lib/pricing';
+import { useProductOverrides } from '../../lib/productOverrides';
 
 const products = productsData as unknown as Product[];
 
@@ -74,6 +78,17 @@ interface StockRow {
   video_thumbnail: string | null;
 }
 
+/** Per-dose override row (product_variant_stock) — for the export sheet only. */
+interface VariantRow {
+  sku: string;
+  dose: string;
+  on_hand: number;
+  reorder_at: number | null;
+  price_cents: number | null;
+  cost_cents: number | null;
+  lead_days: number | null;
+}
+
 type AdjustReason =
   | 'manual_adjustment'
   | 'physical_count'
@@ -107,8 +122,28 @@ function displayNameFor(sku: string): string {
 
 type StatusFilter = 'visible' | 'hidden' | 'deleted' | 'all';
 
+/** Shared writer for inline per-dose edits — routes through the same
+ *  `import_inventory` RPC as the bulk CSV import (admin-gated, security
+ *  definer, audit-logged). `dose` may be '' to target `product_stock`
+ *  instead of `product_variant_stock`. Only the keys present in `patch`
+ *  are written; everything else is left untouched. */
+async function writeInventory(
+  sku: string,
+  dose: string,
+  patch: { price_cents?: number; on_hand?: number },
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (!supabase) return { ok: false, message: 'Backend not configured' };
+  const row: Record<string, string | number> = { sku, dose };
+  if (patch.price_cents != null) row.price_cents = patch.price_cents;
+  if (patch.on_hand != null) row.on_hand = patch.on_hand;
+  const { error } = await supabase.rpc('import_inventory', { p_rows: [row] });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
+}
+
 export function AdminInventory() {
   const [rows, setRows] = useState<StockRow[] | null>(null);
+  const [variantBySku, setVariantBySku] = useState<Record<string, Record<string, VariantRow>>>({});
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('visible');
@@ -157,12 +192,27 @@ export function AdminInventory() {
       } else {
         setRows(data as StockRow[]);
       }
+
+      // Per-dose overrides (migration 011). Optional — older DBs lack the table.
+      const { data: vData } = await supabase
+        .from('product_variant_stock')
+        .select('sku, dose, on_hand, reorder_at, price_cents, cost_cents, lead_days');
+      if (cancelled) return;
+      const vmap: Record<string, Record<string, VariantRow>> = {};
+      for (const r of (vData ?? []) as VariantRow[]) (vmap[r.sku] ??= {})[r.dose] = r;
+      setVariantBySku(vmap);
     }
     load();
     return () => {
       cancelled = true;
     };
   }, [refreshCounter]);
+
+  const stockBySku = useMemo<Record<string, StockLike>>(() => {
+    const map: Record<string, StockLike> = {};
+    for (const r of rows ?? []) map[r.sku] = r;
+    return map;
+  }, [rows]);
 
   const filtered = useMemo(() => {
     if (!rows) return [];
@@ -221,6 +271,24 @@ export function AdminInventory() {
     setRefreshCounter((c) => c + 1);
   }
 
+  /** Inline per-dose price/stock edit → write, refetch, and nudge the
+   *  storefront's override cache so the change is visible immediately. */
+  async function saveInventoryField(
+    sku: string,
+    dose: string,
+    patch: { price_cents?: number; on_hand?: number },
+  ): Promise<{ ok: boolean; message?: string }> {
+    const result = await writeInventory(sku, dose, patch);
+    if (!result.ok) return { ok: false, message: result.message };
+    setRefreshCounter((c) => c + 1);
+    try {
+      await useProductOverrides.getState().reload();
+    } catch {
+      /* storefront refreshes on its own cadence */
+    }
+    return { ok: true };
+  }
+
   // ── Catalog tools (folded in from the old Catalog tab) ────────────────────
 
   function collectSeedSkus(): string[] {
@@ -268,6 +336,16 @@ export function AdminInventory() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  // Export the same sheet AdminImport downloads, but with price_usd pre-filled
+  // with the current live price — edit in Excel, then re-upload via Import to
+  // push the new prices live.
+  function exportSheet(kind: 'csv' | 'xlsx') {
+    const sheetRows = buildInventoryRows({ products: catalogProducts, stockBySku, variantBySku, fillPrice: true });
+    const fname = `vsr-inventory-${stamp(new Date())}`;
+    if (kind === 'xlsx') downloadXlsx(fname, 'Inventory', INVENTORY_COLUMNS, sheetRows);
+    else downloadCsv(fname, INVENTORY_COLUMNS, sheetRows);
   }
 
   function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -329,6 +407,8 @@ export function AdminInventory() {
               </ToolButton>
               <ToolButton onClick={() => fileInputRef.current?.click()}>Import JSON</ToolButton>
               <ToolButton onClick={handleExport}>Export JSON</ToolButton>
+              <ToolButton onClick={() => exportSheet('csv')} disabled={rows === null}>Export CSV</ToolButton>
+              <ToolButton onClick={() => exportSheet('xlsx')} disabled={rows === null}>Export Excel</ToolButton>
               <ToolButton onClick={handleReset} danger>Reset to seed</ToolButton>
               <input
                 ref={fileInputRef}
@@ -398,81 +478,116 @@ export function AdminInventory() {
               <tr className="border-b border-ink/[0.10]">
                 <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">SKU</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Product</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[80px]">On hand</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Price</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[70px]">Dose</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[92px]">On hand</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[110px]">Price</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Status</th>
                 <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[380px]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row) => {
+              {filtered.flatMap((row) => {
                 const status = row.deleted_at ? 'deleted' : row.hidden ? 'hidden' : 'active';
                 const busy = busySku === row.sku;
-                return (
-                  <tr key={row.sku} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
-                    <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11.5px] text-holo-light/80">
-                      {row.sku}
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
-                      <span className="inline-flex items-center gap-1.5">
-                        {displayNameFor(row.sku)}
-                        {row.video_url && (
-                          <span
-                            title="Cited clip attached"
-                            className="inline-flex items-center justify-center h-[15px] px-1 rounded-[3px] bg-holo/10 border border-holo/30 font-mono text-[8px] uppercase tracking-[0.1em] text-holo"
-                          >
-                            ▶ clip
-                          </span>
-                        )}
-                      </span>
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[12px] tabular-nums">
-                      <span className={row.on_hand === 0 ? 'text-red-400/85' : 'text-ink'}>{row.on_hand}</span>
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums">
-                      {row.price_cents_override !== null ? (
-                        <span className="text-ink">${(row.price_cents_override / 100).toFixed(2)}</span>
-                      ) : (
-                        <span className="text-ink/35">base</span>
+                const disabled = busy || status === 'deleted';
+                const product = catalogProducts.find((p) => p.sku === row.sku);
+                const doses = product?.variants?.length ? product.variants.map((v) => v.dose) : [''];
+
+                return doses.map((dose, doseIdx) => {
+                  const isFirst = doseIdx === 0;
+                  const variant = row.sku && dose ? variantBySku[row.sku]?.[dose] : undefined;
+                  const onHandValue = dose ? (variant?.on_hand ?? null) : row.on_hand;
+                  const setCents = dose ? (variant?.price_cents ?? null) : row.price_cents_override;
+                  const formulaCents = product ? effectiveTierPriceCents(product, dose) : null;
+                  const displayCents = setCents != null ? setCents : formulaCents;
+                  const priceIsAuto = setCents == null && formulaCents != null;
+
+                  return (
+                    <tr key={`${row.sku}::${dose}::${doseIdx}`} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
+                      {isFirst && (
+                        <td rowSpan={doses.length} className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11.5px] text-holo-light/80">
+                          {row.sku}
+                        </td>
                       )}
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center">
-                      <StatusChip status={status} />
-                    </td>
-                    <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {idBySku.has(row.sku) && (
-                          <Link
-                            to={`/admin/${idBySku.get(row.sku)}/edit`}
-                            title="Edit product details"
-                            className="rounded-full border border-ink/15 bg-ink/[0.03] px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                          >
-                            Edit
-                          </Link>
-                        )}
-                        <ActionButton onClick={() => setAdjustingSku(row.sku)} disabled={busy || status === 'deleted'} title="Adjust stock">
-                          Stock
-                        </ActionButton>
-                        <ActionButton onClick={() => setPricingSku(row.sku)} disabled={busy} title="Set price override">
-                          Price
-                        </ActionButton>
-                        <ActionButton onClick={() => setClippingSku(row.sku)} disabled={busy} title="Attach a cited clip">
-                          Clip
-                        </ActionButton>
-                        <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
-                          {row.hidden ? 'Show' : 'Hide'}
-                        </ActionButton>
-                        <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
-                          {row.deleted_at ? 'Restore' : 'Delete'}
-                        </ActionButton>
-                      </div>
-                    </td>
-                  </tr>
-                );
+                      {isFirst && (
+                        <td rowSpan={doses.length} className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
+                          <span className="inline-flex items-center gap-1.5">
+                            {displayNameFor(row.sku)}
+                            {row.video_url && (
+                              <span
+                                title="Cited clip attached"
+                                className="inline-flex items-center justify-center h-[15px] px-1 rounded-[3px] bg-holo/10 border border-holo/30 font-mono text-[8px] uppercase tracking-[0.1em] text-holo"
+                              >
+                                ▶ clip
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                      )}
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center font-mono text-[11px] text-ink/55">
+                        {dose || '—'}
+                      </td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right">
+                        <EditableNumberCell
+                          value={onHandValue}
+                          kind="stock"
+                          disabled={disabled}
+                          ariaLabel={`On hand for ${row.sku} ${dose || 'base'}`}
+                          onSave={(n) => saveInventoryField(row.sku, dose, { on_hand: n })}
+                        />
+                      </td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right">
+                        <EditableNumberCell
+                          value={displayCents}
+                          kind="price"
+                          muted={priceIsAuto}
+                          disabled={disabled}
+                          ariaLabel={`Price for ${row.sku} ${dose || 'base'}`}
+                          onSave={(n) => saveInventoryField(row.sku, dose, { price_cents: n })}
+                        />
+                      </td>
+                      {isFirst && (
+                        <td rowSpan={doses.length} className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center">
+                          <StatusChip status={status} />
+                        </td>
+                      )}
+                      {isFirst && (
+                        <td rowSpan={doses.length} className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {idBySku.has(row.sku) && (
+                              <Link
+                                to={`/admin/${idBySku.get(row.sku)}/edit`}
+                                title="Edit product details"
+                                className="rounded-full border border-ink/15 bg-ink/[0.03] px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                              >
+                                Edit
+                              </Link>
+                            )}
+                            <ActionButton onClick={() => setAdjustingSku(row.sku)} disabled={busy || status === 'deleted'} title="Adjust stock">
+                              Stock
+                            </ActionButton>
+                            <ActionButton onClick={() => setPricingSku(row.sku)} disabled={busy} title="Set price override">
+                              Price
+                            </ActionButton>
+                            <ActionButton onClick={() => setClippingSku(row.sku)} disabled={busy} title="Attach a cited clip">
+                              Clip
+                            </ActionButton>
+                            <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
+                              {row.hidden ? 'Show' : 'Hide'}
+                            </ActionButton>
+                            <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
+                              {row.deleted_at ? 'Restore' : 'Delete'}
+                            </ActionButton>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                });
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-[var(--space-6)] text-center text-[12px] text-ink/40">
+                  <td colSpan={7} className="py-[var(--space-6)] text-center text-[12px] text-ink/40">
                     No matches.
                   </td>
                 </tr>
@@ -512,6 +627,113 @@ export function AdminInventory() {
 }
 
 // ── Small components ────────────────────────────────────────────────────────
+
+type EditableNumberKind = 'price' | 'stock';
+
+/** value is in the same unit `writeInventory` expects: cents for 'price',
+ *  a plain unit count for 'stock'. Formats/parses dollars for 'price'. */
+function formatEditableValue(value: number | null, kind: EditableNumberKind): string {
+  if (value == null) return '';
+  return kind === 'price' ? (value / 100).toFixed(2) : String(value);
+}
+
+/** Returns the parsed native value, or null when the draft is empty,
+ *  not a number, or negative (all treated as "don't save"). */
+function parseEditableValue(draft: string, kind: EditableNumberKind): number | null {
+  const trimmed = draft.trim();
+  if (trimmed === '') return null;
+  const parsed = kind === 'price' ? Math.round(parseFloat(trimmed) * 100) : parseInt(trimmed, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
+interface EditableNumberCellProps {
+  /** Current value in native units (cents for price, count for stock), or
+   *  null when nothing is set yet. */
+  value: number | null;
+  kind: EditableNumberKind;
+  /** True when `value` is only a formula placeholder, not a real set price. */
+  muted?: boolean;
+  disabled?: boolean;
+  ariaLabel: string;
+  onSave: (value: number) => Promise<{ ok: boolean; message?: string }>;
+}
+
+/** Inline-editable number cell — draft state seeded from `value`, saved on
+ *  Enter or blur only when the parsed value actually changed. Used for both
+ *  per-dose on-hand and price edits in the inventory table. */
+function EditableNumberCell({ value, kind, muted, disabled, ariaLabel, onSave }: EditableNumberCellProps) {
+  const [draft, setDraft] = useState(() => formatEditableValue(value, kind));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const lastValueRef = useRef(value);
+
+  // Reflect an externally-updated value (e.g. a refetch) into the draft,
+  // but only when it actually changed — never clobber an in-progress edit.
+  useEffect(() => {
+    if (lastValueRef.current !== value) {
+      lastValueRef.current = value;
+      setDraft(formatEditableValue(value, kind));
+    }
+  }, [value, kind]);
+
+  async function commit() {
+    const parsed = parseEditableValue(draft, kind);
+    if (parsed === null || parsed === value) {
+      setDraft(formatEditableValue(value, kind));
+      return;
+    }
+    setSaving(true);
+    setErrorMsg(null);
+    const result = await onSave(parsed);
+    setSaving(false);
+    if (!result.ok) {
+      setErrorMsg(result.message ?? 'Save failed');
+      setDraft(formatEditableValue(value, kind));
+      return;
+    }
+    lastValueRef.current = parsed;
+    setDraft(formatEditableValue(parsed, kind));
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1500);
+  }
+
+  return (
+    <div className="inline-flex flex-col items-end gap-0.5">
+      <input
+        type="number"
+        inputMode={kind === 'price' ? 'decimal' : 'numeric'}
+        step={kind === 'price' ? '0.01' : '1'}
+        min="0"
+        aria-label={ariaLabel}
+        title={muted ? 'Formula placeholder — saving sets a real price' : undefined}
+        value={draft}
+        disabled={disabled || saving}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        placeholder="—"
+        className={[
+          'w-[80px] rounded-sm border bg-base-700 px-1.5 py-1 text-right font-mono text-[11.5px] tabular-nums',
+          'focus:outline-none focus:border-ink/40 transition-colors',
+          'disabled:opacity-40 disabled:cursor-not-allowed',
+          muted ? 'border-ink/[0.06] text-ink/45 italic' : 'border-ink/10 text-ink',
+        ].join(' ')}
+      />
+      {muted && !errorMsg && (
+        <span className="text-[8.5px] uppercase tracking-[0.14em] text-ink/35">auto</span>
+      )}
+      {saved && <span className="text-[8.5px] uppercase tracking-[0.14em] text-[#2E7D5B]">saved</span>}
+      {errorMsg && <span role="alert" className="max-w-[110px] text-right text-[9.5px] leading-tight text-red-400/85">{errorMsg}</span>}
+    </div>
+  );
+}
 
 function StatusChip({ status }: { status: 'active' | 'hidden' | 'deleted' }) {
   const cls =

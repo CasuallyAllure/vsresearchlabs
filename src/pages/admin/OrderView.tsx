@@ -33,6 +33,7 @@ import { useConfirm } from '../../components/admin/ConfirmModal';
 import { siteConfig } from '../../config';
 import { PAYMENT_CONFIG } from '../../lib/payment';
 import { AdminCouponPicker } from './AdminCouponPicker';
+import { allocateLineDiscounts } from '../../lib/lineDiscounts';
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -84,6 +85,7 @@ interface OrderRecord {
   ship_state: string | null;
   ship_zip: string | null;
   ship_country: string | null;
+  ship_confirmed_at: string | null;
   invoiced_at: string | null;
   payment_claimed_at: string | null;
   paid_at: string | null;
@@ -114,7 +116,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token';
+  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -185,6 +187,10 @@ export function OrderView({
   const [editing, setEditing] = useState(false);
   const [editWarn, setEditWarn] = useState<string | null>(null);
   const [pendingSend, setPendingSend] = useState(false);
+  // Itemized coupons — powers both the per-line discount breakdown below and
+  // the printable invoice's "Discounts applied" block, so both read from the
+  // same fetch instead of loading it twice.
+  const [coupons, setCoupons] = useState<InvoiceCoupon[]>([]);
   // In-app confirmation. Native window.confirm()/prompt() are unreliable on
   // mobile — iOS silently suppresses them once the user taps "Block Alerts" —
   // which made "Mark shipped" (and other confirmed actions) do nothing. This
@@ -212,6 +218,16 @@ export function OrderView({
     }
     load();
     return () => { cancelled = true; };
+  }, [orderId, refreshKey]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    void supabase
+      .from('order_coupons')
+      .select('code, kind, free_label, percent, amount_cents, discount_cents')
+      .eq('order_id', orderId)
+      .order('created_at')
+      .then(({ data }) => { if (data) setCoupons(data as InvoiceCoupon[]); });
   }, [orderId, refreshKey]);
 
   const reload = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -295,6 +311,10 @@ export function OrderView({
   const total = order.invoice_amount_cents ?? (computedSub + shipping);
   // A total below subtotal+shipping is an applied discount — surface it.
   const discount = Math.max(0, computedSub + shipping - total);
+  // Per-line discount allocation (render-time only — the stored per-coupon
+  // discount_cents is authoritative; this just splits it across lines).
+  const retailUnits = lines.map((l) => unitOf(l) ?? 0);
+  const perLineDiscount = allocateLineDiscounts(lines, retailUnits, coupons);
   // Compiled track-record for "send with notes".
   const orderNotesText = events.map((e) => `${fmtDateShort(e.created_at)} — ${e.note ?? ''}`).join('\n');
 
@@ -321,6 +341,9 @@ export function OrderView({
               {order.ship_country && <><br />{order.ship_country}</>}
             </p>
           )}
+          <div className="mt-1.5">
+            <ShipConfirmationChip order={order} />
+          </div>
         </div>
         <div className="flex-1 text-right">
           <dl className="ml-auto inline-grid grid-cols-[auto_auto] gap-x-[var(--space-4)] gap-y-1 text-[12px]">
@@ -363,9 +386,14 @@ export function OrderView({
         />
       ) : (
         <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
-          {lines.map((l) => {
+          {lines.map((l, i) => {
             const u = unitOf(l);
             const lt = lineTotal(l);
+            const d = perLineDiscount[i];
+            const retailUnit = retailUnits[i];
+            const retailTotal = retailUnit * l.quantity;
+            const discTotal = retailTotal - d;
+            const discUnit = l.quantity > 0 ? Math.round(discTotal / l.quantity) : discTotal;
             return (
               <li key={l.id} className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]">
                 <div className="min-w-0">
@@ -376,10 +404,15 @@ export function OrderView({
                   <p className="truncate font-mono text-[10px] text-holo-light/70">
                     {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
                   </p>
+                  {d > 0 && <p className="font-mono text-[10px] text-holo/80">−{fmtUSD(d)}</p>}
                 </div>
                 <div className="shrink-0 text-right font-mono tabular-nums">
-                  <p className="text-[10.5px] text-ink/50">{l.quantity} × {u == null ? '—' : fmtUSD(u)}</p>
-                  <p className="text-[12.5px] text-ink/85">{lt == null ? '—' : fmtUSD(lt)}</p>
+                  <p className="text-[10.5px] text-ink/50">
+                    {l.quantity} × {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailUnit)}</s> {fmtUSD(discUnit)}</> : fmtUSD(u))}
+                  </p>
+                  <p className="text-[12.5px] text-ink/85">
+                    {lt == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailTotal)}</s> {fmtUSD(discTotal)}</> : fmtUSD(lt))}
+                  </p>
                 </div>
               </li>
             );
@@ -503,7 +536,7 @@ export function OrderView({
 
       {showInvoice && (
         <PrintableInvoice
-          order={order} lines={lines} events={events}
+          order={order} lines={lines} events={events} coupons={coupons}
           computedSub={computedSub} shipping={shipping} discount={discount} total={total}
           onClose={() => setShowInvoice(false)}
         />
@@ -821,9 +854,9 @@ function invoiceCouponLabel(c: InvoiceCoupon): string {
 }
 
 function PrintableInvoice({
-  order, lines, events, computedSub, shipping, discount, total, onClose,
+  order, lines, events, coupons, computedSub, shipping, discount, total, onClose,
 }: {
-  order: OrderRecord; lines: OrderLine[]; events: OrderEvent[];
+  order: OrderRecord; lines: OrderLine[]; events: OrderEvent[]; coupons: InvoiceCoupon[];
   computedSub: number; shipping: number; discount: number; total: number; onClose: () => void;
 }) {
   useEffect(() => {
@@ -832,18 +865,12 @@ function PrintableInvoice({
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Itemized coupons for the top "Discounts applied" block — mirrors the emailed
-  // invoice + the /track doc so all three surfaces read identically.
-  const [coupons, setCoupons] = useState<InvoiceCoupon[]>([]);
-  useEffect(() => {
-    if (!supabase) return;
-    void supabase
-      .from('order_coupons')
-      .select('code, kind, free_label, percent, amount_cents, discount_cents')
-      .eq('order_id', order.id)
-      .order('created_at')
-      .then(({ data }) => { if (data) setCoupons(data as InvoiceCoupon[]); });
-  }, [order.id]);
+  // Per-line discount allocation (render-time only — the stored per-coupon
+  // discount_cents is authoritative; this just splits it across lines).
+  // Mirrors the emailed invoice + the /track doc so all three surfaces read
+  // identically.
+  const retailUnits = lines.map((l) => unitOf(l) ?? 0);
+  const perLineDiscount = allocateLineDiscounts(lines, retailUnits, coupons);
 
   return (
     <>
@@ -925,18 +952,28 @@ function PrintableInvoice({
                 </tr>
               </thead>
               <tbody>
-                {lines.map((l) => {
+                {lines.map((l, i) => {
                   const u = unitOf(l);
+                  const d = perLineDiscount[i];
+                  const retailUnit = retailUnits[i];
+                  const retailTotal = retailUnit * l.quantity;
+                  const discTotal = retailTotal - d;
+                  const discUnit = l.quantity > 0 ? Math.round(discTotal / l.quantity) : discTotal;
                   return (
                     <tr key={l.id} className="border-b border-[#1A1714]/[0.08]">
                       <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
                       <td className="py-2 pr-3 text-[12px] text-[#1A1714]">
                         {l.product_name}
                         {l.fast_ship && <span className="ml-1.5 rounded-sm bg-[#B5904B]/12 px-1 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#8C6A2F]">Fast ship</span>}
+                        {d > 0 && <span className="block text-[10.5px] text-[#34727A]">−{fmtUSD(d)}</span>}
                       </td>
                       <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
-                      <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">{u == null ? '—' : fmtUSD(u)}</td>
-                      <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{u == null ? '—' : fmtUSD(u * l.quantity)}</td>
+                      <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">
+                        {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailUnit)}</s> {fmtUSD(discUnit)}</> : fmtUSD(u))}
+                      </td>
+                      <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">
+                        {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailTotal)}</s> {fmtUSD(discTotal)}</> : fmtUSD(retailTotal))}
+                      </td>
                     </tr>
                   );
                 })}
@@ -983,6 +1020,27 @@ function PrintableInvoice({
 }
 
 /* ── Small UI bits ────────────────────────────────────────────────────────── */
+
+/** Ship-to confirmation state chip — mirrors the OrderStatusChip idiom.
+ *  Confirmed (buyer double-confirmed on /track) reads green; an address that
+ *  exists but was never confirmed reads muted; no address at all tells the
+ *  admin the buyer still owes it. */
+function ShipConfirmationChip({ order }: { order: OrderRecord }) {
+  const base = 'inline-block shrink-0 rounded-sm border px-2 py-0.5 text-[9px] uppercase tracking-[0.16em]';
+  if (order.ship_confirmed_at) {
+    return (
+      <span className={`${base} border-[#2E7D5B]/40 bg-[#2E7D5B]/[0.06] text-[#2E7D5B]/90`}>
+        Address confirmed ✓
+      </span>
+    );
+  }
+  const hasAddress = !!(order.ship_street || order.ship_city || order.ship_state || order.ship_zip || order.ship_country);
+  return (
+    <span className={`${base} border-ink/15 bg-ink/[0.02] text-ink/50`}>
+      {hasAddress ? 'Awaiting confirmation' : 'No address — buyer will confirm'}
+    </span>
+  );
+}
 
 const fieldCls =
   'w-full rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none';

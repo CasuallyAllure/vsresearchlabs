@@ -167,7 +167,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                     letterSpacing: '0.14em',
                     backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                     color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
-                    borderColor: isActive ? '#1A1714' : 'rgba(26,23,20,0.12)',
+                    borderColor: isActive ? 'var(--color-content-primary)' : 'rgb(var(--c-ink) / 0.12)',
                   }}
                 >
                   {doseTxt}
@@ -198,12 +198,14 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             onClick={handleAdd}
             disabled={!stocked}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-            className="shrink-0 rounded-full px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: added ? 'rgba(140,144,148,0.16)' : 'rgba(26,23,20,0.05)',
-              border: added ? '1px solid rgba(140,144,148,0.45)' : '1px solid rgba(26,23,20,0.14)',
-              color: added ? '#868A90' : 'rgba(26,23,20,0.78)',
-            }}
+            className={[
+              'shrink-0 rounded-full border px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              // Theme-bound ink tokens (silver in dark mode) — never hardcode the
+              // near-black ink hex here or the label goes invisible on dark.
+              added
+                ? 'bg-[#868A90]/[0.16] border-[#868A90]/45 text-[#868A90]'
+                : 'bg-ink/[0.05] border-ink/[0.14] text-ink/[0.78] hover:bg-ink/[0.09] hover:text-ink',
+            ].join(' ')}
           >
             {added ? '✓' : '+ Add'}
           </button>

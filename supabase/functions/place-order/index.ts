@@ -50,6 +50,7 @@ import {
   invoiceSubject,
   type OrderRow,
   type OrderLine,
+  type CouponLine,
 } from "../_shared/invoiceEmail.ts";
 
 // ---------------------------------------------------------------------------
@@ -909,11 +910,30 @@ Deno.serve(async (req: Request) => {
           item_note: i.note ?? null,
           fast_ship: typeof i.fast === "boolean" ? i.fast : null,
         }));
+        // Surface the checkout discount on the buyer's FIRST invoice: synthesize
+        // one coupon line so the "Discounts applied" block + per-line "was $X,
+        // now $Y" render, footing exactly to orders.discount_cents. A percent
+        // coupon shows as the concrete applied amount here (validate_coupon only
+        // returns the computed cents); admin re-sends render the itemized codes.
+        // Free-item coupons carry discountCents === 0 → excluded (they already
+        // appear as their own $0 "FREE" line). Rollback nulls appliedCoupon, so
+        // a rolled-back coupon yields no line.
+        const invoiceCoupons: CouponLine[] | undefined =
+          appliedCoupon && discountCents > 0
+            ? [{
+                code: appliedCoupon,
+                kind: "fixed",
+                free_label: null,
+                percent: null,
+                amount_cents: discountCents,
+                discount_cents: discountCents,
+              }]
+            : undefined;
         const invRes = await sendResendEmail({
           to: contact,
           subject: invoiceSubject(invOrder),
-          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines }),
-          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines }),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines, coupons: invoiceCoupons }),
+          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines, coupons: invoiceCoupons }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;

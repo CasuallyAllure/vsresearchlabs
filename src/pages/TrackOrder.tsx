@@ -35,6 +35,7 @@ import type { Product } from '../types';
 import { tierPriceCents } from '../lib/pricing';
 import { siteConfig } from '../config';
 import { Button } from '../components/ui/Button';
+import { allocateLineDiscounts } from '../lib/lineDiscounts';
 
 /** SKU → catalog product, to resolve a unit price when a line has none stored. */
 const productBySku = new Map<string, Product>();
@@ -86,6 +87,13 @@ type InvoiceState =
   | { kind: 'missing' }
   | { kind: 'error'; message: string };
 
+/** Order states where the shipping address can still be (re)confirmed. Once
+ *  the order ships (fulfilled/shipped/delivered) or dies (cancelled/refunded)
+ *  the confirm card disappears. */
+function canConfirmAddress(status: string): boolean {
+  return !['cancelled', 'refunded', 'fulfilled', 'shipped', 'delivered'].includes(status);
+}
+
 function InvoiceByToken({ token, justClaimed = false }: { token: string; justClaimed?: boolean }) {
   const [state, setState] = useState<InvoiceState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
@@ -135,6 +143,11 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
   // the buyer's primary focus. Before that we still render it as "awaiting
   // tracking" so the buyer knows where to look.
   const inTransit = pres.step >= 4;
+
+  // Per-line discount allocation (render-time only — the stored per-coupon
+  // discount_cents is authoritative; this just splits it across lines).
+  const retailUnits = o.lines.map((l) => unitOf(l) ?? 0);
+  const perLineDiscount = allocateLineDiscounts(o.lines, retailUnits, o.coupons ?? []);
 
   return (
     <>
@@ -214,6 +227,15 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
           </ol>
         )}
       </article>
+
+      {/* ── Shipping address double-confirm ──────────────────────────── */}
+      {canConfirmAddress(o.status) && (
+        <ConfirmAddressCard
+          token={token}
+          invoice={o}
+          onConfirmed={(next) => setState({ kind: 'ok', invoice: next })}
+        />
+      )}
 
       {/* ── Tracking module — dedicated card, always present ─────────── */}
       {!isHandDelivered && (
@@ -298,6 +320,11 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
           {o.lines.map((l, i) => {
             const u = unitOf(l);
+            const d = perLineDiscount[i];
+            const retailUnit = retailUnits[i];
+            const retailTotal = retailUnit * l.quantity;
+            const discTotal = retailTotal - d;
+            const discUnit = l.quantity > 0 ? Math.round(discTotal / l.quantity) : discTotal;
             return (
               <li
                 key={`${l.sku}-${i}`}
@@ -309,13 +336,14 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
                     {l.sku}
                     {l.item_note ? ` · ${l.item_note}` : ''}
                   </p>
+                  {d > 0 && <p className="font-mono text-[10px] text-holo/80">−{fmtUSD(d)}</p>}
                 </div>
                 <div className="shrink-0 text-right font-mono tabular-nums">
                   <p className="text-[10.5px] text-ink/50">
-                    {l.quantity} × {fmtUSD(u)}
+                    {l.quantity} × {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailUnit)}</s> {fmtUSD(discUnit)}</> : fmtUSD(u))}
                   </p>
                   <p className="text-[12.5px] text-ink/85">
-                    {fmtUSD(u == null ? null : u * l.quantity)}
+                    {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailTotal)}</s> {fmtUSD(discTotal)}</> : fmtUSD(retailTotal))}
                   </p>
                 </div>
               </li>
@@ -348,6 +376,273 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
   );
 }
 
+/* ── Shipping address double-confirm ────────────────────────────────────────── */
+
+const addressFieldCls =
+  'w-full rounded-sm border border-ink/15 bg-base-800 px-[var(--space-3)] py-[var(--space-3)] text-[14px] text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/40 transition-colors';
+const addressLabelCls =
+  'block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]';
+
+interface ConfirmShippingResult {
+  ok: boolean;
+  reason?: string;
+  order_number?: string;
+  ship_confirmed_at?: string;
+}
+
+type ConfirmStep = 'closed' | 'form' | 'review';
+
+/**
+ * ConfirmAddressCard — the buyer double-confirms the shipping address.
+ *
+ * Two explicit steps by design: step 1 collects/edits the address, step 2
+ * renders it back verbatim with the non-returnable disclaimer, and only the
+ * second click calls `confirm_order_shipping`. Re-confirming overwrites, so
+ * a confirmed order shows a quiet state with an "Update address" reopener.
+ */
+function ConfirmAddressCard({
+  token, invoice, onConfirmed,
+}: {
+  token: string;
+  invoice: OrderInvoice;
+  onConfirmed: (next: OrderInvoice) => void;
+}) {
+  const confirmed = !!invoice.ship_confirmed_at;
+  const [step, setStep] = useState<ConfirmStep>(confirmed ? 'closed' : 'form');
+  const [street, setStreet] = useState(invoice.ship_street ?? '');
+  const [city, setCity] = useState(invoice.ship_city ?? '');
+  const [stateRegion, setStateRegion] = useState(invoice.ship_state ?? '');
+  const [zip, setZip] = useState(invoice.ship_zip ?? '');
+  const [country, setCountry] = useState(invoice.ship_country ?? 'US');
+  const [touched, setTouched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [justConfirmed, setJustConfirmed] = useState(false);
+
+  const streetOk = street.trim().length > 0;
+  const cityOk = city.trim().length > 0;
+  const zipOk = zip.trim().length > 0;
+  const countryOk = country.trim().length > 0;
+  const formOk = streetOk && cityOk && zipOk && countryOk;
+
+  const confirmedDate = formatDate(invoice.ship_confirmed_at);
+
+  function toReview() {
+    setTouched(true);
+    setError(null);
+    if (!formOk) return;
+    setStep('review');
+  }
+
+  async function confirmShipping() {
+    setError(null);
+    if (!supabase) {
+      setError('Address confirmation is temporarily unavailable — please try again shortly.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data, error: rpcError } = await supabase.rpc('confirm_order_shipping', {
+        p_token: token,
+        p_street: street.trim(),
+        p_city: city.trim(),
+        p_state: stateRegion.trim(),
+        p_zip: zip.trim(),
+        p_country: country.trim(),
+      });
+      if (rpcError) throw rpcError;
+      const result = (data ?? {}) as ConfirmShippingResult;
+      if (!result.ok) {
+        setError(result.reason ?? 'We could not confirm this address. Please try again.');
+        return;
+      }
+      onConfirmed({
+        ...invoice,
+        ship_street: street.trim(),
+        ship_city: city.trim(),
+        ship_state: stateRegion.trim() || null,
+        ship_zip: zip.trim(),
+        ship_country: country.trim(),
+        ship_confirmed_at: result.ship_confirmed_at ?? new Date().toISOString(),
+      });
+      setJustConfirmed(true);
+      setStep('closed');
+    } catch {
+      setError('Something went wrong sending your confirmation — check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  /* Quiet confirmed state — address on record + reopener. */
+  if (step === 'closed') {
+    return (
+      <article id="confirm-address" className="research-surface-solid scroll-mt-24 p-[var(--space-5)] mb-[var(--space-4)]">
+        <div className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-2 mb-[var(--space-3)]">
+          <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35">
+            Shipping address
+          </p>
+          <span className="rounded-sm border border-[#2E7D5B]/40 bg-[#2E7D5B]/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.16em] text-[#2E7D5B]/90">
+            Address confirmed{confirmedDate ? ` · ${confirmedDate}` : ''}
+          </span>
+        </div>
+        {justConfirmed && (
+          <p className="mb-[var(--space-3)] text-[12.5px] text-ink/75">
+            Thank you — your order will ship to the address below.
+          </p>
+        )}
+        <p className="text-[13px] leading-relaxed text-ink/80">
+          {invoice.ship_street}<br />
+          {[invoice.ship_city, invoice.ship_state, invoice.ship_zip].filter(Boolean).join(', ')}<br />
+          {invoice.ship_country}
+        </p>
+        <button
+          type="button"
+          onClick={() => { setJustConfirmed(false); setStep('form'); }}
+          className="mt-[var(--space-3)] text-[11px] uppercase tracking-[0.16em] text-holo-light underline underline-offset-2 hover:text-holo transition-colors"
+        >
+          Update address
+        </button>
+      </article>
+    );
+  }
+
+  /* Step 2 — verbatim review + disclaimer. Only this step calls the RPC. */
+  if (step === 'review') {
+    return (
+      <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-[var(--space-5)] mb-[var(--space-4)]">
+        <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
+          Confirm shipping address · Step 2 of 2
+        </p>
+        <h2 className="text-[1.05rem] font-medium text-ink leading-snug mb-[var(--space-3)]">
+          Ship to exactly this address?
+        </h2>
+        <div className="rounded-sm border border-ink/[0.10] bg-base-800 px-[var(--space-4)] py-[var(--space-3)] mb-[var(--space-4)]">
+          <p className="text-[14px] leading-relaxed text-ink">
+            {street.trim()}<br />
+            {[city.trim(), stateRegion.trim(), zip.trim()].filter(Boolean).join(', ')}<br />
+            {country.trim()}
+          </p>
+        </div>
+        <p className="text-[12.5px] leading-relaxed text-ink/75 mb-[var(--space-4)] max-w-[58ch]">
+          Research compounds are <strong className="text-ink">non-returnable</strong>. We are{' '}
+          <strong className="text-ink">not responsible</strong> for orders sent to a wrong or
+          incomplete address you provided — no reships, no refunds for address errors.
+        </p>
+        {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
+        <div className="flex flex-col-reverse gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-end">
+          <Button variant="secondary" size="md" type="button" disabled={submitting} onClick={() => setStep('form')}>
+            ← Edit
+          </Button>
+          <Button variant="primary" size="md" type="button" disabled={submitting} onClick={confirmShipping}>
+            {submitting ? 'Confirming…' : 'Yes — ship to this address'}
+          </Button>
+        </div>
+      </article>
+    );
+  }
+
+  /* Step 1 — the address form (prominent "action needed" framing). */
+  return (
+    <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-[var(--space-5)] mb-[var(--space-4)]">
+      <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-gold mb-[var(--space-2)]">
+        {confirmed ? 'Update shipping address' : 'Action needed'}
+      </p>
+      <h2 className="text-[1.05rem] font-medium text-ink leading-snug">
+        {confirmed ? 'Update your shipping address.' : 'Confirm your shipping address.'}
+      </h2>
+      <p className="mt-1.5 mb-[var(--space-4)] text-[12.5px] leading-relaxed text-ink/65 max-w-[58ch]">
+        We ship to the address you confirm here — please double-check every line.
+        You'll review it once more before it's locked in.
+      </p>
+
+      <div className="space-y-[var(--space-4)]">
+        <div>
+          <label htmlFor="confirm-street" className={addressLabelCls}>Street address *</label>
+          <input
+            id="confirm-street"
+            type="text"
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            autoComplete="street-address"
+            placeholder="123 Main Street, Apt 4B"
+            className={addressFieldCls}
+          />
+          {touched && !streetOk && <p className="mt-1 text-[11px] text-red-400">Street address is required.</p>}
+        </div>
+        <div className="grid grid-cols-1 gap-[var(--space-3)] sm:grid-cols-[1fr_100px_140px]">
+          <div>
+            <label htmlFor="confirm-city" className={addressLabelCls}>City *</label>
+            <input
+              id="confirm-city"
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              autoComplete="address-level2"
+              placeholder="Sacramento"
+              className={addressFieldCls}
+            />
+            {touched && !cityOk && <p className="mt-1 text-[11px] text-red-400">City is required.</p>}
+          </div>
+          <div>
+            <label htmlFor="confirm-state" className={addressLabelCls}>State</label>
+            <input
+              id="confirm-state"
+              type="text"
+              value={stateRegion}
+              onChange={(e) => setStateRegion(e.target.value.toUpperCase())}
+              maxLength={2}
+              autoComplete="address-level1"
+              placeholder="CA"
+              className={`${addressFieldCls} uppercase`}
+            />
+          </div>
+          <div>
+            <label htmlFor="confirm-zip" className={addressLabelCls}>ZIP *</label>
+            <input
+              id="confirm-zip"
+              type="text"
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              autoComplete="postal-code"
+              inputMode="numeric"
+              placeholder="95814"
+              className={addressFieldCls}
+            />
+            {touched && !zipOk && <p className="mt-1 text-[11px] text-red-400">ZIP is required.</p>}
+          </div>
+        </div>
+        <div>
+          <label htmlFor="confirm-country" className={addressLabelCls}>Country *</label>
+          <input
+            id="confirm-country"
+            type="text"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            autoComplete="country"
+            placeholder="US"
+            className={addressFieldCls}
+          />
+          {touched && !countryOk && <p className="mt-1 text-[11px] text-red-400">Country is required.</p>}
+        </div>
+      </div>
+
+      {error && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
+
+      <div className="mt-[var(--space-5)] flex flex-col gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-end">
+        {confirmed && (
+          <Button variant="secondary" size="md" type="button" onClick={() => setStep('closed')}>
+            Cancel
+          </Button>
+        )}
+        <Button variant="primary" size="md" type="button" onClick={toReview}>
+          Continue — review address
+        </Button>
+      </div>
+    </article>
+  );
+}
+
 /* ── Branded printable invoice / receipt ────────────────────────────────────── */
 
 function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; docKind: 'invoice' | 'receipt'; onClose: () => void }) {
@@ -362,6 +657,10 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
   const total = o.total_cents ?? computedSub + shipping;
   const discount = Math.max(0, computedSub + shipping - total);
   const title = docKind === 'receipt' ? 'Receipt' : 'Invoice';
+  // Per-line discount allocation (render-time only — the stored per-coupon
+  // discount_cents is authoritative; this just splits it across lines).
+  const retailUnits = o.lines.map((l) => unitOf(l) ?? 0);
+  const perLineDiscount = allocateLineDiscounts(o.lines, retailUnits, o.coupons ?? []);
 
   return (
     <>
@@ -429,13 +728,26 @@ function InvoiceDoc({ invoice: o, docKind, onClose }: { invoice: OrderInvoice; d
               <tbody>
                 {o.lines.map((l, i) => {
                   const u = unitOf(l);
+                  const d = perLineDiscount[i];
+                  const retailUnit = retailUnits[i];
+                  const retailTotal = retailUnit * l.quantity;
+                  const discTotal = retailTotal - d;
+                  const discUnit = l.quantity > 0 ? Math.round(discTotal / l.quantity) : discTotal;
                   return (
                     <tr key={`${l.sku}-${i}`} className="border-b border-[#1A1714]/[0.08]">
                       <td className="py-2 pr-3 font-mono text-[11px] text-[#34727A]">{l.sku}</td>
-                      <td className="py-2 pr-3 text-[12px] text-[#1A1714]">{l.product_name}{l.item_note && <span className="block text-[10.5px] text-[#9A9186]">{l.item_note}</span>}</td>
+                      <td className="py-2 pr-3 text-[12px] text-[#1A1714]">
+                        {l.product_name}
+                        {l.item_note && <span className="block text-[10.5px] text-[#9A9186]">{l.item_note}</span>}
+                        {d > 0 && <span className="block text-[10.5px] text-[#34727A]">−{fmtUSD(d)}</span>}
+                      </td>
                       <td className="py-2 pr-3 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{l.quantity}</td>
-                      <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">{fmtUSD(u)}</td>
-                      <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">{fmtUSD(u == null ? null : u * l.quantity)}</td>
+                      <td className="py-2 pr-3 text-right font-mono text-[11.5px] tabular-nums text-[#6B635A]">
+                        {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailUnit)}</s> {fmtUSD(discUnit)}</> : fmtUSD(u))}
+                      </td>
+                      <td className="py-2 text-right font-mono text-[12px] tabular-nums text-[#1A1714]">
+                        {u == null ? '—' : (d > 0 ? <><s className="opacity-50">{fmtUSD(retailTotal)}</s> {fmtUSD(discTotal)}</> : fmtUSD(retailTotal))}
+                      </td>
                     </tr>
                   );
                 })}
