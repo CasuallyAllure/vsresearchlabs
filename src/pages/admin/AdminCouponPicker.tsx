@@ -54,8 +54,8 @@ function appliedLabel(a: AppliedCoupon): string {
 }
 
 const fieldCls =
-  'w-full rounded-[8px] border border-ink/15 bg-base-700 px-3 py-2 text-[13px] text-ink ' +
-  'focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15 disabled:opacity-60';
+  'w-full rounded-field border border-ink/12 bg-base-700 px-3 py-2 text-[13px] text-ink ' +
+  'hover:border-ink/20 focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15 disabled:opacity-60';
 
 export function AdminCouponPicker({ orderId, onChanged }: Props) {
   const [active, setActive] = useState<ActiveCoupon[]>([]);
@@ -101,7 +101,7 @@ export function AdminCouponPicker({ orderId, onChanged }: Props) {
 
   return (
     <div className="space-y-[var(--space-3)]">
-      <div className="text-[9px] uppercase tracking-[0.18em] text-ink/45">Discounts & shipping</div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-ink/45">Discounts & shipping</div>
 
       {/* Applied coupon chips */}
       {applied.length > 0 && (
@@ -133,7 +133,7 @@ export function AdminCouponPicker({ orderId, onChanged }: Props) {
 
       {/* Live money breakdown */}
       {totals && (
-        <div className="rounded-[8px] border border-ink/10 bg-base-800/40 px-3 py-2 text-[12px]">
+        <div className="rounded-[12px] border border-ink/10 bg-base-800/40 px-3 py-2 text-[12px]">
           <Row label="Subtotal" value={usd(totals.subtotal_cents)} />
           {/* One line per coupon so each reduction (incl. the free bacwater) is visible. */}
           {applied.filter((a) => a.discount_cents > 0).map((a) => (

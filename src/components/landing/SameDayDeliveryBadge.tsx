@@ -77,7 +77,7 @@ export function SameDayDeliveryBadge() {
             <span aria-hidden="true" className="pointer-events-none absolute right-1.5 bottom-1.5 h-2 w-2 border-r border-b border-holo/55" />
 
             <div className="flex items-start justify-between gap-3">
-              <p className="font-mono text-[8.5px] uppercase tracking-[0.28em] text-holo">
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-holo">
                 Same-Day Delivery Zones
               </p>
               <button
@@ -101,7 +101,7 @@ export function SameDayDeliveryBadge() {
             </ul>
 
             <div className="border-t border-holo/20 pt-2.5">
-              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/70">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/70">
                 Minimum order: <span className="text-holo font-semibold">$300</span>
               </p>
               <p className="mt-1.5 text-[10.5px] leading-relaxed text-ink/55">

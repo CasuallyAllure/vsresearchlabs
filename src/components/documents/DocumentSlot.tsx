@@ -95,11 +95,11 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
   return (
     <Link
       to={`/documentation/${document.id}`}
-      className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
+      className="block rounded-procurement focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
       aria-label={`${slot.label} for ${document.productName} — view document`}
     >
       <article
-        className="group flex items-center gap-[var(--space-4)] p-[var(--space-3)] transition-colors"
+        className="group flex items-center gap-[var(--space-4)] p-[var(--space-3)] rounded-procurement transition-colors"
         style={{
           backgroundColor: 'var(--color-interactive-secondary)',
           border: '1px solid var(--color-border-subtle)',
@@ -114,7 +114,7 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
         }}
       >
         {/* Thumbnail — small document-aspect plate */}
-        <div className="shrink-0 w-14 aspect-[3/4] overflow-hidden bg-display border border-ink/[0.09]">
+        <div className="shrink-0 w-14 aspect-[3/4] overflow-hidden rounded-[8px] bg-display border border-ink/[0.09]">
           {document.thumbnailUrl ? (
             <img
               src={document.thumbnailUrl}
@@ -124,7 +124,7 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center">
-              <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink/22">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/22">
                 {slot.abbreviation}
               </span>
             </div>
@@ -135,10 +135,10 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
         <div className="flex flex-1 min-w-0 flex-col">
           <div className="flex items-baseline gap-[var(--space-2)] flex-wrap">
             <span
-              className="font-mono text-[9px] uppercase tabular-nums tracking-[0.2em] text-ink/55"
+              className="font-mono text-[10px] uppercase tabular-nums tracking-[0.2em] text-ink/55"
               style={{
                 padding: '1px 5px',
-                borderRadius: '2px',
+                borderRadius: '9999px',
                 border: '1px solid var(--color-border-subtle)',
                 backgroundColor: 'var(--color-interactive-secondary)',
               }}
@@ -186,7 +186,7 @@ function FilledSlot({ slot, document }: { slot: SlotDef; document: Document }) {
 function EmptySlot({ slot }: { slot: SlotDef }) {
   return (
     <article
-      className="flex items-center gap-[var(--space-4)] p-[var(--space-3)]"
+      className="flex items-center gap-[var(--space-4)] p-[var(--space-3)] rounded-procurement"
       style={{
         backgroundColor: 'transparent',
         border: '1px dashed var(--color-border-subtle)',
@@ -194,8 +194,8 @@ function EmptySlot({ slot }: { slot: SlotDef }) {
       aria-label={`${slot.label} — awaiting upload`}
     >
       {/* Empty thumbnail plate */}
-      <div className="shrink-0 w-14 aspect-[3/4] flex items-center justify-center bg-display/40 border border-ink/[0.05]">
-        <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink/22">
+      <div className="shrink-0 w-14 aspect-[3/4] flex items-center justify-center rounded-[8px] bg-display/40 border border-ink/[0.05]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/22">
           {slot.abbreviation}
         </span>
       </div>
@@ -204,10 +204,10 @@ function EmptySlot({ slot }: { slot: SlotDef }) {
       <div className="flex flex-1 min-w-0 flex-col">
         <div className="flex items-baseline gap-[var(--space-2)] flex-wrap">
           <span
-            className="font-mono text-[9px] uppercase tabular-nums tracking-[0.2em] text-ink/35"
+            className="font-mono text-[10px] uppercase tabular-nums tracking-[0.2em] text-ink/35"
             style={{
               padding: '1px 5px',
-              borderRadius: '2px',
+              borderRadius: '9999px',
               border: '1px solid var(--color-border-subtle)',
               backgroundColor: 'var(--color-interactive-secondary)',
             }}
@@ -225,7 +225,7 @@ function EmptySlot({ slot }: { slot: SlotDef }) {
 
       {/* Status indicator — no action, structural only */}
       <span
-        className="shrink-0 font-mono text-[9px] uppercase tracking-[0.2em] text-ink/22"
+        className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/22"
         aria-hidden="true"
       >
         Pending

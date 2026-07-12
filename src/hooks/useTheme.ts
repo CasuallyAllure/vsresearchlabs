@@ -17,7 +17,7 @@ export type ThemeMode = 'light' | 'dark';
 
 // Must match the no-flash boot script in index.html, which cannot import this.
 const THEME_KEY = siteConfig.storage.themeKey;
-const DEFAULT_THEME: ThemeMode = 'light';
+const DEFAULT_THEME: ThemeMode = 'dark';
 
 // Page chrome color for the mobile browser UI, per mode.
 const THEME_COLOR: Record<ThemeMode, string> = {

@@ -43,3 +43,8 @@ supabase/.temp/
 # Walkthrough recording artifacts (keep the script + EDIT_PLAN, not the media)
 walkthrough/video/
 walkthrough/frames/
+
+# Playwright run artifacts
+test-results/
+playwright-report/
+blob-report/

@@ -36,7 +36,7 @@ export function QuantityStepper({
 
   return (
     <div
-      className={['flex items-center shrink-0 rounded-[2px] overflow-hidden', className ?? ''].filter(Boolean).join(' ')}
+      className={['flex items-center shrink-0 rounded-[var(--radius-field)] overflow-hidden', className ?? ''].filter(Boolean).join(' ')}
       style={{ border: '1px solid var(--color-border-default)' }}
     >
       <button

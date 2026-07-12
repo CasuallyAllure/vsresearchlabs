@@ -62,6 +62,9 @@ export function Turnstile({ onToken, className = '' }: Props) {
         widgetId = window.turnstile.render(ref.current, {
           sitekey: SITE_KEY,
           theme: 'light',
+          // Fill the host column instead of Cloudflare's fixed 300px "normal"
+          // size — the cart drawer's checkout column is ~297px on a 375px phone.
+          size: 'flexible',
           callback: (token: string) => cb.current(token),
           'expired-callback': () => cb.current(null),
           'error-callback': () => cb.current(null),

@@ -1,40 +1,49 @@
 /**
- * AccountDashboard — the signed-in customer view.
+ * AccountDashboard — the /account Overview content.
  *
- * Greets the customer, shows their membership tier, surfaces the shipping
- * address on file, and lists their orders (guest orders placed before signup
- * are claimed by email on login, so they appear here too).
+ * Greets the customer, shows their membership tier (+ account-type badge for
+ * business accounts), a reward-balance summary, active account discounts,
+ * the shipping address on file, and their 3 most recent orders (guest orders
+ * placed before signup are claimed by email on login, so they appear here
+ * too) with a link through to the full history.
+ *
+ * Rendered inside `AccountLayout`, which already gates on `user && profile`
+ * and owns the chrome (brand bar, tabs, sign-out) — this component owns only
+ * the Overview content, so it reads auth state for itself (cheap; same
+ * pattern as the admin pages re-calling `useAdminAuth`).
  */
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { useCustomerAuth } from '../../lib/customerAuth';
 import type { CustomerProfile } from '../../lib/customerProfile';
+import {
+  getMyRewardSummary,
+  listMyDiscounts,
+  type CustomerDiscountRow,
+  type RewardSummary,
+} from '../../lib/accountData';
+import { OrderStatusChip, type AdminOrderStatus } from '../ui/OrderStatusChip';
+import { Button } from '../ui/Button';
+import { supabase } from '../../lib/supabase';
 
-interface AccountDashboardProps {
-  profile: CustomerProfile;
-  email: string;
-  onSignOut: () => void;
+/** `customer_profiles.account_type`/`business_name` (migration 043) aren't on
+ *  `CustomerProfile` yet — this workstream can't add them (owned elsewhere).
+ *  Read them defensively so the badge lights up the moment the column lands,
+ *  and degrades to "individual" (no badge) until then. */
+interface ProfileWithAccountType extends CustomerProfile {
+  account_type?: 'individual' | 'business';
+  business_name?: string | null;
 }
 
 interface OrderRow {
   order_number: string;
-  status: string;
+  status: AdminOrderStatus;
   created_at: string;
   invoice_amount_cents: number | null;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  pending_invoice: 'Awaiting invoice',
-  pending_review: 'In review',
-  invoice_sent: 'Invoice sent',
-  payment_claimed: 'Payment received — verifying',
-  paid: 'Paid',
-  processing: 'Processing',
-  fulfilled: 'Shipped',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-};
+const RECENT_ORDER_LIMIT = 3;
 
 function formatDate(iso: string): string {
   try {
@@ -53,9 +62,15 @@ function formatAmount(cents: number | null): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
-export function AccountDashboard({ profile, email, onSignOut }: AccountDashboardProps) {
+export function AccountDashboard() {
+  const { user, profile: rawProfile } = useCustomerAuth();
+  const profile = rawProfile as ProfileWithAccountType | null;
+
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
   const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [rewards, setRewards] = useState<RewardSummary | null>(null);
+  const [rewardsError, setRewardsError] = useState<string | null>(null);
+  const [discounts, setDiscounts] = useState<CustomerDiscountRow[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +82,8 @@ export function AccountDashboard({ profile, email, onSignOut }: AccountDashboard
       const { data, error } = await supabase
         .from('orders')
         .select('order_number, status, created_at, invoice_amount_cents')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(RECENT_ORDER_LIMIT);
       if (cancelled) return;
       if (error) {
         setOrdersError(error.message);
@@ -82,26 +98,60 @@ export function AccountDashboard({ profile, email, onSignOut }: AccountDashboard
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data, error } = await getMyRewardSummary();
+      if (cancelled) return;
+      if (error) setRewardsError(error);
+      setRewards(data);
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const { data } = await listMyDiscounts();
+      if (cancelled) return;
+      setDiscounts(data.filter((d) => d.active));
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!profile) return null;
+
   const firstName = profile.full_name.trim().split(/\s+/)[0] || 'there';
   const hasAddress = !!profile.address_line1;
+  const isBusiness = profile.account_type === 'business';
 
   return (
-    <section className="py-[var(--space-10)] max-w-[64ch] mx-auto">
+    <section>
       {/* Header */}
-      <header className="mb-[var(--space-8)] flex items-start justify-between gap-[var(--space-4)]">
+      <header className="mb-[var(--space-6)] flex items-start justify-between gap-[var(--space-4)]">
         <div>
-          <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
-            Customer Portal
-          </p>
-          <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <h1 className="text-[clamp(1.4rem,2.6vw,1.9rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             <span className="font-light text-ink/85">Welcome back, </span>
             <span className="font-medium text-ink">{firstName}.</span>
           </h1>
-          <p className="mt-[var(--space-2)] text-[13px] text-ink/55">{email}</p>
+          <p className="mt-[var(--space-2)] text-[13px] text-ink/55">{user?.email}</p>
         </div>
-        <span className="shrink-0 mt-[var(--space-1)] inline-flex items-center rounded-full border border-gold/40 bg-gold/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.2em] text-gold-dark">
-          {profile.tier === 'pro' ? 'Pro member' : 'Member'}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-[var(--space-2)]">
+          <span className="inline-flex items-center rounded-full border border-gold/40 bg-gold/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.2em] text-gold-dark">
+            {profile.tier === 'pro' ? 'Pro member' : 'Member'}
+          </span>
+          {isBusiness && (
+            <span className="inline-flex items-center rounded-full border border-teal/40 bg-teal/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.2em] text-teal">
+              {profile.business_name?.trim() || 'Business account'}
+            </span>
+          )}
+        </div>
       </header>
 
       {profile.status === 'waitlisted' && (
@@ -112,6 +162,45 @@ export function AccountDashboard({ profile, email, onSignOut }: AccountDashboard
           </p>
         </div>
       )}
+
+      {/* Reward balance + active discounts */}
+      <div className="mb-[var(--space-6)] grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+        <div className="research-surface-solid p-[var(--space-5)]">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+          {rewards ? (
+            <>
+              <p className="text-[1.6rem] font-light tabular-nums text-ink">{rewards.balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">pts</span></p>
+              <Link to="/account/rewards" className="mt-[var(--space-2)] inline-block text-[11px] uppercase tracking-[0.18em] text-teal hover:text-teal-dark transition-colors">
+                View history →
+              </Link>
+            </>
+          ) : rewardsError ? (
+            <p className="text-[12.5px] text-ink/50">Rewards aren't available right now.</p>
+          ) : (
+            <p className="text-[12.5px] text-ink/50">Loading…</p>
+          )}
+        </div>
+
+        <div className="research-surface-solid p-[var(--space-5)]">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Active discounts</p>
+          {discounts === null ? (
+            <p className="text-[12.5px] text-ink/50">Loading…</p>
+          ) : discounts.length === 0 ? (
+            <p className="text-[12.5px] text-ink/50">No account discounts on file.</p>
+          ) : (
+            <ul className="space-y-1">
+              {discounts.map((d) => (
+                <li key={d.id} className="text-[13px] text-ink/85">
+                  {d.label} <span className="text-ink/45">· {d.percent}% off</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link to="/account/benefits" className="mt-[var(--space-2)] inline-block text-[11px] uppercase tracking-[0.18em] text-teal hover:text-teal-dark transition-colors">
+            View benefits →
+          </Link>
+        </div>
+      </div>
 
       {/* Shipping address */}
       <div className="research-surface-solid p-[var(--space-6)] mb-[var(--space-6)]">
@@ -132,8 +221,13 @@ export function AccountDashboard({ profile, email, onSignOut }: AccountDashboard
       </div>
 
       {/* Orders */}
-      <div className="mb-[var(--space-8)]">
-        <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-3)]">Your orders</p>
+      <div>
+        <div className="mb-[var(--space-3)] flex items-center justify-between">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Recent orders</p>
+          <Link to="/account/orders" className="text-[11px] uppercase tracking-[0.18em] text-teal hover:text-teal-dark transition-colors">
+            View all →
+          </Link>
+        </div>
 
         {orders === null && (
           <p className="text-[13px] text-ink/50">Loading your orders…</p>
@@ -144,47 +238,33 @@ export function AccountDashboard({ profile, email, onSignOut }: AccountDashboard
             <p className="text-[13.5px] text-ink/70 mb-[var(--space-4)]">
               {ordersError ? 'Could not load orders right now.' : "You haven't placed an order yet."}
             </p>
-            <Link
-              to="/catalog"
-              className="inline-flex items-center rounded-full bg-ink/[0.12] border border-ink/35 px-[var(--space-6)] py-[var(--space-3)] text-[11px] uppercase tracking-[0.2em] font-medium text-ink hover:bg-ink/[0.18] hover:border-ink/50 transition-colors"
-            >
+            <Button variant="secondary" size="md" to="/catalog">
               Browse catalog
-            </Link>
+            </Button>
           </div>
         )}
 
         {orders !== null && orders.length > 0 && (
           <ul className="space-y-[var(--space-3)]">
             {orders.map((o) => (
-              <li
-                key={o.order_number}
-                className="research-surface-solid p-[var(--space-4)] flex items-center justify-between gap-[var(--space-4)]"
-              >
-                <div className="min-w-0">
-                  <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
-                  <p className="text-[11px] text-ink/45 mt-0.5">{formatDate(o.created_at)}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[13px] text-ink tabular-nums">{formatAmount(o.invoice_amount_cents)}</p>
-                  <p className="text-[10.5px] uppercase tracking-[0.16em] text-teal mt-0.5">
-                    {STATUS_LABEL[o.status] ?? o.status}
-                  </p>
-                </div>
+              <li key={o.order_number}>
+                <Link
+                  to={`/account/orders/${encodeURIComponent(o.order_number)}`}
+                  className="research-surface-solid is-interactive flex items-center justify-between gap-[var(--space-4)] p-[var(--space-4)]"
+                >
+                  <div className="min-w-0">
+                    <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
+                    <p className="text-[11px] text-ink/45 mt-0.5">{formatDate(o.created_at)}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-[var(--space-3)]">
+                    <p className="text-[13px] text-ink tabular-nums">{formatAmount(o.invoice_amount_cents)}</p>
+                    <OrderStatusChip status={o.status} />
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
         )}
-      </div>
-
-      {/* Sign out */}
-      <div className="pt-[var(--space-6)] border-t border-ink/[0.08]">
-        <button
-          type="button"
-          onClick={onSignOut}
-          className="text-[12px] uppercase tracking-[0.2em] text-ink/50 hover:text-ink/80 transition-colors"
-        >
-          Sign out
-        </button>
       </div>
     </section>
   );

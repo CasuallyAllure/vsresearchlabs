@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Adamax 10 mg — research carton and vial">
+  <title>Adamax 10 mg</title>
+  <defs>
+    <linearGradient id="lab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C7CCD1"/><stop offset="0.5" stop-color="#DCE0E3"/><stop offset="1" stop-color="#ECEEEF"/></linearGradient>
+    <radialGradient id="key" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.6"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <filter id="blurXl" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="42"/></filter>
+    <filter id="shadow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12"/></filter>
+    <radialGradient id="disc" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/><stop offset="0.7" stop-color="#EDEFF1" stop-opacity="0.5"/><stop offset="1" stop-color="#D7DBDE" stop-opacity="0.35"/></radialGradient>
+    <linearGradient id="boxFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EEE8DB"/></linearGradient>
+    <linearGradient id="boxTop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#F1EBDF"/></linearGradient>
+    <linearGradient id="boxSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#DED6C4"/><stop offset="1" stop-color="#CBC1AB"/></linearGradient>
+    <linearGradient id="boxDiag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="1" stop-color="#1A1714" stop-opacity="0.08"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9D0CF" stop-opacity="0.85"/><stop offset="0.14" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="0.4" stop-color="#E9EEEC" stop-opacity="0.7"/><stop offset="0.72" stop-color="#F4F7F5" stop-opacity="0.8"/><stop offset="1" stop-color="#BEC6C4" stop-opacity="0.85"/></linearGradient>
+    <linearGradient id="powder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E4E2DB"/></linearGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/></filter>
+    <filter id="film" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"/></filter>
+    <radialGradient id="spec" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8C6A2A"/><stop offset="0.5" stop-color="#C7A463"/><stop offset="1" stop-color="#8C6A2A"/></linearGradient>
+    <clipPath id="vialclip"><rect x="2" y="42" width="74" height="104" rx="10"/></clipPath>
+  </defs>
+
+  <rect width="800" height="800" fill="url(#lab)"/>
+  <g filter="url(#blurXl)" opacity="0.6">
+    <rect x="60" y="120" width="150" height="320" rx="16" fill="#AEB4BA"/>
+    <rect x="600" y="90" width="170" height="300" rx="16" fill="#B4BABF"/>
+    <rect x="330" y="70" width="150" height="160" rx="14" fill="#C2C7CC"/>
+    <circle cx="250" cy="250" r="70" fill="#C7A463" opacity="0.25"/>
+    <circle cx="560" cy="300" r="64" fill="#62A0A6" opacity="0.22"/>
+  </g>
+  <rect width="800" height="800" fill="url(#key)"/>
+
+  <ellipse cx="400" cy="606" rx="252" ry="44" fill="url(#disc)"/>
+  <ellipse cx="400" cy="606" rx="252" ry="44" fill="none" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="1.4"/>
+  <ellipse cx="400" cy="606" rx="252" ry="44" fill="none" stroke="#1A1714" stroke-opacity="0.06" stroke-width="1"/>
+  <ellipse cx="400" cy="612" rx="240" ry="34" fill="#1A1714" opacity="0.05"/>
+
+  <ellipse cx="318" cy="600" rx="118" ry="16" fill="#1A1714" opacity="0.18" filter="url(#shadow)"/>
+  <ellipse cx="476" cy="606" rx="56" ry="12" fill="#1A1714" opacity="0.2" filter="url(#shadow)"/>
+
+  <!-- carton -->
+  <g>
+    <polygon points="360,420 398,398 398,578 360,600" fill="url(#boxSide)" stroke="#1A1714" stroke-opacity="0.13" stroke-width="1"/>
+    <polygon points="222,420 260,398 398,398 360,420" fill="url(#boxTop)" stroke="#1A1714" stroke-opacity="0.1" stroke-width="1"/>
+    <rect x="222" y="420" width="138" height="180" fill="url(#boxFront)" stroke="#1A1714" stroke-opacity="0.15" stroke-width="1.2"/>
+    <rect x="222" y="420" width="138" height="180" fill="url(#boxDiag)"/>
+    <g transform="translate(236,440)">
+      <g transform="translate(11,11)">
+        <circle r="10" fill="none" stroke="#34727A" stroke-width="0.9"/>
+        <circle r="6.6" fill="none" stroke="#B5904B" stroke-width="0.55"/>
+        <circle cx="-1" cy="3" r="1.6" fill="#B5904B"/><circle cx="3" cy="-1.3" r="1.1" fill="#34727A"/>
+        <text y="2.8" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="8" fill="#1A1714">VS</text>
+      </g>
+      <text x="27" y="8.5" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing="1.4" fill="#1A1714" opacity="0.5">RESEARCH</text>
+      <text x="27" y="16.5" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing="1.4" fill="#1A1714" opacity="0.5">PEPTIDE</text>
+      <text x="0" y="40" font-family="'Cormorant Garamond',serif" font-weight="700" font-size="10" letter-spacing="0.4" fill="#1A1714">VS RESEARCH LABS</text>
+      <line x1="0" y1="50" x2="108" y2="50" stroke="#B5904B" stroke-opacity="0.6" stroke-width="0.9"/>
+      <text x="0" y="76" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="20" fill="#1A1714">Adamax</text>
+      <text x="0" y="92" font-family="'IBM Plex Mono',monospace" font-size="7.5" letter-spacing="1" fill="#8C6A2A">10 mg / vial</text>
+      <text x="0" y="142" font-family="'IBM Plex Mono',monospace" font-size="5.4" letter-spacing="1" fill="#1A1714" opacity="0.45">RESEARCH GRADE · ≥ 98%</text>
+      <text x="0" y="154" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing="1" fill="#1A1714" opacity="0.5">RESEARCH USE ONLY</text>
+    </g>
+  </g>
+
+  <!-- glass vial -->
+  <g transform="translate(420,452)">
+    <rect x="0" y="40" width="78" height="108" rx="11" fill="url(#glass)" stroke="#1A1714" stroke-opacity="0.14" stroke-width="1.2"/>
+    <g clip-path="url(#vialclip)">
+      <path d="M2 112 q14 -10 26 -4 q12 6 24 -2 q14 -8 26 2 V148 H2 Z" fill="url(#powder)"/>
+      <rect x="2" y="104" width="74" height="44" fill="#FFFFFF" filter="url(#grain)" opacity="0.4"/>
+      <path d="M2 112 q14 -10 26 -4 q12 6 24 -2 q14 -8 26 2" fill="none" stroke="#CFCCC2" stroke-width="0.8" opacity="0.7"/>
+    </g>
+    <rect x="11" y="56" width="9" height="78" rx="4" fill="#FFFFFF" opacity="0.7"/>
+    <rect x="26" y="56" width="4" height="70" rx="2" fill="#FFFFFF" opacity="0.35"/>
+    <ellipse cx="20" cy="64" rx="12" ry="26" fill="url(#spec)" opacity="0.85"/>
+    <circle cx="17" cy="52" r="3.2" fill="#FFFFFF" opacity="0.9"/>
+    <rect x="18" y="22" width="42" height="20" rx="4" fill="url(#cap)"/>
+    <rect x="15" y="6" width="48" height="18" rx="5" fill="url(#cap)"/>
+    <rect x="15" y="6" width="48" height="18" rx="5" fill="#FFFFFF" opacity="0.12"/>
+    <rect x="6" y="82" width="66" height="62" rx="5" fill="#FCFAF5" stroke="#B5904B" stroke-opacity="0.5" stroke-width="0.9"/>
+    <g transform="translate(39,95)">
+      <circle r="5.6" fill="none" stroke="#34727A" stroke-width="0.6"/>
+      <circle r="3.7" fill="none" stroke="#B5904B" stroke-width="0.4"/>
+      <circle cx="-0.6" cy="1.8" r="1" fill="#B5904B"/>
+      <text y="2" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="5.6" fill="#1A1714">VS</text>
+    </g>
+    <text x="39" y="116" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="11" fill="#1A1714">Adamax</text>
+    <text x="39" y="128" text-anchor="middle" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="8" fill="#8C6A2A">10 mg</text>
+    <text x="39" y="139" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="3.8" letter-spacing="0.6" fill="#1A1714" opacity="0.5">RESEARCH USE ONLY</text>
+  </g>
+
+  <rect width="800" height="800" filter="url(#film)" style="mix-blend-mode:multiply" opacity="0.7"/>
+</svg>

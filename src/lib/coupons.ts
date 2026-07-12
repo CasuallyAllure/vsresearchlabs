@@ -85,9 +85,21 @@ export function couponStillQualifies(coupon: AppliedCoupon | null, subtotalCents
   return subtotalCents >= coupon.minSubtotalCents;
 }
 
+/** The signed-in customer's account entitlement (lifetime/business), resolved
+ *  by src/lib/accountDiscount.ts. PREVIEW ONLY — place-order re-resolves it
+ *  server-side via effective_customer_discount(); no percent from the client
+ *  is ever billed. */
+export interface AccountDiscountPreview {
+  scope: 'lifetime' | 'business';
+  percent: number;
+  label: string;
+}
+
 export interface CouponBreakdown {
   /** code → discount cents attributed to that coupon (drives the cart line + invoice). */
   perCode: Record<string, number>;
+  /** cents the account discount (pass 2a) takes off — 0 when none applies. */
+  accountCents: number;
   /** sum of all discounts, capped at the subtotal so an order never goes < $0. */
   total: number;
 }
@@ -98,14 +110,17 @@ export interface CouponBreakdown {
  *   1. free_item + fixed codes reduce the base first. A free_item whose item is
  *      already in the cart contributes that item's price (it becomes free);
  *      otherwise the server adds it as a $0 line and it contributes nothing here.
- *   2. percent codes then apply to the REMAINING base (subtotal − step 1), not
- *      to the original subtotal.
+ *   2a. the ACCOUNT discount (signed-in lifetime/business entitlement) applies
+ *      first on the reduced base — same rule as recompute_order_totals (045).
+ *   2b. percent codes then apply to the same reduced base; their running cap
+ *      starts after the account slice.
  *   3. the grand total is capped at the subtotal.
  */
 export function couponBreakdown(
   coupons: AppliedCoupon[],
   subtotalCents: number,
   items: CartItem[] = [],
+  accountDiscount: AccountDiscountPreview | null = null,
 ): CouponBreakdown {
   const sub = Math.max(subtotalCents, 0);
   const perCode: Record<string, number> = {};
@@ -124,9 +139,20 @@ export function couponBreakdown(
     flat += v;
   }
 
-  // Pass 2 — percents on the reduced base.
   const baseAfterFlat = Math.max(sub - flat, 0);
   let percentUsed = 0;
+
+  // Pass 2a — account discount first on the post-flat base.
+  let accountCents = 0;
+  if (accountDiscount && accountDiscount.percent > 0) {
+    accountCents = Math.max(
+      Math.min(Math.round((baseAfterFlat * accountDiscount.percent) / 100), baseAfterFlat),
+      0,
+    );
+    percentUsed += accountCents;
+  }
+
+  // Pass 2b — percent codes on the same reduced base, capped after 2a.
   for (const c of percentCoupons) {
     const raw = c.percent != null ? Math.round((baseAfterFlat * c.percent) / 100) : 0;
     const v = Math.max(Math.min(raw, baseAfterFlat - percentUsed), 0);
@@ -134,7 +160,7 @@ export function couponBreakdown(
     percentUsed += v;
   }
 
-  return { perCode, total: Math.min(flat + percentUsed, sub) };
+  return { perCode, accountCents, total: Math.min(flat + percentUsed, sub) };
 }
 
 /** Codes to submit at checkout — only those still qualifying for the current

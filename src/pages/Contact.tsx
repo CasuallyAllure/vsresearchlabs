@@ -19,6 +19,7 @@ import { siteConfig } from '../config';
 import { supabase } from '../lib/supabase';
 import { Turnstile } from '../components/security/Turnstile';
 import { Button } from '../components/ui/Button';
+import { Field, TextAreaField } from '../components/ui/Field';
 
 type Topic = 'general' | 'procurement' | 'documentation' | 'partnership' | 'media' | 'other';
 
@@ -162,8 +163,8 @@ export function Contact() {
                   onClick={() => setTopic(t.id)}
                   aria-pressed={on}
                   className={[
-                    'text-left rounded-md border px-3 py-2.5 transition-colors',
-                    'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
+                    'text-left rounded-full border px-4 py-2.5 min-h-[44px] transition-colors',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40',
                     on
                       ? 'border-ink/40 bg-ink/[0.06]'
                       : 'border-ink/15 hover:border-ink/30',
@@ -234,32 +235,17 @@ export function Contact() {
         />
 
         {/* Message */}
-        <div>
-          <label
-            htmlFor="contact-message"
-            className="block text-[11px] uppercase tracking-[0.22em] text-ink/55 mb-[var(--space-2)]"
-          >
-            What's your inquiry? <span className="text-ink/40 normal-case tracking-normal">— required</span>
-          </label>
-          <textarea
-            id="contact-message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onBlur={() => setTouched((t) => ({ ...t, message: true }))}
-            rows={6}
-            placeholder="A few sentences on what you're trying to do, the research context, and what you need from us. The more specific you are, the faster we can route the right person."
-            aria-invalid={showMessageError || undefined}
-            className={[
-              'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-[14px] text-ink placeholder-ink/30 focus:outline-none transition-colors resize-y',
-              showMessageError ? 'border-red-500/60 focus:border-red-400' : 'border-ink/15 focus:border-ink/40',
-            ].join(' ')}
-          />
-          {showMessageError && (
-            <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400">
-              Please share a few sentences.
-            </p>
-          )}
-        </div>
+        <TextAreaField
+          id="contact-message"
+          label="What's your inquiry?"
+          value={message}
+          onChange={setMessage}
+          onBlur={() => setTouched((t) => ({ ...t, message: true }))}
+          error={showMessageError ? 'Please share a few sentences.' : null}
+          required
+          rows={6}
+          placeholder="A few sentences on what you're trying to do, the research context, and what you need from us. The more specific you are, the faster we can route the right person."
+        />
 
         <Field
           id="contact-referrer"
@@ -325,56 +311,5 @@ export function Contact() {
         For Research Purposes Only — Not for Human or Veterinary Use
       </p>
     </section>
-  );
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-interface FieldProps {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  onBlur?: () => void;
-  error?: string | null;
-  required?: boolean;
-  autoComplete?: string;
-  placeholder?: string;
-  type?: string;
-}
-
-function Field({
-  id, label, value, onChange, onBlur, error, required, autoComplete, placeholder, type = 'text',
-}: FieldProps) {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-[11px] uppercase tracking-[0.22em] text-ink/55 mb-[var(--space-2)]"
-      >
-        {label}
-        {required && <span className="text-ink/40 normal-case tracking-normal"> — required</span>}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        required={required}
-        autoComplete={autoComplete}
-        placeholder={placeholder}
-        aria-invalid={!!error || undefined}
-        className={[
-          'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-[14px] text-ink placeholder-ink/30 focus:outline-none transition-colors',
-          error ? 'border-red-500/60 focus:border-red-400' : 'border-ink/15 focus:border-ink/40',
-        ].join(' ')}
-      />
-      {error && (
-        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }

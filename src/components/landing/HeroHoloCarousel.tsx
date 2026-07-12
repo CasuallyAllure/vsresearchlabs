@@ -145,7 +145,7 @@ export function HeroHoloCarousel({ vivid = false }: { vivid?: boolean } = {}) {
                 type="button"
                 onClick={() => go(i)}
                 aria-label={`View ${SLIDE_LABEL[key]}`}
-                className="h-1.5 w-1.5 rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/50"
+                className="h-1.5 w-1.5 rounded-full transition-[background-color,transform] focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/50"
                 style={{
                   backgroundColor: on ? 'rgba(140, 144, 148,0.85)' : 'rgba(26,23,20,0.18)',
                   transform: on ? 'scale(1.1)' : 'scale(1)',
@@ -329,7 +329,7 @@ function SlideHologram({
                 'linear-gradient(to top, var(--color-surface-elevated) 0%, transparent 100%)',
             }}
           />
-          <div className="absolute inset-x-4 bottom-8 z-20 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pointer-events-none font-mono text-[8px] uppercase tracking-[0.18em]">
+          <div className="absolute inset-x-4 bottom-8 z-20 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pointer-events-none font-mono text-[10px] uppercase tracking-[0.18em]">
             {identity && (
               <span className="holo-text-display font-semibold tracking-[0.16em]">
                 {identity}
@@ -376,7 +376,7 @@ function SlideEffects({ effects }: { effects: EffectRow[] }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="w-full max-w-[44ch]">
-        <p className="mb-3 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
+        <p className="mb-3 text-center font-mono text-[10px] uppercase tracking-[0.3em] holo-text-caption">
           Summary · Effects
         </p>
         <ul className="space-y-2.5">
@@ -389,7 +389,7 @@ function SlideEffects({ effects }: { effects: EffectRow[] }) {
                 <p className="text-[12px] leading-snug holo-text-display holo-text-pulse break-words">
                   {e.effect}
                 </p>
-                <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.2em] holo-text-citation break-words">
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] holo-text-citation break-words">
                   <span className="holo-text-caption">
                     {MODEL_DISPLAY[e.study.model]}
                   </span>
@@ -412,7 +412,7 @@ function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="max-w-[40ch] text-center">
-        <p className="mb-3 font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] holo-text-caption">
           Mechanism · Brief
         </p>
         <p className="text-[12px] leading-[1.6] holo-text-body break-words">
@@ -423,7 +423,7 @@ function SlideMechanism({ ci }: { ci: CompoundIntelligence }) {
             {ci.receptorTargets.slice(0, 3).map((t) => (
               <span
                 key={t.receptor}
-                className="rounded-[2px] border border-holo/30 bg-holo/[0.06] px-2 py-0.5 font-mono text-[9.5px] tracking-[0.06em] holo-text-caption"
+                className="rounded-[2px] border border-holo/30 bg-holo/[0.06] px-2 py-0.5 font-mono text-[10px] tracking-[0.06em] holo-text-caption"
               >
                 {t.receptor}
               </span>
@@ -456,7 +456,7 @@ function SlideClinical({
   return (
     <div className="absolute inset-0 flex items-center justify-center px-6 pb-14 pt-8 sm:px-10">
       <div className="max-w-[42ch]">
-        <p className="mb-2.5 text-center font-mono text-[8.5px] uppercase tracking-[0.3em] holo-text-caption">
+        <p className="mb-2.5 text-center font-mono text-[10px] uppercase tracking-[0.3em] holo-text-caption">
           Known studies
         </p>
         <p className="text-center text-[11px] leading-snug holo-text-body break-words">
@@ -476,7 +476,7 @@ function SlideClinical({
         </p>
         {lead && (
           <div className="mt-3 border-t border-holo/15 pt-2.5">
-            <p className="mb-1 text-center text-[9px] uppercase tracking-[0.22em] holo-text-caption">
+            <p className="mb-1 text-center text-[10px] uppercase tracking-[0.22em] holo-text-caption">
               Observed{study.phase ? ` · ${study.phase}` : ''}
             </p>
             <p className="text-[12px] leading-relaxed holo-text-display holo-text-pulse break-words">
@@ -492,7 +492,7 @@ function SlideClinical({
                 href={s.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-holo/30 bg-holo/[0.06] px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.08em] holo-text-caption transition-colors hover:border-holo/55 hover:text-holo-light"
+                className="inline-flex items-center gap-1 rounded-full border border-holo/30 bg-holo/[0.06] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] holo-text-caption transition-colors hover:border-holo/55 hover:text-holo-light"
               >
                 {shortSource(s.source)}{s.phase ? ` · ${s.phase}` : ''}
                 <span aria-hidden className="text-holo/50">↗</span>

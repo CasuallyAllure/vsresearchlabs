@@ -22,6 +22,9 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
+import { Button } from '../../components/ui/Button';
+import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
 
 // ── Domain types ─────────────────────────────────────────────────────────────
 
@@ -130,31 +133,24 @@ function useConfirm() {
 
   const modal = state && (
     <>
-      <div aria-hidden="true" onClick={() => setState(null)} className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={() => setState(null)} className="fixed inset-0 z-50 bg-[color:var(--scrim)] backdrop-blur-[3px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div className="pointer-events-auto w-full max-w-[400px] research-surface-solid p-[var(--space-6)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-3)]">Confirm</p>
           <p className="text-[13px] leading-relaxed text-ink/85 mb-[var(--space-6)]">{state.message}</p>
           <div className="flex items-center justify-end gap-[var(--space-3)]">
-            <button
-              type="button"
-              onClick={() => setState(null)}
-              className="rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-ink/70 hover:text-ink hover:border-ink/30 transition-colors"
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={() => setState(null)}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => { const fn = state.onConfirm; setState(null); fn(); }}
-              className={[
-                'rounded-full border px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium transition-colors',
-                state.danger
-                  ? 'border-red-400/40 bg-red-400/[0.08] text-red-300/90 hover:bg-red-400/[0.15] hover:border-red-400/55'
-                  : 'bg-ink/[0.10] border-ink/30 text-ink hover:bg-ink/[0.15] hover:border-ink/40',
-              ].join(' ')}
+              className={state.danger ? 'border-red-400/40 bg-red-400/[0.08] text-red-300/90 hover:bg-red-400/[0.15] hover:border-red-400/55' : undefined}
             >
               Confirm
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -166,8 +162,7 @@ function useConfirm() {
 
 // ── Shared field styling ─────────────────────────────────────────────────────
 
-const inputCls =
-  'w-full mb-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors';
+const inputCls = [FIELD_SURFACE, FIELD_DEFAULT, 'mb-[var(--space-3)]'].join(' ');
 
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]">{children}</label>;
@@ -183,22 +178,17 @@ function ActionButton({
   title?: string;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant={danger ? 'ghost' : 'secondary'}
+      size="sm"
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={[
-        'rounded-full border px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] transition-colors',
-        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-        'disabled:opacity-30 disabled:cursor-not-allowed',
-        danger
-          ? 'border-red-400/35 text-red-400/80 hover:bg-red-400/[0.06] hover:border-red-400/55'
-          : 'border-ink/15 text-ink/75 bg-ink/[0.03] hover:text-ink hover:border-ink/30',
-      ].join(' ')}
+      className={danger ? 'border border-red-400/35 text-red-400/80 hover:bg-red-400/[0.06] hover:border-red-400/55 hover:text-red-400/80' : undefined}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -210,24 +200,19 @@ function ToolButton({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed"
-    >
+    <Button type="button" variant="secondary" size="sm" onClick={onClick} disabled={disabled}>
       {children}
-    </button>
+    </Button>
   );
 }
 
 function Badge({ children, tone = 'neutral' }: { children: React.ReactNode; tone?: 'neutral' | 'warn' | 'good' }) {
   const cls =
-    tone === 'good' ? 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]' :
-    tone === 'warn' ? 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]' :
+    tone === 'good' ? 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]' :
+    tone === 'warn' ? 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]' :
                        'border-ink/15 text-ink/60 bg-ink/[0.03]';
   return (
-    <span className={`inline-block text-[9px] uppercase tracking-[0.16em] px-1.5 py-0.5 rounded-sm border ${cls}`}>
+    <span className={`${CHIP_BASE} ${cls}`}>
       {children}
     </span>
   );
@@ -290,15 +275,9 @@ export function AdminCoupons() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            Commerce · Coupons
-          </p>
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Codes, affiliates &amp; </span>
-            <span className="font-medium text-ink">payouts.</span>
-          </h2>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Coupons</h2>
         </div>
         <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-ink/[0.12] bg-ink/[0.03] p-[3px]">
           {TABS.map((t) => (
@@ -308,7 +287,7 @@ export function AdminCoupons() {
               onClick={() => setTab(t.value)}
               aria-current={tab === t.value ? 'page' : undefined}
               className={[
-                'rounded-full px-[var(--space-4)] py-[5px] text-[10px] uppercase tracking-[0.18em] transition-colors',
+                'inline-flex min-h-[40px] items-center rounded-full px-[var(--space-4)] text-[10px] uppercase tracking-[0.18em] transition-colors',
                 tab === t.value
                   ? 'bg-display text-ink shadow-[0_1px_3px_-1px_rgba(26,23,20,0.25)]'
                   : 'text-ink/45 hover:text-ink',
@@ -660,13 +639,9 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
       {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
 
       <div className="flex items-center justify-end">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" variant="secondary" size="sm" disabled={submitting}>
           {submitting ? 'Creating…' : 'Create code'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -850,13 +825,9 @@ function NewAffiliateForm({ onCreated }: NewAffiliateFormProps) {
       <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-y`} />
       {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
       <div className="flex items-center justify-end">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-6)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" variant="secondary" size="sm" disabled={submitting}>
           {submitting ? 'Creating…' : 'Create affiliate'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -938,13 +909,14 @@ function CommissionsTab({ redemptions, affiliates, onChanged, confirm }: Commiss
         <div className="flex flex-col gap-[var(--space-2)] sm:flex-row sm:items-center sm:gap-[var(--space-3)]">
           <AdminFilterBar
             label="Affiliate"
+            dense
             options={affiliateOptions}
             value={affiliateFilter}
             onChange={setAffiliateFilter}
-            widthClass="sm:w-[200px]"
           />
           <AdminFilterBar
             label="Status"
+            dense
             options={[
               { value: 'all', label: 'All' },
               { value: 'pending', label: 'Pending' },
@@ -953,7 +925,6 @@ function CommissionsTab({ redemptions, affiliates, onChanged, confirm }: Commiss
             ]}
             value={statusFilter}
             onChange={setStatusFilter}
-            widthClass="sm:w-[160px]"
           />
         </div>
         {bulkEligible && (
@@ -990,81 +961,83 @@ function CommissionsTab({ redemptions, affiliates, onChanged, confirm }: Commiss
       )}
 
       {filtered.length > 0 && (
-        <div className="research-surface-solid overflow-x-auto">
-          <table className="w-full min-w-[820px] border-collapse">
-            <thead>
-              <tr className="border-b border-ink/[0.10]">
-                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Date</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Code</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Buyer</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Order</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Order net</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Commission</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Status</th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row) => {
-                const busy = busyIds.has(row.id);
-                return (
-                  <tr key={row.id} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
-                    <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11px] text-ink/60 whitespace-nowrap">
-                      {fmtDateShort(row.created_at)}
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle font-mono text-[11.5px] text-ink/80">{row.code}</td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[11.5px] text-ink/70 truncate max-w-[160px]">{row.buyer_contact ?? '—'}</td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle">
-                      {row.order_id ? (
-                        <Link to={`/admin/orders/${row.order_id}`} className="text-[10.5px] uppercase tracking-[0.16em] text-ink/70 underline decoration-ink/20 hover:text-ink">
-                          View
-                        </Link>
-                      ) : (
-                        <span className="text-[11px] text-ink/30">—</span>
-                      )}
-                    </td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-ink">{fmtUSD(row.order_net_cents)}</td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-ink">{fmtUSD(row.commission_cents)}</td>
-                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center">
-                      <CommissionChip status={row.commission_status} />
-                    </td>
-                    <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
-                      {row.commission_status === 'pending' && (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <ActionButton
-                            disabled={busy}
-                            title="Mark paid"
-                            onClick={() =>
-                              confirm(
-                                `Mark commission for ${row.code} (${fmtUSD(row.commission_cents)}) as paid?`,
-                                () => updateStatus([row.id], 'paid'),
-                              )
-                            }
-                          >
-                            Mark paid
-                          </ActionButton>
-                          <ActionButton
-                            danger
-                            disabled={busy}
-                            title="Void"
-                            onClick={() =>
-                              confirm(
-                                `Void commission for ${row.code} (${fmtUSD(row.commission_cents)})?`,
-                                () => updateStatus([row.id], 'void'),
-                                true,
-                              )
-                            }
-                          >
-                            Void
-                          </ActionButton>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="research-surface-solid rounded-[14px] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[820px] border-collapse">
+              <thead>
+                <tr className="border-b border-ink/[0.10]">
+                  <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Date</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Code</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Buyer</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Order</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Order net</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Commission</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Status</th>
+                  <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row) => {
+                  const busy = busyIds.has(row.id);
+                  return (
+                    <tr key={row.id} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
+                      <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11px] text-ink/60 whitespace-nowrap">
+                        {fmtDateShort(row.created_at)}
+                      </td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle font-mono text-[11.5px] text-ink/80">{row.code}</td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[11.5px] text-ink/70 truncate max-w-[160px]">{row.buyer_contact ?? '—'}</td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle">
+                        {row.order_id ? (
+                          <Link to={`/admin/orders/${row.order_id}`} className="text-[10.5px] uppercase tracking-[0.16em] text-ink/70 underline decoration-ink/20 hover:text-ink">
+                            View
+                          </Link>
+                        ) : (
+                          <span className="text-[11px] text-ink/30">—</span>
+                        )}
+                      </td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-ink">{fmtUSD(row.order_net_cents)}</td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right font-mono text-[11.5px] tabular-nums text-ink">{fmtUSD(row.commission_cents)}</td>
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center">
+                        <CommissionChip status={row.commission_status} />
+                      </td>
+                      <td className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
+                        {row.commission_status === 'pending' && (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <ActionButton
+                              disabled={busy}
+                              title="Mark paid"
+                              onClick={() =>
+                                confirm(
+                                  `Mark commission for ${row.code} (${fmtUSD(row.commission_cents)}) as paid?`,
+                                  () => updateStatus([row.id], 'paid'),
+                                )
+                              }
+                            >
+                              Mark paid
+                            </ActionButton>
+                            <ActionButton
+                              danger
+                              disabled={busy}
+                              title="Void"
+                              onClick={() =>
+                                confirm(
+                                  `Void commission for ${row.code} (${fmtUSD(row.commission_cents)})?`,
+                                  () => updateStatus([row.id], 'void'),
+                                  true,
+                                )
+                              }
+                            >
+                              Void
+                            </ActionButton>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -1077,12 +1050,12 @@ function CommissionsTab({ redemptions, affiliates, onChanged, confirm }: Commiss
 
 function CommissionChip({ status }: { status: CommissionStatus }) {
   const cls =
-    status === 'paid'    ? 'border-[#2E7D5B]/40 text-[#2E7D5B] bg-[#2E7D5B]/[0.08]' :
+    status === 'paid'    ? 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]' :
     status === 'pending' ? 'border-ink/25 text-ink/70 bg-ink/[0.05]' :
-    status === 'void'    ? 'border-red-400/40 text-red-400/80 bg-red-400/[0.06]' :
+    status === 'void'    ? 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]' :
                             'border-ink/15 text-ink/40 bg-ink/[0.02]';
   return (
-    <span className={`inline-block text-[9.5px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${cls}`}>
+    <span className={`${CHIP_BASE} ${cls}`}>
       {status}
     </span>
   );

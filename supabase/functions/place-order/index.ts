@@ -50,6 +50,7 @@ import {
   invoiceSubject,
   type OrderRow,
   type OrderLine,
+  type CouponLine,
 } from "../_shared/invoiceEmail.ts";
 
 // ---------------------------------------------------------------------------
@@ -102,10 +103,21 @@ interface CouponCheck {
   reason?: string;
   code?: string;
   kind?: "percent" | "fixed" | "free_item";
+  percent?: number | null;
+  amount_cents?: number | null;
   discount_cents?: number;
   free_sku?: string | null;
   free_dose?: string | null;
   free_label?: string | null;
+}
+
+/** Shape returned by the effective_customer_discount RPC (migration 045). */
+interface AccountDiscountRpc {
+  found?: boolean;
+  scope?: string;
+  percent?: number;
+  label?: string;
+  discount_id?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +126,7 @@ interface CouponCheck {
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_ANON_KEY    = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsresearchlabs.com";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
@@ -691,6 +704,62 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Too many orders from this contact. Please wait before trying again." }, 429);
   }
 
+  // Ownership stamping (portal blueprint §2.1) — STRICTLY ADDITIVE. If the
+  // request carries a customer session JWT (supabase-js sends the session
+  // token as the Authorization bearer when signed in; the anon key otherwise),
+  // resolve it and stamp orders.user_id ONLY when the verified auth email
+  // equals the buyer contact (case-insensitive). Any failure — guest, anon-key
+  // bearer, bogus/expired token, email mismatch — proceeds exactly as today.
+  let stampedUserId: string | null = null;
+  {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    if (bearer && SUPABASE_ANON_KEY && bearer !== SUPABASE_ANON_KEY && contactIsEmail) {
+      try {
+        const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const { data: userData, error: userErr } = await authClient.auth.getUser(bearer);
+        const authedEmail = (userData?.user?.email ?? "").trim().toLowerCase();
+        if (!userErr && userData?.user && authedEmail && authedEmail === contact.toLowerCase()) {
+          stampedUserId = userData.user.id;
+          console.log("Checkout ownership stamped for user", stampedUserId);
+        }
+      } catch {
+        /* unresolved session → guest semantics, no log spam */
+      }
+    }
+  }
+
+  // Account discount entitlement (migration 045) — resolved SERVER-SIDE only,
+  // and only for a stamped owner. The RPC is service-role-only by design; an
+  // error or {found:false} means zero behavior change.
+  let accountDiscount: { code: string; scope: string; percent: number; label: string } | null = null;
+  if (stampedUserId) {
+    const { data: acctData, error: acctErr } = await supabase.rpc("effective_customer_discount", {
+      p_user_id: stampedUserId,
+    });
+    if (!acctErr) {
+      const acct = (acctData ?? null) as AccountDiscountRpc | null;
+      const pct = Number(acct?.percent);
+      if (
+        acct?.found === true &&
+        Number.isFinite(pct) && pct > 0 && pct <= 100 &&
+        (acct.scope === "lifetime" || acct.scope === "business")
+      ) {
+        accountDiscount = {
+          code: acct.scope === "business" ? "ACCT-BUSINESS" : "ACCT-LIFETIME",
+          scope: acct.scope,
+          percent: pct,
+          label: (acct.label ?? "").trim() ||
+            (acct.scope === "business" ? "Business discount" : "Lifetime discount"),
+        };
+      }
+    } else {
+      console.error("effective_customer_discount failed (order proceeds without it):", acctErr);
+    }
+  }
+
   // Coupon — the client sends only the CODE; the server validates it and
   // computes the money. percent/fixed reduce the billed total; free_item
   // appends a $0 line for the free product. Invalid codes reject the order
@@ -710,8 +779,16 @@ Deno.serve(async (req: Request) => {
   // Per-code ledger — drives redemption + per-code rollback below. `fullDiscount`
   // holds a percent code's discount off the FULL subtotal; pass 2 re-scales it
   // onto the post-flat base so percents apply AFTER free_item/fixed reductions.
+  // percent/amountCents/freeLabel are display snapshots for the itemized
+  // invoice email (same fields send-order-invoice reads from order_coupons).
+  // `freeSku` marks a server-APPENDED $0 line (rollback removes it);
+  // `srcFreeSku`/`freeDose` snapshot the coupon's own free_sku/free_dose for
+  // the order_coupons row regardless of whether a line was appended or an
+  // existing unit was freed.
   const appliedList: {
     code: string; kind: string; contribution: number; freeSku: string | null; fullDiscount: number;
+    percent: number | null; amountCents: number | null; freeLabel: string | null;
+    srcFreeSku: string | null; freeDose: string | null;
   }[] = [];
   let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
 
@@ -736,7 +813,11 @@ Deno.serve(async (req: Request) => {
 
     if (coupon.kind === "percent") {
       const full = Math.max(Math.floor(Number(coupon.discount_cents ?? 0)), 0);
-      appliedList.push({ code: appliedCode, kind: "percent", contribution: 0, freeSku: null, fullDiscount: full });
+      appliedList.push({
+        code: appliedCode, kind: "percent", contribution: 0, freeSku: null, fullDiscount: full,
+        percent: coupon.percent ?? null, amountCents: null, freeLabel: null,
+        srcFreeSku: null, freeDose: null,
+      });
       continue; // handled in pass 2
     }
 
@@ -752,7 +833,11 @@ Deno.serve(async (req: Request) => {
         const unit = clampCents(items[matchIdx].unitPriceCents);
         const contribution = Math.max(Math.min(unit, grossSubtotalCents - flatCents), 0);
         flatCents += contribution;
-        appliedList.push({ code: appliedCode, kind: "free_item", contribution, freeSku: null, fullDiscount: 0 });
+        appliedList.push({
+          code: appliedCode, kind: "free_item", contribution, freeSku: null, fullDiscount: 0,
+          percent: null, amountCents: null, freeLabel: coupon.free_label ?? null,
+          srcFreeSku: coupon.free_sku ?? null, freeDose: coupon.free_dose ?? null,
+        });
       } else {
         items.push({
           product: { id: `free-${coupon.free_sku}`, name: `${coupon.free_label} (FREE)`, category: null, sku: coupon.free_sku },
@@ -761,7 +846,11 @@ Deno.serve(async (req: Request) => {
           note: `Free with code ${appliedCode}`,
         });
         itemCount += 1;
-        appliedList.push({ code: appliedCode, kind: "free_item", contribution: 0, freeSku: coupon.free_sku, fullDiscount: 0 });
+        appliedList.push({
+          code: appliedCode, kind: "free_item", contribution: 0, freeSku: coupon.free_sku, fullDiscount: 0,
+          percent: null, amountCents: null, freeLabel: coupon.free_label ?? null,
+          srcFreeSku: coupon.free_sku ?? null, freeDose: coupon.free_dose ?? null,
+        });
       }
     } else {
       // fixed — flat dollars off, capped at the remaining subtotal.
@@ -769,7 +858,11 @@ Deno.serve(async (req: Request) => {
       const safe = Math.max(Number.isFinite(raw) ? raw : 0, 0);
       const contribution = Math.max(Math.min(safe, grossSubtotalCents - flatCents), 0);
       flatCents += contribution;
-      appliedList.push({ code: appliedCode, kind: "fixed", contribution, freeSku: null, fullDiscount: 0 });
+      appliedList.push({
+        code: appliedCode, kind: "fixed", contribution, freeSku: null, fullDiscount: 0,
+        percent: null, amountCents: coupon.amount_cents ?? null, freeLabel: null,
+        srcFreeSku: null, freeDose: null,
+      });
     }
   }
 
@@ -778,6 +871,21 @@ Deno.serve(async (req: Request) => {
   // `percent × baseAfterFlat`.
   const baseAfterFlat = Math.max(grossSubtotalCents - flatCents, 0);
   let percentUsed = 0;
+
+  // Pass 2a — the ACCOUNT discount applies first on the same post-flat base;
+  // code percents (pass 2b below) keep computing off that same base but their
+  // running cap now starts after the account slice. This mirrors
+  // recompute_order_totals (045): account rows first, same base per percent
+  // row, cap = base − used.
+  let accountCents = 0;
+  if (accountDiscount) {
+    accountCents = Math.max(
+      Math.min(Math.round((baseAfterFlat * accountDiscount.percent) / 100), baseAfterFlat),
+      0,
+    );
+    percentUsed += accountCents;
+  }
+
   for (const a of appliedList) {
     if (a.kind !== "percent") continue;
     const scaled = grossSubtotalCents > 0
@@ -789,8 +897,9 @@ Deno.serve(async (req: Request) => {
 
   let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
   // Comma-joined label for the order row, invoice, and emails (all read this).
-  let appliedCoupon: string | null = appliedList.length
-    ? appliedList.map((a) => a.code).join(", ")
+  // The synthetic account code leads, matching the order_coupons row it gets.
+  let appliedCoupon: string | null = (accountDiscount || appliedList.length)
+    ? [...(accountDiscount ? [accountDiscount.code] : []), ...appliedList.map((a) => a.code)].join(", ")
     : null;
   let totalCents = grossSubtotalCents - discountCents;
 
@@ -846,6 +955,9 @@ Deno.serve(async (req: Request) => {
       payment_method:       `Zelle (${ZELLE_HANDLE})`,
       invoiced_at: new Date().toISOString(),
       idempotency_key: idempotencyKey,
+      // Ownership stamp — only present for a verified-email session match;
+      // guests get the exact insert payload this function has always sent.
+      ...(stampedUserId ? { user_id: stampedUserId } : {}),
     })
     .select("id, order_number, created_at").single();
   if (ordErr || !orderRow) {
@@ -900,11 +1012,28 @@ Deno.serve(async (req: Request) => {
     if (evErr) console.error("Price-mismatch event insert failed:", evErr);
   }
 
+  // Materialize the account discount as a synthetic order_coupons row
+  // (migration 045, source='account') so every invoice surface and the admin
+  // recompute treat it exactly like a code — but with NO coupon_redemptions
+  // row, NO redeem_coupon call, and NO affiliate involvement.
+  if (accountDiscount) {
+    const { error: acctRowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: accountDiscount.code,
+      kind: "percent",
+      percent: accountDiscount.percent,
+      discount_cents: accountCents,
+      source: "account",
+    });
+    if (acctRowErr) console.error("Account-discount order_coupons insert failed:", acctRowErr);
+  }
+
   // Record the redemption + commission ledger row (service-role-only RPC;
   // atomically re-checks limits and bumps used_count). If it fails — e.g. two
   // concurrent checkouts raced for the last use of a capped code — ROLL THE
   // COUPON BACK off the order before any email goes out, so the invoice and
   // billed amount stay truthful and a raced-out code can't leak revenue.
+  let redeemedList = appliedList; // codes that survive redemption (email itemization)
   if (appliedList.length > 0) {
     const failedCodes: string[] = [];
     for (const a of appliedList) {
@@ -934,12 +1063,43 @@ Deno.serve(async (req: Request) => {
       discountCents = Math.max(discountCents, 0);
       totalCents = grossSubtotalCents - discountCents;
       const survivors = appliedList.filter((a) => !failedCodes.includes(a.code));
-      appliedCoupon = survivors.length ? survivors.map((a) => a.code).join(", ") : null;
+      redeemedList = survivors;
+      const survivorCodes = [
+        ...(accountDiscount ? [accountDiscount.code] : []),
+        ...survivors.map((a) => a.code),
+      ];
+      appliedCoupon = survivorCodes.length ? survivorCodes.join(", ") : null;
       const { error: rollbackErr } = await supabase.from("orders")
         .update({ discount_cents: discountCents, coupon_code: appliedCoupon, invoice_amount_cents: totalCents })
         .eq("id", orderRow.id);
       if (rollbackErr) console.error("Coupon rollback update failed:", rollbackErr, orderRow.id);
     }
+  }
+
+  // Materialize the SURVIVING code coupons as order_coupons rows too
+  // (source='code'), mirroring the account row above. Without these, /track,
+  // the portal's get_my_order, and the admin printable itemize nothing for
+  // checkout coupon orders — and an admin line-edit (save_order_lines →
+  // recompute_order_totals) would silently wipe the code discount because the
+  // recompute reads only order_coupons. discount_cents snapshots this
+  // checkout's per-code result; recompute may re-derive it (±1¢ on percent
+  // rows, by design). Non-fatal on error: the order and email stay truthful.
+  if (redeemedList.length > 0) {
+    const { error: codeRowsErr } = await supabase.from("order_coupons").insert(
+      redeemedList.map((a) => ({
+        order_id: orderRow.id,
+        code: a.code,
+        kind: a.kind,
+        percent: a.percent,
+        amount_cents: a.amountCents,
+        free_sku: a.srcFreeSku,
+        free_dose: a.freeDose,
+        free_label: a.freeLabel,
+        discount_cents: a.contribution,
+        source: "code",
+      })),
+    );
+    if (codeRowsErr) console.error("Code-coupon order_coupons insert failed:", codeRowsErr, orderRow.id);
   }
 
   // 3) Emails
@@ -979,11 +1139,32 @@ Deno.serve(async (req: Request) => {
           item_note: i.note ?? null,
           fast_ship: typeof i.fast === "boolean" ? i.fast : null,
         }));
+        // Itemized discount rows — surviving code rows + the account row, the
+        // same shape send-order-invoice reads back from order_coupons. Without
+        // this the checkout invoice showed only a lumped discount (drift fix).
+        const invCoupons: CouponLine[] = [
+          ...(accountDiscount ? [{
+            code: accountDiscount.code,
+            kind: "percent",
+            free_label: accountDiscount.label,
+            percent: accountDiscount.percent,
+            amount_cents: null,
+            discount_cents: accountCents,
+          }] : []),
+          ...redeemedList.map((a) => ({
+            code: a.code,
+            kind: a.kind,
+            free_label: a.freeLabel,
+            percent: a.percent,
+            amount_cents: a.amountCents,
+            discount_cents: a.contribution,
+          })),
+        ];
         const invRes = await sendResendEmail({
           to: contact,
           subject: invoiceSubject(invOrder),
-          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines }),
-          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines }),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons }),
+          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;

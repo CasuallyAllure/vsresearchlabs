@@ -69,7 +69,7 @@ export function CompoundVisualizerFrame({
           style), static across all slides. */}
       <div
         className={`absolute inset-x-4 top-3 z-10 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono uppercase tracking-[0.2em] ${
-          expanded ? 'text-[10px] pr-10' : 'text-[8.5px] pr-1'
+          expanded ? 'text-[10px] pr-10' : 'text-[10px] pr-1'
         }`}
       >
         <span className="tabular-nums text-ink/40">FIG-01</span>
@@ -105,7 +105,7 @@ export function CompoundVisualizerFrame({
       <Suspense
         fallback={
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-ink/30">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/30">
               Initializing structure…
             </span>
           </div>
@@ -129,9 +129,7 @@ export function CompoundVisualizerFrame({
           (real cryo-EM coordinates). Moved off the right edge so it never
           shares the corner with the expand control. */}
       <span
-        className={`absolute bottom-3 left-4 z-10 font-mono uppercase tracking-[0.2em] text-ink/40 ${
-          expanded ? 'text-[9px]' : 'text-[8px]'
-        }`}
+        className="absolute bottom-3 left-4 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40"
       >
         PDB 8YW3
       </span>

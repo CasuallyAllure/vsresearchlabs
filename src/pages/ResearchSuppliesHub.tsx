@@ -75,14 +75,14 @@ export function ResearchSuppliesHub() {
         </p>
       </header>
 
-      <ul className="border-t border-ink/[0.06]">
+      <ul className="flex flex-col gap-[var(--space-4)]">
         {ROWS.map((row) => {
           const count = countFor(row.countCategory);
           return (
-            <li key={row.to} className="border-b border-ink/[0.06]">
+            <li key={row.to}>
               <Link
                 to={row.to}
-                className="group flex items-start gap-[var(--space-5)] py-[var(--space-6)] transition-colors duration-150 hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02]"
+                className="floating-module is-interactive group flex items-start gap-[var(--space-5)] p-6 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
               >
                 <span className="holo-text-display font-mono text-[13px] tabular-nums tracking-[0.1em] pt-1 shrink-0">
                   {row.eyebrow}

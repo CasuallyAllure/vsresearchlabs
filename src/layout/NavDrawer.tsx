@@ -336,7 +336,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-ink/45 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[2px] transition-opacity duration-300 ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />

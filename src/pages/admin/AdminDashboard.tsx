@@ -10,7 +10,6 @@
  * Catalog · Inventory surface next to the rest of stock management.
  */
 
-import { Link } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminStatModules } from './AdminStatModules';
 import { PerformanceSummary } from './PerformanceSummary';
@@ -18,14 +17,7 @@ import { PerformanceSummary } from './PerformanceSummary';
 export function AdminDashboard() {
   return (
     <AdminLayout>
-      <div className="mb-[var(--space-4)] flex justify-end">
-        <Link
-          to="/admin/orders/new"
-          className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
-        >
-          + New order
-        </Link>
-      </div>
+      {/* "+ New order" lives on the PerformanceSummary header line now. */}
       <PerformanceSummary />
       <AdminStatModules />
     </AdminLayout>

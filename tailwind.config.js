@@ -59,6 +59,14 @@ export default {
       },
       borderRadius: {
         card: '24px',
+        module: 'var(--radius-module)',
+        field: 'var(--radius-field)',
+        procurement: 'var(--radius-procurement)',
+      },
+      boxShadow: {
+        'elev-1': 'var(--elev-1)',
+        'elev-2': 'var(--elev-2)',
+        'elev-3': 'var(--elev-3)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 
 interface CustomerRow {
   id: string;
@@ -76,30 +77,26 @@ export function AdminCustomers() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            Customers
-          </p>
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Directory </span>
-            <span className="font-medium text-ink">on file.</span>
-          </h2>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Customers</h2>
         </div>
-        <AdminFilterBar
-          options={STATUS_FILTERS.map((s) => ({ value: s, label: s }))}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          trailing={
-            <input
-              type="search"
-              placeholder="Name / email / org"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full sm:w-[220px] px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30"
-            />
-          }
-        />
+        <div className="flex flex-wrap items-center gap-[var(--space-2)]">
+          <AdminFilterBar
+            label=""
+            dense
+            options={STATUS_FILTERS.map((s) => ({ value: s, label: s }))}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+          <input
+            type="search"
+            placeholder="Name / email / org"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="min-w-0 min-h-[40px] flex-1 rounded-full border border-ink/10 bg-base-700 px-[var(--space-3)] py-[5px] text-[12px] text-ink placeholder-ink/30 transition-colors focus:border-ink/30 focus:outline-none"
+          />
+        </div>
       </header>
 
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
@@ -123,7 +120,7 @@ export function AdminCustomers() {
             <li key={row.id}>
               <Link
                 to={`/admin/customers/${row.id}`}
-                className="block px-[var(--space-5)] py-[var(--space-4)] hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
+                className="block min-h-[44px] px-[var(--space-5)] py-[var(--space-4)] hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
               >
                 <div className="flex items-start gap-[var(--space-4)]">
                   <div className="flex-1 min-w-0">
@@ -143,7 +140,7 @@ export function AdminCustomers() {
                       last seen {formatDate(row.last_seen_at)}
                     </p>
                   </div>
-                  <span className={`shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${statusChipStyles(row.status)}`}>
+                  <span className={`${CHIP_BASE} ${statusChipStyles(row.status)}`}>
                     {row.status}
                   </span>
                 </div>
@@ -163,9 +160,9 @@ export function AdminCustomers() {
 
 function statusChipStyles(status: CustomerRow['status']): string {
   switch (status) {
-    case 'active':   return 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]';
+    case 'active':   return 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]';
     case 'inactive': return 'border-ink/15 text-ink/55 bg-ink/[0.02]';
-    case 'blocked':  return 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]';
+    case 'blocked':  return 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]';
   }
 }
 

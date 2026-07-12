@@ -112,8 +112,8 @@ const ZELLE_FOR_TEXT = ZELLE_EMAIL;
  * instead of html-only materially improves inbox placement — html-only is a
  * common spam-filter penalty. Resend takes both `text` and `html`.
  */
-export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[] }): string {
-  const { order, lines, coupons } = args;
+export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
+  const { order, lines, coupons, confirmShippingUrl } = args;
   const speeds = lines.map((l) => l.fast_ship);
   const mixed = speeds.includes(true) && speeds.includes(false);
   const ship = [
@@ -140,6 +140,9 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
     `responsible for orders sent to a wrong/incomplete address you provided.`,
     `This is also your chance to add or remove items: reply to this email before`,
     `paying and we'll send an updated invoice. Paying confirms the order as shown.`,
+    // Buyer double-confirm shipping (migration 041) — only passed in while the
+    // order is not yet ship-confirmed.
+    confirmShippingUrl ? `\nConfirm your shipping address online: ${confirmShippingUrl}` : ``,
     mixed ? `\nNote: this order mixes fast-ship and standard items — they may arrive in separate shipments, at no extra cost to you.` : ``,
     ``,
     `Items:`,
@@ -170,8 +173,8 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
   ].join("\n");
 }
 
-export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[] }): string {
-  const { order, lines, notes, coupons } = args;
+export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
+  const { order, lines, notes, coupons, confirmShippingUrl } = args;
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
@@ -194,7 +197,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
     order.ship_street,
     [order.ship_city, order.ship_state, order.ship_zip].filter(Boolean).join(", "),
     order.ship_country,
-  ].filter(Boolean).map(escapeHtml).join("<br/>");
+  ].filter((s): s is string => Boolean(s)).map(escapeHtml).join("<br/>");
 
   // Mixed fast + standard → tell the buyer it may arrive in separate shipments.
   const speeds = lines.map((l) => l.fast_ship);
@@ -292,6 +295,14 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
           change? <strong>Reply to this email before paying</strong> and we'll send
           an updated invoice. Paying confirms the order exactly as shown.
         </p>
+        ${confirmShippingUrl ? `
+        <!-- Buyer double-confirm shipping CTA (migration 041) — the caller only
+             passes this while the order is not yet ship-confirmed. Lands on the
+             /track confirm card via the #confirm-address anchor. -->
+        <div style="text-align:center;margin-top:12px;">
+          <a href="${confirmShippingUrl}" style="display:inline-block;background:#1A1714;color:#FBF9F4;text-decoration:none;font-size:11.5px;letter-spacing:0.18em;text-transform:uppercase;padding:12px 26px;border-radius:999px;font-weight:600;">Confirm shipping address</a>
+          <div style="font-size:11px;color:#6F665C;margin-top:8px;line-height:1.5;">One click — review the address above and confirm it's where this order should ship.</div>
+        </div>` : ""}
       </div>
 
       <!-- Items -->

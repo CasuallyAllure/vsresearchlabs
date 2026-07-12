@@ -274,10 +274,10 @@ function SlidePanel({
           Identifier rides a header strip so it never lands on the artwork. */}
       <div className="relative flex min-h-0 min-w-0 flex-col border-b border-ink/[0.06] bg-[var(--surface-specimen-bay)] md:col-span-2 md:border-b-0 md:border-r">
         <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-3 pb-2">
-          <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-ink/35">
+          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-ink/35">
             Specimen · {ci.sku}
           </span>
-          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink/25">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/25">
             Vial / 2D
           </span>
         </div>
@@ -365,7 +365,7 @@ function SlidePanel({
           <button
             type="button"
             onClick={() => add(variantProduct(product, ci.activeDose))}
-            className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[9.5px] font-medium uppercase tracking-[0.2em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+            className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.2em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span className="relative">Add to inquiry</span>
           </button>
@@ -556,7 +556,7 @@ function StudyEntry({ study }: { study: ProductStudy }) {
             study.title
           )}
         </h4>
-        <span className="shrink-0 rounded-[2px] border border-ink/12 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-ink/55">
+        <span className="shrink-0 rounded-[2px] border border-ink/12 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">
           {study.phase ?? MODEL_LABEL[study.model]}
         </span>
       </div>
@@ -605,7 +605,7 @@ function SlideStudies({ ci }: { ci: CompoundIntelligence }) {
       {/* Regulatory band */}
       <div className="mt-3 grid grid-cols-1 gap-px overflow-hidden rounded-[var(--radius-procurement)] border border-holo/15 sm:grid-cols-2">
         <div className="bg-holo/[0.025] px-4 py-3">
-          <p className="holo-text-caption text-[9.5px] uppercase tracking-[0.24em]">
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.24em]">
             FDA status
           </p>
           <p className="holo-text-body mt-1 font-mono text-[11px]">
@@ -613,7 +613,7 @@ function SlideStudies({ ci }: { ci: CompoundIntelligence }) {
           </p>
         </div>
         <div className="bg-holo/[0.025] px-4 py-3">
-          <p className="holo-text-caption text-[9.5px] uppercase tracking-[0.24em]">
+          <p className="holo-text-caption text-[10px] uppercase tracking-[0.24em]">
             Known human trials
           </p>
           <p className="mt-1 font-mono text-[11px]">
@@ -773,7 +773,7 @@ export function CompoundIntelligenceHero() {
               <span className="truncate font-mono text-[11px] tracking-[0.06em] text-ink/85">
                 {ci.substance}
               </span>
-              <span aria-hidden className={`shrink-0 text-[9px] text-ink/40 transition-transform ${pickerOpen ? 'rotate-180' : ''}`}>▾</span>
+              <span aria-hidden className={`shrink-0 text-[10px] text-ink/40 transition-transform ${pickerOpen ? 'rotate-180' : ''}`}>▾</span>
             </button>
             {pickerOpen && (
               <ul
@@ -824,7 +824,7 @@ export function CompoundIntelligenceHero() {
                 onClick={() => go(i)}
                 className="group relative flex-1 px-3 py-0.5 text-left focus:outline-none focus-visible:bg-ink/[0.03]"
               >
-                <span className="font-mono text-[9.5px] tabular-nums text-ink/30">
+                <span className="font-mono text-[10px] tabular-nums text-ink/30">
                   0{i + 1}
                 </span>
                 <span

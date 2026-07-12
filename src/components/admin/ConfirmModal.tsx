@@ -21,6 +21,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { FIELD_DEFAULT, FIELD_SURFACE } from '../ui/Field';
 
 type ConfirmRequest = {
   mode: 'confirm';
@@ -50,7 +51,7 @@ function Pill({
       type="button"
       onClick={onClick}
       className={[
-        'shrink-0 rounded-full border px-2.5 py-[3px] text-[8.5px] uppercase tracking-[0.14em] transition-colors',
+        'inline-flex min-h-[40px] shrink-0 items-center rounded-full border px-4 text-[10px] uppercase tracking-[0.14em] transition-colors',
         primary
           ? 'border-ink/30 bg-ink/[0.10] font-medium text-ink hover:border-ink/40 hover:bg-ink/[0.15]'
           : 'border-ink/15 text-ink/70 hover:border-ink/30 hover:text-ink',
@@ -61,8 +62,7 @@ function Pill({
   );
 }
 
-const fieldCls =
-  'w-full rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none';
+const fieldCls = `${FIELD_SURFACE} ${FIELD_DEFAULT}`;
 
 /** The modal itself. Renders either the confirm or prompt variant. */
 export function ConfirmModal({ request }: { request: ModalRequest }) {
@@ -89,9 +89,9 @@ export function ConfirmModal({ request }: { request: ModalRequest }) {
 
   return (
     <>
-      <div aria-hidden="true" onClick={cancel} className="fixed inset-0 z-[320] bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={cancel} className="fixed inset-0 z-[320] bg-[color:var(--scrim)] backdrop-blur-[8px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[321] flex items-center justify-center p-4 pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-[400px] research-surface-solid p-[var(--space-5)]">
+        <div className="pointer-events-auto w-full max-w-[400px] research-surface-solid rounded-[20px] p-[var(--space-5)]">
           <p className="mb-[var(--space-4)] text-[13px] leading-relaxed text-ink/85">{request.message}</p>
           {request.mode === 'prompt' && (
             <input

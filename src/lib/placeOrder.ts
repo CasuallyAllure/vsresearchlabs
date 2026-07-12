@@ -94,6 +94,14 @@ export async function placeOrder(payload: Record<string, unknown>): Promise<Plac
   const idempotencyKey = checkoutIdempotencyKey(payload);
 
   try {
+    // Auth note (customer portal): no explicit Authorization header is needed
+    // here. supabase.functions.invoke routes through supabase-js's
+    // fetchWithAuth, which sets `Authorization: Bearer <session access_token>`
+    // automatically whenever a customer session exists (and the anon key when
+    // not) — verified against @supabase/supabase-js 2.110.2
+    // (_getAccessToken() → session?.access_token ?? supabaseKey). place-order
+    // uses that bearer to stamp orders.user_id ONLY when the verified auth
+    // email matches the buyer contact; the guest flow is unchanged.
     const invocation = supabase.functions.invoke<PlaceOrderResponse>('place-order', {
       body: idempotencyKey ? { ...payload, idempotency_key: idempotencyKey } : payload,
     });

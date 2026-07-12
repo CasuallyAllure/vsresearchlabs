@@ -180,13 +180,13 @@ function RouteRow({
           <p className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink/45">
             {readout}
           </p>
-          <p className="mt-[var(--space-1)] text-[9.5px] uppercase tracking-[0.26em] text-ink/25">
+          <p className="mt-[var(--space-1)] text-[10px] uppercase tracking-[0.26em] text-ink/25">
             Indexed
           </p>
         </div>
         <span
           aria-hidden="true"
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink/[0.08] text-[13px] text-ink/30 transition-all duration-200 group-hover:border-holo/40 group-hover:text-holo-light"
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-ink/[0.08] text-[13px] text-ink/30 transition-[border-color,color] duration-200 group-hover:border-holo/40 group-hover:text-holo-light"
         >
           →
         </span>
@@ -878,7 +878,7 @@ export function Landing() {
                 <p className="holo-text-body max-w-[34ch] text-[13px] font-light leading-relaxed">
                   {s.statement}
                 </p>
-                <p className="holo-text-caption mt-[var(--space-4)] text-[9.5px] uppercase tracking-[0.2em] text-holo/70">
+                <p className="holo-text-caption mt-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-holo/70">
                   {s.label}
                 </p>
               </li>
@@ -900,7 +900,7 @@ export function Landing() {
           </div>
           <Link
             to="/contact"
-            className="hero-cta-gold group relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+            className="hero-cta-gold group relative inline-flex min-h-[44px] shrink-0 items-center justify-center overflow-hidden rounded-full px-[26px] py-[11px] text-[11px] font-medium uppercase tracking-[0.14em] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
           >
             <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
             <span className="relative">Begin inquiry</span>

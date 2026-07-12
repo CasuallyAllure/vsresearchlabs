@@ -24,13 +24,14 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BASE =
-  'inline-flex items-center justify-center gap-[var(--space-2)] rounded-full font-normal uppercase tracking-[0.14em] whitespace-nowrap leading-none select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/45 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-[var(--space-2)] rounded-full font-normal uppercase tracking-[0.14em] whitespace-nowrap leading-none select-none transition-transform duration-150 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none';
 
-// Slimmer, more refined proportions — leaner height, not chunky slabs.
+// Slim register with real hit areas — min-heights meet touch-target floors
+// (sm 32 / md 38 / lg 44) without reading as chunky slabs.
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'text-[10px] px-[16px] py-[7px]',
-  md: 'text-[10.5px] px-[20px] py-[9px]',
-  lg: 'text-[11px] px-[26px] py-[11px]',
+  sm: 'text-[10px] px-[16px] py-[7px] min-h-[32px]',
+  md: 'text-[10.5px] px-[20px] py-[9px] min-h-[38px]',
+  lg: 'text-[11px] px-[26px] py-[11px] min-h-[44px]',
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {

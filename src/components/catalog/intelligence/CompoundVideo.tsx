@@ -44,7 +44,7 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
         onClick={() => setOpen(true)}
         onDoubleClick={() => window.open(embed.watchUrl, '_blank', 'noopener,noreferrer')}
         aria-label="Play cited clip"
-        className="group relative shrink-0 w-[88px] aspect-[9/16] overflow-hidden rounded-[6px] focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/45"
+        className="group relative shrink-0 w-[88px] aspect-[9/16] overflow-hidden rounded-[10px] focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/45"
         style={{
           background: 'linear-gradient(150deg, #2b2622 0%, #1a1714 55%, #0f0d0b 100%)',
           border: '1px solid rgba(26,23,20,0.18)',
@@ -75,13 +75,13 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
         </span>
         {/* TikTok tag */}
         <span className="absolute inset-x-0 bottom-0 px-1.5 py-1 text-left">
-          <span className="block font-mono text-[7.5px] uppercase tracking-[0.14em] text-white/70">TikTok</span>
+          <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-white/70">TikTok</span>
         </span>
       </button>
 
       {/* Meta — title, author, blurb, watch */}
       <div className="min-w-0 flex-1 flex flex-col">
-        <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/40">Research Media · Cited Clip</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/40">Research Media · Cited Clip</p>
         {title && <p className="mt-1 text-[12.5px] font-medium leading-tight text-ink">{title}</p>}
         {author && <p className="mt-0.5 text-[10px] font-mono text-ink/50">{author}</p>}
         {description && (
@@ -114,7 +114,7 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
           >
             <div className="relative w-[325px] max-w-[92vw] rounded-[10px] overflow-hidden border border-ink/[0.14] bg-display" style={{ boxShadow: '0 24px 60px -18px rgba(26,23,20,0.5)' }}>
               <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-ink/[0.08]">
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink/45 truncate">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45 truncate">
                   {author || 'Cited clip'}
                 </span>
                 <div className="flex items-center gap-2 shrink-0">

@@ -51,7 +51,7 @@ function emptyRow(key: string): DraftRow {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const fieldCls =
-  'w-full rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none';
+  'w-full rounded-field border border-ink/12 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 transition-[border-color,box-shadow] duration-150 hover:border-ink/20 focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15';
 
 export function AdminNewOrder() {
   const navigate = useNavigate();
@@ -154,7 +154,7 @@ export function AdminNewOrder() {
   return (
     <AdminLayout backTo="/admin/orders" backLabel="All orders">
       <div className="research-surface-solid p-[var(--space-6)]">
-        <p className="holo-text-caption mb-[var(--space-2)] text-[9px] uppercase tracking-[0.3em] text-ink/40">
+        <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em] text-ink/40">
           New order
         </p>
         <h2 className="mb-[var(--space-5)] text-[clamp(1.1rem,2.4vw,1.4rem)] leading-[1.1] tracking-[-0.01em] text-ink">
@@ -164,12 +164,12 @@ export function AdminNewOrder() {
         {/* Buyer */}
         <div className="grid grid-cols-1 gap-[var(--space-3)] sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Buyer name *</span>
+            <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Buyer name *</span>
             <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Full name" className={fieldCls} />
             {touched && !nameValid && <p className="mt-1 text-[10.5px] text-red-400">Buyer name is required.</p>}
           </label>
           <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Buyer email *</span>
+            <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Buyer email *</span>
             <input
               type="email"
               value={buyerEmail}
@@ -180,19 +180,19 @@ export function AdminNewOrder() {
             {touched && !emailValid && <p className="mt-1 text-[10.5px] text-red-400">Enter a valid email address.</p>}
           </label>
           <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Organization (optional)</span>
+            <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Organization (optional)</span>
             <input value={organization} onChange={(e) => setOrganization(e.target.value)} placeholder="Lab, university, or entity" className={fieldCls} />
           </label>
           <label className="block sm:col-span-2">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Notes (optional)</span>
+            <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Notes (optional)</span>
             <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Internal notes for this order" className={`${fieldCls} resize-y`} />
           </label>
         </div>
 
         {/* Line items */}
         <div className="mt-[var(--space-6)] border-t border-ink/[0.08] pt-[var(--space-4)]">
-          <p className="mb-[var(--space-2)] text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
-          <div className="space-y-[var(--space-2)] rounded-sm border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
+          <p className="mb-[var(--space-2)] text-[10px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
+          <div className="space-y-[var(--space-2)] rounded-[14px] border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
             {rows.map((r) => {
               const doseOptions = byCompound.get(r.compound) ?? [];
               const variantKey = r.sku && r.dose ? `${r.sku}|${r.dose}` : '';
@@ -203,14 +203,14 @@ export function AdminNewOrder() {
                 <div key={r.key} className="space-y-1.5 border-b border-ink/[0.05] pb-[var(--space-2)] last:border-b-0 last:pb-0">
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Compound</span>
+                      <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Compound</span>
                       <select value={r.compound} onChange={(e) => onPickCompound(r.key, e.target.value)} className={fieldCls}>
                         <option value="">— Select compound —</option>
                         {compoundNames.map((c) => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <div>
-                      <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Dose / size</span>
+                      <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Dose / size</span>
                       <select
                         value={variantKey}
                         onChange={(e) => onPickDose(r.key, e.target.value)}
@@ -226,17 +226,17 @@ export function AdminNewOrder() {
                       </select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-[var(--space-2)]">
-                    <div className="flex items-center gap-3 pl-0.5">
+                  <div className="grid grid-cols-1 items-center gap-[var(--space-2)] sm:grid-cols-[1fr_auto]">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3 pl-0.5">
                       {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/35">line ${(lineCents / 100).toFixed(2)}</span>}
                     </div>
                     <div className="flex items-center gap-[var(--space-2)]">
                       <label className="block w-[56px]">
-                        <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
+                        <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
                         <input type="number" min="1" max="9999" value={r.quantity} onChange={(e) => update(r.key, { quantity: e.target.value })} className={`${fieldCls} text-right`} />
                       </label>
                       <label className="block w-[80px]">
-                        <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
+                        <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
                         <input type="number" step="0.01" min="0" value={r.unitUsd} onChange={(e) => update(r.key, { unitUsd: e.target.value })} placeholder="—" className={`${fieldCls} text-right`} />
                       </label>
                       <button
@@ -244,7 +244,7 @@ export function AdminNewOrder() {
                         onClick={() => remove(r.key)}
                         disabled={rows.length === 1}
                         aria-label="Remove"
-                        className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         ×
                       </button>
@@ -268,7 +268,7 @@ export function AdminNewOrder() {
           <button
             type="button"
             onClick={() => navigate('/admin/orders')}
-            className="rounded-full border border-ink/15 px-[var(--space-4)] py-[6px] text-[9.5px] uppercase tracking-[0.16em] text-ink/70 hover:border-ink/30 hover:text-ink"
+            className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-ink/15 px-[var(--space-4)] text-[10px] uppercase tracking-[0.16em] text-ink/70 hover:border-ink/30 hover:text-ink"
           >
             Cancel
           </button>
@@ -276,7 +276,7 @@ export function AdminNewOrder() {
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className="rounded-full border border-[#2E7D5B]/45 bg-[#2E7D5B]/[0.10] px-[var(--space-5)] py-[6px] text-[9.5px] font-medium uppercase tracking-[0.16em] text-[#2E7D5B] hover:border-[#2E7D5B]/65 hover:bg-[#2E7D5B]/[0.16] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-ink/10 bg-[color:var(--color-status-successMuted)] px-[var(--space-5)] text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--color-status-success)] hover:border-ink/20 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {submitting ? 'Creating…' : 'Create order'}
           </button>

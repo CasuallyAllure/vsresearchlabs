@@ -33,8 +33,8 @@ export function AbbreviationChip({ value, className }: AbbreviationChipProps) {
     <span
       className={[
         'inline-flex items-center',
-        'px-1.5 py-[2px]',
-        'rounded',
+        'px-2 py-[2px]',
+        'rounded-full',
         'bg-ink/[0.05] border border-ink/[0.09]',
         'text-ink/60',
         'text-[10px] font-medium tracking-[0.1em] uppercase',

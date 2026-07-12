@@ -86,7 +86,7 @@ export function HeroSegmentMenu({
             className={`absolute -top-[5px] h-2.5 w-2.5 rotate-45 ${alignRight ? 'right-5' : 'left-5'}`}
             style={{ backgroundColor: 'var(--color-surface-elevated)', borderLeft: '1px solid var(--color-border-default)', borderTop: '1px solid var(--color-border-default)' }}
           />
-          <p className="px-2.5 pb-1 pt-1.5 font-mono text-[8px] uppercase tracking-[0.26em] text-ink/40">
+          <p className="px-2.5 pb-1 pt-1.5 font-mono text-[10px] uppercase tracking-[0.26em] text-ink/40">
             {heading}
           </p>
           {items.map((it) => (
@@ -100,7 +100,7 @@ export function HeroSegmentMenu({
               <span className="flex min-w-0 flex-col">
                 <span className="text-[12.5px] tracking-tight text-ink">{it.label}</span>
                 {it.caption && (
-                  <span className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
+                  <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">
                     {it.caption}
                   </span>
                 )}

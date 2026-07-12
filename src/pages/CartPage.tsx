@@ -26,13 +26,14 @@
  * aria-describedby, aria-live).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Turnstile } from '../components/security/Turnstile';
 import { Link } from 'react-router-dom';
 import { BrandStamp } from '../components/brand/BrandStamp';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
+import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Field';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
@@ -41,6 +42,8 @@ import { placeOrder } from '../lib/placeOrder';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
+import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
+import { fetchMyAccountDiscount } from '../lib/accountDiscount';
 import { siteConfig } from '../config';
 
 interface OrderResult {
@@ -67,6 +70,20 @@ export function CartPage() {
   const setItemNote = useCart((s) => s.setItemNote);
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
+  const coupons = useCart((s) => s.coupons);
+
+  // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
+  // re-resolves and applies it authoritatively server-side. Guests → null.
+  const [accountDiscount, setAccountDiscount] = useState<AccountDiscountPreview | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchMyAccountDiscount().then((d) => {
+      if (!cancelled) setAccountDiscount(d);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
@@ -514,10 +531,12 @@ export function CartPage() {
           return (
             <li
               key={item.product.id}
-              className="py-[var(--space-5)] border-b border-ink/[0.06]"
+              className="px-[var(--space-5)] py-[var(--space-5)] border-b border-ink/[0.06]"
             >
-              <div className="flex items-center gap-[var(--space-4)]">
-                <div className="w-16 h-16 shrink-0 overflow-hidden bg-display border border-ink/[0.09]">
+              {/* flex-wrap + the text block's min-w let the qty/remove cluster
+                  drop to its own line on phones instead of crushing the name. */}
+              <div className="flex flex-wrap items-center gap-[var(--space-4)]">
+                <div className="w-16 h-16 shrink-0 overflow-hidden rounded-[10px] bg-display border border-ink/[0.09]">
                   {imageUrl ? (
                     <img
                       src={imageUrl}
@@ -531,7 +550,7 @@ export function CartPage() {
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-[160px] flex-1">
                   <p className="text-sm text-ink truncate">
                     {item.product.name}
                   </p>
@@ -555,24 +574,19 @@ export function CartPage() {
                   </p>
                   <p className="mt-1">
                     {lineIsFast(item) ? (
-                      <span
-                        className="font-mono text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[3px]"
-                        style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}
-                      >
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]">
                         ⚡ Fast ship
                       </span>
                     ) : (
-                      <span
-                        className="font-mono text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[3px]"
-                        style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}
-                      >
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border border-ink/12 text-ink/50 bg-ink/[0.04]">
                         Standard ship
                       </span>
                     )}
                   </p>
                 </div>
 
-                {/* Quantity controls */}
+                {/* Quantity controls + remove — one unit so they wrap together */}
+                <div className="ml-auto flex items-center">
                 <div className="flex items-center gap-[var(--space-2)]">
                   <button
                     type="button"
@@ -603,10 +617,11 @@ export function CartPage() {
                   type="button"
                   onClick={() => remove(item.product.id)}
                   aria-label={`Remove ${item.product.name}`}
-                  className="ml-[var(--space-2)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                  className="ml-[var(--space-4)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove
                 </button>
+                </div>
               </div>
 
               {/* Per-item note */}
@@ -635,7 +650,7 @@ export function CartPage() {
                       }
                       rows={2}
                       placeholder="Quantity, concentration, lot preferences, etc."
-                      className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors resize-y"
+                      className={[FIELD_SURFACE, FIELD_DEFAULT, 'resize-y'].join(' ')}
                     />
                     {noteValue.length === 0 && (
                       <button
@@ -666,6 +681,33 @@ export function CartPage() {
                   subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
                 />
               </div>
+              {/* Account discount (signed-in perk) — same pass-2a math the
+                  server bills, so this preview matches the invoice. */}
+              {accountDiscount && (() => {
+                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
+                if (breakdown.accountCents <= 0) return null;
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        {accountDiscount.label}
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(breakdown.accountCents)}
+                      </span>
+                    </div>
+                    <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Total after discounts
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        {formatUsd(Math.max(subtotalCents - breakdown.total, 0))}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           {cartHasMixedShipping(items) && (
@@ -720,12 +762,7 @@ export function CartPage() {
               aria-describedby={showNameError ? 'inquiry-name-error' : undefined}
               required
               autoComplete="name"
-              className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors',
-                showNameError
-                  ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-ink/10 focus:border-ink/40',
-              ].join(' ')}
+              className={[FIELD_SURFACE, showNameError ? FIELD_ERROR : FIELD_DEFAULT].join(' ')}
               placeholder="Full name"
             />
             {showNameError && (
@@ -757,12 +794,7 @@ export function CartPage() {
               }
               required
               autoComplete="email"
-              className={[
-                'w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors',
-                showContactError
-                  ? 'border-red-500/60 focus:border-red-400'
-                  : 'border-ink/10 focus:border-ink/40',
-              ].join(' ')}
+              className={[FIELD_SURFACE, showContactError ? FIELD_ERROR : FIELD_DEFAULT].join(' ')}
               placeholder="you@example.com or +1 555 000 0000"
             />
             {showContactError && (
@@ -797,7 +829,7 @@ export function CartPage() {
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
               autoComplete="organization"
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+              className={[FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
               placeholder="Lab, university, or operational entity"
             />
           </div>
@@ -826,7 +858,7 @@ export function CartPage() {
               value={shipStreet}
               onChange={(e) => setShipStreet(e.target.value)}
               autoComplete="street-address"
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+              className={[FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
               placeholder="123 Main Street, Apt 4B"
             />
           </div>
@@ -845,7 +877,7 @@ export function CartPage() {
                 value={shipCity}
                 onChange={(e) => setShipCity(e.target.value)}
                 autoComplete="address-level2"
-                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+                className={[FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                 placeholder="Sacramento"
               />
             </div>
@@ -863,7 +895,7 @@ export function CartPage() {
                 onChange={(e) => setShipState(e.target.value.toUpperCase())}
                 maxLength={2}
                 autoComplete="address-level1"
-                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors uppercase"
+                className={[FIELD_SURFACE, FIELD_DEFAULT, 'uppercase'].join(' ')}
                 placeholder="CA"
               />
             </div>
@@ -881,7 +913,7 @@ export function CartPage() {
                 onChange={(e) => setShipZip(e.target.value)}
                 autoComplete="postal-code"
                 inputMode="numeric"
-                className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+                className={[FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                 placeholder="95814"
               />
             </div>
@@ -906,7 +938,7 @@ export function CartPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
-              className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors resize-y"
+              className={[FIELD_SURFACE, FIELD_DEFAULT, 'resize-y'].join(' ')}
               placeholder="Lot preferences, batch requirements, delivery constraints, etc."
             />
           </div>
@@ -921,8 +953,10 @@ export function CartPage() {
           </p>
         )}
 
-        <div className="mt-[var(--space-4)]">
-          <Turnstile onToken={setTsToken} />
+        {/* overflow-hidden absorbs Turnstile's 300px minimum width when the
+            form column is narrower than that on small phones. */}
+        <div className="mt-[var(--space-4)] overflow-hidden">
+          <Turnstile onToken={setTsToken} className="w-full" />
         </div>
 
         <button

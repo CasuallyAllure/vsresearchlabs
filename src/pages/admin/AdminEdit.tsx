@@ -16,6 +16,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useProduct, useProductAdmin } from '../../hooks/useProducts';
 import type { Product, ProductCategory, ProductSpec } from '../../types/product';
 import { useConfirm } from '../../components/admin/ConfirmModal';
+import { Button } from '../../components/ui/Button';
+import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../../components/ui/Field';
 
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'biopeptide-research-supplies', label: 'Biopeptide Research Supplies' },
@@ -569,26 +571,21 @@ export function AdminEdit() {
         )}
 
         <div className="mt-[var(--space-10)] flex flex-wrap items-center gap-[var(--space-3)]">
-          <button
-            type="submit"
-            className="px-[var(--space-8)] py-[var(--space-3)] rounded-full bg-gold text-ink text-xs uppercase tracking-[0.25em] font-medium hover:bg-gold-light transition-colors"
-          >
+          <Button type="submit" variant="primary">
             {isEdit ? 'Save Changes' : 'Create Product'}
-          </button>
-          <Link
-            to="/admin"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors"
-          >
+          </Button>
+          <Button to="/admin" variant="secondary">
             Cancel
-          </Link>
+          </Button>
           {isEdit && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={handleDelete}
-              className="ml-auto px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-red-500/30 text-xs uppercase tracking-[0.25em] text-red-400/80 hover:text-red-300 hover:border-red-500/50 transition-colors"
+              className="ml-auto border border-red-500/30 text-red-400/80 hover:text-red-300 hover:border-red-500/50"
             >
               Delete
-            </button>
+            </Button>
           )}
         </div>
       </form>
@@ -602,11 +599,7 @@ export function AdminEdit() {
 // ---------------------------------------------------------------------------
 
 function inputClass(invalid: boolean): string {
-  const base =
-    'w-full px-[var(--space-4)] py-[var(--space-3)] bg-ink/40 border rounded-lg text-sm text-ink placeholder-ink/30 focus:outline-none transition-colors resize-y';
-  return invalid
-    ? `${base} border-red-500/60 focus:border-red-400`
-    : `${base} border-ink/10 focus:border-gold/50`;
+  return [FIELD_SURFACE, 'resize-y', invalid ? FIELD_ERROR : FIELD_DEFAULT].join(' ');
 }
 
 function FieldGroup({

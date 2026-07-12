@@ -62,14 +62,14 @@ export function ModuleHeader({ index, title, reserved = false, open, onToggle }:
 
   const inner = (
     <>
-      <span className="font-mono tabular-nums text-ink/30 shrink-0 leading-none" style={{ fontSize: '9.5px', minWidth: '14px' }}>
+      <span className="font-mono tabular-nums text-ink/30 shrink-0 leading-none" style={{ fontSize: '10px', minWidth: '14px' }}>
         {String(index).padStart(2, '0')}
       </span>
       <span className="flex-1 min-w-0 text-ink/58" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
         {title}
       </span>
       {reserved && (
-        <span className="text-ink/22 shrink-0" style={{ fontSize: '8.5px', letterSpacing: '0.18em', textTransform: 'uppercase', border: '1px solid rgba(26,23,20,0.08)', borderRadius: '2px', padding: '1px 4px' }}>
+        <span className="uppercase shrink-0 rounded-full border border-ink/[0.10] px-2.5 py-1 text-[10px] tracking-[0.14em] text-ink/40">
           Planned
         </span>
       )}
@@ -123,7 +123,7 @@ export function IntelModule({ index, title, defaultOpen = false, reserved = fals
           <div style={{ backgroundColor: open ? 'var(--color-surface-elevated)' : 'transparent', transition: 'background-color 200ms cubic-bezier(0.23, 1, 0.32, 1)', borderTop: open ? '1px solid var(--color-border-subtle)' : '1px solid transparent' }}>
             {reserved ? (
               <div className="px-4 py-4">
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[2px]" style={{ border: '1px dashed var(--color-border-subtle)' }}>
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[14px]" style={{ border: '1px dashed var(--color-border-subtle)' }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-ink/22 shrink-0">
                     <rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
                   </svg>
@@ -168,13 +168,13 @@ export function DataGrid({ rows }: { rows: DataGridRow[] }) {
 
 export function StatChip({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="rounded-[2px] px-2 py-1.5 min-w-0"
+    <div className="rounded-full px-2.5 py-1 min-w-0"
       style={{
         backgroundColor: highlight ? 'rgba(26,23,20,0.07)' : 'rgba(26,23,20,0.035)',
         border: highlight ? '1px solid rgba(26,23,20,0.14)' : '1px solid rgba(26,23,20,0.06)',
         transition: 'background-color 150ms ease-out, border-color 150ms ease-out',
       }}>
-      <p className="text-ink/28 uppercase truncate" style={{ fontSize: '8.5px', letterSpacing: '0.24em' }}>{label}</p>
+      <p className="text-ink/28 uppercase truncate" style={{ fontSize: '10px', letterSpacing: '0.14em' }}>{label}</p>
       <p className="text-ink/60 font-mono truncate mt-0.5" style={{ fontSize: '10.5px' }}>{value}</p>
     </div>
   );
@@ -201,8 +201,8 @@ export function IntelModuleStyles() {
         animation: cio-module-in 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
         animation-delay: calc(var(--mi, 1) * 38ms + 220ms);
       }
-      .cio-panel-el { border-radius: 4px 4px 0 0; }
-      @media (min-width: 640px) { .cio-panel-el { border-radius: 4px; } }
+      .cio-panel-el { border-radius: var(--radius-procurement) var(--radius-procurement) 0 0; }
+      @media (min-width: 640px) { .cio-panel-el { border-radius: var(--radius-procurement); } }
       @media (prefers-reduced-motion: reduce) {
         .cio-module { animation: none; opacity: 1; transform: none; }
         .cio-panel-el { animation: none !important; opacity: 1; transform: none; }

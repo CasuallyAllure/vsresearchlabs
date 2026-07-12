@@ -54,8 +54,8 @@ function FastBadge({ active, size }: { active: boolean; size: 'sm' | 'md' }) {
     <span
       style={{
         marginLeft: '4px',
-        color: active ? 'rgba(155,196,163,1)' : '#2E7D5B',
-        fontSize: size === 'sm' ? '7.5px' : '8.5px',
+        color: active ? 'color-mix(in srgb, var(--color-status-success) 55%, white)' : 'var(--color-status-success)',
+        fontSize: size === 'sm' ? '10px' : '11px',
         letterSpacing: '0.20em',
       }}
     >
@@ -92,8 +92,8 @@ export function TierStrip(props: TierStripProps) {
               title={isFast ? `${v.dose} · ships fast` : v.dose}
               className="rounded-[var(--radius-procurement)] font-mono leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 transition-colors"
               style={{
-                padding: sm ? '3px 7px' : '5px 10px',
-                fontSize: sm ? '8.5px' : '10px',
+                padding: sm ? '4px 8px' : '5px 10px',
+                fontSize: sm ? '10px' : '11px',
                 letterSpacing: '0.16em',
                 backgroundColor: active ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                 color: active ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
@@ -127,8 +127,8 @@ export function TierStrip(props: TierStripProps) {
             role="listitem"
             className="font-mono leading-none rounded-[var(--radius-procurement)]"
             style={{
-              padding: '2px 6px',
-              fontSize: '9px',
+              padding: '3px 7px',
+              fontSize: '10px',
               letterSpacing: '0.16em',
               backgroundColor: isActive ? 'var(--color-content-primary)' : 'transparent',
               color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-tertiary)',

@@ -11,6 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
+import { Button } from '../../components/ui/Button';
 
 interface InquiryRow {
   id: string;
@@ -113,24 +115,22 @@ export function AdminInquiries() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div>
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-            Inquiries
-          </p>
-          <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-            <span className="font-light text-ink/85">Incoming </span>
-            <span className="font-medium text-ink">requests.</span>
-          </h2>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Inquiries</h2>
         </div>
-        <AdminFilterBar
-          options={STATUS_FILTER_ORDER.map((s) => ({
-            value: s,
-            label: s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase(),
-          }))}
-          value={statusFilter}
-          onChange={setStatusFilter}
-        />
+        <div className="flex flex-wrap items-center gap-[var(--space-2)]">
+          <AdminFilterBar
+            label=""
+            dense
+            options={STATUS_FILTER_ORDER.map((s) => ({
+              value: s,
+              label: s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase(),
+            }))}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+        </div>
       </header>
 
       {error && (
@@ -157,26 +157,26 @@ export function AdminInquiries() {
                 <button
                   type="button"
                   onClick={() => expand(row.id)}
-                  className="w-full px-[var(--space-5)] py-[var(--space-4)] flex items-start gap-[var(--space-4)] text-left hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
+                  className="w-full px-[var(--space-5)] py-[var(--space-4)] flex flex-wrap items-start gap-x-[var(--space-4)] gap-y-1 text-left hover:bg-ink/[0.015] focus:outline-none focus-visible:bg-ink/[0.02] transition-colors"
                   aria-expanded={isExpanded}
                 >
-                  <span className="font-mono text-[10.5px] text-ink/35 tabular-nums shrink-0 pt-1 w-[120px]">
+                  <span className="font-mono text-[10.5px] text-ink/35 tabular-nums shrink-0 pt-1 min-w-0">
                     {formatTs(row.created_at)}
                   </span>
-                  <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] shrink-0 pt-1 w-[170px] truncate">
+                  <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] shrink-0 pt-1 min-w-0 truncate max-w-full">
                     {row.reference_id}
                   </span>
-                  <span className="flex-1 min-w-0">
+                  <span className="min-w-0 w-full sm:w-auto sm:flex-1">
                     <span className="block text-[13px] text-ink truncate">{row.name}</span>
                     <span className="block text-[11px] text-ink/45 truncate">
                       {row.contact}
                       {row.organization && ` · ${row.organization}`}
                     </span>
                   </span>
-                  <span className="font-mono text-[11px] text-ink/55 tabular-nums shrink-0 w-[80px] text-right">
+                  <span className="font-mono text-[11px] text-ink/55 tabular-nums shrink-0 min-w-0 text-right">
                     {row.item_count} {row.item_count === 1 ? 'unit' : 'units'}
                   </span>
-                  <span className={`shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${statusChipStyles(row.status)}`}>
+                  <span className={`${CHIP_BASE} ${statusChipStyles(row.status)}`}>
                     {row.status}
                   </span>
                 </button>
@@ -190,25 +190,25 @@ export function AdminInquiries() {
                     )}
                     {items.length > 0 && (
                       <div className="mt-[var(--space-4)] overflow-x-auto">
-                        <table className="w-full min-w-[480px] border-collapse">
+                        <table className="w-full border-collapse">
                           <thead>
                             <tr className="border-y border-ink/[0.06]">
-                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal pl-0">SKU</th>
-                              <th className="py-[var(--space-2)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal">Item</th>
-                              <th className="py-[var(--space-2)] text-right text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal w-12">Qty</th>
+                              <th className="py-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal pl-0">SKU</th>
+                              <th className="py-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal">Item</th>
+                              <th className="py-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.18em] text-ink/40 font-normal w-12">Qty</th>
                             </tr>
                           </thead>
                           <tbody>
                             {items.map((it) => (
                               <tr key={it.id} className="border-b border-ink/[0.04]">
-                                <td className="py-[var(--space-2)] pl-0 font-mono text-[11px] text-holo-light/75">{it.sku}</td>
-                                <td className="py-[var(--space-2)] text-[12px] text-ink/75">
+                                <td className="py-[var(--space-3)] pl-0 font-mono text-[11px] text-holo-light/75">{it.sku}</td>
+                                <td className="py-[var(--space-3)] text-[12px] text-ink/75">
                                   {it.product_name}
                                   {it.item_note && (
                                     <div className="text-[10.5px] text-ink/40 mt-0.5">Note: {it.item_note}</div>
                                   )}
                                 </td>
-                                <td className="py-[var(--space-2)] text-right font-mono tabular-nums text-[12px] text-ink/70">{it.quantity}</td>
+                                <td className="py-[var(--space-3)] text-right font-mono tabular-nums text-[12px] text-ink/70">{it.quantity}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -216,14 +216,15 @@ export function AdminInquiries() {
                       </div>
                     )}
                     <div className="mt-[var(--space-5)] flex items-center gap-[var(--space-3)]">
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => createOrder(row.id)}
                         disabled={creating === row.id || row.status === 'CLOSED'}
-                        className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         {creating === row.id ? 'Creating…' : 'Create order'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}

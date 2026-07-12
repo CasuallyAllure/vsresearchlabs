@@ -14,7 +14,9 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { AdminFilterBar } from './AdminFilterBar';
 
 const RANGES: Array<{ id: string; label: string }> = [
   { id: 'mtd', label: 'This month' },
@@ -149,24 +151,24 @@ export function PerformanceSummary() {
 
   return (
     <section className="mb-[var(--space-6)]">
-      <div className="mb-[var(--space-3)] flex items-center justify-between gap-[var(--space-3)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] text-ink/55">Performance</p>
-        <div className="flex flex-wrap items-center gap-1">
-          {RANGES.map((r) => {
-            const on = r.id === range;
-            return (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => setRange(r.id)}
-                className={`rounded-full border px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.16em] transition-colors ${
-                  on ? 'border-ink/40 bg-ink/[0.04] text-ink' : 'border-ink/15 text-ink/50 hover:border-ink/30 hover:text-ink/80'
-                }`}
-              >
-                {r.label}
-              </button>
-            );
-          })}
+      {/* One compact line: caption · range dropdown · new-order action. */}
+      <div className="mb-[var(--space-3)] flex items-center gap-[var(--space-2)]">
+        <p className="holo-text-caption min-w-0 truncate text-[10px] uppercase tracking-[0.3em] text-ink/55">Sales</p>
+        <div className="ml-auto flex shrink-0 items-center gap-[var(--space-2)]">
+          <AdminFilterBar
+            label=""
+            dense
+            menuAlign="right"
+            options={RANGES.map((r) => ({ value: r.id, label: r.label }))}
+            value={range}
+            onChange={setRange}
+          />
+          <Link
+            to="/admin/orders/new"
+            className="relative whitespace-nowrap rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-3)] py-1 text-[10px] uppercase tracking-[0.16em] text-ink/80 transition-colors before:absolute before:inset-[-10px] before:content-[''] hover:border-ink/35 hover:text-ink"
+          >
+            + New order
+          </Link>
         </div>
       </div>
 
@@ -182,7 +184,7 @@ export function PerformanceSummary() {
 
       {/* Top sellers */}
       <div className="mt-[var(--space-3)] research-surface-solid px-[var(--space-4)] py-[var(--space-4)]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.24em] text-ink/40">Top sellers</p>
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.24em] text-ink/40">Top sellers</p>
         {loading ? (
           <p className="text-[11px] text-ink/40">Loading…</p>
         ) : metrics.top.length === 0 ? (
@@ -197,13 +199,13 @@ export function PerformanceSummary() {
                     <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink/80">{fmtUSD(t.revenueCents)}</span>
                   </div>
                   <div className="mt-1 flex items-center gap-[var(--space-2)]">
-                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
+                    <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-ink/10">
                       <div
                         className="h-full rounded-full bg-holo"
                         style={{ width: maxTopRevenue > 0 ? `${Math.max(4, Math.round((t.revenueCents / maxTopRevenue) * 100))}%` : '0%' }}
                       />
                     </div>
-                    <span className="shrink-0 font-mono text-[9.5px] tabular-nums text-ink/40">{fmtInt(t.units)} units</span>
+                    <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink/40">{fmtInt(t.units)} units</span>
                   </div>
                 </div>
               </li>

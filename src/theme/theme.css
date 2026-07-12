@@ -194,7 +194,12 @@
   --radius-full: 9999px;
   --radius-card: 24px;
   --radius-card-inner: 16px;
-  --radius-procurement: 4px;
+  /* 2026 register (docs/DESIGN_2026_BLUEPRINT.md): procurement modules soften
+     from the sharp 4px spec-sheet corner to a floating-module 14px. This one
+     token reshapes every .research-surface-* consumer. */
+  --radius-procurement: 14px;
+  --radius-module: 20px;
+  --radius-field: 12px;
 
   /* ─────────────────────────────────────────────────────────────────────────
      SHADOWS
@@ -213,6 +218,23 @@
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glassHover: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  /* 2026 elevation ramp — layered, warm-tinted on cream (never raw black),
+     one light source from above. Dark theme overrides below. */
+  --elev-1: 0 1px 2px rgba(30, 28, 24, 0.04), 0 4px 16px -6px rgba(30, 28, 24, 0.08);
+  --elev-2: 0 2px 4px rgba(30, 28, 24, 0.05), 0 14px 36px -10px rgba(30, 28, 24, 0.12);
+  --elev-3: 0 8px 32px rgba(30, 28, 24, 0.10), 0 28px 72px -18px rgba(30, 28, 24, 0.20);
+
+  /* Glass surface recipe — blur + hairline border + inset refraction edge.
+     Applied ONLY to fixed/sticky/overlay chrome via .glass-panel. */
+  --glass-bg: rgba(255, 253, 248, 0.65);
+  --glass-border: rgba(20, 20, 20, 0.08);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(16px) saturate(150%);
+  /* Overlay scrim behind modals/drawers. MUST be a token, never `bg-ink/xx`:
+     the ink channel flips to silver in dark mode, which turns an ink-alpha
+     scrim into a white wash that ruins contrast behind glass panels. */
+  --scrim: rgba(26, 23, 20, 0.55);
 
   /* ─────────────────────────────────────────────────────────────────────────
      BLUR
@@ -411,6 +433,16 @@ html[data-theme="dark"] {
   --color-status-info: #868A90;
   --color-status-infoMuted: rgba(134, 138, 144, 0.16);
 
+  /* ── 2026 elevation + glass (dark) ───────────────────────────────────── */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 16px -6px rgba(0, 0, 0, 0.45);
+  --elev-2: 0 2px 4px rgba(0, 0, 0, 0.40), 0 14px 36px -10px rgba(0, 0, 0, 0.55);
+  --elev-3: 0 8px 32px rgba(0, 0, 0, 0.45), 0 28px 72px -18px rgba(0, 0, 0, 0.65);
+  --glass-bg: rgba(22, 22, 24, 0.60);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(16px) saturate(160%);
+  --scrim: rgba(0, 0, 0, 0.65);
+
   /* ── Research surface tokens (E1/E2) ─────────────────────────────────── */
   --surface-product: #161618;
   --surface-product-hover: #1E1E21;
@@ -420,6 +452,10 @@ html[data-theme="dark"] {
   --border-product-hover: rgba(233, 233, 236, 0.20);
   --border-cta: rgba(233, 233, 236, 0.15);
   --surface-specimen-bay: #161618;
+  /* Dark: the lit top edge dims to a whisper — a bright 0.7 white line on
+     near-black reads as a wire, not a light source. */
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --surface-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 /* The dark page sits behind backdrop-blurred chrome; set color-scheme so
@@ -480,6 +516,9 @@ html[data-theme="dark"] {
   /* E1 — Specimen/product image bay. Light now: the box+vial product shots
      are light studio renders, so the bay is a soft near-white card surface. */
   --surface-specimen-bay: #FBF9F4;
+  /* Lit top edge on floating modules — theme-aware refraction highlight. */
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --surface-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 /* ─── Research surface utility classes ───
@@ -496,26 +535,19 @@ html[data-theme="dark"] {
     background-color: var(--surface-product);
     border: 1px solid var(--border-product);
     border-radius: var(--radius-procurement);
-    /* Depth ("dark-saber") lift: a lit top edge catches the light leaking
-       from above, a deep soft dark drop-shadow separates the module from
-       the background, and a faint cool halo gives the dark glow that
-       lifts the panel rather than letting it sit flat. */
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      0 1px 2px rgba(26, 23, 20, 0.04),
-      0 10px 28px -16px rgba(26, 23, 20, 0.18);
+    /* 2026 floating-module lift: a lit top edge (refraction highlight) +
+       the layered warm elevation ramp. Theme-aware via --surface-highlight
+       and --elev-* so dark mode gets its own depth values. */
+    box-shadow: var(--surface-highlight), var(--elev-1);
     transition:
       background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
       border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
   }
   .research-surface-solid:hover {
     background-color: var(--surface-product-hover);
     border-color: var(--border-product-hover);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      0 2px 6px rgba(26, 23, 20, 0.06),
-      0 16px 40px -16px rgba(26, 23, 20, 0.22);
+    box-shadow: var(--surface-highlight-strong), var(--elev-2);
   }
   /* Press feedback — opt-in via `.is-interactive` so only tappable modules
      (cards, rows) respond; receipts / static data modules stay inert. The
@@ -523,9 +555,7 @@ html[data-theme="dark"] {
      reads as pressed into the surface. No transform, no bounce — on register. */
   .research-surface-solid.is-interactive:active {
     background-color: var(--surface-product-hover);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      0 1px 2px rgba(26, 23, 20, 0.05);
+    box-shadow: var(--surface-highlight), 0 1px 2px rgba(26, 23, 20, 0.05);
     transition-duration: 80ms;
   }
   .research-surface-elevated {
@@ -534,10 +564,35 @@ html[data-theme="dark"] {
     border-radius: var(--radius-procurement);
     /* Stronger inset highlight + deeper lift — L2 surfaces read as a
        layer above L1. */
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.85),
-      0 2px 6px rgba(26, 23, 20, 0.05),
-      0 16px 40px -16px rgba(26, 23, 20, 0.2);
+    box-shadow: var(--surface-highlight-strong), var(--elev-2);
+  }
+  /* 2026 standard content card — solid elevated fill (no backdrop-filter;
+     glass blur is reserved for fixed/sticky chrome), 20px radius, layered
+     soft elevation. Use for new work; .research-surface-solid remains the
+     retuned legacy alias. */
+  .floating-module {
+    background-color: var(--surface-product);
+    border: 1px solid var(--border-product);
+    border-radius: var(--radius-module);
+    box-shadow: var(--surface-highlight), var(--elev-1);
+    transition:
+      border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .floating-module.is-interactive:hover {
+    border-color: var(--border-product-hover);
+    box-shadow: var(--surface-highlight-strong), var(--elev-2);
+  }
+  /* Frosted glass chrome — fixed/sticky/overlay surfaces ONLY (headers,
+     drawers, modals, sheets, dropdown menus, sticky filter bars). All three
+     glass ingredients or it reads as cheap transparency: blur + hairline
+     border + inset refraction highlight. */
+  .glass-panel {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight), var(--elev-2);
   }
 }
 

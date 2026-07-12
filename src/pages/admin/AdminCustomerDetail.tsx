@@ -8,9 +8,12 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
+import { CustomerAccountPanels } from './CustomerAccountPanels';
+import { Button } from '../../components/ui/Button';
+import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
 
 interface CustomerRow {
   id: string;
@@ -45,7 +48,6 @@ interface OrderRow {
 
 export function AdminCustomerDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [customer, setCustomer] = useState<CustomerRow | null>(null);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -117,15 +119,7 @@ export function AdminCustomerDetail() {
   }
 
   return (
-    <AdminLayout>
-      <button
-        type="button"
-        onClick={() => navigate('/admin/customers')}
-        className="text-[10px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors mb-[var(--space-5)]"
-      >
-        ← All customers
-      </button>
-
+    <AdminLayout backTo="/admin/customers" backLabel="All customers">
       {error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{error}</p>}
 
       {!customer && !error && (
@@ -135,12 +129,7 @@ export function AdminCustomerDetail() {
       {customer && (
         <>
           <header className="mb-[var(--space-6)] pb-[var(--space-5)] border-b border-ink/[0.06]">
-            <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-              Customer
-            </p>
-            <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-              {customer.display_name}
-            </h2>
+            <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">{customer.display_name}</h2>
             <dl className="mt-[var(--space-4)] grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-4)] text-[12px]">
               <div>
                 <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Contact</dt>
@@ -159,7 +148,7 @@ export function AdminCustomerDetail() {
               </div>
               <div>
                 <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Status</dt>
-                <dd className="flex items-center gap-1.5 mt-0.5">
+                <dd className="flex flex-wrap items-center gap-1.5 mt-0.5">
                   {(['active', 'inactive', 'blocked'] as const).map((s) => (
                     <button
                       key={s}
@@ -167,7 +156,7 @@ export function AdminCustomerDetail() {
                       onClick={() => setStatus(s)}
                       disabled={busy || customer.status === s}
                       className={[
-                        'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
+                        'inline-flex min-h-[40px] items-center rounded-full px-[var(--space-4)] text-[10px] uppercase tracking-[0.18em] transition-colors disabled:cursor-not-allowed',
                         customer.status === s
                           ? statusChipStyles(s)
                           : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
@@ -191,19 +180,23 @@ export function AdminCustomerDetail() {
               value={notesDraft}
               onChange={(e) => setNotesDraft(e.target.value)}
               placeholder="Admin-only notes. Customer never sees these."
-              className="w-full px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12.5px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30 transition-colors resize-y"
+              className={[FIELD_SURFACE, 'resize-y', FIELD_DEFAULT].join(' ')}
             />
             <div className="mt-[var(--space-3)] flex items-center justify-end gap-[var(--space-3)]">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={saveNotes}
                 disabled={busy || notesDraft === (customer.notes ?? '')}
-                className="rounded-full bg-ink/[0.10] border border-ink/30 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] font-medium text-ink hover:bg-ink/[0.15] hover:border-ink/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {busy ? 'Saving…' : 'Save notes'}
-              </button>
+              </Button>
             </div>
           </section>
+
+          {/* Linked portal account (customer_profiles → rewards → discounts) */}
+          <CustomerAccountPanels customerId={customer.id} customerContact={customer.contact} />
 
           {/* Inquiries */}
           <section className="mb-[var(--space-6)]">
@@ -215,10 +208,10 @@ export function AdminCustomerDetail() {
             ) : (
               <ul className="research-surface-solid divide-y divide-ink/[0.04]">
                 {inquiries.map((row) => (
-                  <li key={row.id} className="px-[var(--space-5)] py-[var(--space-3)] flex items-center gap-[var(--space-4)]">
+                  <li key={row.id} className="px-[var(--space-5)] py-[var(--space-3)] flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-1">
                     <span className="font-mono text-[10.5px] text-ink/45 tabular-nums w-[120px] shrink-0">{formatTs(row.created_at)}</span>
                     <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] w-[170px] shrink-0 truncate">{row.reference_id}</span>
-                    <span className="flex-1 text-[12px] text-ink/65">
+                    <span className="min-w-0 w-full text-[12px] text-ink/65 sm:w-auto sm:flex-1">
                       {row.item_count} {row.item_count === 1 ? 'unit' : 'units'}
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.18em] text-ink/55">{row.status}</span>
@@ -241,11 +234,11 @@ export function AdminCustomerDetail() {
                   <li key={row.id}>
                     <Link
                       to={`/admin/orders/${row.id}`}
-                      className="px-[var(--space-5)] py-[var(--space-3)] flex items-center gap-[var(--space-4)] hover:bg-ink/[0.015] transition-colors"
+                      className="px-[var(--space-5)] py-[var(--space-3)] flex flex-wrap items-center gap-x-[var(--space-4)] gap-y-1 hover:bg-ink/[0.015] transition-colors"
                     >
                       <span className="font-mono text-[10.5px] text-ink/45 tabular-nums w-[120px] shrink-0">{formatTs(row.created_at)}</span>
                       <span className="font-mono text-[11px] text-holo-light/80 tracking-[0.04em] w-[170px] shrink-0 truncate">{row.order_number}</span>
-                      <span className="flex-1 font-mono text-[12px] text-ink/75 tabular-nums">{formatCents(row.invoice_amount_cents)}</span>
+                      <span className="min-w-0 w-full font-mono text-[12px] text-ink/75 tabular-nums sm:w-auto sm:flex-1">{formatCents(row.invoice_amount_cents)}</span>
                       <span className="text-[10px] uppercase tracking-[0.18em] text-ink/55">{row.status.replace(/_/g, ' ')}</span>
                     </Link>
                   </li>
@@ -261,9 +254,9 @@ export function AdminCustomerDetail() {
 
 function statusChipStyles(status: CustomerRow['status']): string {
   switch (status) {
-    case 'active':   return 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.10]';
+    case 'active':   return 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]';
     case 'inactive': return 'border-ink/25 text-ink/85 bg-ink/[0.05]';
-    case 'blocked':  return 'border-red-400/40 text-red-300/85 bg-red-400/[0.08]';
+    case 'blocked':  return 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]';
   }
 }
 

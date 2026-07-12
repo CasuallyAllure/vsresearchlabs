@@ -122,7 +122,7 @@ export function ClassificationFilter({
               onChange={(e) => { onSearch(e.target.value); setSugOpen(true); }}
               onFocus={() => setSugOpen(true)}
               placeholder={searchPlaceholder}
-              className="w-full rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 py-1.5 pl-8 pr-7 text-[12.5px] text-ink placeholder:text-ink/35 transition-colors hover:border-ink/25 focus:outline-none focus:border-holo/40"
+              className="w-full min-h-[40px] sm:min-h-0 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 py-1.5 pl-8 pr-7 text-[12.5px] text-ink placeholder:text-ink/35 transition-colors hover:border-ink/25 focus:outline-none focus:border-holo/40"
             />
             {search && (
               <button
@@ -168,7 +168,7 @@ export function ClassificationFilter({
             // Off-state colors use the theme-bound `ink` tokens (NOT a hardcoded
             // dark rgba) so the control stays visible in dark mode — a fixed
             // near-black border/text was invisible on the black surface.
-            className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1.5 text-[9.5px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex shrink-0 min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               inStock.on ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -196,7 +196,7 @@ export function ClassificationFilter({
             aria-haspopup="listbox"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="flex min-w-[68px] max-w-[40vw] items-center justify-between gap-1.5 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+            className="flex min-h-[40px] sm:min-h-0 min-w-[68px] max-w-[40vw] items-center justify-between gap-1.5 rounded-[var(--radius-procurement)] border border-ink/15 bg-base-700 px-2.5 py-1.5 text-left text-[12.5px] text-ink transition-colors hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
           >
             <span className="truncate font-medium">{currentLabel}</span>
             <span aria-hidden="true" className={`shrink-0 text-[10px] text-ink/45 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▾</span>
@@ -241,14 +241,14 @@ export function ClassificationFilter({
             <button
               type="button"
               onClick={() => setShowTech(false)}
-              className={`rounded-full px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] transition-colors ${!showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${!showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
             >
               Plain terms
             </button>
             <button
               type="button"
               onClick={() => setShowTech(true)}
-              className={`rounded-full px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] transition-colors ${showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
             >
               Technical detail
             </button>

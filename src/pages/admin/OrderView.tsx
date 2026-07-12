@@ -330,7 +330,7 @@ export function OrderView({
       {/* Bill to (left) · amounts (right) — equal columns */}
       <div className="flex justify-between gap-[var(--space-6)] py-[var(--space-4)]">
         <div className="min-w-0 flex-1">
-          <p className="holo-text-caption mb-1 text-[9px] uppercase tracking-[0.24em] text-ink/40">Bill to</p>
+          <p className="holo-text-caption mb-1 text-[10px] uppercase tracking-[0.24em] text-ink/40">Bill to</p>
           <p className="text-[13px] text-ink">{order.buyer_name}</p>
           <p className="break-words text-[11.5px] text-ink/55">{order.buyer_contact}</p>
           {order.buyer_organization && <p className="text-[11.5px] text-ink/55">{order.buyer_organization}</p>}
@@ -364,12 +364,12 @@ export function OrderView({
 
       {/* Itemized — compact rows that fit without horizontal scroll */}
       {editWarn && (
-        <p className="mb-[var(--space-2)] rounded-sm border border-[#B5904B]/45 bg-[#B5904B]/[0.08] px-[var(--space-3)] py-[var(--space-2)] text-[11px] leading-relaxed text-ink/80">
+        <p className="mb-[var(--space-2)] rounded-[12px] border border-ink/10 bg-[color:var(--color-status-warningMuted)] px-[var(--space-3)] py-[var(--space-2)] text-[11px] leading-relaxed text-ink/80">
           {editWarn}
         </p>
       )}
       <div className="mb-[var(--space-2)] flex items-center justify-between">
-        <p className="holo-text-caption text-[9px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
+        <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/40">Itemized</p>
         {!editing && (
           <button type="button" onClick={() => setEditing(true)} className="text-[10px] uppercase tracking-[0.16em] text-holo transition-colors hover:text-holo-light">
             Edit
@@ -385,7 +385,7 @@ export function OrderView({
           onSaved={handleItemsSaved}
         />
       ) : (
-        <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
+        <ul className="divide-y divide-ink/[0.05] rounded-[14px] border border-ink/[0.08]">
           {lines.map((l, i) => {
             const u = unitOf(l);
             const lt = lineTotal(l);
@@ -399,7 +399,7 @@ export function OrderView({
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
-                    {l.fast_ship && <span className="shrink-0 rounded-sm bg-[#B5904B]/15 px-1 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-[#B5904B]">Fast</span>}
+                    {l.fast_ship && <span className="shrink-0 rounded-full bg-[color:var(--color-status-warningMuted)] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-[color:var(--color-status-warning)]">Fast</span>}
                   </div>
                   <p className="truncate font-mono text-[10px] text-holo-light/70">
                     {l.sku}{l.item_note ? ` · ${l.item_note}` : ''}
@@ -425,13 +425,13 @@ export function OrderView({
 
       {/* Send-now prompt — appears after saving itemized when no invoice sent yet */}
       {pendingSend && (
-        <div className="mt-[var(--space-3)] flex items-center justify-between rounded-sm border border-holo/30 bg-holo/[0.06] px-[var(--space-3)] py-[var(--space-2)]">
+        <div className="mt-[var(--space-3)] flex items-center justify-between rounded-[12px] border border-holo/30 bg-holo/[0.06] px-[var(--space-3)] py-[var(--space-2)]">
           <p className="text-[11px] text-ink/70">Lines saved — ready to send the invoice to the buyer.</p>
           <button
             type="button"
             disabled={busy}
             onClick={() => { setPendingSend(false); setShowSend(true); }}
-            className="ml-[var(--space-3)] shrink-0 rounded-full border border-holo/50 px-[var(--space-3)] py-[4px] text-[9.5px] uppercase tracking-[0.16em] text-holo hover:border-holo hover:text-holo-light disabled:opacity-40"
+            className="ml-[var(--space-3)] shrink-0 rounded-full border border-holo/50 px-[var(--space-3)] py-[4px] text-[10px] uppercase tracking-[0.16em] text-holo hover:border-holo hover:text-holo-light disabled:opacity-40"
           >
             Send invoice →
           </button>
@@ -449,10 +449,10 @@ export function OrderView({
 
       {/* ── Status bar ─────────────────────────────────────────────────────── */}
       <section className="mt-[var(--space-8)] border-t border-ink/[0.06] pt-[var(--space-5)]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">Status</p>
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em] text-ink/40">Status</p>
 
         {terminal ? (
-          <div className="rounded-sm border border-red-400/40 bg-red-400/[0.06] p-[var(--space-4)]">
+          <div className="rounded-[12px] border border-red-400/40 bg-red-400/[0.06] p-[var(--space-4)]">
             <p className="text-[11px] uppercase tracking-[0.18em] text-red-400/80">{order.status}</p>
             {order.cancellation_reason && <p className="mt-1 text-[12.5px] text-red-300/85">{order.cancellation_reason}</p>}
             <button
@@ -467,7 +467,7 @@ export function OrderView({
                   { stage: null, kind: 'revert', note: 'Revived from terminal state' },
                 );
               }}
-              className="mt-[var(--space-3)] rounded-full border border-ink/20 px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/70 hover:border-ink/35 hover:text-ink disabled:opacity-40"
+              className="mt-[var(--space-3)] rounded-full border border-ink/20 px-[var(--space-4)] py-[5px] text-[10px] uppercase tracking-[0.18em] text-ink/70 hover:border-ink/35 hover:text-ink disabled:opacity-40"
             >
               Revive order
             </button>
@@ -487,10 +487,10 @@ export function OrderView({
                   const showNow = isCurrent && !(isProcessing && s.key === 'shipped');
                   return (
                     <li key={s.key} className="flex-1">
-                      <div className={`h-[5px] rounded-full transition-colors ${done ? 'bg-holo' : isCurrent ? 'bg-holo/30' : 'bg-ink/[0.10]'}`} />
-                      <p className={`mt-1.5 text-[8.5px] uppercase leading-tight tracking-[0.1em] ${done ? 'text-ink/70' : isCurrent ? 'text-ink font-medium' : 'text-ink/30'}`}>
+                      <div className={`h-[6px] rounded-full transition-colors ${done ? 'bg-holo' : isCurrent ? 'bg-holo/30' : 'bg-ink/[0.10]'}`} />
+                      <p className={`mt-1.5 text-[10px] uppercase leading-tight tracking-[0.1em] ${done ? 'text-ink/70' : isCurrent ? 'text-ink font-medium' : 'text-ink/30'}`}>
                         {s.label}
-                        {showProcessing && <span className="ml-1" style={{ color: '#2E7D5B' }}>· order processing</span>}
+                        {showProcessing && <span className="ml-1 text-[color:var(--color-status-success)]">· order processing</span>}
                         {showNow && <span className="ml-1 text-holo">● now</span>}
                       </p>
                     </li>
@@ -513,13 +513,13 @@ export function OrderView({
 
       {/* ── Notes & history ────────────────────────────────────────────────── */}
       <section className="mt-[var(--space-7)] border-t border-ink/[0.06] pt-[var(--space-5)]">
-        <p className="holo-text-caption mb-[var(--space-3)] text-[9px] uppercase tracking-[0.3em] text-ink/40">Notes &amp; history</p>
+        <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em] text-ink/40">Notes &amp; history</p>
         {events.length > 0 ? (
           <ol className="space-y-[var(--space-2)]">
             {events.map((e) => (
               <li key={e.id} className="flex gap-[var(--space-3)] text-[12px]">
                 <span className="w-[120px] shrink-0 font-mono text-[10px] tabular-nums text-ink/35">{fmtDate(e.created_at)}</span>
-                <span className={`w-[52px] shrink-0 text-[9px] uppercase tracking-[0.14em] ${e.kind === 'revert' ? 'text-red-400/70' : e.kind === 'advance' ? 'text-holo' : 'text-ink/40'}`}>{e.kind}</span>
+                <span className={`w-[56px] shrink-0 text-[10px] uppercase tracking-[0.14em] ${e.kind === 'revert' ? 'text-red-400/70' : e.kind === 'advance' ? 'text-holo' : 'text-ink/40'}`}>{e.kind}</span>
                 <span className="min-w-0 flex-1 text-ink/75">{e.note}</span>
               </li>
             ))}
@@ -663,14 +663,14 @@ function StageActions({
     inputs = (
       <div className={`mb-[var(--space-3)] grid gap-[var(--space-3)] ${needsTracking ? 'grid-cols-[110px_1fr]' : 'grid-cols-1'}`}>
         <label className="block">
-          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Carrier</span>
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Carrier</span>
           <select value={carrier} onChange={(e) => setCarrier(e.target.value)} className={fieldCls}>
             {CARRIERS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
         </label>
         {needsTracking && (
           <label className="block">
-            <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
+            <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">Tracking (optional)</span>
             <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="Tracking number" className={fieldCls} />
           </label>
         )}
@@ -876,7 +876,7 @@ function PrintableInvoice({
     <>
       <style>{`@media print { body * { visibility: hidden !important; } .print-doc, .print-doc * { visibility: visible !important; } .print-doc { position: absolute !important; inset: 0 !important; margin: 0 !important; box-shadow: none !important; } .no-print { display: none !important; } }`}</style>
 
-      <div className="fixed inset-0 z-[300] bg-ink/60 backdrop-blur-[3px]" />
+      <div className="fixed inset-0 z-[300] bg-[color:var(--scrim)] backdrop-blur-[3px]" />
       <div className="fixed inset-0 z-[301] overflow-y-auto overscroll-contain p-4 sm:p-8" onClick={onClose}>
         <div onClick={(e) => e.stopPropagation()} className="print-doc mx-auto max-w-[760px] bg-white text-[#1A1714] shadow-[0_24px_60px_-20px_rgba(26,23,20,0.5)]">
           <div className="h-[3px] bg-[#B5904B]" />
@@ -941,7 +941,8 @@ function PrintableInvoice({
               </div>
             )}
 
-            <table className="w-full border-collapse">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[480px] border-collapse">
               <thead>
                 <tr className="border-y border-[#1A1714]/15">
                   <th className="py-2 pr-3 text-left font-mono text-[9px] uppercase tracking-[0.16em] text-[#9A9186] font-normal">SKU</th>
@@ -979,6 +980,7 @@ function PrintableInvoice({
                 })}
               </tbody>
             </table>
+            </div>
 
             <div className="mt-4 flex justify-end">
               <dl className="grid grid-cols-[auto_auto] gap-x-8 gap-y-1 text-[12px]">
@@ -1026,10 +1028,10 @@ function PrintableInvoice({
  *  exists but was never confirmed reads muted; no address at all tells the
  *  admin the buyer still owes it. */
 function ShipConfirmationChip({ order }: { order: OrderRecord }) {
-  const base = 'inline-block shrink-0 rounded-sm border px-2 py-0.5 text-[9px] uppercase tracking-[0.16em]';
+  const base = 'inline-block shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.16em]';
   if (order.ship_confirmed_at) {
     return (
-      <span className={`${base} border-[#2E7D5B]/40 bg-[#2E7D5B]/[0.06] text-[#2E7D5B]/90`}>
+      <span className={`${base} border-ink/10 bg-[color:var(--color-status-successMuted)] text-[color:var(--color-status-success)]`}>
         Address confirmed ✓
       </span>
     );
@@ -1043,12 +1045,12 @@ function ShipConfirmationChip({ order }: { order: OrderRecord }) {
 }
 
 const fieldCls =
-  'w-full rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none';
+  'w-full rounded-field border border-ink/12 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12px] text-ink placeholder-ink/30 transition-[border-color,box-shadow] duration-150 hover:border-ink/20 focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15';
 
 function HeaderLine({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-[var(--space-3)]">
-      <span className="w-[48px] shrink-0 font-mono text-[9px] uppercase tracking-[0.22em] text-ink/40">{label}</span>
+      <span className="w-[48px] shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/40">{label}</span>
       {children}
     </div>
   );
@@ -1070,7 +1072,7 @@ function SendNoteModal({
 
   return (
     <>
-      <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[300] bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={onCancel} className="fixed inset-0 z-[300] bg-[color:var(--scrim)] backdrop-blur-[3px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[301] flex items-start justify-center p-4 pointer-events-none sm:p-8">
         <div className="pointer-events-auto w-full max-w-[440px] research-surface-solid p-[var(--space-5)]">
           <p className="holo-text-caption mb-[var(--space-1)] text-[10px] uppercase tracking-[0.3em]">{title}</p>
@@ -1214,7 +1216,7 @@ function ItemizedEditor({
   }
 
   return (
-    <div className="rounded-sm border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
+    <div className="rounded-[14px] border border-ink/[0.12] bg-ink/[0.015] p-[var(--space-3)]">
       <div className="space-y-[var(--space-2)]">
         {rows.map((r) => {
           const cents = r.unitUsd.trim() === '' ? 0 : Math.round(parseFloat(r.unitUsd) * 100);
@@ -1227,14 +1229,14 @@ function ItemizedEditor({
             {/* Row 1: Compound + Dose */}
             <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Compound</span>
+                <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Compound</span>
                 <select value={r.compound} onChange={(e) => onPickCompound(r.key, e.target.value)} className={fieldCls}>
                   <option value="">— Select compound —</option>
                   {compoundNames.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Dose / size</span>
+                <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Dose / size</span>
                 <select
                   value={variantKey}
                   onChange={(e) => onPickDose(r.key, e.target.value)}
@@ -1251,8 +1253,8 @@ function ItemizedEditor({
               </div>
             </div>
             {/* Row 2: SKU + fast ship + qty + price + delete */}
-            <div className="grid grid-cols-[1fr_auto] items-center gap-[var(--space-2)]">
-              <div className="flex items-center gap-3 pl-0.5">
+            <div className="grid grid-cols-1 items-center gap-[var(--space-2)] sm:grid-cols-[1fr_auto]">
+              <div className="flex min-w-0 flex-wrap items-center gap-3 pl-0.5">
                 <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/40">{r.sku ? skuSuffix(r.sku) : '—'}</span>
                 {lineCents > 0 && <span className="font-mono text-[10px] tabular-nums text-ink/35">line {fmtUSD(lineCents)}</span>}
                 <label className="flex cursor-pointer items-center gap-1">
@@ -1260,18 +1262,18 @@ function ItemizedEditor({
                     type="checkbox"
                     checked={r.fastShip}
                     onChange={(e) => update(r.key, { fastShip: e.target.checked })}
-                    className="h-3 w-3 accent-[#B5904B]"
+                    className="h-3 w-3 accent-[color:var(--color-status-warning)]"
                   />
-                  <span className="text-[9.5px] text-ink/50">Fast ship</span>
+                  <span className="text-[10px] text-ink/50">Fast ship</span>
                 </label>
               </div>
               <div className="flex items-center gap-[var(--space-2)]">
                 <label className="block w-[56px]">
-                  <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
+                  <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Qty</span>
                   <input type="number" min="1" max="9999" value={r.quantity} onChange={(e) => update(r.key, { quantity: e.target.value })} className={`${fieldCls} text-right`} />
                 </label>
                 <label className="block w-[80px]">
-                  <span className="mb-1 block text-[8.5px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
+                  <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-ink/40">Unit $</span>
                   <input type="number" step="0.01" min="0" value={r.unitUsd} onChange={(e) => update(r.key, { unitUsd: e.target.value })} placeholder="—" className={`${fieldCls} text-right`} />
                 </label>
                 <button type="button" onClick={() => remove(r.key)} aria-label="Remove" className="mt-[18px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-red-400/30 text-red-400/75 hover:border-red-400/55 hover:text-red-300">×</button>
@@ -1305,7 +1307,7 @@ function ItemizedEditor({
 function MoneyInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/45">{label} (USD)</span>
+      <span className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-ink/45">{label} (USD)</span>
       <input type="number" step="0.01" min="0" value={value} onChange={(e) => onChange(e.target.value)} placeholder="0.00" className={fieldCls} />
     </label>
   );
@@ -1315,15 +1317,15 @@ function MoneyInput({ label, value, onChange }: { label: string; value: string; 
  *  further on phones so a full row of actions fits on one line. */
 function Pill({ onClick, disabled, primary, advance, warn, danger, compact, children }: { onClick: () => void; disabled?: boolean; primary?: boolean; advance?: boolean; warn?: boolean; danger?: boolean; compact?: boolean; children: React.ReactNode }) {
   const size = compact
-    ? 'px-1.5 py-[3px] text-[7px] tracking-[0.06em] sm:px-2.5 sm:text-[8.5px] sm:tracking-[0.14em]'
-    : 'px-2.5 py-[3px] text-[8.5px] tracking-[0.14em]';
+    ? 'px-2 py-1 text-[10px] tracking-[0.08em]'
+    : 'px-2.5 py-1 text-[10px] tracking-[0.14em]';
   return (
     <button type="button" onClick={onClick} disabled={disabled}
       className={[
         `shrink-0 rounded-full border uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${size}`,
         danger ? 'border-red-400/35 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
-          : advance ? 'border-[#2E7D5B]/45 bg-[#2E7D5B]/[0.10] font-medium text-[#2E7D5B] hover:border-[#2E7D5B]/65 hover:bg-[#2E7D5B]/[0.16]'
-          : warn ? 'border-[#B5904B]/50 bg-[#B5904B]/[0.07] text-[#9A7833] hover:border-[#B5904B]/70 hover:bg-[#B5904B]/[0.12]'
+          : advance ? 'border-ink/10 bg-[color:var(--color-status-successMuted)] font-medium text-[color:var(--color-status-success)] hover:border-ink/20'
+          : warn ? 'border-ink/10 bg-[color:var(--color-status-warningMuted)] text-[color:var(--color-status-warning)] hover:border-ink/20'
           : primary ? 'border-ink/30 bg-ink/[0.10] font-medium text-ink hover:border-ink/40 hover:bg-ink/[0.15]'
           : 'border-ink/15 text-ink/70 hover:border-ink/30 hover:text-ink',
       ].join(' ')}>
@@ -1335,7 +1337,7 @@ function Pill({ onClick, disabled, primary, advance, warn, danger, compact, chil
 function SmallPill({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled}
-      className="rounded-full border border-ink/15 bg-ink/[0.03] px-[var(--space-3)] py-[5px] text-[9px] uppercase tracking-[0.16em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40">
+      className="rounded-full border border-ink/15 bg-ink/[0.03] px-[var(--space-3)] py-[5px] text-[10px] uppercase tracking-[0.16em] text-ink/70 transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-40">
       {children}
     </button>
   );

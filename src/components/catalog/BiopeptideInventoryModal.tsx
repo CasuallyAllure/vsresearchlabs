@@ -219,7 +219,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
 
   return (
     <>
-      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-[color:var(--scrim)] backdrop-blur-[3px]" />
 
       <div
         role="dialog"

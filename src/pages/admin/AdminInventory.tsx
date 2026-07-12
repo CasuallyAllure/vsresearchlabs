@@ -24,7 +24,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import productsData from '../../data/products.json';
 import manifestData from '../../data/biopeptideManifest.json';
@@ -37,6 +37,8 @@ import { downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
 import { INVENTORY_COLUMNS, buildInventoryRows, type StockLike } from '../../lib/inventorySheet';
 import { effectiveTierPriceCents } from '../../lib/pricing';
 import { useProductOverrides } from '../../lib/productOverrides';
+import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
+import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 
 const products = productsData as unknown as Product[];
 
@@ -122,6 +124,17 @@ function displayNameFor(sku: string): string {
 
 type StatusFilter = 'visible' | 'hidden' | 'deleted' | 'all';
 
+type SortKey = 'sku' | 'name' | 'price-desc' | 'price-asc' | 'stock-asc' | 'stock-desc';
+
+const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
+  { value: 'sku', label: 'SKU' },
+  { value: 'name', label: 'Name' },
+  { value: 'price-desc', label: 'Price high→low' },
+  { value: 'price-asc', label: 'Price low→high' },
+  { value: 'stock-asc', label: 'Stock low→high' },
+  { value: 'stock-desc', label: 'Stock high→low' },
+];
+
 /** Shared writer for inline per-dose edits — routes through the same
  *  `import_inventory` RPC as the bulk CSV import (admin-gated, security
  *  definer, audit-logged). `dose` may be '' to target `product_stock`
@@ -141,12 +154,48 @@ async function writeInventory(
   return { ok: true };
 }
 
+/** Derived display values for one SKU+dose line — shared by the desktop
+ *  table cells and the mobile card rows so the two layouts can't drift. */
+function doseCellValues(
+  row: StockRow,
+  product: Product | undefined,
+  variant: VariantRow | undefined,
+  dose: string,
+) {
+  const onHandValue = dose ? (variant?.on_hand ?? null) : row.on_hand;
+  const setCents = dose ? (variant?.price_cents ?? null) : row.price_cents_override;
+  const formulaCents = product ? effectiveTierPriceCents(product, dose) : null;
+  return {
+    onHandValue,
+    displayCents: setCents != null ? setCents : formulaCents,
+    priceIsAuto: setCents == null && formulaCents != null,
+  };
+}
+
+function NameWithClip({ row }: { row: StockRow }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {displayNameFor(row.sku)}
+      {row.video_url && (
+        <span
+          title="Cited clip attached"
+          className="inline-flex items-center justify-center h-[18px] px-2 rounded-full bg-holo/10 border border-holo/30 font-mono text-[10px] uppercase tracking-[0.1em] text-holo"
+        >
+          ▶ clip
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function AdminInventory() {
   const [rows, setRows] = useState<StockRow[] | null>(null);
   const [variantBySku, setVariantBySku] = useState<Record<string, Record<string, VariantRow>>>({});
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('visible');
+  const [sortKey, setSortKey] = useState<SortKey>('sku');
+  const navigate = useNavigate();
   const [adjustingSku, setAdjustingSku] = useState<string | null>(null);
   const [pricingSku, setPricingSku] = useState<string | null>(null);
   const [clippingSku, setClippingSku] = useState<string | null>(null);
@@ -230,6 +279,57 @@ export function AdminInventory() {
       return true;
     });
   }, [rows, query, statusFilter]);
+
+  /** Sorted view of the filtered rows. Price = cheapest dose's display price
+   *  (set price or formula), stock = base + all dose variants combined —
+   *  both derived through the same doseCellValues the cells render with. */
+  const sorted = useMemo(() => {
+    if (sortKey === 'sku') return filtered; // query already returns sku-ascending
+    const productBySku = new Map(catalogProducts.filter((p) => p.sku).map((p) => [p.sku, p]));
+    const dosesOf = (row: StockRow) => {
+      const product = productBySku.get(row.sku);
+      return { product, doses: product?.variants?.length ? product.variants.map((v) => v.dose) : [''] };
+    };
+    const priceOf = (row: StockRow): number | null => {
+      const { product, doses } = dosesOf(row);
+      const cents = doses
+        .map((d) => doseCellValues(row, product, d ? variantBySku[row.sku]?.[d] : undefined, d).displayCents)
+        .filter((c): c is number => c != null);
+      return cents.length > 0 ? Math.min(...cents) : null;
+    };
+    const stockOf = (row: StockRow): number => {
+      const { doses } = dosesOf(row);
+      return doses.reduce(
+        (sum, d) => sum + (d ? variantBySku[row.sku]?.[d]?.on_hand ?? 0 : row.on_hand),
+        0,
+      );
+    };
+    const priceKey = new Map(filtered.map((r) => [r.sku, priceOf(r)]));
+    const stockKey = new Map(filtered.map((r) => [r.sku, stockOf(r)]));
+    const nameKey = new Map(filtered.map((r) => [r.sku, displayNameFor(r.sku)]));
+    // Unpriced rows always sort last, whichever direction.
+    const num = (v: number | null | undefined, dir: 1 | -1) =>
+      v == null ? Number.POSITIVE_INFINITY : dir * v;
+    const arr = [...filtered];
+    switch (sortKey) {
+      case 'name':
+        arr.sort((a, b) => (nameKey.get(a.sku) ?? '').localeCompare(nameKey.get(b.sku) ?? ''));
+        break;
+      case 'price-desc':
+        arr.sort((a, b) => num(priceKey.get(a.sku), -1) - num(priceKey.get(b.sku), -1));
+        break;
+      case 'price-asc':
+        arr.sort((a, b) => num(priceKey.get(a.sku), 1) - num(priceKey.get(b.sku), 1));
+        break;
+      case 'stock-asc':
+        arr.sort((a, b) => (stockKey.get(a.sku) ?? 0) - (stockKey.get(b.sku) ?? 0));
+        break;
+      case 'stock-desc':
+        arr.sort((a, b) => (stockKey.get(b.sku) ?? 0) - (stockKey.get(a.sku) ?? 0));
+        break;
+    }
+    return arr;
+  }, [filtered, sortKey, catalogProducts, variantBySku]);
 
   const adjusting = rows?.find((r) => r.sku === adjustingSku) ?? null;
   const pricing = rows?.find((r) => r.sku === pricingSku) ?? null;
@@ -379,46 +479,74 @@ export function AdminInventory() {
     setCatalogMsg({ kind: 'ok', text: 'Catalog reset to shipped seed.' });
   }
 
+  /** Per-row action cluster — right-aligned in the desktop table cell,
+   *  wrapping freely in the mobile card footer. */
+  function rowActions(row: StockRow, opts: { busy: boolean; status: string; wrap?: boolean }) {
+    const { busy, status, wrap } = opts;
+    return (
+      <div className={wrap ? 'flex flex-wrap items-center gap-1.5' : 'flex items-center justify-end gap-1.5'}>
+        {idBySku.has(row.sku) && (
+          <Link
+            to={`/admin/${idBySku.get(row.sku)}/edit`}
+            title="Edit product details"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-ink/15 bg-ink/[0.03] px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 md:min-h-0 md:px-2 md:py-[3px]"
+          >
+            Edit
+          </Link>
+        )}
+        <ActionButton onClick={() => setAdjustingSku(row.sku)} disabled={busy || status === 'deleted'} title="Adjust stock">
+          Stock
+        </ActionButton>
+        <ActionButton onClick={() => setPricingSku(row.sku)} disabled={busy} title="Set price override">
+          Price
+        </ActionButton>
+        <ActionButton onClick={() => setClippingSku(row.sku)} disabled={busy} title="Attach a cited clip">
+          Clip
+        </ActionButton>
+        <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
+          {row.hidden ? 'Show' : 'Hide'}
+        </ActionButton>
+        <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
+          {row.deleted_at ? 'Restore' : 'Delete'}
+        </ActionButton>
+      </div>
+    );
+  }
+
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)] flex flex-col gap-[var(--space-4)]">
-        <div className="flex flex-wrap items-end justify-between gap-[var(--space-4)]">
-          <div>
-            <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-              Catalog · Inventory
-            </p>
-            <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-              <span className="font-light text-ink/85">Stock, pricing &amp; </span>
-              <span className="font-medium text-ink">listing control.</span>
-            </h2>
-          </div>
+      {/* Compact header: title + one Tools menu on line 1, status/sort/search
+          on line 2. The old jumbo title, "Catalog · Inventory" eyebrow (the
+          nav menu already says it) and 7-pill toolbar are gone. */}
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Inventory</h2>
+          <ToolsMenu
+            items={[
+              { label: '+ New product', onSelect: () => navigate('/admin/new') },
+              {
+                label: seedState.kind === 'running'
+                  ? `Seeding ${seedState.processed}/${seedState.total}…`
+                  : 'Seed stock',
+                onSelect: handleSeed,
+                disabled: seedState.kind === 'running',
+              },
+              { label: 'Import JSON', onSelect: () => fileInputRef.current?.click() },
+              { label: 'Export JSON', onSelect: handleExport },
+              { label: 'Export CSV', onSelect: () => exportSheet('csv'), disabled: rows === null },
+              { label: 'Export Excel', onSelect: () => exportSheet('xlsx'), disabled: rows === null },
+              { label: 'Reset to seed', onSelect: handleReset, danger: true },
+            ]}
+          />
+        </div>
 
-          {/* Catalog tools — folded in from the old Catalog tab */}
-          <div className="flex flex-col items-end gap-[var(--space-2)]">
-            <div className="flex flex-wrap items-center justify-end gap-1.5">
-              <Link
-                to="/admin/new"
-                className="rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
-              >
-                + New product
-              </Link>
-              <ToolButton onClick={handleSeed} disabled={seedState.kind === 'running'}>
-                {seedState.kind === 'running' ? `Seeding ${seedState.processed}/${seedState.total}…` : 'Seed stock'}
-              </ToolButton>
-              <ToolButton onClick={() => fileInputRef.current?.click()}>Import JSON</ToolButton>
-              <ToolButton onClick={handleExport}>Export JSON</ToolButton>
-              <ToolButton onClick={() => exportSheet('csv')} disabled={rows === null}>Export CSV</ToolButton>
-              <ToolButton onClick={() => exportSheet('xlsx')} disabled={rows === null}>Export Excel</ToolButton>
-              <ToolButton onClick={handleReset} danger>Reset to seed</ToolButton>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json,.json"
-                onChange={handleImportFile}
-                className="hidden"
-                aria-hidden="true"
-              />
-            </div>
+        {(seedState.kind !== 'idle' || catalogMsg.kind !== 'idle') && (
+          <div className="flex flex-col gap-1">
+            {seedState.kind === 'running' && (
+              <p className="text-[10px] font-mono tabular-nums text-ink/50">
+                Seeding {seedState.processed}/{seedState.total}…
+              </p>
+            )}
             {seedState.kind === 'done' && (
               <p className="text-[10px] font-mono tabular-nums text-ink/50">
                 Seed: inserted {seedState.inserted} · skipped {seedState.skipped}
@@ -428,31 +556,50 @@ export function AdminInventory() {
               <p role="alert" className="text-[10px] text-red-400">{seedState.message}</p>
             )}
             {catalogMsg.kind === 'ok' && (
-              <p className="text-[10px] uppercase tracking-[0.16em] text-[#2E7D5B]">{catalogMsg.text}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-[color:var(--color-status-success)]">{catalogMsg.text}</p>
             )}
             {catalogMsg.kind === 'err' && (
               <p role="alert" className="text-[10px] text-red-400">{catalogMsg.text}</p>
             )}
           </div>
+        )}
+
+        <div className="flex items-center gap-[var(--space-2)]">
+          <AdminFilterBar
+            label="Show"
+            dense
+            options={[
+              { value: 'visible', label: 'Visible' },
+              { value: 'hidden', label: 'Hidden' },
+              { value: 'deleted', label: 'Deleted' },
+              { value: 'all', label: 'All' },
+            ]}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+          <AdminFilterBar
+            label="Sort"
+            dense
+            options={SORT_OPTIONS}
+            value={sortKey}
+            onChange={setSortKey}
+          />
+          <input
+            type="search"
+            placeholder="SKU or name"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="min-w-0 flex-1 h-10 rounded-full border border-ink/10 bg-base-700 px-[var(--space-4)] text-[12px] text-ink placeholder-ink/30 transition-colors focus:border-ink/30 focus:outline-none"
+          />
         </div>
-        <AdminFilterBar
-          options={[
-            { value: 'visible', label: 'Visible' },
-            { value: 'hidden', label: 'Hidden' },
-            { value: 'deleted', label: 'Deleted' },
-            { value: 'all', label: 'All' },
-          ]}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          trailing={
-            <input
-              type="search"
-              placeholder="SKU or name"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full sm:w-[220px] px-[var(--space-3)] py-[var(--space-2)] bg-base-700 border border-ink/10 rounded-sm text-[12px] text-ink placeholder-ink/30 focus:outline-none focus:border-ink/30 transition-colors"
-            />
-          }
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={handleImportFile}
+          className="hidden"
+          aria-hidden="true"
         />
       </header>
 
@@ -471,22 +618,90 @@ export function AdminInventory() {
         </div>
       )}
 
+      {/* Mobile: one card per SKU — everything the table shows, reflowed
+          for a 375px screen. Same EditableNumberCell + RPC path as the table. */}
       {rows && rows.length > 0 && (
-        <div className="research-surface-solid overflow-x-auto">
+        <div className="md:hidden flex flex-col gap-[var(--space-3)]">
+          {sorted.map((row) => {
+            const status = row.deleted_at ? 'deleted' : row.hidden ? 'hidden' : 'active';
+            const busy = busySku === row.sku;
+            const disabled = busy || status === 'deleted';
+            const product = catalogProducts.find((p) => p.sku === row.sku);
+            const doses = product?.variants?.length ? product.variants.map((v) => v.dose) : [''];
+
+            return (
+              <div key={row.sku} className="floating-module p-4">
+                <div className="mb-[var(--space-3)] flex items-start justify-between gap-[var(--space-3)]">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[10.5px] text-holo-light/80 break-all">{row.sku}</p>
+                    <p className="text-[13px] leading-snug text-ink/85">
+                      <NameWithClip row={row} />
+                    </p>
+                  </div>
+                  <StatusChip status={status} />
+                </div>
+
+                <div className="mb-[var(--space-3)] border-y border-ink/[0.06] divide-y divide-ink/[0.05]">
+                  {doses.map((dose, doseIdx) => {
+                    const variant = row.sku && dose ? variantBySku[row.sku]?.[dose] : undefined;
+                    const v = doseCellValues(row, product, variant, dose);
+                    return (
+                      <div key={`${dose}::${doseIdx}`} className="flex min-h-[44px] items-end justify-between gap-[var(--space-2)] py-[var(--space-3)]">
+                        <span className="pb-1.5 font-mono text-[11px] text-ink/55">{dose || 'Base'}</span>
+                        <div className="flex items-end gap-[var(--space-3)]">
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-[10px] uppercase tracking-[0.16em] text-ink/40">On hand</span>
+                            <EditableNumberCell
+                              value={v.onHandValue}
+                              kind="stock"
+                              disabled={disabled}
+                              ariaLabel={`On hand for ${row.sku} ${dose || 'base'}`}
+                              onSave={(n) => saveInventoryField(row.sku, dose, { on_hand: n })}
+                            />
+                          </div>
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-[10px] uppercase tracking-[0.16em] text-ink/40">Price $</span>
+                            <EditableNumberCell
+                              value={v.displayCents}
+                              kind="price"
+                              muted={v.priceIsAuto}
+                              disabled={disabled}
+                              ariaLabel={`Price for ${row.sku} ${dose || 'base'}`}
+                              onSave={(n) => saveInventoryField(row.sku, dose, { price_cents: n })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {rowActions(row, { busy, status, wrap: true })}
+              </div>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="py-[var(--space-6)] text-center text-[12px] text-ink/40">No matches.</p>
+          )}
+        </div>
+      )}
+
+      {rows && rows.length > 0 && (
+        <div className="hidden md:block research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[1000px] border-collapse">
             <thead>
               <tr className="border-b border-ink/[0.10]">
-                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[170px]">SKU</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal">Product</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[70px]">Dose</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[92px]">On hand</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[110px]">Price</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[100px]">Status</th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.2em] text-ink/45 font-normal w-[380px]">Actions</th>
+                <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[170px]">SKU</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal">Product</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[70px]">Dose</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[92px]">On hand</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[110px]">Price</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[100px]">Status</th>
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[380px]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.flatMap((row) => {
+              {sorted.flatMap((row) => {
                 const status = row.deleted_at ? 'deleted' : row.hidden ? 'hidden' : 'active';
                 const busy = busySku === row.sku;
                 const disabled = busy || status === 'deleted';
@@ -496,14 +711,10 @@ export function AdminInventory() {
                 return doses.map((dose, doseIdx) => {
                   const isFirst = doseIdx === 0;
                   const variant = row.sku && dose ? variantBySku[row.sku]?.[dose] : undefined;
-                  const onHandValue = dose ? (variant?.on_hand ?? null) : row.on_hand;
-                  const setCents = dose ? (variant?.price_cents ?? null) : row.price_cents_override;
-                  const formulaCents = product ? effectiveTierPriceCents(product, dose) : null;
-                  const displayCents = setCents != null ? setCents : formulaCents;
-                  const priceIsAuto = setCents == null && formulaCents != null;
+                  const { onHandValue, displayCents, priceIsAuto } = doseCellValues(row, product, variant, dose);
 
                   return (
-                    <tr key={`${row.sku}::${dose}::${doseIdx}`} className="border-b border-ink/[0.04] hover:bg-ink/[0.015] transition-colors">
+                    <tr key={`${row.sku}::${dose}::${doseIdx}`} className="border-b border-ink/[0.04] hover:bg-ink/[0.02] transition-colors">
                       {isFirst && (
                         <td rowSpan={doses.length} className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] align-middle font-mono text-[11.5px] text-holo-light/80">
                           {row.sku}
@@ -511,17 +722,7 @@ export function AdminInventory() {
                       )}
                       {isFirst && (
                         <td rowSpan={doses.length} className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
-                          <span className="inline-flex items-center gap-1.5">
-                            {displayNameFor(row.sku)}
-                            {row.video_url && (
-                              <span
-                                title="Cited clip attached"
-                                className="inline-flex items-center justify-center h-[15px] px-1 rounded-[3px] bg-holo/10 border border-holo/30 font-mono text-[8px] uppercase tracking-[0.1em] text-holo"
-                              >
-                                ▶ clip
-                              </span>
-                            )}
-                          </span>
+                          <NameWithClip row={row} />
                         </td>
                       )}
                       <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center font-mono text-[11px] text-ink/55">
@@ -553,32 +754,7 @@ export function AdminInventory() {
                       )}
                       {isFirst && (
                         <td rowSpan={doses.length} className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] align-middle">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {idBySku.has(row.sku) && (
-                              <Link
-                                to={`/admin/${idBySku.get(row.sku)}/edit`}
-                                title="Edit product details"
-                                className="rounded-full border border-ink/15 bg-ink/[0.03] px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] text-ink/75 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-                              >
-                                Edit
-                              </Link>
-                            )}
-                            <ActionButton onClick={() => setAdjustingSku(row.sku)} disabled={busy || status === 'deleted'} title="Adjust stock">
-                              Stock
-                            </ActionButton>
-                            <ActionButton onClick={() => setPricingSku(row.sku)} disabled={busy} title="Set price override">
-                              Price
-                            </ActionButton>
-                            <ActionButton onClick={() => setClippingSku(row.sku)} disabled={busy} title="Attach a cited clip">
-                              Clip
-                            </ActionButton>
-                            <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
-                              {row.hidden ? 'Show' : 'Hide'}
-                            </ActionButton>
-                            <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
-                              {row.deleted_at ? 'Restore' : 'Delete'}
-                            </ActionButton>
-                          </div>
+                          {rowActions(row, { busy, status })}
                         </td>
                       )}
                     </tr>
@@ -720,57 +896,107 @@ function EditableNumberCell({ value, kind, muted, disabled, ariaLabel, onSave }:
         }}
         placeholder="—"
         className={[
-          'w-[80px] rounded-sm border bg-base-700 px-1.5 py-1 text-right font-mono text-[11.5px] tabular-nums',
+          'w-[92px] px-2 py-2 md:w-[80px] md:px-1.5 md:py-1 rounded-field border bg-base-700 text-right font-mono text-[11.5px] tabular-nums',
           'focus:outline-none focus:border-ink/40 transition-colors',
           'disabled:opacity-40 disabled:cursor-not-allowed',
           muted ? 'border-ink/[0.06] text-ink/45 italic' : 'border-ink/10 text-ink',
         ].join(' ')}
       />
       {muted && !errorMsg && (
-        <span className="text-[8.5px] uppercase tracking-[0.14em] text-ink/35">auto</span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-ink/35">auto</span>
       )}
-      {saved && <span className="text-[8.5px] uppercase tracking-[0.14em] text-[#2E7D5B]">saved</span>}
-      {errorMsg && <span role="alert" className="max-w-[110px] text-right text-[9.5px] leading-tight text-red-400/85">{errorMsg}</span>}
+      {saved && <span className="text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-status-success)]">saved</span>}
+      {errorMsg && <span role="alert" className="max-w-[110px] text-right text-[10px] leading-tight text-red-400/85">{errorMsg}</span>}
     </div>
   );
 }
 
 function StatusChip({ status }: { status: 'active' | 'hidden' | 'deleted' }) {
   const cls =
-    status === 'active'   ? 'border-[#2E7D5B]/40 text-[#2E7D5B] bg-[#2E7D5B]/[0.08]' :
+    status === 'active'   ? 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]' :
     status === 'hidden'   ? 'border-ink/25 text-ink/65 bg-ink/[0.05]' :
-                            'border-red-400/40 text-red-400/85 bg-red-400/[0.06]';
+                            'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]';
   return (
-    <span className={`inline-block text-[9.5px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${cls}`}>
+    <span className={`${CHIP_BASE} ${cls}`}>
       {status}
     </span>
   );
 }
 
-function ToolButton({
-  children, onClick, disabled, danger,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
+interface ToolsMenuItem {
+  label: string;
+  onSelect: () => void;
   disabled?: boolean;
   danger?: boolean;
-}) {
+}
+
+/** The page's catalog-level actions, collapsed behind one "Tools" trigger
+ *  instead of a wall of pills. */
+function ToolsMenu({ items }: { items: ToolsMenuItem[] }) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={[
-        'rounded-full border px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] transition-colors',
-        'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-        'disabled:opacity-40 disabled:cursor-not-allowed',
-        danger
-          ? 'border-red-400/30 text-red-400/80 hover:border-red-400/55 hover:text-red-300'
-          : 'border-ink/15 text-ink/75 hover:border-ink/30 hover:text-ink',
-      ].join(' ')}
-    >
-      {children}
-    </button>
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 rounded-full border border-ink/[0.12] bg-ink/[0.02] py-1 pl-3 pr-2 text-[10px] uppercase tracking-[0.16em] text-ink/80 transition-colors hover:border-ink/25 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+      >
+        Tools
+        <svg
+          width="10" height="10" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+          aria-hidden="true"
+          className={`shrink-0 text-ink/45 transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-[200] cursor-default"
+          />
+          <div
+            role="menu"
+            className="absolute right-0 top-full z-[201] mt-1.5 w-[190px] rounded-[10px] border border-ink/[0.12] bg-display py-1.5 shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)]"
+          >
+            {items.map((it) => (
+              <button
+                key={it.label}
+                type="button"
+                role="menuitem"
+                disabled={it.disabled}
+                onClick={() => { setOpen(false); it.onSelect(); }}
+                className={[
+                  'block w-full px-3.5 py-2 text-left text-[11px] uppercase tracking-[0.12em] transition-colors',
+                  'disabled:cursor-not-allowed disabled:opacity-40',
+                  it.danger
+                    ? 'text-red-400/85 hover:bg-red-400/[0.06]'
+                    : 'text-ink/70 hover:bg-ink/[0.04] hover:text-ink',
+                ].join(' ')}
+              >
+                {it.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -790,7 +1016,7 @@ function ActionButton({
       disabled={disabled}
       title={title}
       className={[
-        'rounded-full border px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] transition-colors',
+        'inline-flex min-h-[44px] items-center justify-center rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] transition-colors md:min-h-0 md:px-2 md:py-[3px]',
         'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
         'disabled:opacity-30 disabled:cursor-not-allowed',
         danger
@@ -1008,7 +1234,7 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
             type="button"
             onClick={fetchDetails}
             disabled={!hasUrl || fetching}
-            className="shrink-0 rounded-sm border border-holo/40 bg-holo/[0.06] px-[var(--space-4)] text-[10px] uppercase tracking-[0.16em] text-holo hover:bg-holo/[0.12] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="shrink-0 rounded-[10px] border border-holo/40 bg-holo/[0.06] px-[var(--space-4)] text-[10px] uppercase tracking-[0.16em] text-holo hover:bg-holo/[0.12] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {fetching ? '…' : 'Fetch'}
           </button>
@@ -1017,7 +1243,7 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
         <div className="flex gap-3">
           {/* Live poster preview */}
           <div
-            className="shrink-0 w-[64px] aspect-[9/16] overflow-hidden rounded-[6px] border border-ink/15"
+            className="shrink-0 w-[64px] aspect-[9/16] overflow-hidden rounded-[10px] border border-ink/15"
             style={{ background: 'linear-gradient(150deg, #2b2622, #0f0d0b)' }}
           >
             {thumbnail.trim() && (
@@ -1081,8 +1307,7 @@ function ClipModal({ row, label, onClose, onSuccess }: ClipModalProps) {
 
 // ── Shared modal primitives ─────────────────────────────────────────────────
 
-const inputCls =
-  'w-full mb-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors';
+const inputCls = `${FIELD_SURFACE} ${FIELD_DEFAULT} mb-[var(--space-3)]`;
 
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="block text-[11px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-2)]">{children}</label>;
@@ -1091,7 +1316,7 @@ function Label({ children }: { children: React.ReactNode }) {
 function ModalShell({ title, subtitle, onClose, children }: { title: string; subtitle: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <>
-      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-50 bg-[color:var(--scrim)] backdrop-blur-[3px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div className="pointer-events-auto w-full max-w-[440px] research-surface-solid p-[var(--space-6)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-1)]">{title}</p>

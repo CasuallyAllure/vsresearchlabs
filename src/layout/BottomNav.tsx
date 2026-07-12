@@ -262,7 +262,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
           <div
             aria-hidden="true"
             onClick={() => setSheetOpen(false)}
-            className="fixed inset-0 z-40 bg-ink/55 backdrop-blur-[2px]"
+            className="fixed inset-0 z-40 bg-[color:var(--scrim)] backdrop-blur-[2px]"
           />
           <div
             role="dialog"

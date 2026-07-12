@@ -33,6 +33,9 @@ interface AdminFilterBarProps<T extends string> {
    * control in the top bar rather than a full-width form field.
    */
   dense?: boolean;
+  /** Anchor edge for the dense dropdown — use 'right' when the trigger sits
+   *  near the right edge of the viewport so the menu doesn't clip. */
+  menuAlign?: 'left' | 'right';
 }
 
 export function AdminFilterBar<T extends string>({
@@ -43,6 +46,7 @@ export function AdminFilterBar<T extends string>({
   trailing,
   widthClass = 'sm:w-[260px]',
   dense = false,
+  menuAlign = 'left',
 }: AdminFilterBarProps<T>) {
   const [open, setOpen] = useState(false);
   const current = options.find((o) => o.value === value);
@@ -70,12 +74,12 @@ export function AdminFilterBar<T extends string>({
           aria-expanded={open}
           className={
             dense
-              ? 'flex items-center gap-1.5 rounded-full border border-ink/[0.12] bg-ink/[0.02] py-1 pl-2.5 pr-2 text-left transition-colors hover:border-ink/25 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30'
-              : 'flex w-full items-center gap-2 rounded-[10px] border border-ink/[0.12] bg-base-800/70 py-2 pl-3 pr-2.5 text-left transition-colors hover:border-ink/25 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30'
+              ? 'flex min-h-[40px] items-center gap-1.5 rounded-full border border-ink/[0.12] bg-ink/[0.02] pl-2.5 pr-2 text-left transition-colors hover:border-ink/25 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30'
+              : 'flex min-h-[40px] w-full items-center gap-2 rounded-[10px] border border-ink/[0.12] bg-base-800/70 py-2 pl-3 pr-2.5 text-left transition-colors hover:border-ink/25 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30'
           }
         >
           {label && (
-            <span className={`shrink-0 font-mono uppercase tracking-[0.22em] text-ink/40 ${dense ? 'text-[8.5px]' : 'text-[9px]'}`}>
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/40">
               {label}
             </span>
           )}
@@ -103,7 +107,7 @@ export function AdminFilterBar<T extends string>({
             />
             <ul
               role="listbox"
-              className={`no-scrollbar absolute top-full z-[201] mt-1.5 max-h-[60vh] overflow-y-auto rounded-[10px] border border-ink/[0.12] bg-display py-1 shadow-[0_18px_44px_-14px_rgba(26,23,20,0.45)] ${dense ? 'left-0 min-w-[200px]' : 'left-0 right-0'}`}
+              className={`no-scrollbar glass-panel absolute top-full z-[201] mt-1.5 max-h-[60vh] overflow-y-auto rounded-[16px] py-1 ${dense ? `min-w-[200px] ${menuAlign === 'right' ? 'right-0' : 'left-0'}` : 'left-0 right-0'}`}
             >
               {options.map((o) => {
                 const on = o.value === value;
@@ -118,7 +122,7 @@ export function AdminFilterBar<T extends string>({
                         setOpen(false);
                       }}
                       className={[
-                        'flex w-full items-center justify-between gap-3 px-3.5 py-2 text-left text-[11.5px] uppercase tracking-[0.12em] transition-colors',
+                        'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-[12px] normal-case transition-colors',
                         on ? 'bg-ink/[0.06] text-ink' : 'text-ink/65 hover:bg-ink/[0.04] hover:text-ink',
                       ].join(' ')}
                     >

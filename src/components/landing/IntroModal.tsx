@@ -61,14 +61,14 @@ export function IntroModal() {
       <div
         aria-hidden="true"
         onClick={close}
-        className={`absolute inset-0 bg-ink/65 backdrop-blur-[3px] transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-[color:var(--scrim)] backdrop-blur-[3px] transition-opacity duration-300 ${
           open ? 'opacity-100' : 'opacity-0'
         }`}
       />
 
       {/* Panel */}
       <div
-        className={`relative w-full max-w-[920px] max-h-[90dvh] overflow-y-auto rounded-lg transition-all duration-300 ease-out ${
+        className={`relative w-full max-w-[920px] max-h-[90dvh] overflow-y-auto rounded-lg transition-[opacity,transform] duration-300 ease-out ${
           open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.98]'
         }`}
       >

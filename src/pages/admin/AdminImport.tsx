@@ -244,12 +244,10 @@ export function AdminImport() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">Inventory</p>
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-          <span className="font-light text-ink/85">Bulk </span>
-          <span className="font-medium text-ink">import.</span>
-        </h2>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Bulk Import</h2>
+        </div>
       </header>
 
       {loadError && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{loadError}</p>}
@@ -283,7 +281,7 @@ export function AdminImport() {
           In Excel: <span className="text-ink/90">File → Save As → CSV UTF-8</span>. Then drop it here for a
           preview before anything is written.
         </p>
-        <div className="flex flex-wrap items-center gap-[var(--space-3)]">
+        <div className="flex flex-wrap items-center gap-[var(--space-3)] rounded-[16px] border border-dashed border-ink/[0.15] p-[var(--space-4)]">
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} className="hidden" />
           <button type="button" onClick={() => fileRef.current?.click()} className={ghostBtn}>
             Choose CSV file
@@ -312,9 +310,9 @@ export function AdminImport() {
           </div>
 
           {result && (
-            <div className="mb-[var(--space-4)] rounded-sm border border-ink/[0.10] bg-base-700 p-[var(--space-4)]">
+            <div className="mb-[var(--space-4)] rounded-[14px] border border-ink/[0.10] bg-base-700 p-[var(--space-4)]">
               <p className="text-[13px] text-ink">
-                <span className="text-[#2E7D5B] font-medium">{result.applied} applied</span>
+                <span className="text-[color:var(--color-status-success)] font-medium">{result.applied} applied</span>
                 {result.skipped > 0 && <span className="text-ink/55"> · {result.skipped} unchanged</span>}
                 {result.errors.length > 0 && <span className="text-red-400/85"> · {result.errors.length} errors</span>}
               </p>
@@ -328,21 +326,21 @@ export function AdminImport() {
             </div>
           )}
 
-          <div className="overflow-x-auto max-h-[420px] overflow-y-auto border border-ink/[0.08] rounded-sm">
+          <div className="overflow-x-auto max-h-[420px] overflow-y-auto border border-ink/[0.08] rounded-[14px]">
             <table className="w-full min-w-[640px] border-collapse">
               <thead className="sticky top-0 bg-base-800">
                 <tr className="border-b border-ink/[0.10]">
-                  <th className="py-[var(--space-2)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/45 font-normal">SKU</th>
-                  <th className="py-[var(--space-2)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/45 font-normal">Product</th>
-                  <th className="py-[var(--space-2)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.18em] text-ink/45 font-normal">Changes</th>
+                  <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal">SKU</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal">Product</th>
+                  <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal">Changes</th>
                 </tr>
               </thead>
               <tbody>
                 {parsed.slice(0, 300).map((r, i) => (
-                  <tr key={i} className="border-b border-ink/[0.04]">
-                    <td className="py-[var(--space-2)] pl-[var(--space-4)] pr-[var(--space-3)] font-mono text-[11px] text-holo-light/80 align-top">{r.sku || '—'}</td>
-                    <td className="py-[var(--space-2)] px-[var(--space-3)] text-[12px] text-ink/75 align-top">{r.name}</td>
-                    <td className="py-[var(--space-2)] px-[var(--space-3)] align-top">
+                  <tr key={i} className="border-b border-ink/[0.04] hover:bg-ink/[0.02] transition-colors">
+                    <td className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] font-mono text-[11px] text-holo-light/80 align-top">{r.sku || '—'}</td>
+                    <td className="py-[var(--space-3)] px-[var(--space-3)] text-[12px] text-ink/75 align-top">{r.name}</td>
+                    <td className="py-[var(--space-3)] px-[var(--space-3)] align-top">
                       {r.error ? (
                         <span className="text-[11px] text-red-400/85">{r.error}</span>
                       ) : r.fields.length === 0 ? (
@@ -350,7 +348,7 @@ export function AdminImport() {
                       ) : (
                         <span className="flex flex-wrap gap-1">
                           {r.fields.map((f) => (
-                            <span key={f} className="inline-block rounded-[3px] bg-ink/[0.05] border border-ink/[0.10] px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-ink/65">{f}</span>
+                            <span key={f} className="inline-flex items-center rounded-full bg-ink/[0.05] border border-ink/[0.10] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink/65">{f}</span>
                           ))}
                         </span>
                       )}

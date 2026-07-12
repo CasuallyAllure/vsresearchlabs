@@ -1,0 +1,50 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@supabase/functions-js@*": "2.110.2",
+    "jsr:@supabase/supabase-js@2": "2.110.2"
+  },
+  "jsr": {
+    "@supabase/functions-js@2.110.2": {
+      "integrity": "4b21a1cbe87b81585ac308adf08a7890dd716c2cf82e29036a6764dbad21443b"
+    },
+    "@supabase/supabase-js@2.110.2": {
+      "integrity": "a2ce548b8161bec056e37cfc2d4fa2243bbf664a0e0d596e9e0a076442c6cc7e"
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@eslint/js@^9.39.4",
+        "npm:@playwright/test@^1.61.1",
+        "npm:@react-three/drei@^10.7.7",
+        "npm:@react-three/fiber@^9.6.1",
+        "npm:@supabase/supabase-js@^2.99.3",
+        "npm:@types/node@^24.12.0",
+        "npm:@types/react-dom@^19.2.3",
+        "npm:@types/react@^19.2.14",
+        "npm:@types/three@~0.184.1",
+        "npm:@vitejs/plugin-react@^6.0.1",
+        "npm:autoprefixer@^10.4.27",
+        "npm:clsx@^2.1.1",
+        "npm:eslint-plugin-react-hooks@^7.0.1",
+        "npm:eslint-plugin-react-refresh@~0.5.2",
+        "npm:eslint@^9.39.4",
+        "npm:globals@^17.4.0",
+        "npm:playwright@^1.61.0",
+        "npm:postcss@^8.5.8",
+        "npm:react-dom@^19.2.4",
+        "npm:react-router-dom@^7.13.1",
+        "npm:react@^19.2.4",
+        "npm:tailwind-merge@^3.5.0",
+        "npm:tailwindcss@^3.4.19",
+        "npm:three@0.184",
+        "npm:typescript-eslint@^8.57.0",
+        "npm:typescript@~5.9.3",
+        "npm:vite@^8.0.1",
+        "npm:vitest@^4.1.10",
+        "npm:zustand@^5.0.12"
+      ]
+    }
+  }
+}

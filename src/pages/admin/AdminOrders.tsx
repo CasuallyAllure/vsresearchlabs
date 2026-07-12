@@ -14,6 +14,7 @@ import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
 import { OrderView } from './OrderView';
+import { OrderStatusChip } from '../../components/ui/OrderStatusChip';
 
 type OrderStatus =
   | 'pending_review'   // migration 020 — new buyer-placed order awaiting admin look
@@ -151,38 +152,38 @@ export function AdminOrders() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-5)] flex flex-col gap-[var(--space-2)]">
-        <div className="flex items-center gap-[var(--space-2)]">
-          <h2 className="shrink-0 text-[clamp(0.95rem,2vw,1.3rem)] font-medium leading-[1.1] tracking-[-0.01em] text-ink">
-            Orders
-          </h2>
-          <div className="ml-auto flex min-w-0 items-center gap-1.5">
-            <Link
-              to="/admin/orders/new"
-              className="shrink-0 rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-[5px] text-[9.5px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
-            >
-              + New order
-            </Link>
-            <AdminFilterBar label="" options={SORT_OPTIONS} value={sort} onChange={setSort} dense />
-            <AdminFilterBar label="" options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
-            <AdminFilterBar label="" options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense />
-          </div>
+      {/* Admin header grammar: line 1 = title + primary action, line 2 =
+          dense filter row. Same structure as AdminInventory. */}
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Orders</h2>
+          <Link
+            to="/admin/orders/new"
+            className="inline-flex min-h-[40px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-ink/20 bg-ink/[0.04] px-[var(--space-4)] py-2 text-[10px] uppercase tracking-[0.16em] text-ink/80 transition-colors hover:border-ink/35 hover:text-ink"
+          >
+            + New order
+          </Link>
+        </div>
+        <div className="flex flex-wrap items-center gap-[var(--space-2)]">
+          <AdminFilterBar label="" options={SORT_OPTIONS} value={sort} onChange={setSort} dense />
+          <AdminFilterBar label="" options={FILTER_OPTIONS} value={filter} onChange={setFilter} dense />
+          <AdminFilterBar label="" options={DATE_OPTIONS} value={dateFilter} onChange={setDateFilter} dense menuAlign="right" />
         </div>
         {dateFilter === 'custom' && (
-          <div className="flex flex-wrap items-center justify-end gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/45">
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/45">
             <span>From</span>
             <input
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="rounded-sm border border-ink/15 bg-base-700 px-2 py-1 text-[11px] tracking-normal text-ink focus:border-ink/40 focus:outline-none"
+              className="h-10 rounded-field border border-ink/12 bg-base-700 px-3 text-[11px] tracking-normal text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink/20 focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15"
             />
             <span>to</span>
             <input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="rounded-sm border border-ink/15 bg-base-700 px-2 py-1 text-[11px] tracking-normal text-ink focus:border-ink/40 focus:outline-none"
+              className="h-10 rounded-field border border-ink/12 bg-base-700 px-3 text-[11px] tracking-normal text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink/20 focus:border-gold/70 focus:outline-none focus:ring-2 focus:ring-gold/15"
             />
           </div>
         )}
@@ -209,7 +210,7 @@ export function AdminOrders() {
               <button
                 type="button"
                 onClick={() => setOpenId(row.id)}
-                className="flex w-full items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-3)] text-left transition-colors hover:bg-ink/[0.012] focus:outline-none focus-visible:bg-ink/[0.02] sm:px-[var(--space-5)]"
+                className="flex w-full items-stretch gap-[var(--space-3)] px-[var(--space-4)] py-[var(--space-4)] text-left transition-colors hover:bg-ink/[0.012] focus:outline-none focus-visible:bg-ink/[0.02] sm:px-[var(--space-5)]"
               >
                 <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
                   <span className="flex items-center gap-2">
@@ -250,15 +251,15 @@ function OrderModal({ id, onClose, onChanged }: { id: string; onClose: () => voi
 
   return (
     <>
-      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-[color:var(--scrim)] backdrop-blur-[8px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[211] flex items-start justify-center p-3 pointer-events-none sm:p-8">
-        <div className="pointer-events-auto flex max-h-[88vh] w-full max-w-[760px] flex-col research-surface-solid">
+        <div className="pointer-events-auto flex max-h-[88vh] w-full max-w-[760px] flex-col floating-module">
           <div className="flex items-center justify-end border-b border-ink/[0.08] px-[var(--space-4)] py-[var(--space-2)]">
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
+              className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-ink/15 px-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
             >
               Close
             </button>
@@ -282,31 +283,7 @@ function formatCents(cents: number | null): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function OrderStatusChip({ status, deliveredAt }: { status: OrderStatus; deliveredAt?: string | null }) {
-  // A fulfilled order with a delivery date reads as "delivered" — the order
-  // status enum has no 'delivered' value, so delivered_at is the signal.
-  if (deliveredAt && status === 'fulfilled') {
-    return (
-      <span className="shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]">
-        delivered
-      </span>
-    );
-  }
-  let cls = '';
-  let label = status.replace(/_/g, ' ');
-  switch (status) {
-    case 'pending_review':  cls = 'border-[#B5904B]/40 text-[#8a6d34] bg-[#B5904B]/[0.08]'; label = 'new'; break;
-    case 'pending_invoice': cls = 'border-ink/25 text-ink/80 bg-ink/[0.05]'; break;
-    case 'invoice_sent':    cls = 'border-holo/40 text-holo-light/80 bg-holo/[0.08]'; break;
-    case 'payment_claimed': cls = 'border-[#34727A]/40 text-[#34727A] bg-[#34727A]/[0.08]'; label = 'claims paid'; break;
-    case 'paid':            cls = 'border-[#2E7D5B]/40 text-[#2E7D5B]/90 bg-[#2E7D5B]/[0.06]'; break;
-    case 'fulfilled':       cls = 'border-ink/15 text-ink/55 bg-ink/[0.02]'; label = 'shipped'; break;
-    case 'cancelled':       cls = 'border-red-400/40 text-red-300/80 bg-red-400/[0.06]'; break;
-    case 'refunded':        cls = 'border-red-400/30 text-red-300/65 bg-red-400/[0.04]'; break;
-  }
-  return (
-    <span className={`shrink-0 text-[10px] uppercase tracking-[0.18em] px-2 py-0.5 rounded-sm border ${cls}`}>
-      {label}
-    </span>
-  );
-}
+// Promoted to src/components/ui/OrderStatusChip.tsx (also consumed by the
+// customer portal); re-exported here so existing imports of this module
+// keep working unchanged.
+export { OrderStatusChip };

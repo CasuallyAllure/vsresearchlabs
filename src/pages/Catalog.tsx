@@ -134,7 +134,7 @@ export function Catalog() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, SKU, or description…"
-            className="w-full bg-ink/[0.04] border border-ink/[0.09] rounded-[10px] pl-9 pr-9 py-2 text-[13px] text-ink placeholder:text-ink/35 focus:outline-none focus:bg-ink/[0.06] focus:border-ink/[0.18] transition-colors"
+            className="w-full bg-base-700 border border-ink/12 rounded-field pl-9 pr-9 py-[11px] text-[14px] text-ink placeholder:text-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] hover:border-ink/20 focus:outline-none focus:border-gold/70 focus:ring-2 focus:ring-gold/15 transition-[border-color,box-shadow] duration-150"
           />
           {query && (
             <button

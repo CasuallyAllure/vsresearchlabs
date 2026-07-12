@@ -82,7 +82,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
   }
 
   return (
-    <article className="research-surface-solid overflow-hidden rounded-[4px] flex flex-col group">
+    <article className="research-surface-solid overflow-hidden flex flex-col group">
       {/* Tappable head: image + identity → inspect overlay */}
       <button
         type="button"
@@ -99,7 +99,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
               loading="lazy"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center text-ink/20 text-[9px] uppercase tracking-[0.2em]">
+            <div className="h-full w-full flex items-center justify-center text-ink/20 text-[10px] uppercase tracking-[0.2em]">
               No image
             </div>
           )}
@@ -117,12 +117,12 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
         {/* Identity — compact 2-line, with optional gold nickname pip */}
         <div className="px-2 pt-1.5 pb-1">
           <div className="flex items-center gap-1 min-w-0">
-            <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-ink/40 truncate">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/40 truncate">
               {product.abbreviation} · {product.family.split(' ')[0]}
             </p>
             {product.nickname && (
               <span
-                className="shrink-0 font-mono text-[8px] uppercase tracking-[0.16em] px-1 py-0 rounded-[2px] border"
+                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-[2px] border"
                 style={{
                   color: '#7E8288',
                   borderColor: 'rgba(140,144,148,0.40)',
@@ -161,9 +161,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                   aria-checked={isActive}
                   onClick={(e) => { e.stopPropagation(); setTierIndex(i); }}
                   title={isFast ? `${v.dose} · ships fast` : v.dose}
-                  className="font-mono leading-none px-1.5 py-1 rounded-[3px] border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                  className="font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   style={{
-                    fontSize: '8.5px',
+                    fontSize: '10px',
                     letterSpacing: '0.14em',
                     backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                     color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
@@ -176,8 +176,8 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                       className="ml-1"
                       style={{
                         color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
-                        fontSize: '7.5px',
-                        letterSpacing: '0.20em',
+                        fontSize: '10px',
+                        letterSpacing: '0.16em',
                       }}
                     >
                       · FAST
@@ -199,7 +199,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             disabled={!stocked}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
-              'shrink-0 rounded-full border px-2 py-1 text-[8.5px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              'shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               // Theme-bound ink tokens (silver in dark mode) — never hardcode the
               // near-black ink hex here or the label goes invisible on dark.
               added
@@ -217,7 +217,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
 
 export function CompactProductTileSkeleton() {
   return (
-    <article className="research-surface-solid overflow-hidden rounded-[4px]" aria-hidden="true">
+    <article className="research-surface-solid overflow-hidden" aria-hidden="true">
       <div className="aspect-square w-full bg-ink/[0.06] animate-pulse" />
       <div className="px-2 py-2 space-y-1.5">
         <div className="h-2 bg-ink/[0.06] rounded animate-pulse w-1/2" />

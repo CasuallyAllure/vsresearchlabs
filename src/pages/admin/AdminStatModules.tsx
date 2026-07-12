@@ -251,7 +251,7 @@ function Tile({
       </span>
       <span className="mt-[var(--space-2)] block min-h-[1.6em] space-y-0.5">
         {meta?.filter(Boolean).map((m, i) => (
-          <span key={i} className="block truncate font-mono text-[9.5px] tabular-nums text-ink/45">{m}</span>
+          <span key={i} className="block truncate font-mono text-[10px] tabular-nums text-ink/45">{m}</span>
         ))}
       </span>
     </button>
@@ -284,9 +284,9 @@ function ModuleModal({
 
   return (
     <>
-      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-ink/60 backdrop-blur-[3px]" />
+      <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-[210] bg-[color:var(--scrim)] backdrop-blur-[8px]" />
       <div role="dialog" aria-modal="true" className="fixed inset-0 z-[211] flex items-start justify-center p-4 pointer-events-none sm:p-8">
-        <div className="pointer-events-auto flex max-h-[84vh] w-full max-w-[720px] flex-col research-surface-solid">
+        <div className="pointer-events-auto glass-panel flex max-h-[84vh] w-full max-w-[720px] flex-col rounded-[20px]">
           <header className="flex items-center justify-between gap-[var(--space-4)] border-b border-ink/[0.08] px-[var(--space-6)] py-[var(--space-4)]">
             <div className="flex items-baseline gap-[var(--space-3)]">
               <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em]">{MODULE_TITLES[moduleKey]}</p>
@@ -296,7 +296,7 @@ function ModuleModal({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="rounded-full border border-ink/15 px-[var(--space-3)] py-[3px] text-[9px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
+              className="relative inline-flex min-h-[40px] items-center rounded-full border border-ink/15 px-[var(--space-3)] text-[10px] uppercase tracking-[0.2em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink"
             >
               Close
             </button>

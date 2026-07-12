@@ -6,6 +6,13 @@
 >
 > **Source of truth:** `src/theme/theme.css` (CSS variables) + `tailwind.config.js`. If a value
 > here ever disagrees with `theme.css`, `theme.css` wins — update this file to match.
+>
+> **⚠ 2026 UPDATE:** `docs/DESIGN_2026_BLUEPRINT.md` supersedes this file on SURFACES,
+> RADIUS, ELEVATION, and GLASS: procurement modules are now 14px-radius floating modules
+> (`--radius-procurement: 14px`), content cards use the layered `--elev-*` ramp, fixed/sticky
+> chrome may use `.glass-panel`, chips are pills, and 10px is the type floor. The "flat
+> editorial, never glassy" doctrine in §6 below is RETIRED. Palette, fonts, voice, and the
+> price-path rules in this file still govern.
 
 ---
 

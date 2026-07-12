@@ -90,14 +90,10 @@ export function AdminSystemHealth() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          System Health
-        </p>
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-          <span className="font-light text-ink/85">Is everything </span>
-          <span className="font-medium text-ink">working.</span>
-        </h2>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">System Health</h2>
+        </div>
       </header>
 
       {state.error && <p role="alert" className="mb-[var(--space-4)] text-[12px] text-red-400">{state.error}</p>}
@@ -217,9 +213,9 @@ interface HealthCardProps {
 
 function HealthCard({ title, ok, detail }: HealthCardProps) {
   const dot =
-    ok === true  ? { bg: '#2E7D5B', glow: 'rgba(124,217,146,0.40)' } :
-    ok === false ? { bg: '#B23A3A', glow: 'rgba(255,122,122,0.40)' } :
-                   { bg: 'rgba(255,255,255,0.35)', glow: 'rgba(255,255,255,0.10)' };
+    ok === true  ? 'var(--color-status-success)' :
+    ok === false ? 'var(--color-status-error)' :
+                   'rgba(255,255,255,0.35)';
 
   return (
     <div className="research-surface-solid p-[var(--space-4)]">
@@ -228,8 +224,8 @@ function HealthCard({ title, ok, detail }: HealthCardProps) {
           aria-hidden="true"
           className="inline-block h-[10px] w-[10px] rounded-full shrink-0 mt-1.5"
           style={{
-            backgroundColor: dot.bg,
-            boxShadow: `0 0 8px ${dot.glow}, inset 0 0 0 0.5px rgba(255,255,255,0.25)`,
+            backgroundColor: dot,
+            boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.25)',
           }}
         />
         <div className="min-w-0">

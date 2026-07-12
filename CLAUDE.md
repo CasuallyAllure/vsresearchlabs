@@ -63,3 +63,16 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 5. Frontend Design Protocol (MANDATORY)
+
+Before ANY frontend/UI work (new components, redesigns, style changes, page builds), consult the installed design skills in `.claude/skills/` — they are the first checkpoint, not an afterthought:
+
+1. **ui-ux-pro-max** — searchable style/palette/typography/UX database; run its search for the relevant domain first.
+2. **web-design-guidelines** — Vercel's interface guidelines; use as the compliance audit checklist after building.
+3. **emil-design-eng** — polish philosophy: animation restraint, invisible details, interaction feel.
+4. **high-end-visual-design / redesign-existing-projects** — anti-generic standards; blocks "cheap AI design" defaults.
+5. **make-interfaces-feel-better** — spacing, borders, shadows, hit areas, interaction states.
+6. **gpt-taste / brandkit / image-to-code / extract-design-system** — creative direction, brand systems, design-token extraction when relevant.
+
+Design direction of record: `docs/DESIGN_2026_BLUEPRINT.md` (2026 glass/floating-module system) layered on the existing silver/graphite/cream palette. Read it before touching UI.

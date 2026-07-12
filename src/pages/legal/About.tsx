@@ -49,7 +49,7 @@ export function About() {
               Certificates of analysis and batch confirmation are available
               before request — not produced after the fact.
             </p>
-            <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink/40">
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40">
               Documentation
             </p>
           </li>
@@ -58,7 +58,7 @@ export function About() {
               Batch references stay consistent session over session, so
               intake records reconcile in minutes, not a cycle.
             </p>
-            <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink/40">
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40">
               Traceability
             </p>
           </li>
@@ -67,7 +67,7 @@ export function About() {
               Inquiries — including repeat dose tiers and custom volumes —
               are quoted within one business day.
             </p>
-            <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.2em] text-ink/40">
+            <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40">
               Turnaround
             </p>
           </li>

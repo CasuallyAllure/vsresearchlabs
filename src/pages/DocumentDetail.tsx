@@ -143,7 +143,7 @@ export function DocumentDetail() {
 
         {/* Preview column — archival reference thumbnail, not hero */}
         <div className="lg:col-span-4">
-          <div className="aspect-[3/4] w-full max-w-[280px] overflow-hidden bg-display border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="aspect-[3/4] w-full max-w-[280px] overflow-hidden rounded-[14px] bg-display border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             {doc.thumbnailUrl ? (
               <img
                 src={doc.thumbnailUrl}
@@ -174,35 +174,35 @@ export function DocumentDetail() {
           )}
         </div>
 
-        {/* Metadata column — Level 1 surface on lg+ */}
-        <div className="lg:col-span-8 flex flex-col gap-y-[var(--space-6)] lg:research-surface-solid lg:p-[var(--space-6)]">
+        {/* Metadata column — floating module on lg+ */}
+        <div className="lg:col-span-8 flex flex-col gap-y-[var(--space-6)] lg:floating-module lg:p-[var(--space-6)]">
 
           {/* Provenance */}
           <div>
             <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 mb-[var(--space-2)]">
               Provenance
             </p>
-            <dl className="border-t border-ink/[0.06]">
+            <dl className="divide-y divide-ink/[0.05]">
               {doc.issuer && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Issuer</dt>
                   <dd className="text-sm text-ink/70 text-right">{doc.issuer}</dd>
                 </div>
               )}
               {doc.issuedBy && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Issued By</dt>
                   <dd className="text-sm text-ink/70 text-right">{doc.issuedBy}</dd>
                 </div>
               )}
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                 <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Issued</dt>
                 <dd className="text-right">
                   <DateStamp iso={doc.issuedDate} className="text-ink/70" />
                 </dd>
               </div>
               {doc.reviewedAt && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Reviewed</dt>
                   <dd className="text-right">
                     <DateStamp iso={doc.reviewedAt} className="text-ink/70" />
@@ -210,7 +210,7 @@ export function DocumentDetail() {
                 </div>
               )}
               {doc.expiresAt && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Expires</dt>
                   <dd
                     className={cn(
@@ -230,27 +230,27 @@ export function DocumentDetail() {
             <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 mb-[var(--space-2)]">
               Reference
             </p>
-            <dl className="border-t border-ink/[0.06]">
-              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+            <dl className="divide-y divide-ink/[0.05]">
+              <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                 <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Batch ID</dt>
                 <dd className="text-right">
                   <BatchCode value={doc.batchId} className="text-ink/70" />
                 </dd>
               </div>
               {doc.standardReference && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Standard</dt>
                   <dd className="text-sm font-mono tabular-nums text-ink/70 text-right">{doc.standardReference}</dd>
                 </div>
               )}
               {doc.documentVersion && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Revision</dt>
                   <dd className="text-sm text-ink/70 text-right">{doc.documentVersion}</dd>
                 </div>
               )}
               {doc.instrumentId && (
-                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] border-b border-ink/[0.06]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)] py-4">
                   <dt className="text-[11px] uppercase tracking-[0.2em] text-ink/40 shrink-0">Instrument</dt>
                   <dd className="text-sm font-mono tabular-nums text-ink/70 text-right">{doc.instrumentId}</dd>
                 </div>

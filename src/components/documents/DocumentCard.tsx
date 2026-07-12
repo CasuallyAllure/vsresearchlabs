@@ -114,7 +114,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
   return (
     <Link
       to={href}
-      className="block rounded-[4px] focus:outline-none focus-visible:[&>article]:ring-1 focus-visible:[&>article]:ring-ink/25"
+      className="block rounded-procurement focus:outline-none focus-visible:[&>article]:ring-1 focus-visible:[&>article]:ring-ink/25"
       aria-label={`${document.documentType} — ${document.productName}, batch ${document.batchId}`}
     >
       {inner}

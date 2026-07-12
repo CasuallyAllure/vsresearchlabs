@@ -16,7 +16,9 @@ import { supabase } from '../../lib/supabase';
 import { useProducts } from '../../hooks/useProducts';
 import type { Product } from '../../types';
 import { AdminLayout } from './AdminLayout';
+import { AdminFilterBar } from './AdminFilterBar';
 import { type Column, downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
+import { Button } from '../../components/ui/Button';
 
 type Row = Record<string, unknown>;
 
@@ -338,84 +340,59 @@ export function AdminReports() {
 
   return (
     <AdminLayout>
-      <header className="mb-[var(--space-6)]">
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
-          Reports
-        </p>
-        <h2 className="text-[clamp(1.3rem,2.6vw,1.7rem)] leading-[1.1] tracking-[-0.01em] text-ink">
-          <span className="font-light text-ink/85">Export the </span>
-          <span className="font-medium text-ink">numbers.</span>
-        </h2>
-        <p className="text-[12px] text-ink/45 mt-[var(--space-2)] max-w-[64ch]">
-          Pick a report, set a range, and download a real Excel workbook or CSV. Exports include every matching row (preview shows the first {PREVIEW_LIMIT}).
-        </p>
+      <header className="mb-[var(--space-4)] flex flex-col gap-[var(--space-3)]">
+        <div className="flex items-center justify-between gap-[var(--space-3)]">
+          <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Reports</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-[var(--space-2)]">
+          <AdminFilterBar
+            label=""
+            dense
+            options={reports.map((r) => ({ value: r.id, label: r.label }))}
+            value={activeId}
+            onChange={setActiveId}
+          />
+          {active.hasRange && (
+            <AdminFilterBar
+              label=""
+              dense
+              options={RANGES.map((rg) => ({ value: rg.id, label: rg.label }))}
+              value={rangeId}
+              onChange={setRangeId}
+            />
+          )}
+        </div>
       </header>
 
-      {/* Report picker */}
-      <div className="flex flex-wrap items-center gap-1.5 mb-[var(--space-5)]">
-        {reports.map((r) => (
-          <button
-            key={r.id}
-            type="button"
-            onClick={() => setActiveId(r.id)}
-            className={[
-              'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.18em] transition-colors',
-              activeId === r.id
-                ? 'bg-ink/[0.10] text-ink border border-ink/25'
-                : 'border border-ink/[0.08] text-ink/55 hover:text-ink/90',
-            ].join(' ')}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Controls row: description + range + export */}
+      {/* Controls row: description + export */}
       <div className="research-surface-solid p-[var(--space-5)] mb-[var(--space-5)] flex flex-col gap-[var(--space-4)] sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-[13px] text-ink/80">{active.label}</p>
           <p className="text-[11.5px] text-ink/45 mt-0.5 max-w-[60ch]">{active.description}</p>
-          {active.hasRange && (
-            <div className="flex flex-wrap items-center gap-1.5 mt-[var(--space-3)]">
-              {RANGES.map((rg) => (
-                <button
-                  key={rg.id}
-                  type="button"
-                  onClick={() => setRangeId(rg.id)}
-                  className={[
-                    'rounded-full px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.16em] transition-colors',
-                    rangeId === rg.id
-                      ? 'bg-ink/[0.08] text-ink border border-ink/20'
-                      : 'border border-ink/[0.06] text-ink/45 hover:text-ink/80',
-                  ].join(' ')}
-                >
-                  {rg.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="flex items-center gap-[var(--space-2)] shrink-0">
           <span className="font-mono text-[10px] text-ink/40 tabular-nums mr-[var(--space-2)]">
             {rows ? `${rows.length} rows` : 'Loading…'}
           </span>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             disabled={!canExport}
             onClick={() => downloadXlsx(`${filenameBase}.xlsx`, active.sheet, active.columns, rows ?? [])}
-            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] bg-[#2E7D5B]/[0.10] border border-[#2E7D5B]/40 text-[#9fe6b3] hover:bg-[#2E7D5B]/[0.16] transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
           >
             Export Excel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             disabled={!canExport}
             onClick={() => downloadCsv(`${filenameBase}.csv`, active.columns, rows ?? [])}
-            className="rounded-full px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
           >
             CSV
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -68,7 +68,7 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 }
 
 const TH_CLASS =
-  'text-left text-[11px] uppercase tracking-[0.2em] text-ink/45 font-medium px-[var(--space-4)] py-[var(--space-3)]';
+  'text-left text-[11px] uppercase tracking-[0.14em] text-ink/45 font-medium px-[var(--space-4)] py-[var(--space-3)]';
 
 export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
   const navigate = useNavigate();
@@ -107,7 +107,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
 
   return (
     <div
-      className="overflow-hidden border rounded-[4px]"
+      className="overflow-hidden border rounded-procurement shadow-elev-1"
       style={{
         backgroundColor: 'var(--surface-product)',
         borderColor: 'var(--border-product)',
@@ -139,12 +139,12 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                 }}
                 className={[
                   'group transition-colors cursor-pointer',
-                  'hover:bg-[var(--surface-product-hover)]',
+                  'hover:bg-ink/[0.02]',
                   isLast ? '' : 'border-b border-ink/[0.06]',
                 ].join(' ')}
               >
                 {/* SKU */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] tabular-nums text-ink/65 text-xs whitespace-nowrap truncate">
+                <td className="px-[var(--space-4)] py-[var(--space-3)] tabular-nums text-ink/65 text-[12px] whitespace-nowrap truncate">
                   {product.sku}
                 </td>
 
@@ -164,12 +164,12 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                 </td>
 
                 {/* Family / class — derived from category */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/55 text-xs whitespace-nowrap truncate">
+                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/55 text-[12px] whitespace-nowrap truncate">
                   {categoryLabel(product.category)}
                 </td>
 
                 {/* Spec — dose or spec headline */}
-                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/65 text-xs truncate">
+                <td className="px-[var(--space-4)] py-[var(--space-3)] text-ink/65 text-[12px] truncate">
                   {dose || <span className="text-ink/30">—</span>}
                 </td>
 
@@ -242,7 +242,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
 export function InventoryTableSkeleton({ rowCount = 8 }: { rowCount?: number }) {
   return (
     <div
-      className="overflow-hidden border rounded-[4px]"
+      className="overflow-hidden border rounded-procurement shadow-elev-1"
       style={{
         backgroundColor: 'var(--surface-product)',
         borderColor: 'var(--border-product)',

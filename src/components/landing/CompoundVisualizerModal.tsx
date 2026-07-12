@@ -78,7 +78,7 @@ export function CompoundVisualizerModal({ open, onClose }: CompoundVisualizerMod
 
       {/* Panel — large, but capped so it never overflows the viewport. */}
       <div
-        className={`relative w-[min(96vw,1100px)] h-[min(88dvh,820px)] transition-all duration-300 ease-out ${
+        className={`relative w-[min(96vw,1100px)] h-[min(88dvh,820px)] transition-[opacity,transform] duration-300 ease-out ${
           shown ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.97]'
         }`}
       >

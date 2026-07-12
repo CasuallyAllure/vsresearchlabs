@@ -50,7 +50,7 @@ export function StudyCard({ study, index }: StudyCardProps) {
     <div className="py-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       {/* Index + title + link */}
       <div className="flex items-start gap-2.5 mb-2">
-        <span className="font-mono text-ink/20 tabular-nums shrink-0 pt-0.5" style={{ fontSize: '9px', minWidth: '14px' }}>
+        <span className="font-mono text-ink/20 tabular-nums shrink-0 pt-0.5" style={{ fontSize: '10px', minWidth: '14px' }}>
           {String(index + 1).padStart(2, '0')}
         </span>
         <p className="text-ink/68 flex-1 min-w-0 leading-snug" style={{ fontSize: '11.5px' }}>
@@ -66,13 +66,13 @@ export function StudyCard({ study, index }: StudyCardProps) {
       </div>
 
       {/* Meta row: year · model · source · phase */}
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 pl-5 mb-2">
-        <span className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '9.5px' }}>{study.year}</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-5 mb-2">
+        <span className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '10px' }}>{study.year}</span>
         <span className="text-ink/14" aria-hidden="true">·</span>
         <span
-          className="uppercase"
+          className="uppercase rounded-full"
           style={{
-            fontSize: '8px', letterSpacing: '0.14em', padding: '1px 4px', borderRadius: '2px',
+            fontSize: '10px', letterSpacing: '0.14em', padding: '2px 8px',
             backgroundColor: isHumanTrial ? 'rgba(140, 144, 148,0.08)' : 'var(--color-interactive-secondary)',
             border: isHumanTrial ? '1px solid rgba(140, 144, 148,0.18)' : '1px solid var(--color-border-subtle)',
             color: isHumanTrial ? 'rgba(140,144,148,0.75)' : 'var(--color-content-tertiary)',
@@ -80,11 +80,11 @@ export function StudyCard({ study, index }: StudyCardProps) {
           {STUDY_MODEL_LABEL[study.model]}
         </span>
         <span className="text-ink/14" aria-hidden="true">·</span>
-        <span className="text-ink/28" style={{ fontSize: '9.5px' }}>{study.source}</span>
+        <span className="text-ink/28" style={{ fontSize: '10px' }}>{study.source}</span>
         {study.phase && (
           <>
             <span className="text-ink/14" aria-hidden="true">·</span>
-            <span className="text-ink/30 uppercase" style={{ fontSize: '8px', letterSpacing: '0.12em', backgroundColor: 'var(--color-interactive-secondary)', padding: '1px 4px', borderRadius: '2px', border: '1px solid var(--color-border-subtle)' }}>
+            <span className="text-ink/30 uppercase rounded-full" style={{ fontSize: '10px', letterSpacing: '0.12em', backgroundColor: 'var(--color-interactive-secondary)', padding: '2px 8px', border: '1px solid var(--color-border-subtle)' }}>
               {study.phase}
             </span>
           </>
@@ -94,11 +94,11 @@ export function StudyCard({ study, index }: StudyCardProps) {
       {/* Observed findings */}
       {study.notes && study.notes.length > 0 && (
         <div className="pl-5">
-          <p className="text-ink/20 uppercase mb-1.5" style={{ fontSize: '8px', letterSpacing: '0.18em' }}>Observed</p>
+          <p className="text-ink/20 uppercase mb-1.5" style={{ fontSize: '10px', letterSpacing: '0.18em' }}>Observed</p>
           <ul className="space-y-1">
             {study.notes.map((note, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-ink/25 shrink-0 mt-[3px]" aria-hidden="true" style={{ fontSize: '8px' }}>•</span>
+                <span className="text-ink/25 shrink-0 mt-[3px]" aria-hidden="true" style={{ fontSize: '10px' }}>•</span>
                 <span className="text-ink/45" style={{ fontSize: '10.5px', lineHeight: '1.5' }}>{note}</span>
               </li>
             ))}

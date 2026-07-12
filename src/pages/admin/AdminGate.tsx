@@ -15,6 +15,7 @@ import { useState, type ReactNode } from 'react';
 import { useAdminAuth } from '../../lib/adminAuth';
 import { supabase } from '../../lib/supabase';
 import { siteConfig } from '../../config';
+import { FIELD_DEFAULT, FIELD_SURFACE } from '../../components/ui/Field';
 
 export function AdminGate({ children }: { children: ReactNode }) {
   const { loading, user, isAdmin, error, signIn } = useAdminAuth();
@@ -102,7 +103,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           autoComplete="username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors mb-[var(--space-5)]"
+          className={`${FIELD_SURFACE} ${FIELD_DEFAULT} mb-[var(--space-5)]`}
           placeholder={`you@${siteConfig.contact.officialHost}`}
         />
 
@@ -119,7 +120,7 @@ function AdminSignInForm({ signIn, error }: AdminSignInFormProps) {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-[var(--space-4)] py-[var(--space-3)] bg-base-700 border border-ink/10 rounded-sm text-sm text-ink placeholder-ink/30 focus:outline-none focus:border-ink/40 transition-colors"
+          className={`${FIELD_SURFACE} ${FIELD_DEFAULT}`}
         />
 
         {error && (

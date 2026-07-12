@@ -262,7 +262,7 @@ export function ProductPage() {
       key: 'procurement',
       title: 'Procurement',
       render: () => (
-        <div className="px-[var(--space-4)] py-[var(--space-4)]">
+        <div className="px-[var(--space-4)] py-[var(--space-5)]">
           <ProcurementSheet product={product} variant="full" />
         </div>
       ),
@@ -276,7 +276,7 @@ export function ProductPage() {
     key: 'documentation',
     title: 'Documentation',
     render: () => (
-      <div className="px-[var(--space-4)] py-[var(--space-4)]">
+      <div className="px-[var(--space-4)] py-[var(--space-5)]">
         <DocumentSlot documents={productDocs} />
       </div>
     ),
@@ -303,8 +303,7 @@ export function ProductPage() {
 
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
-          className="lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
-          style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border-default)' }}
+          className="floating-module overflow-hidden lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
           aria-label="Compound reference and inquiry"
         >
           {/* Desktop visual identity zone */}
@@ -318,7 +317,7 @@ export function ProductPage() {
 
           {/* Mobile image gallery — replaces the visual zone at < lg */}
           {activeImageUrl && (
-            <div className="lg:hidden" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+            <div className="lg:hidden border-b border-ink/[0.05]">
               <div className="aspect-[4/3] w-full overflow-hidden bg-display">
                 <img src={activeImageUrl} alt={product.name} className="h-full w-full object-cover" />
               </div>
@@ -354,7 +353,7 @@ export function ProductPage() {
           )}
 
           {/* Identifier band */}
-          <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+          <div className="px-[var(--space-4)] py-[var(--space-5)] border-b border-ink/[0.05]">
             <div className="flex items-center gap-2 mb-[var(--space-2)] flex-wrap">
               <AbbreviationChip value={ci.abbreviation} />
               <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">{ci.family}</span>
@@ -390,15 +389,15 @@ export function ProductPage() {
 
           {/* Regulatory chip cluster */}
           {(ci.humanTrials !== undefined || ci.fdaStatus) && (
-            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+            <div className="px-[var(--space-4)] py-[var(--space-5)] border-b border-ink/[0.05]">
               <RegulatoryChipCluster humanTrials={ci.humanTrials} fdaStatus={ci.fdaStatus} />
             </div>
           )}
 
           {/* Tier strip (interactive) */}
           {ci.tiers.length > 0 && (
-            <div className="px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
-              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
+            <div className="px-[var(--space-4)] py-[var(--space-5)] border-b border-ink/[0.05]">
+              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '11px', letterSpacing: '0.22em' }}>
                 Available Tiers
               </p>
               <TierStrip
@@ -412,7 +411,7 @@ export function ProductPage() {
           )}
 
           {/* Quantity + Add to Inquiry — desktop and tablet only */}
-          <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-4)]" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
+          <div className="hidden lg:block px-[var(--space-4)] py-[var(--space-5)] border-b border-ink/[0.05]">
             <div className="flex items-center gap-[var(--space-2)] mb-[var(--space-2)]">
               <QuantityStepper quantity={quantity} onChange={setQuantity} />
               <Button
@@ -427,7 +426,7 @@ export function ProductPage() {
               </Button>
             </div>
             {(activeTier || quantity > 1) && (
-              <p className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '9.5px', letterSpacing: '0.06em' }}>
+              <p className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.06em' }}>
                 {[
                   activeTier?.dose,
                   activeTier?.sku ? `SKU ${activeTier.sku}` : null,
@@ -444,8 +443,8 @@ export function ProductPage() {
 
           {/* Compact procurement strip — top 4 fields */}
           {procurementRowCount > 0 && (
-            <div className="px-[var(--space-4)] py-[var(--space-4)]">
-              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '9px', letterSpacing: '0.22em' }}>
+            <div className="px-[var(--space-4)] py-[var(--space-5)]">
+              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '11px', letterSpacing: '0.22em' }}>
                 Procurement
               </p>
               <ProcurementSheet product={product} variant="passport" maxRows={4} />
@@ -464,10 +463,7 @@ export function ProductPage() {
 
         {/* ─── SCROLLABLE RIGHT — Module stack ───────────────────────────── */}
         <main className="flex-1 min-w-0 lg:overflow-visible">
-          <div
-            className="overflow-hidden"
-            style={{ backgroundColor: 'var(--color-surface-elevated)', border: '1px solid var(--color-border-default)' }}
-          >
+          <div className="floating-module overflow-hidden">
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>
                 <IntelModule

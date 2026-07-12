@@ -38,8 +38,16 @@ import { placeOrder } from '../lib/placeOrder';
 import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
+import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
+import { fetchMyAccountDiscount } from '../lib/accountDiscount';
+import { FIELD_DEFAULT } from '../components/ui/Field';
 
 const MAX_QTY = 999;
+
+// Compact sibling of Field.tsx's FIELD_SURFACE — same border/focus-ring
+// grammar, tighter padding for the drawer's narrower column.
+const DRAWER_FIELD_SURFACE =
+  'w-full rounded-field border bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] focus:outline-none transition-[border-color,box-shadow] duration-150';
 
 type View = 'list' | 'form';
 type SubmitState =
@@ -61,6 +69,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const updateQuantity = useCart((s) => s.updateQuantity);
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
+  const coupons = useCart((s) => s.coupons);
 
   const [view, setView] = useState<View>('list');
   const [firstName, setFirstName] = useState('');
@@ -86,6 +95,20 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
+
+  // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
+  // re-resolves and applies it authoritatively server-side. Guests → null.
+  const [accountDiscount, setAccountDiscount] = useState<AccountDiscountPreview | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void fetchMyAccountDiscount().then((d) => {
+      if (!cancelled) setAccountDiscount(d);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Reset to the list step shortly after the drawer closes.
   useEffect(() => {
@@ -181,7 +204,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-ink/65 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[2px] transition-opacity duration-300 ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -191,27 +214,21 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Inquiry list"
-        className={`fixed top-0 right-0 z-[60] flex h-[100dvh] w-[340px] max-w-[90vw] sm:w-[380px] flex-col transition-transform duration-300 ease-out ${
+        className={`glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[340px] max-w-[90vw] sm:w-[380px] flex-col transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{
-          backgroundColor: 'var(--color-surface-elevated)',
-          borderLeft: '1px solid rgba(26, 23, 20, 0.12)',
-          boxShadow: '-24px 0 60px -20px rgba(26,23,20,0.25)',
-          backdropFilter: 'blur(10px)',
-        }}
       >
         {/* Header — identity + close */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.06]">
           <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.3em] text-holo-light/70">
+            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-holo-light/70">
               {submit.kind === 'success'
                 ? 'Inquiry Filed'
                 : view === 'form'
                 ? 'Buyer Details'
                 : 'Inquiry List'}
             </span>
-            <span className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-ink/35">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/35">
               {itemCount > 0
                 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending`
                 : submit.kind === 'success'
@@ -283,7 +300,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     onChange={(e) => setFirstName(e.target.value)}
                     autoComplete="given-name"
                     required
-                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                     placeholder="First"
                   />
                 </div>
@@ -298,7 +315,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     onChange={(e) => setLastName(e.target.value)}
                     autoComplete="family-name"
                     required
-                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                     placeholder="Last"
                   />
                 </div>
@@ -314,7 +331,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
                   required
-                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                  className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                   placeholder="you@example.com"
                 />
               </div>
@@ -328,7 +345,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   onChange={(e) => setStreet(e.target.value)}
                   autoComplete="street-address"
                   required
-                  className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors mb-2"
+                  className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'mb-2'].join(' ')}
                   placeholder="Street address"
                 />
                 <div className="grid grid-cols-[1fr_70px_90px] gap-2">
@@ -338,7 +355,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     onChange={(e) => setCity(e.target.value)}
                     autoComplete="address-level2"
                     required
-                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                     placeholder="City"
                   />
                   <input
@@ -348,7 +365,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     autoComplete="address-level1"
                     required
                     maxLength={3}
-                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors uppercase"
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'uppercase'].join(' ')}
                     placeholder="ST"
                   />
                   <input
@@ -358,19 +375,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     autoComplete="postal-code"
                     inputMode="numeric"
                     required
-                    className="w-full rounded-sm border border-ink/10 bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 focus:border-ink/40 focus:outline-none transition-colors"
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
                     placeholder="ZIP"
                   />
                 </div>
                 <p className="mt-1.5 text-[10px] text-ink/40">The ZIP is how you’ll look up your order at <span className="font-mono">/track</span>.</p>
               </div>
-              <label className="flex items-start gap-2 cursor-pointer select-none">
+              <label className="flex min-h-[40px] items-start gap-2 py-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={human}
                   onChange={(e) => setHuman(e.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0"
-                  style={{ accentColor: '#868A90' }}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[color:var(--color-accent-gold)]"
                 />
                 <span className="text-[11px] leading-relaxed text-ink/55">
                   I confirm I'm a real person acquiring these materials for legitimate research use.
@@ -394,15 +410,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               </p>
             )}
 
-            <div className="mt-4">
-              <Turnstile onToken={setTsToken} />
+            {/* overflow-hidden absorbs Turnstile's 300px minimum width on the
+                narrowest phones (column is ~297px at a 375px viewport). */}
+            <div className="mt-4 overflow-hidden">
+              <Turnstile onToken={setTsToken} className="w-full" />
             </div>
 
             <div className="mt-auto pt-4">
               <button
                 type="submit"
                 disabled={formInvalid || submit.kind === 'submitting'}
-                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-4 py-2 text-[9.5px] font-medium uppercase tracking-[0.2em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+                className="cta-mint group relative flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-full px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
               >
                 <span className="relative">
                   {submit.kind === 'submitting' ? 'Sending…' : 'Send & Email Invoice'}
@@ -426,7 +444,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="flex-1 overflow-y-auto px-2 py-3">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-ink/30">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/30">
                     No items
                   </p>
                   <p className="mt-3 text-[12.5px] leading-relaxed text-ink/45 max-w-[28ch]">
@@ -443,7 +461,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         key={item.product.id}
                         className="flex items-center gap-3 px-3 py-3 border-b border-ink/[0.05] last:border-b-0"
                       >
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[3px] border border-ink/[0.09] bg-display">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[8px] border border-ink/[0.09] bg-display">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
@@ -452,7 +470,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[8px] uppercase tracking-widest text-ink/20">
+                            <div className="flex h-full w-full items-center justify-center text-[10px] uppercase tracking-widest text-ink/20">
                               No img
                             </div>
                           )}
@@ -476,9 +494,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           </p>
                           <p className="mt-1">
                             {lineIsFast(item) ? (
-                              <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ Fast</span>
+                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: '#2E7D5B', backgroundColor: 'rgba(46,125,91,0.10)', border: '1px solid rgba(46,125,91,0.30)' }}>⚡ Fast</span>
                             ) : (
-                              <span className="font-mono text-[8.5px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}>Standard</span>
+                              <span className="font-mono text-[10px] uppercase tracking-[0.16em] px-1 py-0.5 rounded-[3px]" style={{ color: 'rgba(26,23,20,0.50)', backgroundColor: 'rgba(26,23,20,0.04)', border: '1px solid rgba(26,23,20,0.12)' }}>Standard</span>
                             )}
                           </p>
                           <div className="mt-2 flex items-center gap-2">
@@ -506,7 +524,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               type="button"
                               onClick={() => remove(item.product.id)}
                               aria-label={`Remove ${item.product.name}`}
-                              className="ml-auto text-[9px] uppercase tracking-[0.2em] text-ink/35 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                              className="ml-auto text-[10px] uppercase tracking-[0.2em] text-ink/35 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                             >
                               Remove
                             </button>
@@ -536,7 +554,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               {items.length > 0 && (
                 <>
                   <div className="mb-2.5 flex items-baseline justify-between">
-                    <span className="text-[9px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+                    <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
                     <span className="font-mono text-[12.5px] tabular-nums text-ink">
                       {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
                     </span>
@@ -545,13 +563,40 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     variant="drawer"
                     subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
                   />
+                  {/* Account discount (signed-in perk) — same pass-2a math the
+                      server bills, so this preview matches the invoice. */}
+                  {accountDiscount && (() => {
+                    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                    const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
+                    if (breakdown.accountCents <= 0) return null;
+                    return (
+                      <div className="mb-2.5">
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">
+                            {accountDiscount.label}
+                          </span>
+                          <span className="font-mono text-[12.5px] tabular-nums text-ink">
+                            −{formatUsd(breakdown.accountCents)}
+                          </span>
+                        </div>
+                        <div className="mt-1.5 flex items-baseline justify-between">
+                          <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">
+                            Total after discounts
+                          </span>
+                          <span className="font-mono text-[12.5px] tabular-nums text-ink">
+                            {formatUsd(Math.max(subtotalCents - breakdown.total, 0))}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </>
               )}
               <button
                 type="button"
                 onClick={() => setView('form')}
                 disabled={items.length === 0}
-                className="cta-mint group relative flex w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+                className="cta-mint group relative flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
               >
                 <span className="relative">Review &amp; Send Inquiry</span>
               </button>
