@@ -224,7 +224,7 @@ export function OrderView({
     if (!supabase) return;
     void supabase
       .from('order_coupons')
-      .select('code, kind, free_label, percent, amount_cents, discount_cents')
+      .select('code, kind, free_label, free_sku, percent, amount_cents, discount_cents')
       .eq('order_id', orderId)
       .order('created_at')
       .then(({ data }) => { if (data) setCoupons(data as InvoiceCoupon[]); });
@@ -844,7 +844,7 @@ function StageActions({
 /* ── Printable branded invoice ────────────────────────────────────────────── */
 
 interface InvoiceCoupon {
-  code: string; kind: string; free_label: string | null;
+  code: string; kind: string; free_label: string | null; free_sku: string | null;
   percent: number | null; amount_cents: number | null; discount_cents: number;
 }
 function invoiceCouponLabel(c: InvoiceCoupon): string {
