@@ -246,6 +246,18 @@ export function AdminInventory() {
     return m;
   }, [catalogProducts]);
 
+  // SKU → catalog product name. The full catalog (incl. the generated
+  // compounds) is the only source that knows a generated SKU's real name;
+  // displayNameFor only sees products.json + the manifest, so name search /
+  // sort would miss compounds like Tesamorelin without this. Falls back to
+  // displayNameFor for equipment/manifest-only SKUs.
+  const nameBySku = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const p of catalogProducts) if (p.sku) m.set(p.sku, p.name);
+    return m;
+  }, [catalogProducts]);
+  const nameFor = (sku: string): string => nameBySku.get(sku) ?? displayNameFor(sku);
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -320,12 +332,12 @@ export function AdminInventory() {
       if (statusFilter === 'deleted' && !r.deleted_at) return false;
       // Text filter
       if (q) {
-        const name = displayNameFor(r.sku).toLowerCase();
+        const name = nameFor(r.sku).toLowerCase();
         if (!r.sku.toLowerCase().includes(q) && !name.includes(q)) return false;
       }
       return true;
     });
-  }, [catalogRows, query, statusFilter]);
+  }, [catalogRows, query, statusFilter, nameBySku]);
 
   /** Sorted view of the filtered rows. Price = cheapest dose's display price
    *  (set price or formula), stock = base + all dose variants combined —
@@ -353,7 +365,7 @@ export function AdminInventory() {
     };
     const priceKey = new Map(filtered.map((r) => [r.sku, priceOf(r)]));
     const stockKey = new Map(filtered.map((r) => [r.sku, stockOf(r)]));
-    const nameKey = new Map(filtered.map((r) => [r.sku, displayNameFor(r.sku)]));
+    const nameKey = new Map(filtered.map((r) => [r.sku, nameFor(r.sku)]));
     // Unpriced rows always sort last, whichever direction.
     const num = (v: number | null | undefined, dir: 1 | -1) =>
       v == null ? Number.POSITIVE_INFINITY : dir * v;
