@@ -28,9 +28,11 @@ interface AuthCardProps {
   error: string | null;
   /** Which face to open on — lets callers deep-link straight to create/sign-in. */
   initialMode?: Mode;
+  /** Seeds the signup/login email field (e.g. from an invite deep link). */
+  initialEmail?: string;
 }
 
-export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialMode = 'signin' }: AuthCardProps) {
+export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialMode = 'signin', initialEmail }: AuthCardProps) {
   const [mode, setMode] = useState<Mode>(initialMode);
   // When set, Supabase asked for code confirmation → show the standalone
   // OtpConfirm card in place of the flip card (no face-bleed).
@@ -101,6 +103,7 @@ export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialM
                 signIn={signIn}
                 error={error}
                 onSwitchToSignUp={() => setMode('signup')}
+                initialEmail={initialEmail}
               />
             </div>
 
@@ -120,6 +123,7 @@ export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialM
                 signUp={signUp}
                 onNeedsConfirmation={(email) => setConfirmEmail(email)}
                 onSwitchToSignIn={() => setMode('signin')}
+                initialEmail={initialEmail}
               />
             </div>
           </div>

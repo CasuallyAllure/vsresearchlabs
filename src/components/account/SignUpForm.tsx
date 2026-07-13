@@ -20,6 +20,8 @@ interface SignUpFormProps {
    *  parent swaps the whole card to the standalone OtpConfirm step. */
   onNeedsConfirmation: (email: string) => void;
   onSwitchToSignIn: () => void;
+  /** Seeds the email field's initial value (e.g. from an invite deep link). */
+  initialEmail?: string;
 }
 
 const MIN_PASSWORD = 8;
@@ -30,10 +32,10 @@ type Submit =
   | { kind: 'submitting' }
   | { kind: 'error'; message: string };
 
-export function SignUpForm({ signUp, onNeedsConfirmation, onSwitchToSignIn }: SignUpFormProps) {
+export function SignUpForm({ signUp, onNeedsConfirmation, onSwitchToSignIn, initialEmail = '' }: SignUpFormProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [addressLine1, setAddressLine1] = useState('');

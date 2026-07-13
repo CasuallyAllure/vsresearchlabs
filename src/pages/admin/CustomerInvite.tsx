@@ -16,23 +16,32 @@
 import { useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { siteConfig } from '../../config';
+import { supabase } from '../../lib/supabase';
 
 export interface InviteTarget {
   display_name: string;
   contact: string;
 }
 
+/** 300+ banked points unlocks the headline redemption: 40% off one item
+ *  (one vial — research supplies only, lab equipment excluded). */
+const FORTY_OFF_THRESHOLD_POINTS = 300;
+
 export function composeInvite(target: InviteTarget, points: number): { subject: string; body: string } {
   const firstName = target.display_name.trim().split(/\s+/)[0] || 'there';
   // Always the canonical public domain — never window.location.origin, which
   // would leak a localhost/preview URL into a real customer email when the
   // admin composes from a dev or staging build.
-  const signupUrl = `https://${siteConfig.contact.officialHost}/account?mode=signup`;
+  const signupUrl = `https://${siteConfig.contact.officialHost}/account?mode=signup&email=${encodeURIComponent(target.contact)}`;
   const subject = `${points.toLocaleString()} reward points are waiting for you at ${siteConfig.brand.name}`;
+  const fortyOffLine = points >= FORTY_OFF_THRESHOLD_POINTS
+    ? `That's already enough to redeem 40% off one item — any single vial in our catalog (one item per redemption; excludes laboratory equipment).\n\n`
+    : '';
   const body =
     `Hi ${firstName},\n\n` +
     `Thank you for your orders with ${siteConfig.brand.name}. Based on what you've already spent with us, ` +
     `you've earned ${points.toLocaleString()} reward points (every $1 = 1 point) — they just need an account to live in.\n\n` +
+    fortyOffLine +
     `Create your free account with this email address and we'll credit the full ${points.toLocaleString()} points to it:\n` +
     `${signupUrl}\n\n` +
     `Points are redeemable toward future orders, and members also get order history, tracking, and receipts in one place.\n\n` +
@@ -47,6 +56,11 @@ interface InviteSheetProps {
 }
 
 type CopyState = 'idle' | 'copied' | 'failed';
+type SendState =
+  | { kind: 'idle' }
+  | { kind: 'sending' }
+  | { kind: 'sent' }
+  | { kind: 'error'; message: string };
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -75,6 +89,7 @@ export function InviteSheet({ target, points, onClose }: InviteSheetProps) {
   const [subject, setSubject] = useState(initial.subject);
   const [body, setBody] = useState(initial.body);
   const [copied, setCopied] = useState<CopyState>('idle');
+  const [sendState, setSendState] = useState<SendState>({ kind: 'idle' });
 
   const mailto = `mailto:${encodeURIComponent(target.contact)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
@@ -82,6 +97,19 @@ export function InviteSheet({ target, points, onClose }: InviteSheetProps) {
     const ok = await copyText(`To: ${target.contact}\nSubject: ${subject}\n\n${body}`);
     setCopied(ok ? 'copied' : 'failed');
     window.setTimeout(() => setCopied('idle'), 2000);
+  }
+
+  async function handleSend() {
+    if (!supabase) return;
+    setSendState({ kind: 'sending' });
+    const { error } = await supabase.functions.invoke('send-invite', {
+      body: { contact: target.contact, subject, body, points },
+    });
+    if (error) {
+      setSendState({ kind: 'error', message: error.message });
+      return;
+    }
+    setSendState({ kind: 'sent' });
   }
 
   return (
@@ -113,8 +141,21 @@ export function InviteSheet({ target, points, onClose }: InviteSheetProps) {
             className="mb-[var(--space-4)] w-full resize-y rounded-sm border border-ink/10 bg-base-700 px-[var(--space-3)] py-[var(--space-2)] text-[12.5px] leading-relaxed text-ink focus:border-ink/40 focus:outline-none"
           />
 
+          {sendState.kind === 'sent' && (
+            <p role="status" className="mb-[var(--space-3)] text-[12px] leading-relaxed text-[color:var(--color-status-success)]">
+              Invite sent to {target.contact}.
+            </p>
+          )}
+          {sendState.kind === 'error' && (
+            <p role="alert" className="mb-[var(--space-3)] text-[12px] leading-relaxed text-[color:var(--color-status-error)]">
+              Couldn't send: {sendState.message} — use Copy text or Open in Mail below instead.
+            </p>
+          )}
+
           <div className="flex flex-wrap items-center justify-end gap-[var(--space-2)]">
-            <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="secondary" size="sm" onClick={onClose}>
+              {sendState.kind === 'sent' ? 'Done' : 'Cancel'}
+            </Button>
             <Button type="button" variant="secondary" size="sm" onClick={handleCopy}>
               {copied === 'copied' ? 'Copied ✓' : copied === 'failed' ? 'Copy failed' : 'Copy text'}
             </Button>
@@ -124,9 +165,19 @@ export function InviteSheet({ target, points, onClose }: InviteSheetProps) {
             >
               Open in Mail
             </a>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleSend}
+              disabled={!supabase || sendState.kind === 'sending' || sendState.kind === 'sent'}
+              title={!supabase ? 'Backend not configured in this environment' : undefined}
+            >
+              {sendState.kind === 'sending' ? 'Sending…' : sendState.kind === 'sent' ? 'Sent ✓' : 'Send invite'}
+            </Button>
           </div>
           <p className="mt-[var(--space-3)] text-[10.5px] leading-relaxed text-ink/45">
-            If "Open in Mail" does nothing on this device, use "Copy text" and paste into any email app.
+            "Send invite" emails the message above directly. If that fails or you'd rather send it yourself, use "Copy text" and paste into any email app, or "Open in Mail" (may no-op on some devices).
           </p>
         </div>
       </div>

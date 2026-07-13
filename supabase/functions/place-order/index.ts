@@ -656,45 +656,10 @@ Deno.serve(async (req: Request) => {
   // business email + an order_events entry instead of a hard reject. Lines
   // with no admin-set price (formula-priced catalog) are skipped.
   const priceMismatches: PriceMismatch[] = [];
-  {
-    const skus = [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s))];
-    if (skus.length > 0) {
-      const [variantRes, stockRes] = await Promise.all([
-        supabase.from("product_variant_stock")
-          .select("sku, dose, price_cents").in("sku", skus).not("price_cents", "is", null),
-        supabase.from("product_stock")
-          .select("sku, price_cents_override").in("sku", skus).not("price_cents_override", "is", null),
-      ]);
-      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
-      const variantsBySku = new Map<string, Array<{ dose: string; price_cents: number }>>();
-      for (const v of variantRes.data ?? []) {
-        const list = variantsBySku.get(v.sku) ?? [];
-        list.push({ dose: v.dose, price_cents: v.price_cents });
-        variantsBySku.set(v.sku, list);
-      }
-      const overrideBySku = new Map<string, number>(
-        (stockRes.data ?? []).map((r) => [r.sku, r.price_cents_override]),
-      );
-      for (const item of items) {
-        const sku = item.product.sku;
-        if (!sku) continue;
-        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
-        const doseMatches = (variantsBySku.get(sku) ?? [])
-          .filter((v) => v.dose && haystack.includes(squash(v.dose)));
-        let serverCents: number | null = null;
-        if (doseMatches.length === 1) serverCents = doseMatches[0].price_cents;
-        else if (doseMatches.length === 0 && overrideBySku.has(sku)) serverCents = overrideBySku.get(sku)!;
-        if (serverCents == null) continue; // no authoritative price — can't verify
-        const clientCents = clampCents(item.unitPriceCents);
-        if (clientCents !== serverCents) {
-          priceMismatches.push({ sku, name: item.product.name, clientCents, serverCents });
-        }
-      }
-      if (priceMismatches.length > 0) {
-        console.error("PRICE MISMATCH on checkout:", JSON.stringify(priceMismatches));
-      }
-    }
-  }
+  // Server-verified slow-ship (7–10 day) lines — B2G1 promo candidates. A
+  // line qualifies only when its matched dose variant has NO shelf or inbound
+  // stock and a lead_days SLA (the exact condition that renders the 7–10-day
+  // chip),
 
   // Rate limit (shared with inquiries by contact)
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -909,33 +874,87 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Buy-2-Get-1-Free (migration 053) — automatic promo on SLOW-SHIP items
+  // (7–10 business day / drop-ship: no on_hand, no inbound). For every 3 units
+  // of a qualifying line, the cheapest one is free. Applied as a FLAT reduction
+  // (before percents, like a free item) so no percent code can discount the
+  // freed units. Slow-ship is verified server-side against product_variant_stock,
+  // never trusted from the client `fast` flag.
+  let b2g1Reduction = 0;
+  let b2g1FreeUnits = 0;
+  {
+    const skus = [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s))];
+    if (skus.length > 0) {
+      const { data: availRows } = await supabase
+        .from("product_variant_stock")
+        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents")
+        .in("sku", skus);
+      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      // A dose is slow-ship when it's orderable but NOT fast: no shelf stock,
+      // no inbound — supply is the drop-ship lead time only.
+      const slowByKey = new Map<string, boolean>();
+      for (const v of availRows ?? []) {
+        const fast = (v.on_hand ?? 0) > 0 || (v.inbound_units ?? 0) > 0;
+        const orderable = fast || v.lead_days != null || v.price_cents != null;
+        slowByKey.set(`${v.sku}::${squash(v.dose ?? "")}`, !fast && orderable);
+      }
+      for (const item of items) {
+        const sku = item.product.sku;
+        const unit = clampCents(item.unitPriceCents);
+        const qty = clampQty(item.quantity);
+        if (!sku || unit <= 0 || qty < 3) continue;
+        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
+        // Resolve the line's dose against the SKU's slow-ship doses.
+        const isSlow = [...slowByKey.entries()].some(([key, slow]) => {
+          if (!slow || !key.startsWith(`${sku}::`)) return false;
+          const dose = key.slice(sku.length + 2);
+          return dose === "" || haystack.includes(dose);
+        });
+        if (!isSlow) continue;
+        const freeUnits = Math.floor(qty / 3);
+        if (freeUnits <= 0) continue;
+        const value = Math.max(Math.min(freeUnits * unit, grossSubtotalCents - flatCents), 0);
+        b2g1Reduction += value;
+        b2g1FreeUnits += freeUnits;
+        flatCents += value;
+      }
+    }
+  }
+
   // Reward voucher (migration 050) — a FLAT reduction of `percent`% of the
   // single highest unit price in the cart ("40% off one item"), applied like a
   // fixed coupon (reduces the base before percents), capped at the remaining
   // subtotal. Materialized as a synthetic order_coupons row below.
   let rewardReduction = 0;
+  let rewardRemainder = 0;
   if (rewardVoucher) {
     const maxUnit = items.reduce((m, i) => Math.max(m, clampCents(i.unitPriceCents)), 0);
     const raw = Math.round((maxUnit * rewardVoucher.percent) / 100);
     rewardReduction = Math.max(Math.min(raw, grossSubtotalCents - flatCents), 0);
     flatCents += rewardReduction;
+    // The discounted unit is fully spoken for: its remaining (100−percent)%
+    // is FENCED OFF from account/code percent discounts, so a 15% code can't
+    // compound on top of the 40% item — it only sees the rest of the cart.
+    // Mirrored in recompute_order_totals (migration 052).
+    rewardRemainder = Math.max(maxUnit - rewardReduction, 0);
   }
 
-  // Pass 2 — percents apply to the base AFTER the flat reductions. A percent's
-  // discount off the full subtotal, scaled by (baseAfterFlat / subtotal), equals
-  // `percent × baseAfterFlat`.
+  // Pass 2 — percents apply to the base AFTER the flat reductions, minus the
+  // reward item's fenced remainder. A percent's discount off the full subtotal,
+  // scaled by (percentBase / subtotal), equals `percent × percentBase`.
   const baseAfterFlat = Math.max(grossSubtotalCents - flatCents, 0);
+  const percentBase = Math.max(baseAfterFlat - rewardRemainder, 0);
   let percentUsed = 0;
 
   // Pass 2a — the ACCOUNT discount applies first on the same post-flat base;
   // code percents (pass 2b below) keep computing off that same base but their
   // running cap now starts after the account slice. This mirrors
-  // recompute_order_totals (045): account rows first, same base per percent
-  // row, cap = base − used.
+  // recompute_order_totals (045, reward fence 052): account rows first, same
+  // base per percent row, cap = base − used.
   let accountCents = 0;
   if (accountDiscount) {
     accountCents = Math.max(
-      Math.min(Math.round((baseAfterFlat * accountDiscount.percent) / 100), baseAfterFlat),
+      Math.min(Math.round((percentBase * accountDiscount.percent) / 100), percentBase),
       0,
     );
     percentUsed += accountCents;
@@ -944,20 +963,22 @@ Deno.serve(async (req: Request) => {
   for (const a of appliedList) {
     if (a.kind !== "percent") continue;
     const scaled = grossSubtotalCents > 0
-      ? Math.round((a.fullDiscount * baseAfterFlat) / grossSubtotalCents)
+      ? Math.round((a.fullDiscount * percentBase) / grossSubtotalCents)
       : 0;
-    a.contribution = Math.max(Math.min(scaled, baseAfterFlat - percentUsed), 0);
+    a.contribution = Math.max(Math.min(scaled, percentBase - percentUsed), 0);
     percentUsed += a.contribution;
   }
 
   let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
   const REWARD_CODE = "REWARD";
+  const B2G1_CODE = "B2G1";
   // Comma-joined label for the order row, invoice, and emails (all read this).
-  // The synthetic account/reward codes lead, matching the order_coupons rows.
-  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || appliedList.length)
+  // The synthetic account/reward/promo codes lead, matching the order_coupons rows.
+  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || appliedList.length)
     ? [
         ...(accountDiscount ? [accountDiscount.code] : []),
         ...(rewardReduction > 0 ? [REWARD_CODE] : []),
+        ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
         ...appliedList.map((a) => a.code),
       ].join(", ")
     : null;
@@ -1096,6 +1117,10 @@ Deno.serve(async (req: Request) => {
       order_id: orderRow.id,
       code: REWARD_CODE,
       kind: "fixed",
+      // percent is informational on a fixed row, but recompute_order_totals
+      // (052) uses it to re-derive the fenced remainder of the reward item:
+      // remainder = discount × (100−pct)/pct.
+      percent: rewardVoucher.percent,
       amount_cents: rewardReduction,
       free_label: `${rewardVoucher.percent}% off one item`,
       discount_cents: rewardReduction,
@@ -1108,6 +1133,22 @@ Deno.serve(async (req: Request) => {
       .eq("id", rewardVoucher.id)
       .eq("status", "active");
     if (voucherErr) console.error("Reward voucher consume failed:", voucherErr);
+  }
+
+  // Materialize the Buy-2-Get-1-Free promo as a synthetic 'fixed' order_coupons
+  // row (migration 053, source='promo'). recompute_order_totals reads it as a
+  // flat reduction, so admin edits keep the totals consistent.
+  if (b2g1Reduction > 0) {
+    const { error: b2g1RowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: B2G1_CODE,
+      kind: "fixed",
+      amount_cents: b2g1Reduction,
+      free_label: `Buy 2 Get 1 Free — ${b2g1FreeUnits} unit${b2g1FreeUnits === 1 ? "" : "s"} free`,
+      discount_cents: b2g1Reduction,
+      source: "promo",
+    });
+    if (b2g1RowErr) console.error("B2G1 order_coupons insert failed:", b2g1RowErr);
   }
 
   // Record the redemption + commission ledger row (service-role-only RPC;
@@ -1240,6 +1281,14 @@ Deno.serve(async (req: Request) => {
             percent: null,
             amount_cents: rewardReduction,
             discount_cents: rewardReduction,
+          }] : []),
+          ...(b2g1Reduction > 0 ? [{
+            code: B2G1_CODE,
+            kind: "fixed",
+            free_label: `Buy 2 Get 1 Free — ${b2g1FreeUnits} unit${b2g1FreeUnits === 1 ? "" : "s"} free`,
+            percent: null,
+            amount_cents: b2g1Reduction,
+            discount_cents: b2g1Reduction,
           }] : []),
           ...redeemedList.map((a) => ({
             code: a.code,

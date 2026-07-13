@@ -28,6 +28,15 @@ export interface DiscountCoupon {
   discount_cents: number;
   /** free_item target SKU (optional — falls back to price match). */
   free_sku?: string | null;
+  /** 'reward' rows anchor to the highest-priced line (050/052). */
+  source?: string | null;
+  /** Fallback reward detection for callers that don't select `source`. */
+  code?: string | null;
+}
+
+/** The 050 reward row — synthetic code 'REWARD', source 'reward'. */
+function isRewardCoupon(c: DiscountCoupon): boolean {
+  return c.source === 'reward' || c.code === 'REWARD';
 }
 
 /**
@@ -71,15 +80,37 @@ export function allocateLineDiscounts(
     }
   }
 
-  // Pass 2 — percent / fixed split across the lines a free_item didn't zero.
+  // Pass 1.5 — the reward ("40% off one item", 050) lands entirely on the
+  // highest-UNIT-price line (same pick place-order made) and FENCES that line:
+  // percent/fixed codes in pass 2 never touch it, matching the 052 server
+  // math where the reward item's remainder is excluded from the percent base.
+  const fenced = lines.map(() => false);
   for (const c of coupons) {
-    if (c.kind === 'free_item') continue;
+    if (!isRewardCoupon(c) || c.kind === 'free_item') continue;
+    const target = c.discount_cents;
+    if (!target || target <= 0) continue;
+    let idx = -1;
+    let bestUnit = 0;
+    lines.forEach((_, i) => {
+      const unit = retailUnitCents[i] ?? 0;
+      if (!zeroed[i] && base[i] > 0 && unit > bestUnit) { bestUnit = unit; idx = i; }
+    });
+    if (idx >= 0) {
+      perLine[idx] += Math.min(target, base[idx] - perLine[idx]);
+      fenced[idx] = true;
+    }
+  }
+
+  // Pass 2 — percent / fixed split across the lines a free_item didn't zero
+  // and the reward didn't fence.
+  for (const c of coupons) {
+    if (c.kind === 'free_item' || isRewardCoupon(c)) continue;
     const target = c.discount_cents;
     if (!target || target <= 0) continue;
 
     const paidIdx = base
       .map((b, i): [number, number] => [b, i])
-      .filter(([b, i]) => b > 0 && !zeroed[i])
+      .filter(([b, i]) => b > 0 && !zeroed[i] && !fenced[i])
       .map(([, i]) => i);
     const totalBase = paidIdx.reduce((s, i) => s + base[i], 0);
     if (totalBase <= 0) continue;

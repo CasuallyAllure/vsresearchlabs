@@ -93,32 +93,33 @@ export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
     'The new & unproven group — investigational compounds where the science is still early: exploratory, not established.',
 };
 
-/** Short, one-line research-register descriptions for category section
- *  headers (CompoundSection). Trimmed from CLASSIFICATION_DEFINITIONS —
- *  class + research area only, no efficacy or therapeutic claims. */
+/** Short, plain-language one-liners for category section headers
+ *  (CompoundSection). Layman's terms — the everyday "what is this group
+ *  for" read, not the technical register. The full technical definition
+ *  still lives in CLASSIFICATION_DEFINITIONS / the compound overlay. */
 export const CLASSIFICATION_SECTION_BLURB: Record<ResearchClassification, string> = {
   'incretin-metabolic-agonists':
-    'GLP-1 and dual/triple incretin receptor agonists studied in metabolic and body-composition research.',
+    'The GLP-1 group (the "Ozempic / Mounjaro" class) — studied for appetite, blood sugar, and weight loss.',
   'gh-secretagogue':
-    'Growth-hormone secretagogues and GHRH analogues used in endocrine and growth-axis research.',
+    'Nudge your body to make its own growth hormone — studied for recovery, sleep, and body composition.',
   'growth-factor-anabolic':
-    'Growth hormone and IGF-1 variants studied in nitrogen-retention and tissue-growth signaling research.',
+    'The build-and-grow group — growth hormone and IGF-1 types studied for muscle and tissue growth.',
   'metabolic-cofactor':
-    'NAD+ precursors, mitochondrial peptides, and lipolytic cofactors studied in metabolic-regulation research.',
+    'Cellular energy and fat-burning helpers — NAD+ and mitochondria support, outside the appetite pathway.',
   'regenerative':
-    'Peptides investigated in tissue-repair, recovery, and cytoprotection research.',
+    'The repair crew — studied for healing gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
   'nootropic-neuroactive':
-    'Neuropeptides and neuromodulators studied in cognitive, mood, and neurotrophic-signaling research.',
+    'The brain group — studied for focus, mood, and memory.',
   'bioregulator':
-    'Short tissue-derived peptides studied in longevity, circadian, and neuroendocrine-aging research.',
+    'Tiny "tune-up" peptides — studied in aging and keeping specific tissues working normally.',
   'immunomodulatory':
-    'Peptides studied for modulation of immune-signaling pathways and inflammatory response.',
+    'The immune-balancing group — studied for calming or rebalancing immune response and inflammation.',
   'reproductive-hormonal':
-    'Hormones and neuroendocrine peptides studied in reproductive-axis and sexual-function signaling research.',
+    'The hormones and libido group — tied to reproductive hormones and sexual function (for example, PT-141).',
   'antioxidant-beauty':
-    'Peptides and cofactors studied in collagen synthesis, pigmentation, and oxidative-stress research.',
+    'The skin and antioxidant group — collagen, glutathione, and copper peptides studied for skin and glow.',
   'experimental':
-    'Investigational compounds with limited published evidence; exploratory research context.',
+    'The new and unproven group — investigational compounds where the science is still early.',
 };
 
 /** Canonical display order for the categories above. Used by filter

@@ -99,6 +99,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
   if (!(user && profile)) {
     // Signed-out, or a signed-in auth user without a profile row (e.g. an
     // admin-only account) — treat as logged out for the portal.
+    const params = new URLSearchParams(location.search);
     return (
       <section className="pt-[var(--space-2)] pb-[var(--space-10)] px-0">
         <AuthCard
@@ -107,7 +108,8 @@ export function AccountLayout({ children }: { children: ReactNode }) {
           verifyOtp={verifyOtp}
           resendOtp={resendOtp}
           error={error}
-          initialMode={new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin'}
+          initialMode={params.get('mode') === 'signup' ? 'signup' : 'signin'}
+          initialEmail={params.get('email') ?? undefined}
         />
       </section>
     );

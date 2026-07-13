@@ -33,6 +33,7 @@ import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, is24hrDose, doseAvailability } from '../../lib/productOverrides';
 import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
+import { Tooltip } from '../ui/Tooltip';
 
 interface CompoundTileProps {
   product: Product;
@@ -225,11 +226,19 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
                       />
                     ))}
                   </div>
+                  {/* Hover/tap the 7–10-day footer to reveal the slow-ship
+                      promo (owner: no sticker on the tile — the promo lives
+                      on this chip only). Checkout enforces it server-side. */}
                   <div className="border-t border-ink/12 py-1 text-center">
-                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
-                      7–10 Biz Days
-                      <ShippingVan />
-                    </span>
+                    <Tooltip
+                      content="Buy 2, Get 1 Free — add 3 of a 7–10 day item to your cart and the 3rd is free at checkout."
+                      ariaId={`b2g1-${product.sku}`}
+                    >
+                      <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
+                        7–10 Biz Days
+                        <ShippingVan />
+                      </span>
+                    </Tooltip>
                   </div>
                 </div>
               )}

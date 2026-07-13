@@ -17,10 +17,12 @@ interface SignInFormProps {
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<boolean>;
   error: string | null;
   onSwitchToSignUp: () => void;
+  /** Seeds the email field's initial value (e.g. from an invite deep link). */
+  initialEmail?: string;
 }
 
-export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps) {
-  const [email, setEmail] = useState('');
+export function SignInForm({ signIn, error, onSwitchToSignUp, initialEmail = '' }: SignInFormProps) {
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);

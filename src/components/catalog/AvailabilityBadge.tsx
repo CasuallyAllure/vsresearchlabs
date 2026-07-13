@@ -13,6 +13,7 @@
  */
 
 import { useProductOverrides, doseAvailability } from '../../lib/productOverrides';
+import { Tooltip } from '../ui/Tooltip';
 
 interface Props {
   sku: string;
@@ -44,17 +45,22 @@ export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
     );
   }
 
+  // Hover/tap reveals the slow-ship promo; checkout enforces it server-side
+  // (Buy 2 Get 1 Free, migration 053). The native title is dropped so it
+  // can't double up with the tooltip on desktop.
   return (
-    <span
-      className={`${pill} border-ink/15 text-ink/50 bg-ink/[0.03] ${className}`}
-      title="Sourced to order — ships in 7–10 business days"
+    <Tooltip
+      content="Buy 2, Get 1 Free — order 3 of this item and the 3rd is free at checkout. Sourced to order, ships in 7–10 business days."
+      ariaId={`b2g1-${sku}-${dose}`}
     >
-      <span
-        aria-hidden="true"
-        className="inline-block h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: 'rgb(var(--c-ink) / 0.35)' }}
-      />
-      Shipping 7–10 business days
-    </span>
+      <span className={`${pill} cursor-help border-ink/15 bg-ink/[0.03] text-ink/50 underline decoration-dotted decoration-ink/25 underline-offset-2 ${className}`}>
+        <span
+          aria-hidden="true"
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: 'rgb(var(--c-ink) / 0.35)' }}
+        />
+        Shipping 7–10 business days
+      </span>
+    </Tooltip>
   );
 }
