@@ -89,6 +89,28 @@ interface VariantRow {
   price_cents: number | null;
   cost_cents: number | null;
   lead_days: number | null;
+  hidden: boolean;
+}
+
+/** A synthesized product_stock row for a catalog product that has no live
+ *  stock row yet (e.g. the generated compounds, which the seed hadn't reached).
+ *  Product-level RPCs auto-create the real row on first write, so an entry
+ *  built from this default is fully actionable. */
+function defaultStockRow(sku: string): StockRow {
+  return {
+    sku,
+    on_hand: 0,
+    reorder_at: null,
+    last_counted: null,
+    updated_at: '',
+    hidden: false,
+    price_cents_override: null,
+    deleted_at: null,
+    video_url: null,
+    video_title: null,
+    video_description: null,
+    video_thumbnail: null,
+  };
 }
 
 type AdjustReason =
@@ -172,10 +194,10 @@ function doseCellValues(
   };
 }
 
-function NameWithClip({ row }: { row: StockRow }) {
+function NameWithClip({ row, name }: { row: StockRow; name: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      {displayNameFor(row.sku)}
+      {name}
       {row.video_url && (
         <span
           title="Cited clip attached"
@@ -243,12 +265,23 @@ export function AdminInventory() {
       }
 
       // Per-dose overrides (migration 011). Optional — older DBs lack the table.
-      const { data: vData } = await supabase
+      // `hidden` arrived in migration 047; fall back to the pre-047 shape so
+      // this page still loads on a DB that hasn't applied it yet.
+      let vData: VariantRow[] | null = null;
+      const withHidden = await supabase
         .from('product_variant_stock')
-        .select('sku, dose, on_hand, reorder_at, price_cents, cost_cents, lead_days');
+        .select('sku, dose, on_hand, reorder_at, price_cents, cost_cents, lead_days, hidden');
+      if (!withHidden.error) {
+        vData = withHidden.data as VariantRow[];
+      } else {
+        const base = await supabase
+          .from('product_variant_stock')
+          .select('sku, dose, on_hand, reorder_at, price_cents, cost_cents, lead_days');
+        vData = (base.data ?? []).map((r) => ({ ...(r as VariantRow), hidden: false }));
+      }
       if (cancelled) return;
       const vmap: Record<string, Record<string, VariantRow>> = {};
-      for (const r of (vData ?? []) as VariantRow[]) (vmap[r.sku] ??= {})[r.dose] = r;
+      for (const r of (vData ?? [])) (vmap[r.sku] ??= {})[r.dose] = r;
       setVariantBySku(vmap);
     }
     load();
@@ -263,10 +296,24 @@ export function AdminInventory() {
     return map;
   }, [rows]);
 
+  // The admin table is driven off the CATALOG, not the raw product_stock table.
+  // One entry per catalog product that has a SKU — expanded into its dose
+  // variants downstream. Each entry carries the product's live stock row, or a
+  // synthesized default when none exists yet (generated compounds). Manifest
+  // per-dose SKUs that live only in product_stock never appear here, because
+  // the storefront never sold them — the compound SKU + variants array does.
+  const catalogRows = useMemo<StockRow[] | null>(() => {
+    if (rows === null) return null; // still loading the stock fetch
+    const bySku = new Map((rows ?? []).map((r) => [r.sku, r]));
+    return catalogProducts
+      .filter((p) => p.sku)
+      .map((p) => bySku.get(p.sku!) ?? defaultStockRow(p.sku!));
+  }, [rows, catalogProducts]);
+
   const filtered = useMemo(() => {
-    if (!rows) return [];
+    if (!catalogRows) return [];
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    return catalogRows.filter((r) => {
       // Status filter
       if (statusFilter === 'visible' && (r.hidden || r.deleted_at)) return false;
       if (statusFilter === 'hidden' && (!r.hidden || r.deleted_at)) return false;
@@ -278,7 +325,7 @@ export function AdminInventory() {
       }
       return true;
     });
-  }, [rows, query, statusFilter]);
+  }, [catalogRows, query, statusFilter]);
 
   /** Sorted view of the filtered rows. Price = cheapest dose's display price
    *  (set price or formula), stock = base + all dose variants combined —
@@ -331,9 +378,9 @@ export function AdminInventory() {
     return arr;
   }, [filtered, sortKey, catalogProducts, variantBySku]);
 
-  const adjusting = rows?.find((r) => r.sku === adjustingSku) ?? null;
-  const pricing = rows?.find((r) => r.sku === pricingSku) ?? null;
-  const clipping = rows?.find((r) => r.sku === clippingSku) ?? null;
+  const adjusting = catalogRows?.find((r) => r.sku === adjustingSku) ?? null;
+  const pricing = catalogRows?.find((r) => r.sku === pricingSku) ?? null;
+  const clipping = catalogRows?.find((r) => r.sku === clippingSku) ?? null;
 
   async function toggleHidden(row: StockRow) {
     if (!supabase) return;
@@ -389,14 +436,40 @@ export function AdminInventory() {
     return { ok: true };
   }
 
+  /** Explicit per-dose storefront visibility toggle (migration 047). Routes
+   *  through set_variant_hidden, then refetches + nudges the storefront cache
+   *  so the dose appears/disappears immediately. */
+  async function toggleVariantHidden(
+    sku: string,
+    dose: string,
+    hidden: boolean,
+  ): Promise<{ ok: boolean; message?: string }> {
+    if (!supabase) return { ok: false, message: 'Backend not configured' };
+    const { error } = await supabase.rpc('set_variant_hidden', {
+      p_sku: sku,
+      p_dose: dose,
+      p_hidden: hidden,
+    });
+    if (error) return { ok: false, message: error.message };
+    setRefreshCounter((c) => c + 1);
+    try {
+      await useProductOverrides.getState().reload();
+    } catch {
+      /* storefront refreshes on its own cadence */
+    }
+    return { ok: true };
+  }
+
   // ── Catalog tools (folded in from the old Catalog tab) ────────────────────
 
+  // Seed one product_stock row per CATALOG product (the full merged store:
+  // seed JSON + generated compounds). We deliberately no longer seed the
+  // manifest's per-dose SKUs — those were the orphan rows that cluttered this
+  // table and never mapped to a sellable product. Per-dose price/stock lives in
+  // product_variant_stock, created lazily on first inline edit.
   function collectSeedSkus(): string[] {
     const set = new Set<string>();
-    for (const p of products) if (p.sku) set.add(p.sku);
-    for (const row of manifest) {
-      set.add(`VSR-RS-${row.abbreviation.replace(/\s+/g, '')}`);
-    }
+    for (const p of catalogProducts) if (p.sku) set.add(p.sku);
     return Array.from(set);
   }
 
@@ -609,18 +682,18 @@ export function AdminInventory() {
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>
       )}
 
-      {rows !== null && rows.length === 0 && (
+      {catalogRows !== null && catalogRows.length === 0 && (
         <div className="research-surface-solid p-[var(--space-6)]">
           <p className="holo-text-body text-[13px] leading-relaxed mb-[var(--space-3)]">
-            No stock rows yet. Run the seed from the Dashboard to create a
-            row at 0 for every catalog SKU, then adjust from here.
+            No catalog products with a SKU yet. Add a product, then adjust its
+            stock and per-dose pricing from here.
           </p>
         </div>
       )}
 
       {/* Mobile: one card per SKU — everything the table shows, reflowed
           for a 375px screen. Same EditableNumberCell + RPC path as the table. */}
-      {rows && rows.length > 0 && (
+      {catalogRows && catalogRows.length > 0 && (
         <div className="md:hidden flex flex-col gap-[var(--space-3)]">
           {sorted.map((row) => {
             const status = row.deleted_at ? 'deleted' : row.hidden ? 'hidden' : 'active';
@@ -635,7 +708,7 @@ export function AdminInventory() {
                   <div className="min-w-0">
                     <p className="font-mono text-[10.5px] text-holo-light/80 break-all">{row.sku}</p>
                     <p className="text-[13px] leading-snug text-ink/85">
-                      <NameWithClip row={row} />
+                      <NameWithClip row={row} name={product?.name ?? displayNameFor(row.sku)} />
                     </p>
                   </div>
                   <StatusChip status={status} />
@@ -647,7 +720,17 @@ export function AdminInventory() {
                     const v = doseCellValues(row, product, variant, dose);
                     return (
                       <div key={`${dose}::${doseIdx}`} className="flex min-h-[44px] items-end justify-between gap-[var(--space-2)] py-[var(--space-3)]">
-                        <span className="pb-1.5 font-mono text-[11px] text-ink/55">{dose || 'Base'}</span>
+                        <div className="flex flex-col items-start gap-1.5 pb-1">
+                          <span className="font-mono text-[11px] text-ink/55">{dose || 'Base'}</span>
+                          {dose && (
+                            <VariantVisibilityToggle
+                              hidden={variant?.hidden ?? false}
+                              disabled={disabled}
+                              ariaLabel={`Storefront visibility for ${row.sku} ${dose}`}
+                              onToggle={(h) => toggleVariantHidden(row.sku, dose, h)}
+                            />
+                          )}
+                        </div>
                         <div className="flex items-end gap-[var(--space-3)]">
                           <div className="flex flex-col items-end gap-0.5">
                             <span className="text-[10px] uppercase tracking-[0.16em] text-ink/40">On hand</span>
@@ -686,14 +769,14 @@ export function AdminInventory() {
         </div>
       )}
 
-      {rows && rows.length > 0 && (
+      {catalogRows && catalogRows.length > 0 && (
         <div className="hidden md:block research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[1000px] border-collapse">
             <thead>
               <tr className="border-b border-ink/[0.10]">
                 <th className="py-[var(--space-3)] pl-[var(--space-4)] pr-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[170px]">SKU</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-left text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal">Product</th>
-                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[70px]">Dose</th>
+                <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[108px]">Dose</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[92px]">On hand</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[110px]">Price</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[100px]">Status</th>
@@ -722,11 +805,21 @@ export function AdminInventory() {
                       )}
                       {isFirst && (
                         <td rowSpan={doses.length} className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-[12.5px] text-ink/80">
-                          <NameWithClip row={row} />
+                          <NameWithClip row={row} name={product?.name ?? displayNameFor(row.sku)} />
                         </td>
                       )}
-                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center font-mono text-[11px] text-ink/55">
-                        {dose || '—'}
+                      <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-center">
+                        <div className="inline-flex flex-col items-center gap-1">
+                          <span className="font-mono text-[11px] text-ink/55">{dose || '—'}</span>
+                          {dose && (
+                            <VariantVisibilityToggle
+                              hidden={variant?.hidden ?? false}
+                              disabled={disabled}
+                              ariaLabel={`Storefront visibility for ${row.sku} ${dose}`}
+                              onToggle={(h) => toggleVariantHidden(row.sku, dose, h)}
+                            />
+                          )}
+                        </div>
                       </td>
                       <td className="py-[var(--space-3)] px-[var(--space-3)] align-middle text-right">
                         <EditableNumberCell
@@ -908,6 +1001,54 @@ function EditableNumberCell({ value, kind, muted, disabled, ariaLabel, onSave }:
       {saved && <span className="text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-status-success)]">saved</span>}
       {errorMsg && <span role="alert" className="max-w-[110px] text-right text-[10px] leading-tight text-red-400/85">{errorMsg}</span>}
     </div>
+  );
+}
+
+interface VariantVisibilityToggleProps {
+  hidden: boolean;
+  disabled?: boolean;
+  ariaLabel: string;
+  onToggle: (hidden: boolean) => Promise<{ ok: boolean; message?: string }>;
+}
+
+/** Compact per-dose storefront switch. "On store" (dose lists publicly) ⇄
+ *  "Hidden" (never lists, regardless of price/stock). Optimistic-free: waits
+ *  for the RPC, surfaces its own error inline. */
+function VariantVisibilityToggle({ hidden, disabled, ariaLabel, onToggle }: VariantVisibilityToggleProps) {
+  const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  async function handleClick() {
+    setBusy(true);
+    setErrorMsg(null);
+    const result = await onToggle(!hidden);
+    setBusy(false);
+    if (!result.ok) setErrorMsg(result.message ?? 'Failed');
+  }
+
+  return (
+    <span className="inline-flex flex-col items-start gap-0.5">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={!hidden}
+        aria-label={ariaLabel}
+        title={hidden ? 'Hidden from the storefront — click to list it' : 'Listed on the storefront — click to hide it'}
+        disabled={disabled || busy}
+        onClick={handleClick}
+        className={[
+          'inline-flex min-h-[28px] items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] uppercase tracking-[0.14em] transition-colors',
+          'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+          hidden
+            ? 'border-ink/20 text-ink/45 bg-ink/[0.03] hover:border-ink/35 hover:text-ink/70'
+            : 'border-[color:var(--color-status-success)]/30 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)] hover:brightness-110',
+        ].join(' ')}
+      >
+        <span aria-hidden="true" className="text-[10px] leading-none">{hidden ? '○' : '●'}</span>
+        {busy ? '…' : hidden ? 'Hidden' : 'On store'}
+      </button>
+      {errorMsg && <span role="alert" className="max-w-[96px] text-[9px] leading-tight text-red-400/85">{errorMsg}</span>}
+    </span>
   );
 }
 

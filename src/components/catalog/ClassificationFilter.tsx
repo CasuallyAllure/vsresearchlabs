@@ -239,14 +239,14 @@ export function ClassificationFilter({
       </div>
 
       {shippingTiers && (
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        <div className="mt-1.5 flex items-center gap-1">
           <button
             type="button"
             role="switch"
             aria-checked={shippingTiers.fast}
             onClick={shippingTiers.onToggleFast}
             title={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
-            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -257,10 +257,10 @@ export function ClassificationFilter({
           >
             <span
               aria-hidden="true"
-              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${shippingTiers.fast ? '' : 'bg-ink/35'}`}
+              className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${shippingTiers.fast ? '' : 'bg-ink/35'}`}
               style={shippingTiers.fast ? { backgroundColor: '#2E7D5B' } : undefined}
             />
-            24 Hour Shipping
+            24 HR
           </button>
           <button
             type="button"
@@ -272,7 +272,7 @@ export function ClassificationFilter({
                 ? '7–10 business day shipping — tap to hide'
                 : 'Tap to show sourced (7–10 business day) compounds'
             }
-            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -283,10 +283,10 @@ export function ClassificationFilter({
           >
             <span
               aria-hidden="true"
-              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
+              className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
               style={shippingTiers.sourced ? { backgroundColor: '#7E8288' } : undefined}
             />
-            7–10 Business Days Shipping
+            7–10 DAYS
           </button>
         </div>
       )}

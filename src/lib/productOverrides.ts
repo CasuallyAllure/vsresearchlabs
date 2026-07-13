@@ -47,6 +47,9 @@ export interface VariantOverride {
   inbound_units: number;
   price_cents: number | null;
   lead_days: number | null;
+  /** Explicit per-dose visibility switch (migration 047). true → the dose is
+   *  never listed publicly, regardless of price or stock. */
+  hidden: boolean;
 }
 
 interface OverridesState {
@@ -110,17 +113,27 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
     // Migration 018 added inbound_units. Try the full select first; if the
     // column isn't live yet (older DB) fall back to the pre-018 shape so
     // catalog rendering still works during a partial deploy.
+    // Migration 047 added `hidden`. Try the fullest select first, then shed
+    // columns in reverse-migration order so the catalog keeps rendering on a
+    // deploy that lands before its migration.
     let vData: Partial<VariantOverride>[] | null = null;
-    const { data: vFull, error: vFullErr } = await supabase
+    const { data: vHidden, error: vHiddenErr } = await supabase
       .from('public_variant_overrides')
-      .select('sku, dose, on_hand, inbound_units, price_cents, lead_days');
-    if (!vFullErr) {
-      vData = vFull as Partial<VariantOverride>[];
+      .select('sku, dose, on_hand, inbound_units, price_cents, lead_days, hidden');
+    if (!vHiddenErr) {
+      vData = vHidden as Partial<VariantOverride>[];
     } else {
-      const { data: vBase } = await supabase
+      const { data: vFull, error: vFullErr } = await supabase
         .from('public_variant_overrides')
-        .select('sku, dose, on_hand, price_cents, lead_days');
-      vData = vBase as Partial<VariantOverride>[];
+        .select('sku, dose, on_hand, inbound_units, price_cents, lead_days');
+      if (!vFullErr) {
+        vData = vFull as Partial<VariantOverride>[];
+      } else {
+        const { data: vBase } = await supabase
+          .from('public_variant_overrides')
+          .select('sku, dose, on_hand, price_cents, lead_days');
+        vData = vBase as Partial<VariantOverride>[];
+      }
     }
     for (const row of (vData ?? [])) {
       if (!row.sku || !row.dose) continue;
@@ -131,6 +144,7 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
         inbound_units: row.inbound_units ?? 0,
         price_cents: row.price_cents ?? null,
         lead_days: row.lead_days ?? null,
+        hidden: row.hidden ?? false,
       };
     }
 
@@ -230,6 +244,7 @@ export function isVariantPublic(sku: string, dose: string): boolean {
   const state = useProductOverrides.getState();
   const v = state.variantBySku[sku]?.[dose];
   if (!v) return true; // not yet tracked — don't hide
+  if (v.hidden) return false; // explicit per-dose hide (migration 047) — always wins
   if (v.price_cents != null) return true;
   // No admin price set. A dose still carrying a genuine supply/sourcing
   // signal — on-hand stock, inbound units, or a drop-ship lead time — is a
@@ -247,8 +262,10 @@ export function isProductPublic(sku: string, variantDoses: string[]): boolean {
   const state = useProductOverrides.getState();
   const variants = state.variantBySku[sku];
   if (!variants) return true; // nothing imported for this SKU yet
-  // If any provided dose has a price, the product is publicly visible.
-  return variantDoses.some((dose) => variants[dose]?.price_cents != null);
+  // Public if any provided dose is itself publicly listable — this routes
+  // through isVariantPublic so an explicit per-dose hide (migration 047) and
+  // the price/supply rules stay in one place.
+  return variantDoses.some((dose) => isVariantPublic(sku, dose));
 }
 
 export type DoseAvailability =

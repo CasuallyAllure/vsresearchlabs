@@ -845,6 +845,49 @@ html[data-theme="dark"] {
 /* Sheen retired — inert no-op for legacy markup (see .cta-mint-sheen). */
 .cta-holo-sheen { display: none; }
 
+/* ── CTA — catalog tile "+ Add" (Fix 3, 2026 glass polish) ──────────────────
+   Rest: border-only, near-invisible. Hover (pointer devices only): a light
+   fill/border emphasis plus a 1px lift. Press: a quick scale-down for
+   tactile feedback. The "added" (✓) state pops in with the shared spring
+   easing then settles. Transform/opacity/color only — no layout shift. */
+.tile-add-btn {
+  background: transparent;
+  border: 1px solid rgba(var(--c-ink) / 0.16);
+  color: rgba(var(--c-ink) / 0.7);
+  transition:
+    background-color var(--duration-fast) var(--easing-easeOut),
+    border-color var(--duration-fast) var(--easing-easeOut),
+    color var(--duration-fast) var(--easing-easeOut),
+    transform var(--duration-micro) cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) {
+  .tile-add-btn:hover {
+    background: rgba(var(--c-ink) / 0.07);
+    border-color: rgba(var(--c-ink) / 0.28);
+    color: rgb(var(--c-ink));
+    transform: translateY(-1px);
+  }
+}
+
+.tile-add-btn:active {
+  transform: scale(0.965);
+  transition-duration: var(--duration-micro);
+}
+
+.tile-add-btn.is-added {
+  background: rgba(134, 138, 144, 0.16);
+  border-color: rgba(134, 138, 144, 0.45);
+  color: #868A90;
+  animation: tile-add-pop var(--duration-fast) var(--easing-spring);
+}
+
+@keyframes tile-add-pop {
+  0% { transform: scale(0.82); }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 /* ── Card / panel surface — slim editorial container ─────────────────────── */
 
 .holo-surface {

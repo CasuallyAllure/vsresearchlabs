@@ -70,6 +70,10 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
   const setTierIndex = setManualTierIndex;
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
   const priceCents = effectiveTierPriceCents(product, activeDose);
+  // The dose chip already spells out "· 24 HR" for a fast dose, so the
+  // standalone AvailabilityBadge is only useful (non-redundant) for the
+  // sourced tier — hide it when the active dose is in-stock/24-hour.
+  const showAvailabilityBadge = doseAvailability(product.sku, activeDose).state === 'sourced';
 
   const puritySpec = product.specs.find((s) => s.label === 'Purity (HPLC)');
 
@@ -192,27 +196,26 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
           </div>
         ) : null}
 
-        <div className="flex items-end justify-between gap-2">
-          <div className="flex flex-col gap-1 min-w-0">
+        <div className="flex flex-col gap-1.5">
+          {showAvailabilityBadge && <AvailabilityBadge sku={product.sku} dose={activeDose} />}
+
+          <div className="flex items-center justify-between gap-2">
             <span className="font-mono tabular-nums text-[13px] text-ink/90 leading-none whitespace-nowrap">
               {formatPrice(priceCents)}
             </span>
-            <AvailabilityBadge sku={product.sku} dose={activeDose} />
-          </div>
 
-          <button
-            type="button"
-            onClick={handleAdd}
-            aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-            className={[
-              'shrink-0 min-h-[40px] min-w-[40px] inline-flex items-center justify-center gap-1 rounded-full border px-3 text-[10px] uppercase tracking-[0.14em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
-              added
-                ? 'bg-[#868A90]/[0.16] border-[#868A90]/45 text-[#868A90]'
-                : 'bg-transparent border-ink/[0.16] text-ink/[0.7] hover:bg-ink/[0.06] hover:text-ink',
-            ].join(' ')}
-          >
-            {added ? '✓' : '+ Add'}
-          </button>
+            <button
+              type="button"
+              onClick={handleAdd}
+              aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+              className={[
+                'tile-add-btn shrink-0 min-h-[40px] min-w-[40px] inline-flex items-center justify-center gap-1 rounded-full px-3 text-[10px] uppercase tracking-[0.14em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+                added ? 'is-added' : '',
+              ].join(' ')}
+            >
+              {added ? '✓' : '+ Add'}
+            </button>
+          </div>
         </div>
       </div>
     </article>
