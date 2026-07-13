@@ -31,7 +31,7 @@ import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 
 const STOCK_GREEN = '#2E7D5B';
-const STOCK_RED = '#B23A3A';
+const SOURCED_GRAY = '#8C9096';
 
 interface CompactProductTileProps {
   product: Product;
@@ -103,12 +103,14 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
               No image
             </div>
           )}
-          {/* Stock pip — top-right corner */}
+          {/* Ship-tier pip — top-right corner. Green = 24-hour, gray = sourced
+              (7-10 business days). Never a hard "out of stock" — every peptide
+              is orderable. */}
           <span
-            aria-label={stocked ? 'In stock' : 'Out of stock'}
+            aria-label={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
             className="absolute right-1.5 top-1.5 inline-block h-[7px] w-[7px] rounded-full"
             style={{
-              backgroundColor: stocked ? STOCK_GREEN : STOCK_RED,
+              backgroundColor: stocked ? STOCK_GREEN : SOURCED_GRAY,
               boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.3)',
             }}
           />
@@ -196,7 +198,6 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
           <button
             type="button"
             onClick={handleAdd}
-            disabled={!stocked}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
               'shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',

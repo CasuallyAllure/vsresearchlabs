@@ -149,19 +149,27 @@ export function isSkuVisible(sku: string): boolean {
   return !o.hidden && !o.deleted_at;
 }
 
-/** A variant counts as in stock if ANY of the three sources has supply:
- *    on_hand        — physical shelf
- *    inbound_units  — already paid for, in transit
- *    lead_days      — warehouse drop-ship (admin-only timing)
- *  Public catalog displays "In stock" for any of these (the lead-time
- *  truth stays in admin). */
-function variantHasSupply(v: VariantOverride): boolean {
-  return v.on_hand > 0 || v.inbound_units > 0 || v.lead_days != null;
+/** A variant carries genuine 24-hour supply only when there's real inventory
+ *  physically on hand or already in transit (paid for, in the mail).
+ *  `lead_days` alone is a drop-ship warehouse SLA, not a 24-hour signal —
+ *  a variant with only `lead_days` set is "sourced", not "24-hour". */
+function has24hrSupply(v: VariantOverride): boolean {
+  return v.on_hand > 0 || v.inbound_units > 0;
 }
 
-/** Is the SKU in stock? Per-dose aware: a product is in stock if ANY of its
- *  doses has any supply. Falls back to the per-sku count, then to a
- *  deterministic hash when nothing is known, so the dev experience still has
+/** A dose only counts toward "the SKU is 24-hour" if it's also the kind of
+ *  dose a buyer can actually see and pick — i.e. publicly priced. A dose
+ *  with supply but no admin-set price never renders as a catalog option
+ *  (see isVariantPublic), so it must not make the SKU (and its visible,
+ *  possibly-sourced doses) read as 24-hour. */
+function isPublic24hrDose(v: VariantOverride): boolean {
+  return v.price_cents != null && has24hrSupply(v);
+}
+
+/** Is the SKU 24-hour? Per-dose aware: a product is 24-hour if ANY of its
+ *  PUBLICLY-PRICED doses carries genuine on-hand/inbound supply. No data (no
+ *  per-dose rows, no per-sku override) means the SKU is NOT 24-hour — it
+ *  falls to the sourced tier. There is no fabricated fallback; honesty over
  *  variety. */
 export function isSkuInStock(sku: string): boolean {
   const state = useProductOverrides.getState();
@@ -170,24 +178,25 @@ export function isSkuInStock(sku: string): boolean {
   const variants = state.variantBySku[sku];
   if (variants) {
     const doses = Object.values(variants);
-    if (doses.length > 0) return doses.some(variantHasSupply);
+    if (doses.length > 0) return doses.some(isPublic24hrDose);
   }
   if (o) return o.on_hand > 0;
-  // Fallback: same hash-based heuristic as the old inStockByKey.
-  let hash = 0;
-  for (let i = 0; i < sku.length; i++) {
-    hash = (hash * 31 + sku.charCodeAt(i)) >>> 0;
-  }
-  return hash % 23 >= 4;
+  return false;
 }
 
-/** Is a specific dose of a SKU in stock? Returns true when no per-dose row
- *  exists (unknown → don't block), false only when the dose is tracked with
- *  no supply across any source. */
-export function isDoseInStock(sku: string, dose: string): boolean {
+/** Is a specific (sku, dose) genuinely 24-hour (on-hand or inbound)? False
+ *  for everything else, including untracked doses — no data means sourced,
+ *  never a fabricated "in stock". */
+export function is24hrDose(sku: string, dose: string): boolean {
   const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
-  if (!v) return isSkuInStock(sku);
-  return variantHasSupply(v);
+  if (!v) return false;
+  return has24hrSupply(v);
+}
+
+/** Back-compat alias for {@link is24hrDose} — true only for a genuinely
+ *  24-hour dose. */
+export function isDoseInStock(sku: string, dose: string): boolean {
+  return is24hrDose(sku, dose);
 }
 
 /** Price in cents, honoring an admin override. Returns null when no
@@ -221,7 +230,14 @@ export function isVariantPublic(sku: string, dose: string): boolean {
   const state = useProductOverrides.getState();
   const v = state.variantBySku[sku]?.[dose];
   if (!v) return true; // not yet tracked — don't hide
-  return v.price_cents != null;
+  if (v.price_cents != null) return true;
+  // No admin price set. A dose still carrying a genuine supply/sourcing
+  // signal — on-hand stock, inbound units, or a drop-ship lead time — is a
+  // real, sellable dose that simply hasn't had a price imported yet; the
+  // formula fallback in lib/pricing.ts prices it. A dose tracked with NO
+  // signal at all (the master-sheet "xx" convention) is the intentional
+  // "cleared price to hide this dose" case and stays hidden.
+  return v.on_hand > 0 || v.inbound_units > 0 || v.lead_days != null;
 }
 
 /** Same rule applied at the SKU level. A product is publicly visible only if
@@ -236,22 +252,26 @@ export function isProductPublic(sku: string, variantDoses: string[]): boolean {
 }
 
 export type DoseAvailability =
-  /** `fast`: supply is on_hand or inbound — physically reachable in 24h or
-   *   already in transit. UI hints "fast ship".
-   *  not-fast: supply comes only from warehouse drop-ship (lead_days set).
-   *   UI says plain "In stock" — buyer doesn't see the warehouse SLA. */
-  | { state: 'in_stock'; fast: boolean }
-  | { state: 'out' }
-  | { state: 'unknown' }; // no per-dose row tracked yet
+  /** Genuine on-hand/inbound supply — ships in 24 hours. `fast` is always
+   *  true here; the field is kept so callers that already branch on
+   *  `state === 'in_stock' && av.fast` keep working unchanged. */
+  | { state: 'in_stock'; fast: true }
+  /** No 24-hour supply. Still orderable — ships 7–10 business days from the
+   *  sourced/drop-ship warehouse. There is no "out of stock" tier for
+   *  peptides; everything lists and converts. */
+  | { state: 'sourced' }
+  /** No per-dose row tracked at all — not a real variant. */
+  | { state: 'unknown' };
 
 /**
- * Public-facing availability for a specific dose. Public catalog treats every
- * supply source (on_hand, inbound, warehouse drop-ship) as plain "in stock" —
- * we don't expose the warehouse SLA to the buyer.
+ * Public-facing availability for a specific dose. Two tiers only:
  *
- *   any supply source has units / lead → in_stock
- *   tracked but nothing anywhere       → out
- *   no per-dose row at all             → unknown (don't show a hard "out")
+ *   on_hand > 0 or inbound_units > 0 → in_stock (24-hour, `fast: true`)
+ *   tracked but no 24-hour supply     → sourced (7–10 business days)
+ *   no per-dose row at all            → unknown (not a real variant)
+ *
+ * `lead_days` alone is NOT a 24-hour signal — a variant with only lead_days
+ * set falls to `sourced`.
  *
  * Admin views should NOT use this — use the raw VariantOverride fields so
  * staff can distinguish on_hand vs inbound vs drop-ship.
@@ -259,11 +279,8 @@ export type DoseAvailability =
 export function doseAvailability(sku: string, dose: string): DoseAvailability {
   const v = useProductOverrides.getState().variantBySku[sku]?.[dose];
   if (!v) return { state: 'unknown' };
-  if (!variantHasSupply(v)) return { state: 'out' };
-  // Fast = physically reachable supply (shelf or in-transit).
-  // Not fast = the only supply source is the warehouse SLA (lead_days).
-  const fast = v.on_hand > 0 || v.inbound_units > 0;
-  return { state: 'in_stock', fast };
+  if (has24hrSupply(v)) return { state: 'in_stock', fast: true };
+  return { state: 'sourced' };
 }
 
 /** Admin-set cited-clip for a SKU, if any. Returns null when no video_url

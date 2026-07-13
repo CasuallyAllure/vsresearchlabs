@@ -30,7 +30,7 @@ import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
 
 const STOCK_GREEN = '#2E7D5B';
-const STOCK_RED = '#B23A3A';
+const SOURCED_GRAY = '#8C9096';
 
 interface ProductCardProps {
   product: Product;
@@ -74,13 +74,13 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
 
   const stockPip = showStock ? (
     <span
-      aria-label={stocked ? 'In stock' : 'Out of stock'}
-      title={stocked ? 'In stock' : 'Out of stock'}
+      aria-label={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
+      title={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
       className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[10px] uppercase tracking-[0.12em]"
       style={{
-        color: stocked ? STOCK_GREEN : STOCK_RED,
+        color: stocked ? STOCK_GREEN : SOURCED_GRAY,
         backgroundColor: 'rgba(0,0,0,0.55)',
-        border: `0.5px solid ${(stocked ? STOCK_GREEN : STOCK_RED)}66`,
+        border: `0.5px solid ${(stocked ? STOCK_GREEN : SOURCED_GRAY)}66`,
         backdropFilter: 'blur(2px)',
       }}
     >
@@ -88,10 +88,10 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         aria-hidden="true"
         className="inline-block h-[5px] w-[5px] rounded-full"
         style={{
-          backgroundColor: stocked ? STOCK_GREEN : STOCK_RED,
+          backgroundColor: stocked ? STOCK_GREEN : SOURCED_GRAY,
         }}
       />
-      {stocked ? 'In stock' : 'Out'}
+      {stocked ? '24 Hour' : 'Sourced'}
     </span>
   ) : null;
 

@@ -20,14 +20,13 @@ import { useCart } from '../../hooks/useCart';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
-import { inStockByKey } from '../../lib/stock';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
+import { useProductOverrides, isVariantPublic, isSkuInStock, doseAvailability } from '../../lib/productOverrides';
 
 const ALL_TAB = '__all__';
 const STOCK_GREEN = '#2E7D5B';
-const STOCK_RED = '#B23A3A';
+const SOURCED_GRAY = '#8C9096';
 const ALL_LAYMAN =
   'The full biopeptide catalog — pick a category to filter the list and read what it does in plain terms. Swipe right for the technical detail.';
 const ALL_DESCRIPTION =
@@ -37,7 +36,7 @@ const ALL_DESCRIPTION =
 function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id: string) => void }) {
   // Re-render when variant overrides load.
   useProductOverrides((s) => s.variantBySku);
-  const stocked = inStockByKey(product.id);
+  const stocked = isSkuInStock(product.sku);
   // Filter to publicly-priced variants only — see lib/productOverrides.
   const allVariants = product.variants ?? [];
   const variants = allVariants.filter((v) => isVariantPublic(product.sku, v.dose));
@@ -63,10 +62,10 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   return (
     <div className="flex items-center gap-2 sm:gap-3 px-1.5 py-2 border-b border-ink/[0.06] hover:bg-ink/[0.02] transition-colors">
       <span
-        aria-label={stocked ? 'In stock' : 'Out of stock'}
-        title={stocked ? 'In stock' : 'Out of stock'}
+        aria-label={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
+        title={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
         className="shrink-0 inline-block h-[7px] w-[7px] rounded-full"
-        style={{ backgroundColor: stocked ? STOCK_GREEN : STOCK_RED }}
+        style={{ backgroundColor: stocked ? STOCK_GREEN : SOURCED_GRAY }}
       />
       <button
         type="button"
@@ -135,7 +134,6 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
       <button
         type="button"
         onClick={handleAdd}
-        disabled={!stocked}
         aria-label={`Add ${product.name} ${activeDose} to inquiry`}
         className={[
           'shrink-0 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
@@ -163,6 +161,11 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
   const [inStockOnly, setInStockOnly] = useState(false);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
 
+  // isSkuInStock reads the override store via getState() (not reactively) —
+  // subscribe here so `filtered` recomputes once admin overrides finish
+  // loading (same pattern as BiopeptideResearchSupplies).
+  const variantOverrides = useProductOverrides((s) => s.variantBySku);
+
   const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
     const tabs = [{ id: ALL_TAB, label: 'All' }];
@@ -182,10 +185,10 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
     () =>
       products.filter((p) => {
         if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
-        if (inStockOnly && !inStockByKey(p.id)) return false;
+        if (inStockOnly && !isSkuInStock(p.sku)) return false;
         return true;
       }),
-    [products, classFilter, inStockOnly],
+    [products, classFilter, inStockOnly, variantOverrides],
   );
 
   const inspectedProduct = useMemo(
@@ -298,11 +301,11 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
             <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/45">
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: STOCK_GREEN }} aria-hidden="true" />
-                In stock
+                24 Hour
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: '#B23A3A' }} aria-hidden="true" />
-                Out
+                <span className="inline-block h-[7px] w-[7px] rounded-full" style={{ backgroundColor: SOURCED_GRAY }} aria-hidden="true" />
+                Sourced
               </span>
             </div>
           </footer>

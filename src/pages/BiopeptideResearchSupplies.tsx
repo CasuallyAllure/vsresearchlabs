@@ -1,11 +1,15 @@
 import { useMemo, useState } from 'react';
+import type { Product } from '../types';
 import { ProductGrid } from '../components/ProductGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInventoryModal';
+import { CompoundSection } from '../components/catalog/CompoundSection';
 import { useProducts } from '../hooks/useProducts';
-import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_ORDER } from '../lib/compoundIntelligence';
 import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
-import { isSkuInStock, isSkuVisible } from '../lib/productOverrides';
+import { useProductOverrides, isSkuInStock, isSkuVisible } from '../lib/productOverrides';
+
+const UNCATEGORIZED_KEY = '__uncategorized__';
 
 const ALL_TAB = '__all__';
 
@@ -17,10 +21,22 @@ const ALL_DESCRIPTION =
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
-  const [inStockOnly, setInStockOnly] = useState(false);
+  // Two independent shipping-tier chips. Exactly one active narrows to that
+  // tier; both (or neither) active shows the full catalog. "24 Hour
+  // Shipping" is on by default — same as the old in-stock-only default.
+  const [fastOn, setFastOn] = useState(true);
+  const [sourcedOn, setSourcedOn] = useState(false);
+  const showFastOnly = fastOn && !sourcedOn;
+  const showSourcedOnly = sourcedOn && !fastOn;
   const [search, setSearch] = useState('');
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+
+  // isSkuInStock/isSkuVisible read the override store via getState() (not
+  // reactively). Subscribing here re-renders the page — and recomputes
+  // `filtered` below — once admin overrides finish loading, so the
+  // in-stock-by-default filter doesn't stick with a stale pre-load result.
+  const variantOverrides = useProductOverrides((s) => s.variantBySku);
 
   const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
@@ -47,14 +63,43 @@ export function BiopeptideResearchSupplies() {
     return products.filter((p) => {
       if (!isSkuVisible(p.sku)) return false;
       if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
-      if (inStockOnly && !isSkuInStock(p.sku)) return false;
+      if (showFastOnly && !isSkuInStock(p.sku)) return false;
+      if (showSourcedOnly && isSkuInStock(p.sku)) return false;
       if (q.length > 0) {
         const hay = `${p.name} ${p.sku} ${p.abbreviation ?? ''} ${p.family ?? ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [products, classFilter, inStockOnly, search]);
+  }, [products, classFilter, showFastOnly, showSourcedOnly, search, variantOverrides]);
+
+  // Group the filtered list into category sections, ordered per
+  // CLASSIFICATION_ORDER; empty groups are skipped and anything without a
+  // classification is collected into a trailing "Other" group.
+  const groupedSections = useMemo(() => {
+    const byClass = new Map<string, Product[]>();
+    const uncategorized: Product[] = [];
+    for (const p of filtered) {
+      if (p.researchClassification) {
+        const list = byClass.get(p.researchClassification) ?? [];
+        list.push(p);
+        byClass.set(p.researchClassification, list);
+      } else {
+        uncategorized.push(p);
+      }
+    }
+    const sections: { key: string; label: string; products: Product[] }[] = [];
+    for (const key of CLASSIFICATION_ORDER) {
+      const groupProducts = byClass.get(key);
+      if (groupProducts && groupProducts.length > 0) {
+        sections.push({ key, label: CLASSIFICATION_LABELS[key] ?? key, products: groupProducts });
+      }
+    }
+    if (uncategorized.length > 0) {
+      sections.push({ key: UNCATEGORIZED_KEY, label: 'Other', products: uncategorized });
+    }
+    return sections;
+  }, [filtered]);
 
   const inspectedProduct = useMemo(
     () => (inspectedId ? products.find((p) => p.id === inspectedId) ?? null : null),
@@ -72,10 +117,10 @@ export function BiopeptideResearchSupplies() {
           <span className="font-light text-ink">research supplies.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[13px] leading-relaxed">
-          Lyophilized peptides, sourced for research-grade consistency. Filter to{' '}
-          <span className="text-ink/80">in-stock</span> compounds to surface the selections
-          cleared for our fastest dispatch; anything not currently stocked can be reserved
-          by inquiry for a scheduled later shipment.{' '}
+          Lyophilized peptides, sourced for research-grade consistency. Use the shipping-tier
+          chips to switch between compounds cleared for{' '}
+          <span className="text-ink/80">24-hour dispatch</span> and the wider catalog sourced
+          to order within 7–10 business days.{' '}
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
@@ -92,21 +137,41 @@ export function BiopeptideResearchSupplies() {
         onChange={setClassFilter}
         allLayman={ALL_LAYMAN}
         allTechnical={ALL_DESCRIPTION}
-        inStock={{ on: inStockOnly, toggle: () => setInStockOnly((v) => !v) }}
+        shippingTiers={{
+          fast: fastOn,
+          sourced: sourcedOn,
+          onToggleFast: () => setFastOn((v) => !v),
+          onToggleSourced: () => setSourcedOn((v) => !v),
+        }}
         search={search}
         onSearch={setSearch}
         suggestions={suggestions}
         searchPlaceholder="Search peptides…"
       />
 
-      <ProductGrid
-        products={filtered}
-        loading={loading}
-        error={error}
-        emptyLabel="No biopeptide research supplies match the active filter."
-        onInspect={setInspectedId}
-        compact
-      />
+      {loading || error || filtered.length === 0 ? (
+        <ProductGrid
+          products={filtered}
+          loading={loading}
+          error={error}
+          emptyLabel="No biopeptide research supplies match the active filter."
+          onInspect={setInspectedId}
+          compact
+        />
+      ) : (
+        <div>
+          {groupedSections.map((section) => (
+            <CompoundSection
+              key={section.key}
+              sectionKey={section.key}
+              label={section.label}
+              products={section.products}
+              onInspect={setInspectedId}
+              only24hrDoses={showFastOnly}
+            />
+          ))}
+        </div>
+      )}
 
       {inspectedProduct && (
         <CompoundIntelligenceOverlay

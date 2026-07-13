@@ -33,6 +33,9 @@ interface ClassificationFilterProps {
   allTechnical?: string;
   describe?: (id: string) => { layman: string; technical?: string } | undefined;
   inStock?: { on: boolean; toggle: () => void; color?: string };
+  /** Two independent shipping-tier chips (24-hour vs 7–10 business days).
+   *  Takes precedence over `inStock` when both are passed. */
+  shippingTiers?: { fast: boolean; sourced: boolean; onToggleFast: () => void; onToggleSourced: () => void };
   // ── Optional smart search ──
   search?: string;
   onSearch?: (v: string) => void;
@@ -49,6 +52,7 @@ export function ClassificationFilter({
   allTechnical,
   describe,
   inStock,
+  shippingTiers,
   search,
   onSearch,
   searchPlaceholder = 'Search compounds…',
@@ -103,7 +107,7 @@ export function ClassificationFilter({
           in-stock toggle + category dropdown stay pinned right. The category
           menu is right-anchored (and viewport-width-capped) so it can never
           run off the left edge on a narrow phone. */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {onSearch && (
           <div ref={searchRef} className="relative min-w-0 flex-1">
             <svg
@@ -233,6 +237,59 @@ export function ClassificationFilter({
           )}
         </div>
       </div>
+
+      {shippingTiers && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={shippingTiers.fast}
+            onClick={shippingTiers.onToggleFast}
+            title={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
+            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+              shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
+            }`}
+            style={
+              shippingTiers.fast
+                ? { borderColor: '#2E7D5B99', color: '#2E7D5B', backgroundColor: '#2E7D5B14' }
+                : undefined
+            }
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${shippingTiers.fast ? '' : 'bg-ink/35'}`}
+              style={shippingTiers.fast ? { backgroundColor: '#2E7D5B' } : undefined}
+            />
+            24 Hour Shipping
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={shippingTiers.sourced}
+            onClick={shippingTiers.onToggleSourced}
+            title={
+              shippingTiers.sourced
+                ? '7–10 business day shipping — tap to hide'
+                : 'Tap to show sourced (7–10 business day) compounds'
+            }
+            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.1em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+              shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
+            }`}
+            style={
+              shippingTiers.sourced
+                ? { borderColor: 'rgba(126,130,136,0.6)', color: '#7E8288', backgroundColor: 'rgba(126,130,136,0.10)' }
+                : undefined
+            }
+          >
+            <span
+              aria-hidden="true"
+              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
+              style={shippingTiers.sourced ? { backgroundColor: '#7E8288' } : undefined}
+            />
+            7–10 Business Days Shipping
+          </button>
+        </div>
+      )}
 
       {/* Description — compact, wraps, with plain/technical swap */}
       <div className="mt-[var(--space-2)] border-t border-ink/[0.07] pt-[var(--space-2)]">

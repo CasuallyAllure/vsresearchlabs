@@ -72,21 +72,22 @@ export function CompoundVisualZone({
     );
   }
 
-  // band variant (default)
+  // band variant (default) — compact on mobile (molecular + vial both stay
+  // visible; the vial is the product), full 200px band on lg+.
   return (
     <div
-      className="hidden lg:flex flex-row shrink-0 overflow-hidden"
-      style={{ height: '200px', borderBottom: '1px solid rgba(26,23,20,0.07)' }}
+      className="flex flex-row shrink-0 overflow-hidden h-[150px] lg:h-[200px]"
+      style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}
     >
       <div className="flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid rgba(26,23,20,0.06)' }}>
         <MolecularStructurePanel substance={substance} abbreviation={abbreviation} />
       </div>
 
       <div
-        className="shrink-0 flex items-center justify-center overflow-hidden"
-        style={{ width: '300px', backgroundColor: '#F4EFE6' }}
+        className="shrink-0 flex items-center justify-center overflow-hidden w-[128px] lg:w-[300px]"
+        style={{ backgroundColor: '#F4EFE6' }}
       >
-        <div style={{ width: '90px', height: '188px' }}>
+        <div className="w-[66px] h-[138px] lg:w-[90px] lg:h-[188px]">
           <VialRender
             substance={substance}
             dose={activeDoseLabel}

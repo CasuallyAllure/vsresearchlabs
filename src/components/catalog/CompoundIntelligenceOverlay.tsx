@@ -250,7 +250,7 @@ export function CompoundIntelligenceOverlay({
         style={{ backgroundColor: 'rgba(26,23,20,0.45)', animation: closing ? 'cio-bd-out 200ms linear forwards' : 'cio-bd 180ms linear forwards' }} />
 
       {/* Centering wrapper */}
-      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-6 lg:p-10 pointer-events-none">
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6 lg:p-10 pointer-events-none">
         {/* Panel */}
         <div
           ref={panelRef}
@@ -263,7 +263,7 @@ export function CompoundIntelligenceOverlay({
           onTouchEnd={onPanelTouchEnd}
           style={{
             maxWidth: '1080px',
-            height: 'min(calc(100dvh - 40px), 860px)',
+            height: 'min(calc(100dvh - 56px), 860px)',
             backgroundColor: 'var(--color-surface-elevated)',
             border: '1px solid rgba(26,23,20,0.10)',
             boxShadow: 'inset 0 1px 0 rgba(26,23,20,0.04), 0 40px 120px rgba(26,23,20,0.22)',

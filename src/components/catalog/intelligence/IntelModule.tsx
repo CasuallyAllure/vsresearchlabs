@@ -201,8 +201,7 @@ export function IntelModuleStyles() {
         animation: cio-module-in 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
         animation-delay: calc(var(--mi, 1) * 38ms + 220ms);
       }
-      .cio-panel-el { border-radius: var(--radius-procurement) var(--radius-procurement) 0 0; }
-      @media (min-width: 640px) { .cio-panel-el { border-radius: var(--radius-procurement); } }
+      .cio-panel-el { border-radius: var(--radius-module); }
       @media (prefers-reduced-motion: reduce) {
         .cio-module { animation: none; opacity: 1; transform: none; }
         .cio-panel-el { animation: none !important; opacity: 1; transform: none; }
