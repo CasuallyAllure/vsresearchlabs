@@ -31,6 +31,9 @@ interface CompoundVisualZoneProps {
   sku: string;
   activeDoseLabel: string;
   variant?: 'band' | 'stacked';
+  /** Rebranded studio render (product.images[0]). Falls back to the legacy
+      SVG vial illustration when absent. */
+  imageUrl?: string | null;
 }
 
 export function CompoundVisualZone({
@@ -39,7 +42,17 @@ export function CompoundVisualZone({
   sku,
   activeDoseLabel,
   variant = 'band',
+  imageUrl = null,
 }: CompoundVisualZoneProps) {
+  const vialVisual = imageUrl ? (
+    <img
+      src={imageUrl}
+      alt={`${substance} research vial`}
+      loading="lazy"
+      className="h-full w-full object-cover"
+    />
+  ) : null;
+
   if (variant === 'stacked') {
     return (
       <div
@@ -59,14 +72,16 @@ export function CompoundVisualZone({
           className="shrink-0 flex items-center justify-center overflow-hidden"
           style={{ height: '240px', backgroundColor: '#F4EFE6' }}
         >
-          <div style={{ width: '110px', height: '232px' }}>
-            <VialRender
-              substance={substance}
-              dose={activeDoseLabel}
-              abbreviation={abbreviation}
-              sku={sku}
-            />
-          </div>
+          {vialVisual ?? (
+            <div style={{ width: '110px', height: '232px' }}>
+              <VialRender
+                substance={substance}
+                dose={activeDoseLabel}
+                abbreviation={abbreviation}
+                sku={sku}
+              />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -87,14 +102,16 @@ export function CompoundVisualZone({
         className="shrink-0 flex items-center justify-center overflow-hidden w-[128px] lg:w-[300px]"
         style={{ backgroundColor: '#F4EFE6' }}
       >
-        <div className="w-[66px] h-[138px] lg:w-[90px] lg:h-[188px]">
-          <VialRender
-            substance={substance}
-            dose={activeDoseLabel}
-            abbreviation={abbreviation}
-            sku={sku}
-          />
-        </div>
+        {vialVisual ?? (
+          <div className="w-[66px] h-[138px] lg:w-[90px] lg:h-[188px]">
+            <VialRender
+              substance={substance}
+              dose={activeDoseLabel}
+              abbreviation={abbreviation}
+              sku={sku}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

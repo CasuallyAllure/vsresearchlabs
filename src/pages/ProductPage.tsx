@@ -313,6 +313,7 @@ export function ProductPage() {
             sku={ci.sku}
             activeDoseLabel={activeDoseLabel}
             variant="stacked"
+            imageUrl={product.images?.[0] ?? null}
           />
 
           {/* Mobile image gallery — replaces the visual zone at < lg */}

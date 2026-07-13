@@ -319,12 +319,13 @@ export function CompoundIntelligenceOverlay({
               </button>
             </div>
           </div>
-          {/* ── TOP: Full-width visual identity zone (desktop) ───────────── */}
+          {/* ── TOP: Full-width visual identity zone ─────────────────────── */}
           <CompoundVisualZone
             substance={ci.substance}
             abbreviation={ci.abbreviation}
             sku={ci.sku}
             activeDoseLabel={activeDoseLabel}
+            imageUrl={product.images?.[0] ?? null}
           />
 
           {/* ── BOTTOM: Two-column layout ─────────────────────────────────── */}
