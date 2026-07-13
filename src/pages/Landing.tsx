@@ -31,6 +31,7 @@
 
 import { Link } from 'react-router-dom';
 import { useEffect, useState, type ReactNode } from 'react';
+import { siteConfig } from '../config';
 import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
@@ -315,9 +316,24 @@ export function Landing() {
     if (authLoading) return;
     if (profile) {
       if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
-    } else if (sessionStorage.getItem('vsr.gateSeen') !== '1') {
-      setGateOpen(true);
+      return;
     }
+    if (sessionStorage.getItem('vsr.gateSeen') === '1') return;
+
+    // The age/research disclaimer must always be first. If it hasn't been
+    // accepted yet, hold the member-access gate until it fires its event.
+    const disclaimerDone = (() => {
+      try { return !!localStorage.getItem(siteConfig.storage.disclaimerKey); }
+      catch { return true; }
+    })();
+
+    if (disclaimerDone) {
+      setGateOpen(true);
+      return;
+    }
+    function onDisclaimerAccepted() { setGateOpen(true); }
+    window.addEventListener('vsr:disclaimer-accepted', onDisclaimerAccepted, { once: true });
+    return () => window.removeEventListener('vsr:disclaimer-accepted', onDisclaimerAccepted);
   }, [authLoading, profile]);
 
   function dismissGate() {

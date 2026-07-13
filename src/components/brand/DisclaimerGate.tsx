@@ -51,6 +51,9 @@ export function DisclaimerGate() {
       // Storage might be blocked (private mode etc); accept this session anyway.
     }
     setOpen(false);
+    // Let downstream first-visit prompts (e.g. the member-access gate) hold
+    // until the age/research disclaimer clears, so it's always shown first.
+    try { window.dispatchEvent(new Event('vsr:disclaimer-accepted')); } catch { /* noop */ }
   }
 
   if (!open) return null;
