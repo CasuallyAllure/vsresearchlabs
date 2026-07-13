@@ -24,7 +24,10 @@ export interface InviteTarget {
 
 export function composeInvite(target: InviteTarget, points: number): { subject: string; body: string } {
   const firstName = target.display_name.trim().split(/\s+/)[0] || 'there';
-  const signupUrl = `${window.location.origin}/account?mode=signup`;
+  // Always the canonical public domain — never window.location.origin, which
+  // would leak a localhost/preview URL into a real customer email when the
+  // admin composes from a dev or staging build.
+  const signupUrl = `https://${siteConfig.contact.officialHost}/account?mode=signup`;
   const subject = `${points.toLocaleString()} reward points are waiting for you at ${siteConfig.brand.name}`;
   const body =
     `Hi ${firstName},\n\n` +
