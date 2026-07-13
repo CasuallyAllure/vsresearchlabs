@@ -51,6 +51,10 @@ interface CouponRow {
   active: boolean;
   affiliate_id: string | null;
   commission_percent: number | null;
+  exclusive: boolean;
+  combines_with_codes: boolean;
+  combines_with_promos: boolean;
+  combines_with_account: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -246,7 +250,7 @@ export function AdminCoupons() {
       const [couponsRes, affiliatesRes, redemptionsRes] = await Promise.all([
         supabase
           .from('coupons')
-          .select('id, code, kind, percent, amount_cents, free_sku, free_dose, free_label, min_subtotal_cents, max_uses, used_count, once_per_contact, requires_account, starts_at, expires_at, active, affiliate_id, commission_percent, created_at, updated_at')
+          .select('id, code, kind, percent, amount_cents, free_sku, free_dose, free_label, min_subtotal_cents, max_uses, used_count, once_per_contact, requires_account, starts_at, expires_at, active, affiliate_id, commission_percent, exclusive, combines_with_codes, combines_with_promos, combines_with_account, created_at, updated_at')
           .order('created_at', { ascending: false }),
         supabase
           .from('affiliates')
@@ -351,8 +355,10 @@ interface CodesTabProps {
   confirm: (message: string, onConfirm: () => void, danger?: boolean) => void;
 }
 
+type CodesFormTarget = 'none' | 'new' | CouponRow;
+
 function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
-  const [showForm, setShowForm] = useState(false);
+  const [formTarget, setFormTarget] = useState<CodesFormTarget>('none');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
   const affiliateName = useMemo(() => {
@@ -396,15 +402,19 @@ function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
     <div className="flex flex-col gap-[var(--space-5)]">
       <div className="flex items-center justify-between gap-[var(--space-3)]">
         <p className="text-[11px] uppercase tracking-[0.2em] text-ink/45">{coupons.length} code{coupons.length === 1 ? '' : 's'}</p>
-        <ToolButton onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ New code'}</ToolButton>
+        <ToolButton onClick={() => setFormTarget((f) => (f === 'new' ? 'none' : 'new'))}>
+          {formTarget === 'new' ? 'Close' : '+ New code'}
+        </ToolButton>
       </div>
 
       {rowError && <p role="alert" className="text-[12px] text-red-400">{rowError}</p>}
 
-      {showForm && (
-        <NewCouponForm
+      {formTarget !== 'none' && (
+        <CouponForm
+          key={formTarget === 'new' ? 'new' : formTarget.id}
           affiliates={affiliates}
-          onCreated={() => { setShowForm(false); onChanged(); }}
+          editing={formTarget === 'new' ? undefined : formTarget}
+          onDone={() => { setFormTarget('none'); onChanged(); }}
         />
       )}
 
@@ -430,6 +440,10 @@ function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
                       </Badge>
                       {row.once_per_contact && <Badge>1 / contact</Badge>}
                       {row.requires_account && <Badge>Members</Badge>}
+                      {row.exclusive && <Badge>EXCLUSIVE</Badge>}
+                      {!row.combines_with_codes && <Badge>NO CODES</Badge>}
+                      {!row.combines_with_promos && <Badge>NO PROMOS</Badge>}
+                      {!row.combines_with_account && <Badge>NO ACCOUNT</Badge>}
                       {row.affiliate_id && (
                         <Badge>{affiliateName.get(row.affiliate_id) ?? 'affiliate'}</Badge>
                       )}
@@ -449,6 +463,15 @@ function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
+                    <ActionButton
+                      onClick={() =>
+                        setFormTarget((f) => (f !== 'none' && f !== 'new' && f.id === row.id ? 'none' : row))
+                      }
+                      disabled={busy}
+                      title="Edit"
+                    >
+                      Edit
+                    </ActionButton>
                     <ActionButton onClick={() => toggleActive(row)} disabled={busy} title={row.active ? 'Deactivate' : 'Activate'}>
                       {row.active ? 'Deactivate' : 'Activate'}
                     </ActionButton>
@@ -477,27 +500,44 @@ function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
   );
 }
 
-interface NewCouponFormProps {
-  affiliates: AffiliateRow[];
-  onCreated: () => void;
+/** Formats an ISO timestamp for a `datetime-local` input, in the browser's local time zone. */
+function toDatetimeLocal(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
-  const [code, setCode] = useState('');
-  const [kind, setKind] = useState<CouponKind>('percent');
-  const [percent, setPercent] = useState('');
-  const [amountUsd, setAmountUsd] = useState('');
-  const [freeSku, setFreeSku] = useState('');
-  const [freeDose, setFreeDose] = useState('');
-  const [freeLabel, setFreeLabel] = useState('');
-  const [minSubtotalUsd, setMinSubtotalUsd] = useState('');
-  const [maxUses, setMaxUses] = useState('');
-  const [oncePerContact, setOncePerContact] = useState(false);
-  const [requiresAccount, setRequiresAccount] = useState(false);
-  const [startsAt, setStartsAt] = useState('');
-  const [expiresAt, setExpiresAt] = useState('');
-  const [affiliateId, setAffiliateId] = useState<string>('');
-  const [commissionPercent, setCommissionPercent] = useState('');
+interface CouponFormProps {
+  affiliates: AffiliateRow[];
+  editing?: CouponRow;
+  onDone: () => void;
+}
+
+function CouponForm({ affiliates, editing, onDone }: CouponFormProps) {
+  const [code, setCode] = useState(editing?.code ?? '');
+  const [kind, setKind] = useState<CouponKind>(editing?.kind ?? 'percent');
+  const [percent, setPercent] = useState(editing?.percent != null ? String(editing.percent) : '');
+  const [amountUsd, setAmountUsd] = useState(editing?.amount_cents != null ? (editing.amount_cents / 100).toFixed(2) : '');
+  const [freeSku, setFreeSku] = useState(editing?.free_sku ?? '');
+  const [freeDose, setFreeDose] = useState(editing?.free_dose ?? '');
+  const [freeLabel, setFreeLabel] = useState(editing?.free_label ?? '');
+  const [minSubtotalUsd, setMinSubtotalUsd] = useState(
+    editing && editing.min_subtotal_cents > 0 ? (editing.min_subtotal_cents / 100).toFixed(2) : '',
+  );
+  const [maxUses, setMaxUses] = useState(editing?.max_uses != null ? String(editing.max_uses) : '');
+  const [oncePerContact, setOncePerContact] = useState(editing?.once_per_contact ?? false);
+  const [requiresAccount, setRequiresAccount] = useState(editing?.requires_account ?? false);
+  const [startsAt, setStartsAt] = useState(toDatetimeLocal(editing?.starts_at ?? null));
+  const [expiresAt, setExpiresAt] = useState(toDatetimeLocal(editing?.expires_at ?? null));
+  const [affiliateId, setAffiliateId] = useState<string>(editing?.affiliate_id ?? '');
+  const [commissionPercent, setCommissionPercent] = useState(
+    editing?.commission_percent != null ? String(editing.commission_percent) : '',
+  );
+  const [exclusive, setExclusive] = useState(editing?.exclusive ?? false);
+  const [combinesWithCodes, setCombinesWithCodes] = useState(editing?.combines_with_codes ?? true);
+  const [combinesWithPromos, setCombinesWithPromos] = useState(editing?.combines_with_promos ?? true);
+  const [combinesWithAccount, setCombinesWithAccount] = useState(editing?.combines_with_account ?? true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -537,7 +577,7 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
     const minSubtotalCents = minSubtotalUsd.trim() === '' ? 0 : Math.round(parseFloat(minSubtotalUsd) * 100);
     const maxUsesValue = maxUses.trim() === '' ? null : Math.round(Number(maxUses));
 
-    const payload = {
+    const p_payload = {
       code: code.trim().toUpperCase(),
       kind,
       percent: kind === 'percent' ? Math.round(Number(percent)) : null,
@@ -549,19 +589,23 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
       max_uses: maxUsesValue,
       once_per_contact: oncePerContact,
       requires_account: requiresAccount,
-      starts_at: startsAt.trim() === '' ? null : new Date(startsAt).toISOString(),
-      expires_at: expiresAt.trim() === '' ? null : new Date(expiresAt).toISOString(),
+      starts_at: startsAt.trim() === '' ? '' : new Date(startsAt).toISOString(),
+      expires_at: expiresAt.trim() === '' ? '' : new Date(expiresAt).toISOString(),
       affiliate_id: affiliateId === '' ? null : affiliateId,
       commission_percent: commissionPercent.trim() === '' ? null : Math.round(Number(commissionPercent)),
+      exclusive,
+      combines_with_codes: combinesWithCodes,
+      combines_with_promos: combinesWithPromos,
+      combines_with_account: combinesWithAccount,
     };
 
-    const { error } = await supabase.from('coupons').insert(payload);
+    const { error } = await supabase.rpc('admin_upsert_coupon', { p_id: editing?.id ?? null, p_payload });
     setSubmitting(false);
     if (error) {
-      setError(error.message);
+      setError(getErrorMessage(error));
       return;
     }
-    onCreated();
+    onDone();
   }
 
   return (
@@ -626,6 +670,26 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
         Only signed-in account holders can redeem.
       </p>
 
+      <label className="mb-[var(--space-3)] flex items-center gap-2 text-[12px] text-ink/75">
+        <input type="checkbox" checked={exclusive} onChange={(e) => setExclusive(e.target.checked)} />
+        Use alone (exclusive)
+      </label>
+
+      <label className={`mb-[var(--space-3)] flex items-center gap-2 text-[12px] ${exclusive ? 'text-ink/30' : 'text-ink/75'}`}>
+        <input type="checkbox" checked={combinesWithCodes} disabled={exclusive} onChange={(e) => setCombinesWithCodes(e.target.checked)} />
+        Combine with other codes
+      </label>
+
+      <label className={`mb-[var(--space-3)] flex items-center gap-2 text-[12px] ${exclusive ? 'text-ink/30' : 'text-ink/75'}`}>
+        <input type="checkbox" checked={combinesWithPromos} disabled={exclusive} onChange={(e) => setCombinesWithPromos(e.target.checked)} />
+        Combine with promotions (B2G1 / 40% reward)
+      </label>
+
+      <label className={`mb-[var(--space-3)] flex items-center gap-2 text-[12px] ${exclusive ? 'text-ink/30' : 'text-ink/75'}`}>
+        <input type="checkbox" checked={combinesWithAccount} disabled={exclusive} onChange={(e) => setCombinesWithAccount(e.target.checked)} />
+        Combine with account discount
+      </label>
+
       <div className="grid grid-cols-1 gap-[var(--space-3)] sm:grid-cols-2">
         <div>
           <Label>Starts (optional)</Label>
@@ -654,9 +718,14 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
 
       {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
 
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-[var(--space-3)]">
+        {editing && (
+          <Button type="button" variant="ghost" size="sm" onClick={onDone}>
+            Cancel
+          </Button>
+        )}
         <Button type="submit" variant="secondary" size="sm" disabled={submitting}>
-          {submitting ? 'Creating…' : 'Create code'}
+          {submitting ? (editing ? 'Saving…' : 'Creating…') : (editing ? 'Save changes' : 'Create code')}
         </Button>
       </div>
     </form>

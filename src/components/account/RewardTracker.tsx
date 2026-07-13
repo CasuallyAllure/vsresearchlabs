@@ -84,8 +84,8 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
 
         {active_voucher ? (
           <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
-            Reward ready to use — your {active_voucher.percent}% off applies to your highest-priced item at your next
-            checkout.
+            Reward ready — {active_voucher.percent}% off your single highest-priced item, applied automatically at
+            your next checkout. One-time use.
           </p>
         ) : (
           <>

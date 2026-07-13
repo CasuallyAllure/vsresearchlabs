@@ -34,8 +34,26 @@ export type CouponCheckResult =
   | { ok: true; coupon: AppliedCoupon }
   | { ok: false; reason: string };
 
+/** Combinability context for the add-time stacking check. Mirrors what
+ *  place-order passes server-side; the server re-checks authoritatively. */
+export interface CouponContext {
+  /** Codes already applied to the cart (so a new code is gated against them). */
+  appliedCodes?: string[];
+  /** Signed-in member account discount is active. */
+  hasAccount?: boolean;
+  /** The 40% reward voucher is active for the signed-in user. */
+  hasReward?: boolean;
+  /** An automatic promo (B2G1) is active. Hard to know client-side — default
+   *  false and let the server safety-net catch a promo-incompatible code. */
+  hasPromo?: boolean;
+}
+
 /** Validate a code against the live backend for the current cart subtotal. */
-export async function checkCoupon(code: string, subtotalCents: number): Promise<CouponCheckResult> {
+export async function checkCoupon(
+  code: string,
+  subtotalCents: number,
+  ctx: CouponContext = {},
+): Promise<CouponCheckResult> {
   const trimmed = code.trim().toUpperCase();
   if (trimmed.length < 3) return { ok: false, reason: 'Enter a code.' };
   if (!supabase) return { ok: false, reason: 'Promo codes are unavailable right now.' };
@@ -43,6 +61,10 @@ export async function checkCoupon(code: string, subtotalCents: number): Promise<
   const { data, error } = await supabase.rpc('validate_coupon', {
     p_code: trimmed,
     p_subtotal_cents: Math.max(Math.round(subtotalCents), 0),
+    p_applied_codes: (ctx.appliedCodes ?? []).filter((c) => c.toUpperCase() !== trimmed),
+    p_has_reward: ctx.hasReward ?? false,
+    p_has_promo: ctx.hasPromo ?? false,
+    p_has_account: ctx.hasAccount ?? false,
   });
   if (error) return { ok: false, reason: 'Could not check the code. Please try again.' };
 

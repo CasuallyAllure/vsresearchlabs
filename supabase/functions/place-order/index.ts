@@ -87,6 +87,43 @@ interface OrderPayload {
   /** Client-generated UUID, stable across retries of the SAME checkout —
    *  a seen key returns the existing order instead of creating a duplicate. */
   idempotency_key?: string;
+  /** Research-use disclaimer acceptance captured by the entry gate —
+   *  re-sanitized here and stored on the order as the compliance trail. */
+  research_attestation?: {
+    accepted_at?: string;
+    disclaimer_version?: number;
+    industry?: string;
+    age_21_confirmed?: boolean;
+    research_use_confirmed?: boolean;
+  };
+}
+
+/** Declared-industry whitelist — must match INDUSTRY_OPTIONS in
+ *  src/lib/researchAttestation.ts. Unknown values are stored as "other". */
+const ATTESTATION_INDUSTRIES = new Set([
+  "research_lab", "biotech_pharma", "academic", "b2b_distributor", "independent", "other",
+]);
+
+/** Sanitized attestation snapshot for the orders row, or null when the
+ *  client sent nothing usable (older bundle / cleared storage) — NULL keeps
+ *  the audit trail honest instead of fabricating an acceptance. */
+function sanitizeAttestation(raw: OrderPayload["research_attestation"]): Record<string, unknown> | null {
+  if (!raw || typeof raw !== "object") return null;
+  const acceptedAtMs = Date.parse(typeof raw.accepted_at === "string" ? raw.accepted_at : "");
+  if (Number.isNaN(acceptedAtMs)) return null;
+  if (raw.age_21_confirmed !== true || raw.research_use_confirmed !== true) return null;
+  const industryRaw = typeof raw.industry === "string" ? raw.industry.trim().slice(0, 40) : "";
+  const version = typeof raw.disclaimer_version === "number" && Number.isFinite(raw.disclaimer_version)
+    ? Math.max(1, Math.min(999, Math.round(raw.disclaimer_version)))
+    : 1;
+  return {
+    accepted_at: new Date(acceptedAtMs).toISOString(),
+    recorded_at: new Date().toISOString(),
+    disclaimer_version: version,
+    age_21_confirmed: true,
+    research_use_confirmed: true,
+    industry: ATTESTATION_INDUSTRIES.has(industryRaw) ? industryRaw : "other",
+  };
 }
 
 /** One order line whose client-sent price disagrees with the admin-set price. */
@@ -566,6 +603,7 @@ Deno.serve(async (req: Request) => {
   const shipState    = (payload.ship_state   ?? "").trim().slice(0,  60);
   const shipZip      = (payload.ship_zip     ?? "").trim().slice(0,  20);
   const shipCountry  = (payload.ship_country ?? "US").trim().slice(0,  60);
+  const attestation  = sanitizeAttestation(payload.research_attestation);
   const rawItems: unknown[] = Array.isArray(payload.items) ? (payload.items as unknown[]) : [];
 
   if (!name)                     return jsonResponse({ error: "Name is required." }, 400);
@@ -791,12 +829,70 @@ Deno.serve(async (req: Request) => {
   }[] = [];
   let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
 
+  // Precompute Buy-2-Get-1-Free eligibility BEFORE validating codes, so the
+  // combinability gate can tell whether an automatic promo is active for a
+  // code that opts out of promos. Eligibility is cart-only (slow-ship + qty≥3),
+  // independent of coupons; the reduction is applied in the flat pass below,
+  // consuming this plan (one query, no divergence). idx points into `items` —
+  // free_item appends happen later at the tail, so captured indices stay valid.
+  const b2g1FreePlan: { idx: number; freeUnits: number; unit: number }[] = [];
+  {
+    const { data: promo } = await supabase
+      .from("promo_settings")
+      .select("b2g1_enabled, b2g1_ends_at, b2g1_excluded_skus")
+      .eq("id", 1)
+      .maybeSingle();
+    const promoLive = !!promo?.b2g1_enabled &&
+      (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
+    const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
+    const skus = promoLive
+      ? [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s && !excluded.has(s)))]
+      : [];
+    if (skus.length > 0) {
+      const { data: availRows } = await supabase
+        .from("product_variant_stock")
+        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents")
+        .in("sku", skus);
+      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+      const slowByKey = new Map<string, boolean>();
+      for (const v of availRows ?? []) {
+        const fast = (v.on_hand ?? 0) > 0 || (v.inbound_units ?? 0) > 0;
+        const orderable = fast || v.lead_days != null || v.price_cents != null;
+        slowByKey.set(`${v.sku}::${squash(v.dose ?? "")}`, !fast && orderable);
+      }
+      items.forEach((item, idx) => {
+        const sku = item.product.sku;
+        const unit = clampCents(item.unitPriceCents);
+        const qty = clampQty(item.quantity);
+        if (!sku || unit <= 0 || qty < 3) return;
+        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
+        const isSlow = [...slowByKey.entries()].some(([key, slow]) => {
+          if (!slow || !key.startsWith(`${sku}::`)) return false;
+          const dose = key.slice(sku.length + 2);
+          return dose === "" || haystack.includes(dose);
+        });
+        if (!isSlow) return;
+        const freeUnits = Math.floor(qty / 3);
+        if (freeUnits > 0) b2g1FreePlan.push({ idx, freeUnits, unit });
+      });
+    }
+  }
+  // Combinability context — fixed BEFORE any code is admitted (order-independent).
+  const willB2G1Apply = b2g1FreePlan.length > 0;
+  const hasReward = !!rewardVoucher;
+  const hasAccount = !!accountDiscount;
+  const admittedCodes: string[] = [];
+
   // Pass 1 — validate every code; apply the flat reductions now.
   for (const code of couponCodes) {
     const { data: checkData, error: checkErr } = await supabase.rpc("validate_coupon", {
       p_code: code,
       p_subtotal_cents: grossSubtotalCents,
       p_contact: contact,
+      p_applied_codes: admittedCodes,
+      p_has_reward: hasReward,
+      p_has_promo: willB2G1Apply,
+      p_has_account: hasAccount,
     });
     if (checkErr) {
       console.error("validate_coupon failed:", checkErr);
@@ -818,6 +914,8 @@ Deno.serve(async (req: Request) => {
       }, 400);
     }
     const appliedCode = coupon.code ?? code;
+    // Admitted → later codes are combinability-checked against it.
+    admittedCodes.push(appliedCode);
 
     if (coupon.kind === "percent") {
       const full = Math.max(Math.floor(Number(coupon.discount_cents ?? 0)), 0);
@@ -874,64 +972,17 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // Buy-2-Get-1-Free (migration 053) — automatic promo on SLOW-SHIP items
-  // (7–10 business day / drop-ship: no on_hand, no inbound). For every 3 units
-  // of a qualifying line, the cheapest one is free. Applied as a FLAT reduction
-  // (before percents, like a free item) so no percent code can discount the
-  // freed units. Slow-ship is verified server-side against product_variant_stock,
-  // never trusted from the client `fast` flag.
+  // Buy-2-Get-1-Free (migrations 054/055) — apply the precomputed plan as a
+  // FLAT reduction (before percents, like a free item) so no percent code can
+  // discount the freed units. Eligibility (slow-ship, promo governance) was
+  // resolved above, before code validation.
   let b2g1Reduction = 0;
   let b2g1FreeUnits = 0;
-  {
-    // Governance (055): the promo only runs while enabled, before its end date,
-    // and never on an excluded SKU. Read authoritatively (service role) here.
-    const { data: promo } = await supabase
-      .from("promo_settings")
-      .select("b2g1_enabled, b2g1_ends_at, b2g1_excluded_skus")
-      .eq("id", 1)
-      .maybeSingle();
-    const promoLive = !!promo?.b2g1_enabled &&
-      (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
-    const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
-
-    const skus = promoLive
-      ? [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s && !excluded.has(s)))]
-      : [];
-    if (skus.length > 0) {
-      const { data: availRows } = await supabase
-        .from("product_variant_stock")
-        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents")
-        .in("sku", skus);
-      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
-      // A dose is slow-ship when it's orderable but NOT fast: no shelf stock,
-      // no inbound — supply is the drop-ship lead time only.
-      const slowByKey = new Map<string, boolean>();
-      for (const v of availRows ?? []) {
-        const fast = (v.on_hand ?? 0) > 0 || (v.inbound_units ?? 0) > 0;
-        const orderable = fast || v.lead_days != null || v.price_cents != null;
-        slowByKey.set(`${v.sku}::${squash(v.dose ?? "")}`, !fast && orderable);
-      }
-      for (const item of items) {
-        const sku = item.product.sku;
-        const unit = clampCents(item.unitPriceCents);
-        const qty = clampQty(item.quantity);
-        if (!sku || unit <= 0 || qty < 3) continue;
-        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
-        // Resolve the line's dose against the SKU's slow-ship doses.
-        const isSlow = [...slowByKey.entries()].some(([key, slow]) => {
-          if (!slow || !key.startsWith(`${sku}::`)) return false;
-          const dose = key.slice(sku.length + 2);
-          return dose === "" || haystack.includes(dose);
-        });
-        if (!isSlow) continue;
-        const freeUnits = Math.floor(qty / 3);
-        if (freeUnits <= 0) continue;
-        const value = Math.max(Math.min(freeUnits * unit, grossSubtotalCents - flatCents), 0);
-        b2g1Reduction += value;
-        b2g1FreeUnits += freeUnits;
-        flatCents += value;
-      }
-    }
+  for (const p of b2g1FreePlan) {
+    const value = Math.max(Math.min(p.freeUnits * p.unit, grossSubtotalCents - flatCents), 0);
+    b2g1Reduction += value;
+    b2g1FreeUnits += p.freeUnits;
+    flatCents += value;
   }
 
   // Reward voucher (migration 050) — a FLAT reduction of `percent`% of the
@@ -1049,6 +1100,9 @@ Deno.serve(async (req: Request) => {
       payment_method:       `Zelle (${ZELLE_HANDLE})`,
       invoiced_at: new Date().toISOString(),
       idempotency_key: idempotencyKey,
+      // Compliance trail — the buyer's research-use disclaimer acceptance
+      // (21+/research-only/industry). NULL when the client had none on file.
+      research_attestation: attestation,
       // Ownership stamp — only present for a verified-email session match;
       // guests get the exact insert payload this function has always sent.
       ...(stampedUserId ? { user_id: stampedUserId } : {}),

@@ -12,7 +12,7 @@
  * Monochrome direction: no accent colors — ink tones only.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart, type AppliedCoupon } from '../../hooks/useCart';
 import { useCustomerAuth } from '../../lib/customerAuth';
@@ -23,6 +23,7 @@ import {
   freeItemLineValue,
   submittableCouponCodes as pickSubmittableCodes,
 } from '../../lib/coupons';
+import { fetchMyAccountDiscount } from '../../lib/accountDiscount';
 import { formatUsd } from '../../lib/payment';
 
 interface PromoCodeProps {
@@ -42,6 +43,15 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [memberGateCode, setMemberGateCode] = useState<string | null>(null);
+  // Member account discount active? Feeds the add-time combinability check so a
+  // code flagged "can't combine with account discount" is rejected up front.
+  const [hasAccountDiscount, setHasAccountDiscount] = useState(false);
+  useEffect(() => {
+    if (!user) { setHasAccountDiscount(false); return; }
+    let cancelled = false;
+    void fetchMyAccountDiscount().then((d) => { if (!cancelled) setHasAccountDiscount(!!d); });
+    return () => { cancelled = true; };
+  }, [user]);
 
   const compact = variant === 'drawer';
   const labelCls = compact
@@ -66,7 +76,13 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
     setIsChecking(true);
     setError(null);
     setMemberGateCode(null);
-    const result = await checkCoupon(code, subtotalCents);
+    // Combinability context: applied codes catch exclusive / no-stack-with-codes
+    // conflicts live; account catches the member-discount conflict. Reward/B2G1
+    // conflicts are enforced server-side at checkout with a specific message.
+    const result = await checkCoupon(code, subtotalCents, {
+      appliedCodes: coupons.map((c) => c.code),
+      hasAccount: hasAccountDiscount,
+    });
     setIsChecking(false);
     if (!result.ok) {
       setError(result.reason);
