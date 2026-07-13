@@ -19,7 +19,7 @@ import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
 import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 import { formatUsd } from '../../lib/payment';
-import { siteConfig } from '../../config';
+import { InviteSheet } from './CustomerInvite';
 
 interface CustomerRow {
   id: string;
@@ -67,24 +67,6 @@ const SORT_OPTIONS: Array<{ value: SortValue; label: string }> = [
   { value: 'orders', label: 'Orders ↓' },
 ];
 
-/** Prefilled invite email for a guest with banked points. Opens the admin's
- *  own mail client (works on iPhone) so the message can be edited before
- *  sending — nothing is sent automatically. */
-function inviteMailto(row: CustomerRow, points: number): string {
-  const firstName = row.display_name.trim().split(/\s+/)[0] || 'there';
-  const signupUrl = `${window.location.origin}/account?mode=signup`;
-  const subject = `${points.toLocaleString()} reward points are waiting for you at ${siteConfig.brand.name}`;
-  const body =
-    `Hi ${firstName},\n\n` +
-    `Thank you for your orders with ${siteConfig.brand.name}. Based on what you've already spent with us, ` +
-    `you've earned ${points.toLocaleString()} reward points (every $1 = 1 point) — they just need an account to live in.\n\n` +
-    `Create your free account with this email address and we'll credit the full ${points.toLocaleString()} points to it:\n` +
-    `${signupUrl}\n\n` +
-    `Points are redeemable toward future orders, and members also get order history, tracking, and receipts in one place.\n\n` +
-    `— ${siteConfig.brand.name}`;
-  return `mailto:${encodeURIComponent(row.contact)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
 export function AdminCustomers() {
   const [rows, setRows] = useState<CustomerRow[] | null>(null);
   const [statsByKey, setStatsByKey] = useState<Record<string, SpendStats>>({});
@@ -94,6 +76,7 @@ export function AdminCustomers() {
   const [statusFilter, setStatusFilter] = useState<(typeof STATUS_FILTERS)[number]>('all');
   const [memberFilter, setMemberFilter] = useState<MemberFilter>('everyone');
   const [sort, setSort] = useState<SortValue>('recent');
+  const [inviteFor, setInviteFor] = useState<CustomerRow | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -284,13 +267,14 @@ export function AdminCustomers() {
                   </div>
                 </Link>
                 {invitable && (
-                  <a
-                    href={inviteMailto(row, stats.points)}
+                  <button
+                    type="button"
+                    onClick={() => setInviteFor(row)}
                     title={`Email ${row.display_name}: sign up and we'll credit your ${stats.points.toLocaleString()} points`}
                     className="flex min-w-[64px] shrink-0 items-center justify-center border-l border-ink/[0.05] px-[var(--space-3)] font-mono text-[9.5px] uppercase tracking-[0.16em] text-holo transition-colors hover:bg-holo/[0.05] focus:outline-none focus-visible:bg-holo/[0.06]"
                   >
                     Invite
-                  </a>
+                  </button>
                 )}
               </li>
             );
@@ -301,6 +285,14 @@ export function AdminCustomers() {
             </li>
           )}
         </ul>
+      )}
+
+      {inviteFor && (
+        <InviteSheet
+          target={inviteFor}
+          points={(statsByKey[inviteFor.contact_key] ?? { points: 0 }).points}
+          onClose={() => setInviteFor(null)}
+        />
       )}
     </AdminLayout>
   );

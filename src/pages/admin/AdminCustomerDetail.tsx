@@ -7,13 +7,16 @@
  * automatically.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { CustomerAccountPanels } from './CustomerAccountPanels';
+import { InviteSheet } from './CustomerInvite';
 import { Button } from '../../components/ui/Button';
+import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
+import { formatUsd } from '../../lib/payment';
 
 interface CustomerRow {
   id: string;
@@ -51,6 +54,8 @@ export function AdminCustomerDetail() {
   const [customer, setCustomer] = useState<CustomerRow | null>(null);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [isMember, setIsMember] = useState<boolean | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [notesDraft, setNotesDraft] = useState('');
@@ -86,11 +91,32 @@ export function AdminCustomerDetail() {
 
     setInquiries((inqs.data ?? []) as InquiryRow[]);
     setOrders((ords.data ?? []) as OrderRow[]);
+
+    // Portal membership — customer_profiles soft-links back via customer_id
+    // (admin read-all RLS policy, migration 028).
+    const { data: prof, error: profErr } = await supabase
+      .from('customer_profiles')
+      .select('user_id')
+      .eq('customer_id', id)
+      .maybeSingle();
+    if (!profErr) setIsMember(!!prof);
   }, [id]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  /** Lifetime paid spend + earned points — same accrual as migration 044
+   *  (floor(cents/100) PER paid order, summed), so an invite's promised
+   *  number equals what the ledger will actually credit after signup. */
+  const rewards = useMemo(() => {
+    const paid = orders.filter((o) => o.status === 'paid' || o.status === 'fulfilled');
+    return {
+      spendCents: paid.reduce((a, o) => a + (o.invoice_amount_cents ?? 0), 0),
+      paidOrders: paid.length,
+      points: paid.reduce((a, o) => a + Math.floor((o.invoice_amount_cents ?? 0) / 100), 0),
+    };
+  }, [orders]);
 
   async function saveNotes() {
     if (!supabase || !customer) return;
@@ -170,6 +196,45 @@ export function AdminCustomerDetail() {
             </dl>
           </header>
 
+          {/* Spend + reward points — the outreach numbers, same math as the
+              Customers list. Guests with banked points get the Invite action. */}
+          <section className="mb-[var(--space-6)] research-surface-solid p-[var(--space-5)]">
+            <div className="flex flex-wrap items-center gap-x-[var(--space-6)] gap-y-[var(--space-3)]">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Lifetime paid</p>
+                <p className="font-mono text-[15px] tabular-nums text-ink">{formatUsd(rewards.spendCents)}</p>
+                <p className="font-mono text-[10.5px] tabular-nums text-ink/45">{rewards.paidOrders} paid {rewards.paidOrders === 1 ? 'order' : 'orders'}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Points earned</p>
+                <p className="font-mono text-[15px] tabular-nums text-ink">{rewards.points.toLocaleString()}</p>
+                <p className="font-mono text-[10.5px] text-ink/45">$1 = 1 pt on paid orders</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-ink/40 mb-0.5">Account</p>
+                <span className={`${CHIP_BASE} ${isMember
+                  ? 'border-holo/35 text-holo bg-holo/[0.07]'
+                  : 'border-ink/15 text-ink/50 bg-ink/[0.02]'}`}
+                >
+                  {isMember === null ? '…' : isMember ? 'member' : 'guest'}
+                </span>
+              </div>
+              {isMember === false && rewards.points > 0 && (
+                <div className="ml-auto">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setInviteOpen(true)}>
+                    Invite — credit {rewards.points.toLocaleString()} pts
+                  </Button>
+                </div>
+              )}
+            </div>
+            {isMember === false && rewards.points > 0 && (
+              <p className="mt-[var(--space-3)] text-[11px] leading-relaxed text-ink/45">
+                Not a member yet — invite them to create an account, then credit the
+                {' '}{rewards.points.toLocaleString()} points from the rewards panel below once they've signed up.
+              </p>
+            )}
+          </section>
+
           {/* Notes */}
           <section className="mb-[var(--space-8)] research-surface-solid p-[var(--space-5)]">
             <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-3)]">
@@ -246,6 +311,14 @@ export function AdminCustomerDetail() {
               </ul>
             )}
           </section>
+
+          {inviteOpen && (
+            <InviteSheet
+              target={customer}
+              points={rewards.points}
+              onClose={() => setInviteOpen(false)}
+            />
+          )}
         </>
       )}
     </AdminLayout>
