@@ -70,7 +70,12 @@ export function AccountLayout({ children }: { children: ReactNode }) {
     // admin-only account) — treat as logged out for the portal.
     return (
       <section className="py-[var(--space-12)] px-[var(--space-2)]">
-        <AuthCard signIn={signIn} signUp={signUp} error={error} />
+        <AuthCard
+          signIn={signIn}
+          signUp={signUp}
+          error={error}
+          initialMode={new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin'}
+        />
       </section>
     );
   }

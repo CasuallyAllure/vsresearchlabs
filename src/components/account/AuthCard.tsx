@@ -23,10 +23,12 @@ interface AuthCardProps {
   signIn: (email: string, password: string) => Promise<boolean>;
   signUp: (input: SignUpInput) => Promise<SignUpResult>;
   error: string | null;
+  /** Which face to open on — lets callers deep-link straight to create/sign-in. */
+  initialMode?: Mode;
 }
 
-export function AuthCard({ signIn, signUp, error }: AuthCardProps) {
-  const [mode, setMode] = useState<Mode>('signin');
+export function AuthCard({ signIn, signUp, error, initialMode = 'signin' }: AuthCardProps) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [height, setHeight] = useState<number | undefined>(undefined);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);

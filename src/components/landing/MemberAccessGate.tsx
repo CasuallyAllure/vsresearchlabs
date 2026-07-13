@@ -215,10 +215,10 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
 
         {/* Actions — equal primary/secondary, calm sizing. */}
         <div className="mt-[var(--space-5)] grid grid-cols-2 gap-[var(--space-3)]">
-          <Button to="/account" size="md" fullWidth>
+          <Button to="/account?mode=signup" size="md" fullWidth>
             Create account
           </Button>
-          <Button to="/account" variant="secondary" size="md" fullWidth>
+          <Button to="/account?mode=signin" variant="secondary" size="md" fullWidth>
             Sign in
           </Button>
         </div>
