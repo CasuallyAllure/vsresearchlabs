@@ -775,6 +775,25 @@ Deno.serve(async (req: Request) => {
     memberFreeShipping = profRow?.free_shipping === true;
   }
 
+  // Reward redemption voucher (migration 050) — a stamped owner may hold ONE
+  // active "40% off one item" voucher. Applied below as a flat reduction equal
+  // to 40% of the highest single unit price, then marked used. The −300 points
+  // were already spent at redeem time.
+  let rewardVoucher: { id: string; percent: number } | null = null;
+  if (stampedUserId) {
+    const { data: vRow } = await supabase
+      .from("reward_vouchers")
+      .select("id, percent")
+      .eq("user_id", stampedUserId)
+      .eq("status", "active")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (vRow && Number.isFinite(Number(vRow.percent))) {
+      rewardVoucher = { id: vRow.id as string, percent: Number(vRow.percent) };
+    }
+  }
+
   // Coupon — the client sends only the CODE; the server validates it and
   // computes the money. percent/fixed reduce the billed total; free_item
   // appends a $0 line for the free product. Invalid codes reject the order
@@ -890,6 +909,18 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Reward voucher (migration 050) — a FLAT reduction of `percent`% of the
+  // single highest unit price in the cart ("40% off one item"), applied like a
+  // fixed coupon (reduces the base before percents), capped at the remaining
+  // subtotal. Materialized as a synthetic order_coupons row below.
+  let rewardReduction = 0;
+  if (rewardVoucher) {
+    const maxUnit = items.reduce((m, i) => Math.max(m, clampCents(i.unitPriceCents)), 0);
+    const raw = Math.round((maxUnit * rewardVoucher.percent) / 100);
+    rewardReduction = Math.max(Math.min(raw, grossSubtotalCents - flatCents), 0);
+    flatCents += rewardReduction;
+  }
+
   // Pass 2 — percents apply to the base AFTER the flat reductions. A percent's
   // discount off the full subtotal, scaled by (baseAfterFlat / subtotal), equals
   // `percent × baseAfterFlat`.
@@ -920,10 +951,15 @@ Deno.serve(async (req: Request) => {
   }
 
   let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
+  const REWARD_CODE = "REWARD";
   // Comma-joined label for the order row, invoice, and emails (all read this).
-  // The synthetic account code leads, matching the order_coupons row it gets.
-  let appliedCoupon: string | null = (accountDiscount || appliedList.length)
-    ? [...(accountDiscount ? [accountDiscount.code] : []), ...appliedList.map((a) => a.code)].join(", ")
+  // The synthetic account/reward codes lead, matching the order_coupons rows.
+  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || appliedList.length)
+    ? [
+        ...(accountDiscount ? [accountDiscount.code] : []),
+        ...(rewardReduction > 0 ? [REWARD_CODE] : []),
+        ...appliedList.map((a) => a.code),
+      ].join(", ")
     : null;
   let totalCents = grossSubtotalCents - discountCents;
 
@@ -1052,6 +1088,28 @@ Deno.serve(async (req: Request) => {
     if (acctRowErr) console.error("Account-discount order_coupons insert failed:", acctRowErr);
   }
 
+  // Materialize the reward voucher as a synthetic 'fixed' order_coupons row
+  // (migration 050, source='reward') and mark the voucher used. The status
+  // filter on the update makes double-consumption a no-op if this order raced.
+  if (rewardVoucher && rewardReduction > 0) {
+    const { error: rewardRowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: REWARD_CODE,
+      kind: "fixed",
+      amount_cents: rewardReduction,
+      free_label: `${rewardVoucher.percent}% off one item`,
+      discount_cents: rewardReduction,
+      source: "reward",
+    });
+    if (rewardRowErr) console.error("Reward order_coupons insert failed:", rewardRowErr);
+
+    const { error: voucherErr } = await supabase.from("reward_vouchers")
+      .update({ status: "used", used_at: new Date().toISOString(), order_id: orderRow.id })
+      .eq("id", rewardVoucher.id)
+      .eq("status", "active");
+    if (voucherErr) console.error("Reward voucher consume failed:", voucherErr);
+  }
+
   // Record the redemption + commission ledger row (service-role-only RPC;
   // atomically re-checks limits and bumps used_count). If it fails — e.g. two
   // concurrent checkouts raced for the last use of a capped code — ROLL THE
@@ -1174,6 +1232,14 @@ Deno.serve(async (req: Request) => {
             percent: accountDiscount.percent,
             amount_cents: null,
             discount_cents: accountCents,
+          }] : []),
+          ...(rewardVoucher && rewardReduction > 0 ? [{
+            code: REWARD_CODE,
+            kind: "fixed",
+            free_label: `${rewardVoucher.percent}% off one item`,
+            percent: null,
+            amount_cents: rewardReduction,
+            discount_cents: rewardReduction,
           }] : []),
           ...redeemedList.map((a) => ({
             code: a.code,

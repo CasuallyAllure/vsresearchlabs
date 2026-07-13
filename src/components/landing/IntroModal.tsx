@@ -4,9 +4,9 @@
  * The three-tab "what are peptides" VideoIntroModule, lifted out of the page
  * flow into a centered overlay you dismiss (X / backdrop / ESC / "Enter site").
  *
- * CONTROLLED: opened on demand (from MembershipHero's "Watch the intro" link)
- * rather than auto-popping on every load — the membership module now greets
- * visitors instead. Pass `open`/`onClose`.
+ * CONTROLLED: Landing opens this after the member-access gate is dismissed
+ * (or immediately for signed-in visitors), so the "what are peptides" video is
+ * the first thing you see once past the gate. Pass `open`/`onClose`.
  *
  * Portaled to <body> so it escapes the sticky header's stacking context, and
  * scroll-locked while open. Honors prefers-reduced-motion.

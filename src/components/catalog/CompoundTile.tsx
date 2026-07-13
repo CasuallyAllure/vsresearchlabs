@@ -32,7 +32,6 @@ import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, is24hrDose, doseAvailability } from '../../lib/productOverrides';
-import { AvailabilityBadge } from './AvailabilityBadge';
 
 interface CompoundTileProps {
   product: Product;
@@ -70,10 +69,6 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
   const setTierIndex = setManualTierIndex;
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
   const priceCents = effectiveTierPriceCents(product, activeDose);
-  // The dose chip already spells out "· 24 HR" for a fast dose, so the
-  // standalone AvailabilityBadge is only useful (non-redundant) for the
-  // sourced tier — hide it when the active dose is in-stock/24-hour.
-  const showAvailabilityBadge = doseAvailability(product.sku, activeDose).state === 'sourced';
 
   const puritySpec = product.specs.find((s) => s.label === 'Purity (HPLC)');
 
@@ -170,35 +165,50 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
 
       {/* Buy controls — outside the tap target */}
       <div className="px-3.5 pb-3.5 pt-1.5 border-t border-ink/[0.05] mt-auto">
-        {variants.length > 1 ? (
-          <div
-            role="radiogroup"
-            aria-label="Select dose"
-            className="flex flex-wrap gap-1 mb-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {variants.map((v, i) => (
-              <DoseChip
-                key={v.dose}
-                sku={product.sku}
-                dose={v.dose}
-                interactive
-                isActive={i === tierIndex}
-                onClick={(e) => { e.stopPropagation(); setTierIndex(i); }}
-              />
-            ))}
-          </div>
-        ) : variants.length === 1 ? (
-          // Single-dose products still need their dose visible — a static
-          // (non-radiogroup) chip, since there's nothing to pick between.
-          <div className="flex flex-wrap gap-1 mb-2">
-            <DoseChip sku={product.sku} dose={variants[0].dose} isActive={false} />
-          </div>
-        ) : null}
+        {variants.length > 0 && (() => {
+          // 24-hour doses first, then sourced doses — sourced doses share a
+          // single trailing "· 7–10 DAYS" marker instead of each repeating
+          // the tier in words (that's what the old standalone
+          // AvailabilityBadge did; removed in favor of this inline marker).
+          const interactive = variants.length > 1;
+          const withState = variants.map((v, i) => ({
+            v,
+            i,
+            state: doseAvailability(product.sku, v.dose).state,
+          }));
+          const ordered = [...withState].sort((a, b) => {
+            if (a.state === b.state) return 0;
+            return a.state === 'in_stock' ? -1 : 1;
+          });
+          const hasSourced = withState.some((o) => o.state === 'sourced');
+
+          return (
+            <div
+              role={interactive ? 'radiogroup' : undefined}
+              aria-label={interactive ? 'Select dose' : undefined}
+              className="flex flex-wrap items-center gap-1 mb-2"
+              onClick={interactive ? (e) => e.stopPropagation() : undefined}
+            >
+              {ordered.map(({ v, i }) => (
+                <DoseChip
+                  key={v.dose}
+                  sku={product.sku}
+                  dose={v.dose}
+                  interactive={interactive}
+                  isActive={i === tierIndex}
+                  onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
+                />
+              ))}
+              {hasSourced && (
+                <span className="font-mono leading-none text-[10px] uppercase tracking-[0.14em] text-ink/45 whitespace-nowrap">
+                  · 7–10 DAYS
+                </span>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="flex flex-col gap-1.5">
-          {showAvailabilityBadge && <AvailabilityBadge sku={product.sku} dose={activeDose} />}
-
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono tabular-nums text-[13px] text-ink/90 leading-none whitespace-nowrap">
               {formatPrice(priceCents)}

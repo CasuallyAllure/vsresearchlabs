@@ -30,7 +30,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesModal';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
@@ -41,7 +41,8 @@ import { CompoundIntelligenceHero } from '../components/landing/CompoundIntellig
 import { CompoundVisualizerFrame } from '../components/landing/CompoundVisualizerFrame';
 import { CompoundVisualizerModal } from '../components/landing/CompoundVisualizerModal';
 import { IntroModal } from '../components/landing/IntroModal';
-import { MembershipHero } from '../components/landing/MembershipHero';
+import { MemberAccessGate } from '../components/landing/MemberAccessGate';
+import { useCustomerAuth } from '../lib/customerAuth';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
 import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
@@ -302,17 +303,41 @@ const BRIDGE_SUSPENDERS: ReadonlyArray<{ x: number; yTop: number }> = [
 export function Landing() {
   const [suppliesOpen, setSuppliesOpen] = useState(false);
   const [compoundExpanded, setCompoundExpanded] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
+  const { loading: authLoading, user } = useCustomerAuth();
+
+  // First-visit greeting, once per browser session. Guests meet the member-
+  // access gate first; dismissing it (or already being signed in) opens the
+  // "what are peptides" intro video. The gate never shows to signed-in users.
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
+    } else if (sessionStorage.getItem('vsr.gateSeen') !== '1') {
+      setGateOpen(true);
+    }
+  }, [authLoading, user]);
+
+  function dismissGate() {
+    sessionStorage.setItem('vsr.gateSeen', '1');
+    setGateOpen(false);
+    if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
+  }
+
+  function dismissIntro() {
+    sessionStorage.setItem('vsr.introSeen', '1');
+    setIntroOpen(false);
+  }
+
   return (
     <>
-      {/* "What are peptides" intro — now opened on demand from the member hero,
-          no longer an auto-popup, so the membership module greets visitors. */}
-      <IntroModal open={introOpen} onClose={() => setIntroOpen(false)} />
+      {/* Member-access gate greets guests first; on dismiss the intro follows. */}
+      <MemberAccessGate open={gateOpen} onGuest={dismissGate} />
+      {/* "What are peptides" intro video — greets the visitor after the gate. */}
+      <IntroModal open={introOpen} onClose={dismissIntro} />
       <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
       <CompoundVisualizerModal open={compoundExpanded} onClose={() => setCompoundExpanded(false)} />
-
-      {/* ── MEMBER ACCESS — first thing on the page ──────────────────────── */}
-      <MembershipHero onWatchIntro={() => setIntroOpen(true)} />
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
