@@ -14,6 +14,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { CLASSIFICATION_LAYMAN, CLASSIFICATION_DEFINITIONS } from '../../lib/compoundIntelligence';
 import type { ResearchClassification } from '../../types';
+import { Tooltip } from '../ui/Tooltip';
+
+const FAST_SHIP_TOOLTIP = 'Ships within 24 hours — same-day delivery available for select ZIP codes.';
+const SOURCED_SHIP_TOOLTIP =
+  'Buy 2, Get 1 Free — add 3 of a 7–10 day item to your cart and the 3rd is free at checkout. Sourced to order, ships in 7–10 business days.';
 
 interface Tab {
   id: string;
@@ -244,12 +249,13 @@ export function ClassificationFilter({
             Shipping speed
           </span>
           <div className="flex items-center gap-1.5">
+          <Tooltip content={FAST_SHIP_TOOLTIP} ariaId="ship-24hr">
           <button
             type="button"
             role="switch"
             aria-checked={shippingTiers.fast}
+            aria-label={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
             onClick={shippingTiers.onToggleFast}
-            title={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
             className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
             }`}
@@ -266,16 +272,18 @@ export function ClassificationFilter({
             />
             24 HR
           </button>
+          </Tooltip>
+          <Tooltip content={SOURCED_SHIP_TOOLTIP} ariaId="ship-sourced">
           <button
             type="button"
             role="switch"
             aria-checked={shippingTiers.sourced}
-            onClick={shippingTiers.onToggleSourced}
-            title={
+            aria-label={
               shippingTiers.sourced
                 ? '7–10 business day shipping — tap to hide'
                 : 'Tap to show sourced (7–10 business day) compounds'
             }
+            onClick={shippingTiers.onToggleSourced}
             className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
             }`}
@@ -292,6 +300,7 @@ export function ClassificationFilter({
             />
             7–10 DAYS
           </button>
+          </Tooltip>
           </div>
         </div>
       )}
