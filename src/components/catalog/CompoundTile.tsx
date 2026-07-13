@@ -34,6 +34,9 @@ import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, is24hrDose, doseAvailability } from '../../lib/productOverrides';
 import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { Tooltip } from '../ui/Tooltip';
+import { usePromoSettings, b2g1TooltipContent } from '../../lib/promoSettings';
+
+const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
 
 interface CompoundTileProps {
   product: Product;
@@ -49,6 +52,9 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
   // Subscribe to overrides so admin price/stock changes propagate live.
   useProductOverrides((s) => s.bySku[product.sku] ?? null);
   useProductOverrides((s) => s.variantBySku);
+  usePromoSettings((s) => s.b2g1Enabled);
+  usePromoSettings((s) => s.b2g1EndsAt);
+  usePromoSettings((s) => s.b2g1ExcludedSkus);
 
   // Only render variants with an admin-set price — no-price doses stay
   // hidden from the public catalog (same rule as CompactProductTile).
@@ -231,7 +237,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
                       on this chip only). Checkout enforces it server-side. */}
                   <div className="border-t border-ink/12 py-1 text-center">
                     <Tooltip
-                      content="Buy 2, Get 1 Free — add 3 of a 7–10 day item to your cart and the 3rd is free at checkout."
+                      content={b2g1TooltipContent(product.sku) ?? SOURCED_SHIP_PLAIN}
                       ariaId={`b2g1-${product.sku}`}
                     >
                       <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">

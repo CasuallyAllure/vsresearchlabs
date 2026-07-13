@@ -13,7 +13,10 @@
  */
 
 import { useProductOverrides, doseAvailability } from '../../lib/productOverrides';
+import { usePromoSettings, b2g1TooltipContent } from '../../lib/promoSettings';
 import { Tooltip } from '../ui/Tooltip';
+
+const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
 
 interface Props {
   sku: string;
@@ -22,8 +25,10 @@ interface Props {
 }
 
 export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
-  // Re-render when admin overrides load.
+  // Re-render when admin overrides / promo settings load.
   useProductOverrides((s) => s.variantBySku);
+  usePromoSettings((s) => s.b2g1Enabled);
+  usePromoSettings((s) => s.b2g1EndsAt);
   const a = doseAvailability(sku, dose);
   if (a.state === 'unknown') return null;
 
@@ -45,12 +50,12 @@ export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
     );
   }
 
-  // Hover/tap reveals the slow-ship promo; checkout enforces it server-side
-  // (Buy 2 Get 1 Free, migration 053). The native title is dropped so it
-  // can't double up with the tooltip on desktop.
+  // Hover/tap reveals the slow-ship promo WHEN it's live for this SKU (governed
+  // by migration 055); otherwise the plain shipping copy. Checkout enforces the
+  // discount server-side. Native title dropped so it can't double the tooltip.
   return (
     <Tooltip
-      content="Buy 2, Get 1 Free — order 3 of this item and the 3rd is free at checkout. Sourced to order, ships in 7–10 business days."
+      content={b2g1TooltipContent(sku) ?? SOURCED_SHIP_PLAIN}
       ariaId={`b2g1-${sku}-${dose}`}
     >
       <span className={`${pill} cursor-help border-ink/15 bg-ink/[0.03] text-ink/50 underline decoration-dotted decoration-ink/25 underline-offset-2 ${className}`}>

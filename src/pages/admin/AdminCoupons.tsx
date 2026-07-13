@@ -25,6 +25,7 @@ import { AdminFilterBar } from './AdminFilterBar';
 import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 import { Button } from '../../components/ui/Button';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
+import { PromoTab } from './PromoTab';
 
 // ── Domain types ─────────────────────────────────────────────────────────────
 
@@ -78,12 +79,13 @@ interface RedemptionRow {
   created_at: string;
 }
 
-type TabKey = 'codes' | 'affiliates' | 'commissions';
+type TabKey = 'codes' | 'affiliates' | 'commissions' | 'promo';
 
 const TABS: Array<{ value: TabKey; label: string }> = [
   { value: 'codes', label: 'Codes' },
   { value: 'affiliates', label: 'Affiliates' },
   { value: 'commissions', label: 'Commissions' },
+  { value: 'promo', label: 'B2G1 Promo' },
 ];
 
 // ── Formatting helpers ───────────────────────────────────────────────────────
@@ -332,6 +334,8 @@ export function AdminCoupons() {
           confirm={confirm}
         />
       )}
+
+      {!error && !loading && tab === 'promo' && <PromoTab confirm={confirm} />}
 
       {modal}
     </AdminLayout>

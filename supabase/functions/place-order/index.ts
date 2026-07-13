@@ -883,7 +883,20 @@ Deno.serve(async (req: Request) => {
   let b2g1Reduction = 0;
   let b2g1FreeUnits = 0;
   {
-    const skus = [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s))];
+    // Governance (055): the promo only runs while enabled, before its end date,
+    // and never on an excluded SKU. Read authoritatively (service role) here.
+    const { data: promo } = await supabase
+      .from("promo_settings")
+      .select("b2g1_enabled, b2g1_ends_at, b2g1_excluded_skus")
+      .eq("id", 1)
+      .maybeSingle();
+    const promoLive = !!promo?.b2g1_enabled &&
+      (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
+    const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
+
+    const skus = promoLive
+      ? [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s && !excluded.has(s)))]
+      : [];
     if (skus.length > 0) {
       const { data: availRows } = await supabase
         .from("product_variant_stock")

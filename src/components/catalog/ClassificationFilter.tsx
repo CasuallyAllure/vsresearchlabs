@@ -15,10 +15,10 @@ import { useEffect, useRef, useState } from 'react';
 import { CLASSIFICATION_LAYMAN, CLASSIFICATION_DEFINITIONS } from '../../lib/compoundIntelligence';
 import type { ResearchClassification } from '../../types';
 import { Tooltip } from '../ui/Tooltip';
+import { usePromoSettings, isB2G1Active, b2g1TooltipContent } from '../../lib/promoSettings';
 
 const FAST_SHIP_TOOLTIP = 'Ships within 24 hours — same-day delivery available for select ZIP codes.';
-const SOURCED_SHIP_TOOLTIP =
-  'Buy 2, Get 1 Free — add 3 of a 7–10 day item to your cart and the 3rd is free at checkout. Sourced to order, ships in 7–10 business days.';
+const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
 
 interface Tab {
   id: string;
@@ -65,6 +65,13 @@ export function ClassificationFilter({
 }: ClassificationFilterProps) {
   const allId = tabs[0]?.id;
   const stockColor = inStock?.color ?? '#2E7D5B';
+
+  // Subscribe so the 7–10-day chip's tooltip flips to the LTO promo copy the
+  // moment promo settings load (or an admin toggles the promo).
+  usePromoSettings((s) => s.b2g1Enabled);
+  usePromoSettings((s) => s.b2g1EndsAt);
+  // Category-level chip → not SKU-specific, so gate on the global promo only.
+  const sourcedShipTooltip = (isB2G1Active() ? b2g1TooltipContent() : null) ?? SOURCED_SHIP_PLAIN;
 
   const [open, setOpen] = useState(false);       // category dropdown
   const [sugOpen, setSugOpen] = useState(false); // search typeahead
@@ -273,7 +280,7 @@ export function ClassificationFilter({
             24 HR
           </button>
           </Tooltip>
-          <Tooltip content={SOURCED_SHIP_TOOLTIP} ariaId="ship-sourced">
+          <Tooltip content={sourcedShipTooltip} ariaId="ship-sourced">
           <button
             type="button"
             role="switch"
