@@ -8,11 +8,13 @@
  * a signed-out visitor still sees the existing AuthCard in place.
  */
 
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useCustomerAuth } from '../../lib/customerAuth';
 import { supabase } from '../../lib/supabase';
 import { AuthCard } from '../../components/account/AuthCard';
+import { Button } from '../../components/ui/Button';
 import { PillTabs, type PillTab } from '../../components/ui/PillTabs';
 import { siteConfig } from '../../config';
 
@@ -33,9 +35,38 @@ function activeTabId(pathname: string): string {
 }
 
 export function AccountLayout({ children }: { children: ReactNode }) {
-  const { loading, user, profile, error, signIn, signUp, signOut } = useCustomerAuth();
+  const { loading, user, profile, error, signIn, signUp, verifyOtp, resendOtp, signOut } = useCustomerAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // The portal is for CUSTOMERS. The 028 trigger materializes a
+  // customer_profiles row for every auth user — including the admin — so a
+  // signed-in admin would otherwise render here as a customer of themselves.
+  // Admins get bounced to their customer-management surface instead.
+  const [adminCheck, setAdminCheck] = useState<'idle' | 'checking' | 'admin' | 'customer'>('idle');
+  useEffect(() => {
+    if (!supabase || !user) {
+      setAdminCheck('idle');
+      return;
+    }
+    let cancelled = false;
+    setAdminCheck('checking');
+    supabase
+      .rpc('is_admin')
+      .then(({ data, error: rpcError }) => {
+        if (cancelled) return;
+        // On RPC failure fall back to the customer view — never lock a real
+        // customer out of their portal over a transient error.
+        setAdminCheck(!rpcError && data === true ? 'admin' : 'customer');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  if (user && adminCheck === 'admin') {
+    return <Navigate to="/admin/customers" replace />;
+  }
 
   if (!supabase) {
     return (
@@ -55,7 +86,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (loading) {
+  if (loading || (user && adminCheck === 'checking')) {
     return (
       <section className="py-[var(--space-24)] flex items-center justify-center">
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] text-ink/45">
@@ -69,10 +100,12 @@ export function AccountLayout({ children }: { children: ReactNode }) {
     // Signed-out, or a signed-in auth user without a profile row (e.g. an
     // admin-only account) — treat as logged out for the portal.
     return (
-      <section className="py-[var(--space-12)] px-[var(--space-2)]">
+      <section className="pt-[var(--space-2)] pb-[var(--space-10)] px-0">
         <AuthCard
           signIn={signIn}
           signUp={signUp}
+          verifyOtp={verifyOtp}
+          resendOtp={resendOtp}
           error={error}
           initialMode={new URLSearchParams(location.search).get('mode') === 'signup' ? 'signup' : 'signin'}
         />
@@ -95,16 +128,18 @@ export function AccountLayout({ children }: { children: ReactNode }) {
         <span className="ml-auto hidden min-w-0 shrink truncate whitespace-nowrap font-mono text-[10px] tabular-nums text-ink/40 lg:inline">
           {user.email}
         </span>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => signOut()}
-          className="relative shrink-0 whitespace-nowrap rounded-full border border-ink/15 px-2.5 py-[3px] text-[10px] uppercase tracking-[0.16em] text-ink/60 transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 sm:tracking-[0.2em] max-lg:ml-auto before:absolute before:inset-x-0 before:-inset-y-[10px] before:content-['']"
+          className="shrink-0 max-lg:ml-auto"
         >
           Sign out
-        </button>
+        </Button>
       </header>
 
-      <nav aria-label="Account sections" className="mb-[var(--space-6)] flex justify-center">
+      <nav aria-label="Account sections" className="mb-[var(--space-6)] flex justify-start sm:justify-center">
         <PillTabs
           tabs={TABS}
           activeId={activeTabId(location.pathname)}
