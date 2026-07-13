@@ -26,6 +26,8 @@ import {
 import { OrderStatusChip, type AdminOrderStatus } from '../ui/OrderStatusChip';
 import { Button } from '../ui/Button';
 import { RewardTracker } from './RewardTracker';
+import { MemberOfferCard } from './MemberOfferCard';
+import { MEMBER_OFFERS } from '../../config/memberOffers';
 import { supabase } from '../../lib/supabase';
 
 /** `customer_profiles.account_type`/`business_name` (migration 043) aren't on
@@ -193,20 +195,26 @@ export function AccountDashboard() {
           )}
         </div>
 
-        <div className="research-surface-solid p-[var(--space-5)]">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Active discounts</p>
-          {discounts === null ? (
-            <p className="text-[12.5px] text-ink/50">Loading…</p>
-          ) : discounts.length === 0 ? (
-            <p className="text-[12.5px] text-ink/50">No account discounts on file.</p>
+        <div>
+          {discounts !== null && discounts.length === 0 && MEMBER_OFFERS.length > 0 ? (
+            <MemberOfferCard offer={MEMBER_OFFERS[0]} compact />
           ) : (
-            <ul className="space-y-1">
-              {discounts.map((d) => (
-                <li key={d.id} className="text-[13px] text-ink/85">
-                  {d.label} <span className="text-ink/45">· {d.percent}% off</span>
-                </li>
-              ))}
-            </ul>
+            <div className="research-surface-solid p-[var(--space-5)]">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Active discounts</p>
+              {discounts === null ? (
+                <p className="text-[12.5px] text-ink/50">Loading…</p>
+              ) : discounts.length === 0 ? (
+                <p className="text-[12.5px] text-ink/50">No account discounts on file.</p>
+              ) : (
+                <ul className="space-y-1">
+                  {discounts.map((d) => (
+                    <li key={d.id} className="text-[13px] text-ink/85">
+                      {d.label} <span className="text-ink/45">· {d.percent}% off</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
           <Link to="/account/benefits" className="mt-[var(--space-2)] inline-block text-[11px] uppercase tracking-[0.18em] text-teal hover:text-teal-dark transition-colors">
             View benefits →

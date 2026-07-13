@@ -18,6 +18,7 @@ interface PasswordFieldProps {
   required?: boolean;
   autoComplete?: string;
   placeholder?: string;
+  dense?: boolean;
 }
 
 export function PasswordField(props: PasswordFieldProps) {

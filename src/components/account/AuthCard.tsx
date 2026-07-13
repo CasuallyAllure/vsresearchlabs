@@ -15,20 +15,26 @@ import { Logo } from '../brand/Logo';
 import { siteConfig } from '../../config';
 import { SignInForm } from './SignInForm';
 import { SignUpForm } from './SignUpForm';
-import type { SignUpInput, SignUpResult } from '../../lib/customerAuth';
+import { OtpConfirm } from './OtpConfirm';
+import type { SignUpInput, SignUpResult, OtpResult } from '../../lib/customerAuth';
 
 type Mode = 'signin' | 'signup';
 
 interface AuthCardProps {
-  signIn: (email: string, password: string) => Promise<boolean>;
-  signUp: (input: SignUpInput) => Promise<SignUpResult>;
+  signIn: (email: string, password: string, captchaToken?: string | null) => Promise<boolean>;
+  signUp: (input: SignUpInput, captchaToken?: string | null) => Promise<SignUpResult>;
+  verifyOtp: (email: string, token: string) => Promise<OtpResult>;
+  resendOtp: (email: string, captchaToken?: string | null) => Promise<OtpResult>;
   error: string | null;
   /** Which face to open on — lets callers deep-link straight to create/sign-in. */
   initialMode?: Mode;
 }
 
-export function AuthCard({ signIn, signUp, error, initialMode = 'signin' }: AuthCardProps) {
+export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialMode = 'signin' }: AuthCardProps) {
   const [mode, setMode] = useState<Mode>(initialMode);
+  // When set, Supabase asked for code confirmation → show the standalone
+  // OtpConfirm card in place of the flip card (no face-bleed).
+  const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const [height, setHeight] = useState<number | undefined>(undefined);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -54,17 +60,26 @@ export function AuthCard({ signIn, signUp, error, initialMode = 'signin' }: Auth
   const flipped = mode === 'signup';
 
   return (
-    <div className="mx-auto w-full max-w-[27rem]">
-      <div className="holo-surface rounded-[var(--radius-card)] px-[var(--space-6)] sm:px-[var(--space-8)] py-[var(--space-8)]">
-        {/* Brand header */}
-        <div className="flex flex-col items-center text-center mb-[var(--space-8)]">
-          <Logo variant="stacked" markSize={56} wordSize={13} circled to={null} />
-          <p className="mt-[var(--space-3)] text-[11px] uppercase tracking-[0.3em] text-ink/45">
+    <div className="mx-auto w-full max-w-[30rem]">
+      <div className={`holo-surface rounded-[var(--radius-card)] px-[var(--space-5)] sm:px-[var(--space-8)] ${flipped ? 'py-[var(--space-4)]' : 'py-[var(--space-7)]'}`}>
+        {/* Brand header — condensed on the taller sign-up face so the form fits. */}
+        <div className={`flex flex-col items-center text-center ${flipped ? 'mb-[var(--space-4)]' : 'mb-[var(--space-8)]'}`}>
+          <Logo variant="stacked" markSize={flipped ? 40 : 56} wordSize={flipped ? 11 : 13} circled to={null} />
+          <p className={`text-[10.5px] uppercase tracking-[0.3em] text-ink/45 ${flipped ? 'mt-[var(--space-2)]' : 'mt-[var(--space-3)]'}`}>
             Customer Portal
           </p>
         </div>
 
-        {/* Flip viewport */}
+        {/* Code-confirmation step — a standalone card, NOT a flip face. */}
+        {confirmEmail ? (
+          <OtpConfirm
+            email={confirmEmail}
+            verifyOtp={verifyOtp}
+            resendOtp={resendOtp}
+            onBack={() => { setConfirmEmail(null); setMode('signin'); }}
+          />
+        ) : (
+        /* Flip viewport */
         <div style={{ perspective: '1600px' }}>
           <div
             className="relative transition-[transform,height] duration-[var(--duration-slow)] ease-[var(--easing-spring)] motion-reduce:transition-none"
@@ -101,10 +116,15 @@ export function AuthCard({ signIn, signUp, error, initialMode = 'signin' }: Auth
                 transform: 'rotateY(180deg)',
               }}
             >
-              <SignUpForm signUp={signUp} onSwitchToSignIn={() => setMode('signin')} />
+              <SignUpForm
+                signUp={signUp}
+                onNeedsConfirmation={(email) => setConfirmEmail(email)}
+                onSwitchToSignIn={() => setMode('signin')}
+              />
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Anti-phishing note — same spirit as the inspiration, in our voice */}

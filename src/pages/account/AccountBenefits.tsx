@@ -14,6 +14,8 @@ import { useCustomerAuth } from '../../lib/customerAuth';
 import { listMyDiscounts, type CustomerDiscountRow } from '../../lib/accountData';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
+import { MemberOfferCard } from '../../components/account/MemberOfferCard';
+import { MEMBER_OFFERS } from '../../config/memberOffers';
 
 type LoadState =
   | { kind: 'loading' }
@@ -123,12 +125,17 @@ function AccountBenefitsContent() {
 
   return (
     <div className="space-y-[var(--space-4)]">
+      {MEMBER_OFFERS.map((offer) => (
+        <MemberOfferCard key={offer.code} offer={offer} />
+      ))}
       {state.discounts.length === 0 ? (
-        <EmptyState
-          label="No account discounts on file."
-          meta="Lifetime and business discounts are set up by our team — they apply automatically at checkout once active."
-          className="py-[var(--space-8)]"
-        />
+        MEMBER_OFFERS.length === 0 && (
+          <EmptyState
+            label="No account discounts on file."
+            meta="Lifetime and business discounts are set up by our team — they apply automatically at checkout once active."
+            className="py-[var(--space-8)]"
+          />
+        )
       ) : (
         state.discounts.map((d) => <DiscountCard key={d.id} discount={d} />)
       )}

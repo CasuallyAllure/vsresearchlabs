@@ -22,6 +22,7 @@ import {
   type OrderInvoiceCoupon,
 } from '../../lib/tracking';
 import { allocateLineDiscounts } from '../../lib/lineDiscounts';
+import { Button } from '../../components/ui/Button';
 import { InvoiceDocument } from '../../components/order/InvoiceDocument';
 import { useCustomerAuth } from '../../lib/customerAuth';
 import { EmptyState } from '../../components/system/EmptyState';
@@ -184,14 +185,16 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
               )}
             </div>
             {url && (
-              <a
+              <Button
+                variant="secondary"
+                size="sm"
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 rounded-full border border-holo/40 bg-holo/[0.15] px-[var(--space-5)] py-[var(--space-2)] text-[10px] font-medium uppercase tracking-[0.2em] text-holo-light transition-colors hover:bg-holo/[0.22]"
+                className="shrink-0"
               >
                 Track on {carrierLabel(o.carrier)} ↗
-              </a>
+              </Button>
             )}
           </div>
         ) : (
@@ -256,13 +259,15 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
             <dd className="border-t border-ink/15 pt-1 text-right font-mono text-[14px] tabular-nums text-ink">{fmtUSD(o.total_cents)}</dd>
           </dl>
         </div>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => setShowDoc(true)}
-          className="mt-[var(--space-4)] rounded-full border border-ink/25 bg-ink/[0.05] px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-ink/80 transition-colors hover:border-ink/40 hover:bg-ink/[0.10]"
+          className="mt-[var(--space-4)]"
         >
           View / print {docKind}
-        </button>
+        </Button>
       </article>
 
       {/* Shipping address */}

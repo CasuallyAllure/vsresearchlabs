@@ -58,52 +58,70 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
   }
 
   return (
-    <div className={`floating-module ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}>
-      <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Reward balance</p>
+    <div
+      className={`floating-module relative overflow-hidden ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}
+      style={{ boxShadow: 'var(--surface-highlight-strong), var(--elev-2)' }}
+    >
+      {/* Gold-tinted gloss wash — separates the card off the page; tasteful foil, not neon/glow. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(120% 100% at 100% 0%, rgb(var(--c-gold) / 0.12) 0%, transparent 55%)',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/45 to-transparent"
+      />
 
-      <p className={`font-light tabular-nums text-ink ${compact ? 'text-[1.6rem]' : 'text-[2rem]'}`}>
-        {balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">points</span>
-      </p>
+      <div className="relative">
+        <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Reward balance</p>
 
-      {active_voucher ? (
-        <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
-          Reward ready to use — your {active_voucher.percent}% off applies to your highest-priced item at your next
-          checkout.
+        <p className={`font-light tabular-nums text-gold-dark ${compact ? 'text-[1.6rem]' : 'text-[2rem]'}`}>
+          {balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">points</span>
         </p>
-      ) : (
-        <>
-          <div className="mt-[var(--space-4)] h-[6px] rounded-full bg-ink/[0.08] overflow-hidden">
-            <div
-              className="h-full rounded-full bg-ink/70 transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <p className="mt-[var(--space-2)] text-[11px] text-ink/50">
-            {reward_ready
-              ? 'Reward ready'
-              : `${pointsRemaining.toLocaleString()} points to your ${percent}%-off reward`}
+
+        {active_voucher ? (
+          <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
+            Reward ready to use — your {active_voucher.percent}% off applies to your highest-priced item at your next
+            checkout.
           </p>
-
-          {!compact && (
-            <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/60">
-              Earn 1 point per $1. At {threshold.toLocaleString()} points, redeem {percent}% off any one item.
-            </p>
-          )}
-
-          {reward_ready && (
-            <div className="mt-[var(--space-4)]">
-              <Button variant="primary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
-                {redeeming ? 'Redeeming…' : `Redeem ${percent}% off an item`}
-              </Button>
-              {redeemError && (
-                <p className="mt-[var(--space-2)] text-[12px] text-[color:var(--color-status-error)]">
-                  {redeemError}
-                </p>
-              )}
+        ) : (
+          <>
+            <div className="mt-[var(--space-4)] h-[6px] rounded-full bg-ink/[0.08] overflow-hidden">
+              <div
+                className="h-full rounded-full bg-ink/70 transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]"
+                style={{ width: `${progressPct}%` }}
+              />
             </div>
-          )}
-        </>
-      )}
+            <p className="mt-[var(--space-2)] text-[11px] text-ink/50">
+              {reward_ready
+                ? 'Reward ready'
+                : `${pointsRemaining.toLocaleString()} points to your ${percent}%-off reward`}
+            </p>
+
+            {!compact && (
+              <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/60">
+                Earn 1 point per $1. At {threshold.toLocaleString()} points, redeem {percent}% off any one item.
+              </p>
+            )}
+
+            {reward_ready && (
+              <div className="mt-[var(--space-4)]">
+                <Button variant="primary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
+                  {redeeming ? 'Redeeming…' : `Redeem ${percent}% off an item`}
+                </Button>
+                {redeemError && (
+                  <p className="mt-[var(--space-2)] text-[12px] text-[color:var(--color-status-error)]">
+                    {redeemError}
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {modal}
     </div>

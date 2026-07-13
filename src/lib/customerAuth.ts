@@ -33,7 +33,8 @@ export interface SignUpInput {
 
 export interface SignUpResult {
   ok: boolean;
-  /** True when Supabase requires email confirmation before a session exists. */
+  /** True when confirmation is pending (new signup OR finishing an abandoned
+   *  one) → route to the code step. */
   needsConfirmation: boolean;
   error: string | null;
 }
@@ -164,9 +165,21 @@ export function useCustomerAuth(): CustomerAuthApi {
     });
 
     if (error) {
+      // Anti-enumeration OFF: a duplicate signup errors ("User already
+      // registered"). That email may just be UNCONFIRMED from an abandoned
+      // signup, so send them to the code step (the code card's Resend fetches a
+      // fresh code) rather than dead-ending them.
+      if (/already\s+(registered|been registered|exists|signed up)/i.test(error.message)) {
+        return { ok: true, needsConfirmation: true, error: null };
+      }
       return { ok: false, needsConfirmation: false, error: error.message };
     }
-    // No session => email confirmation is required before they can sign in.
+    // Anti-enumeration ON: an existing email comes back as an obfuscated user
+    // with EMPTY identities and no session — indistinguishable from confirmed vs
+    // unconfirmed. For an unconfirmed re-signup Supabase auto-sends a fresh code.
+    // A NEW email returns populated identities + no session. Either way, no
+    // session => confirmation pending => go to the code step. (A genuinely
+    // already-confirmed user just taps "Back to sign in" from there.)
     const needsConfirmation = !data.session;
     if (data.session?.user) {
       await hydrate(data.session.user);
@@ -174,7 +187,7 @@ export function useCustomerAuth(): CustomerAuthApi {
     return { ok: true, needsConfirmation, error: null };
   }, [hydrate]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string, captchaToken?: string | null) => {
     if (!supabase) {
       setState((s) => ({ ...s, error: 'Backend not configured.' }));
       return false;
@@ -183,6 +196,8 @@ export function useCustomerAuth(): CustomerAuthApi {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
+      // Ignored when CAPTCHA is off; required once enabled in the dashboard.
+      options: captchaToken ? { captchaToken } : undefined,
     });
     if (error || !data.user) {
       setState((s) => ({
@@ -195,6 +210,31 @@ export function useCustomerAuth(): CustomerAuthApi {
     await hydrate(data.user);
     return true;
   }, [hydrate]);
+
+  const verifyOtp = useCallback(async (email: string, token: string): Promise<OtpResult> => {
+    if (!supabase) return { ok: false, error: 'Backend not configured.' };
+    setState((s) => ({ ...s, error: null }));
+    // 'signup' = confirm a newly-created (password) account via the emailed code.
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: token.trim(),
+      type: 'signup',
+    });
+    if (error) return { ok: false, error: error.message };
+    if (data.user) await hydrate(data.user);
+    return { ok: true, error: null };
+  }, [hydrate]);
+
+  const resendOtp = useCallback(async (email: string, captchaToken?: string | null): Promise<OtpResult> => {
+    if (!supabase) return { ok: false, error: 'Backend not configured.' };
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: captchaToken ? { captchaToken } : undefined,
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, error: null };
+  }, []);
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
@@ -213,5 +253,5 @@ export function useCustomerAuth(): CustomerAuthApi {
     }
   }, [state.user]);
 
-  return { ...state, signUp, signIn, signOut, reloadProfile };
+  return { ...state, signUp, signIn, verifyOtp, resendOtp, signOut, reloadProfile };
 }

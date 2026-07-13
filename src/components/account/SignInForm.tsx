@@ -11,9 +11,10 @@ import { Link } from 'react-router-dom';
 import { Field } from '../ui/Field';
 import { PasswordField } from './PasswordField';
 import { Button } from '../ui/Button';
+import { Turnstile } from '../security/Turnstile';
 
 interface SignInFormProps {
-  signIn: (email: string, password: string) => Promise<boolean>;
+  signIn: (email: string, password: string, captchaToken?: string | null) => Promise<boolean>;
   error: string | null;
   onSwitchToSignUp: () => void;
 }
@@ -22,6 +23,7 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
 
@@ -29,7 +31,7 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
     e.preventDefault();
     if (!canSubmit) return;
     setSubmitting(true);
-    await signIn(email, password);
+    await signIn(email, password, captchaToken);
     setSubmitting(false);
   }
 
@@ -44,6 +46,7 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
         required
         autoComplete="email"
         placeholder="you@example.com"
+        dense
       />
 
       <div>
@@ -54,6 +57,7 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
           onChange={setPassword}
           autoComplete="current-password"
           placeholder="Enter password"
+          dense
         />
         <div className="mt-[var(--space-2)] text-right">
           <Link
@@ -70,6 +74,8 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
           {error}
         </p>
       )}
+
+      <Turnstile onToken={setCaptchaToken} />
 
       <Button variant="primary" size="md" fullWidth type="submit" disabled={!canSubmit}>
         {submitting ? 'Signing in…' : 'Sign In'}
