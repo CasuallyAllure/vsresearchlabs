@@ -265,7 +265,7 @@ function OrderModal({ id, onClose, onChanged }: { id: string; onClose: () => voi
             </button>
           </div>
           <div className="no-scrollbar flex-1 overflow-y-auto">
-            <OrderView orderId={id} onChanged={onChanged} />
+            <OrderView orderId={id} onChanged={onChanged} onDeleted={() => { onClose(); onChanged(); }} />
           </div>
         </div>
       </div>

@@ -92,7 +92,11 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       ({ data, error } = await supabase.from('public_product_overrides').select(BASE));
     }
     if (error) {
-      set({ loading: false, error: error.message });
+      // `loaded` means "the first load attempt has resolved" (success OR
+      // failure) — callers gate a loading state on it, so a failed fetch
+      // must still flip it, or the catalog would show a loading skeleton
+      // forever whenever Supabase is unreachable.
+      set({ loading: false, loaded: true, error: error.message });
       return;
     }
     const next: Record<string, ProductOverride> = {};

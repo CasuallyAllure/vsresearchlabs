@@ -8,18 +8,19 @@
  * button to the left of the sub-tabs.
  */
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { OrderView } from './OrderView';
 
 export function AdminOrderDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   return (
     <AdminLayout backTo="/admin/orders" backLabel="All orders">
       <div className="research-surface-solid">
         {id ? (
-          <OrderView orderId={id} />
+          <OrderView orderId={id} onDeleted={() => navigate('/admin/orders')} />
         ) : (
           <p className="p-[var(--space-6)] text-[12px] text-red-400">No order id.</p>
         )}

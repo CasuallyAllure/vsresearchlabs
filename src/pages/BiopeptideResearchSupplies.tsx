@@ -42,6 +42,18 @@ export function BiopeptideResearchSupplies() {
   // `filtered` below — once admin overrides finish loading, so the
   // in-stock-by-default filter doesn't stick with a stale pre-load result.
   const variantOverrides = useProductOverrides((s) => s.variantBySku);
+  // `loaded` flips true once the first Supabase fetch attempt resolves
+  // (success OR failure — see productOverrides.ts). The 24-hour default
+  // filter reads per-dose stock from that same data; applying it before
+  // `loaded` is true means every SKU fails `isSkuInStock` (no data yet),
+  // producing a false "no compounds" grid on every cold load. Gate the
+  // stock-dependent filters on this instead of racing the fetch.
+  const overridesLoaded = useProductOverrides((s) => s.loaded);
+  // Only the two single-tier filters read per-dose stock data — "All" (both
+  // or neither chip active) doesn't narrow by stock, so it has nothing to
+  // wait on. Block the grid on the overrides fetch only when it would
+  // otherwise render a false "no compounds" empty state.
+  const awaitingStockData = (showFastOnly || showSourcedOnly) && !overridesLoaded;
 
   const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
@@ -159,12 +171,16 @@ export function BiopeptideResearchSupplies() {
         searchPlaceholder="Search peptides…"
       />
 
-      {loading || error || filtered.length === 0 ? (
+      {loading || error || awaitingStockData || filtered.length === 0 ? (
         <ProductGrid
           products={filtered}
-          loading={loading}
+          loading={loading || awaitingStockData}
           error={error}
-          emptyLabel="No biopeptide research supplies match the active filter."
+          emptyLabel={
+            showFastOnly
+              ? 'No compounds currently cleared for 24-hour dispatch — try 7–10 DAYS.'
+              : 'No biopeptide research supplies match the active filter.'
+          }
           onInspect={setInspectedId}
           compact
         />

@@ -172,8 +172,8 @@ function reachedMap(o: OrderRecord): Record<StageKey, boolean> {
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export function OrderView({
-  orderId, onChanged,
-}: { orderId: string; onChanged?: () => void }) {
+  orderId, onChanged, onDeleted,
+}: { orderId: string; onChanged?: () => void; onDeleted?: () => void }) {
   const [order, setOrder] = useState<OrderRecord | null>(null);
   const [lines, setLines] = useState<OrderLine[]>([]);
   const [events, setEvents] = useState<OrderEvent[]>([]);
@@ -503,6 +503,7 @@ export function OrderView({
               <StageActions
                 order={order} busy={busy} run={run} onAddEvent={addEvent} prompt={prompt}
                 orderNotesText={orderNotesText} onChanged={onChanged} setActionError={setActionError}
+                onDeleted={onDeleted}
               />
             </div>
           </>
@@ -595,6 +596,7 @@ export function OrderView({
 
 function StageActions({
   order, busy, run, onAddEvent, prompt, orderNotesText, onChanged, setActionError,
+  onDeleted,
 }: {
   order: OrderRecord;
   busy: boolean;
@@ -604,6 +606,7 @@ function StageActions({
   orderNotesText: string;
   onChanged?: () => void;
   setActionError: (m: string | null) => void;
+  onDeleted?: () => void;
 }) {
   const reached = reachedMap(order);
   // Invoice total comes straight from the itemized lines (save_order_lines
@@ -632,8 +635,10 @@ function StageActions({
   const [carrier, setCarrier] = useState(order.carrier ?? 'usps');
   const [note, setNote] = useState('');
   const [showReNotify, setShowReNotify] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const canBack = order.status !== 'pending_invoice';
+  const canDelete = order.status === 'pending_invoice' || order.status === 'cancelled';
   const reNotifyFn: 'send-order-invoice' | 'send-receipt' = reached.paid ? 'send-receipt' : 'send-order-invoice';
 
   // Stage meta + the single forward action.
@@ -732,6 +737,9 @@ function StageActions({
           </Pill>
           <Pill compact onClick={saveNote} disabled={busy || !note.trim()}>Save note</Pill>
           <Pill compact danger onClick={cancel} disabled={busy}>Cancel order</Pill>
+          {canDelete && (
+            <Pill compact danger onClick={deleteOrder} disabled={busy || deleting}>Delete permanently</Pill>
+          )}
         </div>
       </div>
 
@@ -820,6 +828,30 @@ function StageActions({
       'Cancel this order?',
     );
     if (ok) setNote('');
+  }
+
+  // Permanent deletion — deliberately not routed through `run()`: the order
+  // row is gone after this succeeds, so there is nothing left to reload or
+  // report via onChanged. A stronger confirmation than the usual yes/no
+  // modal is required (typed exact match) given this is irreversible.
+  async function deleteOrder() {
+    const ok = await prompt('Type DELETE to permanently remove this order:');
+    if (ok !== 'DELETE') return;
+    if (!supabase) return;
+    setDeleting(true);
+    setActionError(null);
+    try {
+      const { error } = await supabase.rpc('delete_order', {
+        p_order_id: order.id,
+        p_reason: note.trim() || null,
+      });
+      if (error) { setActionError(error.message); return; }
+      onDeleted?.();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Delete failed — please try again.');
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function saveNote() {

@@ -36,11 +36,10 @@ import { SummaryText } from './intelligence/SummaryText';
 import { CompoundVideo } from './intelligence/CompoundVideo';
 import { getCompoundVideo, type CompoundVideoMeta } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
-import { TierStrip } from './intelligence/TierStrip';
+import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isVariantPublic } from '../../lib/productOverrides';
-import { AvailabilityBadge } from './AvailabilityBadge';
+import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
 import { Button } from '../ui/Button';
@@ -418,16 +417,70 @@ export function CompoundIntelligenceOverlay({
                     {formatPrice(priceCents)}
                   </span>
                 </div>
-                <TierStrip
-                  mode="select"
-                  sku={product.sku}
-                  variants={visibleTiers}
-                  selectedIndex={selectedTierIndex}
-                  onSelect={setSelectedTierIndex}
-                />
-                <div className="mt-2.5">
-                  <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
-                </div>
+                {(() => {
+                  // Same shipping-tier treatment as CompoundTile: 24-hour
+                  // doses render as standalone green "· 24 HR" chips;
+                  // sourced doses group into one bordered box with a
+                  // "7–10 Biz Days" footer — no separate availability pill.
+                  const interactive = visibleTiers.length > 1;
+                  const withState = visibleTiers.map((v, i) => ({
+                    v,
+                    i,
+                    state: doseAvailability(product.sku, v.dose).state,
+                  }));
+                  const fastDoses = withState.filter((o) => o.state === 'in_stock');
+                  const sourcedDoses = withState.filter((o) => o.state === 'sourced');
+
+                  return (
+                    <div className="flex flex-col gap-1.5">
+                      {fastDoses.length > 0 && (
+                        <div
+                          role={interactive ? 'radiogroup' : undefined}
+                          aria-label={interactive ? 'Select dose' : undefined}
+                          className="flex flex-wrap items-center gap-1"
+                        >
+                          {fastDoses.map(({ v, i }) => (
+                            <DoseChip
+                              key={v.dose}
+                              sku={product.sku}
+                              dose={v.dose}
+                              interactive={interactive}
+                              isActive={i === selectedTierIndex}
+                              onClick={interactive ? () => setSelectedTierIndex(i) : undefined}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {sourcedDoses.length > 0 && (
+                        <div className="rounded-[var(--radius-field)] border border-ink/15 overflow-hidden">
+                          <div
+                            role={interactive ? 'radiogroup' : undefined}
+                            aria-label={interactive ? 'Select sourced dose' : undefined}
+                            className="flex items-stretch"
+                          >
+                            {sourcedDoses.map(({ v, i }, idx) => (
+                              <SourcedDoseSegment
+                                key={v.dose}
+                                dose={v.dose}
+                                isActive={i === selectedTierIndex}
+                                interactive={interactive}
+                                hasDivider={idx > 0}
+                                onClick={interactive ? () => setSelectedTierIndex(i) : undefined}
+                              />
+                            ))}
+                          </div>
+                          <div className="border-t border-ink/12 py-1 text-center">
+                            <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                              7–10 Biz Days
+                              <ShippingVan />
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="mt-3 flex items-center gap-2">
                   <QuantityStepper quantity={quantity} onChange={setQuantity} />
                   <Button variant="primary" size="sm" type="button" onClick={handleAddToInquiry} className="flex-1">
