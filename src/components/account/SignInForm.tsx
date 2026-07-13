@@ -66,12 +66,12 @@ export function SignInForm({ signIn, error, onSwitchToSignUp }: SignInFormProps)
       </div>
 
       {error && (
-        <p role="alert" className="text-[12px] text-red-500">
+        <p role="alert" className="text-[12px] text-[color:var(--color-status-error)]">
           {error}
         </p>
       )}
 
-      <Button variant="primary" size="lg" fullWidth type="submit" disabled={!canSubmit}>
+      <Button variant="primary" size="md" fullWidth type="submit" disabled={!canSubmit}>
         {submitting ? 'Signing in…' : 'Sign In'}
       </Button>
 

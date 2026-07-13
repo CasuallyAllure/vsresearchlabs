@@ -283,7 +283,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             }}
           >
             <div className="px-4 pt-4 pb-2">
-              <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-ink/40">
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink/40">
                 Research Supplies
               </p>
               <p className="mt-1 text-[11px] text-ink/55">
@@ -311,7 +311,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                         <span className={`text-[13px] tracking-tight ${isActive ? 'text-ink' : 'text-ink/85'}`}>
                           {entry.label}
                         </span>
-                        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
                           {entry.caption}
                         </span>
                       </span>
@@ -327,7 +327,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
               <Link
                 to="/research-supplies"
                 onClick={() => setSheetOpen(false)}
-                className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors"
+                className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors"
               >
                 View hub →
               </Link>
@@ -360,7 +360,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap"
           >
             <span
-              className={`relative inline-block rounded-full px-2 py-[2.5px] text-[7px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
+              className={`relative inline-block rounded-full px-2 py-[2.5px] text-[10px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
                 color: 'var(--color-content-inverse)',
                 background: 'linear-gradient(180deg, rgb(var(--c-gold)) 0%, rgb(var(--c-gold-dark)) 100%)',

@@ -167,11 +167,11 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
           className="my-[var(--space-4)] h-px w-full bg-gradient-to-r from-transparent via-ink/12 to-transparent"
         />
 
-        <h2 className="font-serif text-[clamp(1.45rem,5vw,1.9rem)] leading-[1.12] tracking-[-0.01em] text-ink">
-          Create an account.{' '}
-          <span className="text-ink/70">Ship free, save more.</span>
+        <h2 className="text-center font-serif text-[clamp(1.35rem,4.2vw,1.6rem)] leading-[1.18] tracking-[-0.01em] text-ink">
+          Create an account.
+          <span className="block text-ink/60">Ship free, save more.</span>
         </h2>
-        <p className="mt-[var(--space-2)] max-w-[42ch] text-[13px] leading-[1.55] text-ink/55">
+        <p className="mx-auto mt-[var(--space-3)] max-w-[38ch] text-center text-[12.5px] leading-[1.55] text-ink/55">
           Guest checkout always stays open — an account just adds the perks. Tap one to see how it works.
         </p>
 
@@ -186,29 +186,24 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 aria-pressed={on}
                 onClick={() => setActive(i)}
                 className={[
-                  'group flex items-center gap-2 rounded-[11px] border px-3 py-2.5 text-left transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                  'group flex items-center justify-center gap-2 rounded-[11px] border px-3 py-2.5 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   on
-                    ? 'border-ink/25 bg-ink/[0.07] text-ink'
-                    : 'border-ink/10 bg-ink/[0.02] text-ink/65 hover:border-ink/20 hover:text-ink/85',
+                    ? 'border-ink/30 bg-ink/[0.08] text-ink'
+                    : 'border-ink/10 bg-ink/[0.02] text-ink/60 hover:border-ink/20 hover:text-ink/85',
                 ].join(' ')}
               >
-                <span className={`shrink-0 ${on ? 'text-ink/70' : 'text-ink/40 group-hover:text-ink/55'}`}>
+                <span className={`shrink-0 ${on ? 'text-ink/75' : 'text-ink/40 group-hover:text-ink/55'}`}>
                   {perk.icon}
                 </span>
-                <span className="min-w-0 flex-1 text-[12px] font-medium leading-tight">{perk.label}</span>
-                <span
-                  aria-hidden="true"
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${on ? 'bg-ink/60' : 'bg-ink/15'}`}
-                />
+                <span className="text-[12px] font-medium leading-tight">{perk.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Detail line for the open chip — reserved height so layout is steady. */}
-        <div className="mt-[var(--space-3)] min-h-[52px] rounded-[11px] border border-ink/[0.08] bg-ink/[0.02] px-[var(--space-3)] py-[var(--space-3)]">
-          <p key={active} className="detail-fade flex items-start gap-2 text-[12.5px] leading-[1.5] text-ink/70">
-            <span className="mt-[3px] h-3 w-[2px] shrink-0 rounded-full bg-ink/30" aria-hidden="true" />
+        <div className="mt-[var(--space-3)] flex min-h-[52px] items-center justify-center rounded-[11px] border border-ink/[0.08] bg-ink/[0.02] px-[var(--space-4)] py-[var(--space-3)]">
+          <p key={active} className="detail-fade text-center text-[12.5px] leading-[1.5] text-ink/60">
             {PERKS[active].detail}
           </p>
         </div>

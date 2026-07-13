@@ -45,9 +45,18 @@ interface CustomerAuthState {
   error: string | null;
 }
 
+export interface OtpResult {
+  ok: boolean;
+  error: string | null;
+}
+
 interface CustomerAuthApi extends CustomerAuthState {
-  signUp: (input: SignUpInput) => Promise<SignUpResult>;
-  signIn: (email: string, password: string) => Promise<boolean>;
+  signUp: (input: SignUpInput, captchaToken?: string | null) => Promise<SignUpResult>;
+  signIn: (email: string, password: string, captchaToken?: string | null) => Promise<boolean>;
+  /** Confirm a new account with the 6-digit code emailed by Supabase. */
+  verifyOtp: (email: string, token: string) => Promise<OtpResult>;
+  /** Re-send the 6-digit signup confirmation code. */
+  resendOtp: (email: string, captchaToken?: string | null) => Promise<OtpResult>;
   signOut: () => Promise<void>;
   reloadProfile: () => Promise<void>;
 }
@@ -126,7 +135,7 @@ export function useCustomerAuth(): CustomerAuthApi {
     };
   }, [hydrate]);
 
-  const signUp = useCallback(async (input: SignUpInput): Promise<SignUpResult> => {
+  const signUp = useCallback(async (input: SignUpInput, captchaToken?: string | null): Promise<SignUpResult> => {
     if (!supabase) {
       return { ok: false, needsConfirmation: false, error: 'Backend not configured.' };
     }
@@ -136,6 +145,9 @@ export function useCustomerAuth(): CustomerAuthApi {
       password: input.password,
       options: {
         emailRedirectTo: `${window.location.origin}/account`,
+        // Passed opportunistically: ignored by Supabase Auth when CAPTCHA is
+        // disabled in the dashboard, required once it's enabled. Safe either way.
+        ...(captchaToken ? { captchaToken } : {}),
         // Read by the handle_new_customer() trigger to materialize the profile.
         data: {
           account_type: 'customer',

@@ -229,12 +229,12 @@ export function SignUpForm({ signUp, onSwitchToSignIn }: SignUpFormProps) {
       </div>
 
       {submit.kind === 'error' && (
-        <p role="alert" className="text-[12px] text-red-500">
+        <p role="alert" className="text-[12px] text-[color:var(--color-status-error)]">
           {submit.message}
         </p>
       )}
 
-      <Button variant="primary" size="lg" fullWidth type="submit" disabled={submitting}>
+      <Button variant="primary" size="md" fullWidth type="submit" disabled={submitting}>
         {submitting ? 'Creating account…' : 'Create Account'}
       </Button>
 

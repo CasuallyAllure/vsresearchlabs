@@ -22,7 +22,7 @@ import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
 import { AbbreviationChip } from './AbbreviationChip';
-import { CompoundVisualZone } from './specimen/CompoundVisualZone';
+import { VialRender } from './specimen/VialRender';
 import {
   IntelModule,
   IntelModuleStyles,
@@ -34,7 +34,7 @@ import {
 import { StudyCard } from './intelligence/StudyCard';
 import { SummaryText } from './intelligence/SummaryText';
 import { CompoundVideo } from './intelligence/CompoundVideo';
-import { getCompoundVideo } from '../../lib/compoundVideo';
+import { getCompoundVideo, type CompoundVideoMeta } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
 import { TierStrip } from './intelligence/TierStrip';
 import { variantProduct } from '../../lib/cartActions';
@@ -221,60 +221,71 @@ export function CompoundIntelligenceOverlay({
   const moduleList = useMemo(() => {
     type ModuleDef =
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'text'; content: string }
-      | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'tiers' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'datagrid'; rows: Array<{ label: string; value: string }> }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'procurement' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'studies' }
+      | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'video'; video: CompoundVideoMeta }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'reserved' };
 
+    // Compact module: everything below the buy controls is a collapsed
+    // accordion by default (no `defaultOpen` on any entry) so the panel
+    // stays a small floating square until the shopper opens a section.
     const defs: ModuleDef[] = [];
-    if (ci.mechanismSummary) defs.push({ key: 'mech', title: 'Mechanism of Action', defaultOpen: true, kind: 'text', content: ci.mechanismSummary });
+    if (ci.mechanismSummary) defs.push({ key: 'mech', title: 'Mechanism of Action', kind: 'text', content: ci.mechanismSummary });
     if (ci.receptorActivity) defs.push({ key: 'receptor', title: 'Receptor / Target Activity', kind: 'text', content: ci.receptorActivity });
     if (ci.pathwaySummary) defs.push({ key: 'pathway', title: 'Signaling Pathway', kind: 'text', content: ci.pathwaySummary });
     if (ci.analytical.length > 0) defs.push({ key: 'analytical', title: 'Analytical Parameters', kind: 'datagrid', rows: ci.analytical });
     if (!ci.hasMolecularIntelligence && allSpecs.length > 0) defs.push({ key: 'specs', title: 'Specifications', kind: 'datagrid', rows: allSpecs });
     if (selectProcurementRows(product).length > 0) defs.push({ key: 'procurement', title: 'Procurement Data', kind: 'procurement' });
     if (ci.hasStudies) defs.push({ key: 'studies', title: 'Known Studies', kind: 'studies' });
-    // Research media now renders as a poster at the top of the column; only
-    // the reserved placeholder remains for compounds with no clip.
-    else if (ci.hasMolecularIntelligence && !video) defs.push({ key: 'media', title: 'Research Media', kind: 'reserved', reserved: true });
+    // Research media now lives in the accordion stack (was a poster above
+    // the summary) so the default view stays compact; the reserved
+    // placeholder keeps the same visibility rule it always had.
+    if (video) defs.push({ key: 'media', title: 'Research Media', kind: 'video', video });
+    else if (ci.hasMolecularIntelligence && !ci.hasStudies) defs.push({ key: 'media', title: 'Research Media', kind: 'reserved', reserved: true });
     return defs.map((m, i) => ({ ...m, index: i + 1 }));
   }, [ci, allSpecs, product, video]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
+  const imageUrl = product.images?.[0] ?? null;
+
   return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — gradient-shaded scrim (never a flat bg-ink/xx wash; the
+          scrim token flips correctly in dark mode, a radial gradient gives
+          the "floating module" a soft light falloff instead of a flat mask). */}
       <div aria-hidden="true" onClick={handleClose} className="fixed inset-0 z-[70]"
-        style={{ backgroundColor: 'rgba(26,23,20,0.45)', animation: closing ? 'cio-bd-out 200ms linear forwards' : 'cio-bd 180ms linear forwards' }} />
+        style={{
+          backgroundImage: 'radial-gradient(120% 90% at 50% 38%, color-mix(in srgb, var(--scrim), transparent 30%) 0%, var(--scrim) 70%)',
+          animation: closing ? 'cio-bd-out 200ms linear forwards' : 'cio-bd 180ms linear forwards',
+        }} />
 
       {/* Centering wrapper */}
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6 lg:p-10 pointer-events-none">
-        {/* Panel */}
+        {/* Panel — compact floating glass square, not a page takeover. */}
         <div
           ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Compound intelligence: ${ci.substance}`}
-          className="cio-panel-el pointer-events-auto w-full overflow-hidden flex flex-col relative"
+          className="cio-panel-el glass-panel pointer-events-auto w-full overflow-hidden flex flex-col relative"
           onTouchStart={onPanelTouchStart}
           onTouchMove={onPanelTouchMove}
           onTouchEnd={onPanelTouchEnd}
           style={{
-            maxWidth: '1080px',
-            height: 'min(calc(100dvh - 56px), 860px)',
-            backgroundColor: 'var(--color-surface-elevated)',
-            border: '1px solid rgba(26,23,20,0.10)',
-            boxShadow: 'inset 0 1px 0 rgba(26,23,20,0.04), 0 40px 120px rgba(26,23,20,0.22)',
+            maxWidth: '480px',
+            maxHeight: 'min(88dvh, 720px)',
+            borderRadius: 'var(--radius-card)',
+            boxShadow: 'var(--glass-highlight), var(--elev-3)',
             animation: closing ? 'cio-panel-out 230ms cubic-bezier(0.23, 1, 0.32, 1) forwards' : 'cio-panel 280ms cubic-bezier(0.23, 1, 0.32, 1) forwards',
             transform: dragX !== 0 ? `translateX(${dragX}px)` : undefined,
             transition: dragX === 0 ? 'transform 200ms cubic-bezier(0.23, 1, 0.32, 1)' : undefined,
           }}
         >
-          {/* Top bar — carousel nav (when a list is provided) + close.
-              Relative (not floating) so it never overlaps the compound title. */}
-          <div className="relative z-10 flex items-center gap-2 px-3 py-2 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
+          {/* Chrome strip — carousel nav (when a list is provided) + close.
+              Stays outside the scroll region so close is always reachable. */}
+          <div className="relative z-10 flex items-center gap-2 px-3 py-2 shrink-0" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
             {hasNav ? (
               <button
                 type="button"
@@ -319,232 +330,149 @@ export function CompoundIntelligenceOverlay({
               </button>
             </div>
           </div>
-          {/* ── TOP: Full-width visual identity zone ─────────────────────── */}
-          <CompoundVisualZone
-            substance={ci.substance}
-            abbreviation={ci.abbreviation}
-            sku={ci.sku}
-            activeDoseLabel={activeDoseLabel}
-            imageUrl={product.images?.[0] ?? null}
-          />
 
-          {/* ── BOTTOM: Two-column layout ─────────────────────────────────── */}
-          <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+          {/* Everything below the chrome strip lives in one scrollable
+              column — identity, visual, summary, buy controls, and the
+              collapsed technical accordions. */}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
 
-            {/* Left passport — no specimen bay (moved to visual zone above) */}
-            <div className="hidden lg:flex flex-col overflow-hidden shrink-0"
-              style={{ width: '300px', backgroundColor: 'var(--color-surface-base)', borderRight: '1px solid var(--color-border-subtle)' }}>
-
-              {/* Passport header */}
-              <div className="px-4 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
-                <span className="text-ink/38 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                  {ci.classificationLabel || 'Compound'}
-                </span>
-              </div>
-
-              {/* Compound identity */}
-              <div className="px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
-                <div className="flex items-center gap-2 min-w-0 mb-2">
-                  <AbbreviationChip value={ci.abbreviation} />
+            {/* Compound identity */}
+            <div className="px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+              <div className="flex items-start gap-2.5 min-w-0">
+                <AbbreviationChip value={ci.abbreviation} className="mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-ink font-normal leading-tight truncate" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
+                    {ci.substance}
+                  </h2>
+                  <p className="mt-1 text-ink/40 uppercase truncate" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
+                    {ci.classificationLabel || 'Compound'}
+                  </p>
                 </div>
-                <h2 className="text-ink font-normal leading-tight" style={{ fontSize: '17px', letterSpacing: '-0.01em' }}>
-                  {ci.substance}
-                </h2>
-                {(ci.casNumber || ci.molecularWeight) && (
-                  <div className="mt-2 space-y-0.5">
-                    {ci.casNumber && (
-                      <p className="font-mono text-ink/40 tabular-nums" style={{ fontSize: '10px' }}>
-                        CAS <span className="text-ink/55">{ci.casNumber}</span>
-                      </p>
-                    )}
-                    {ci.molecularWeight && (
-                      <p className="font-mono text-ink/40 tabular-nums" style={{ fontSize: '10px' }}>
-                        MW&nbsp;&nbsp;<span className="text-ink/55">{ci.molecularWeight}</span>
-                      </p>
-                    )}
+              </div>
+              {(ci.casNumber || ci.molecularWeight) && (
+                <p className="mt-2 font-mono text-ink/38 tabular-nums truncate" style={{ fontSize: '10px' }}>
+                  {ci.casNumber && <>CAS <span className="text-ink/55">{ci.casNumber}</span></>}
+                  {ci.casNumber && ci.molecularWeight && <span className="mx-2 text-ink/15">·</span>}
+                  {ci.molecularWeight && <>MW <span className="text-ink/55">{ci.molecularWeight}</span></>}
+                </p>
+              )}
+            </div>
+
+            {/* Specimen visual — contained square, not a full-bleed band. */}
+            <div className="px-5 pt-4 flex justify-center">
+              <div
+                className="overflow-hidden shrink-0"
+                style={{
+                  width: '188px',
+                  height: '188px',
+                  borderRadius: 'var(--radius-card-inner)',
+                  backgroundColor: 'var(--color-surface-sunken)',
+                  border: '1px solid var(--color-border-subtle)',
+                }}
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={`${ci.substance} research vial`}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center p-6">
+                    <VialRender substance={ci.substance} dose={activeDoseLabel} abbreviation={ci.abbreviation} sku={ci.sku} />
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Passport key stats */}
-              {passportStats.length > 0 && (
-                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
-                  <div className="grid grid-cols-2 gap-1">
-                    {passportStats.map((s) => (
-                      <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />
-                    ))}
-                  </div>
+            {/* Plain-English summary */}
+            {ci.summary && (
+              <div className="px-5 pt-4 pb-3.5">
+                <p className="text-ink/35 uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
+                  Summary
+                </p>
+                <SummaryText
+                  text={ci.summary}
+                  className="text-[13px] leading-relaxed text-ink/70"
+                />
+              </div>
+            )}
+
+            {/* Passport key facts — compact stat chips */}
+            {passportStats.length > 0 && (
+              <div className="px-5 pb-3.5 flex flex-wrap gap-1.5">
+                {passportStats.map((s) => (
+                  <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />
+                ))}
+              </div>
+            )}
+
+            {/* Select mg + live price + qty + Add to Inquiry */}
+            {visibleTiers.length > 0 && (
+              <div className="px-5 py-4" style={{ borderTop: '1px solid var(--color-border-subtle)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-ink/45 uppercase" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
+                    Select mg
+                  </span>
+                  <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                    {formatPrice(priceCents)}
+                  </span>
                 </div>
-              )}
-
-              {/* Select mg + live price + add-to-inquiry, co-located */}
-              {visibleTiers.length > 0 && (
-                <div className="px-4 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(26,23,20,0.05)' }}>
-                  <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                      Select mg
-                    </span>
-                    <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
-                      {formatPrice(priceCents)}
-                    </span>
-                  </div>
-                  <TierStrip
-                    mode="select"
-                    sku={product.sku}
-                    variants={visibleTiers}
-                    selectedIndex={selectedTierIndex}
-                    onSelect={setSelectedTierIndex}
-                  />
-                  <div className="mt-2.5">
-                    <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
-                  </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                    <Button variant="primary" size="sm" type="button" onClick={handleAddToInquiry} className="flex-1">
-                      Add to Inquiry
-                    </Button>
-                  </div>
+                <TierStrip
+                  mode="select"
+                  sku={product.sku}
+                  variants={visibleTiers}
+                  selectedIndex={selectedTierIndex}
+                  onSelect={setSelectedTierIndex}
+                />
+                <div className="mt-2.5">
+                  <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
                 </div>
-              )}
-
-              <div className="flex-1" />
-
-              {/* Desktop footer — price recap + full record (add lives by the tier) */}
-              <div className="shrink-0 px-4 pb-4 pt-3" style={{ borderTop: '1px solid rgba(26,23,20,0.07)' }}>
-                {(activeTier || quantity > 1 || priceCents != null) && (
-                  <p className="text-ink/30 font-mono tabular-nums mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.08em' }}>
-                    {[
-                      activeTier?.dose,
-                      quantity > 1
-                        ? `${quantity} × ${formatPrice(priceCents)} = ${formatPrice(priceCents != null ? priceCents * quantity : null)}`
-                        : formatPrice(priceCents),
-                    ].filter(Boolean).join(' · ')}
+                <div className="mt-3 flex items-center gap-2">
+                  <QuantityStepper quantity={quantity} onChange={setQuantity} />
+                  <Button variant="primary" size="sm" type="button" onClick={handleAddToInquiry} className="flex-1">
+                    Add to Inquiry
+                  </Button>
+                </div>
+                {quantity > 1 && priceCents != null && (
+                  <p className="mt-2 text-right font-mono tabular-nums text-ink/35" style={{ fontSize: '10px' }}>
+                    {quantity} × {formatPrice(priceCents)} = {formatPrice(priceCents * quantity)}
                   </p>
                 )}
               </div>
-            </div>
+            )}
 
-            {/* Right: Intelligence column */}
-            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-
-              {/* Sticky header */}
-              <div className="flex items-center justify-between gap-4 px-4 py-3 shrink-0"
-                style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}>
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="lg:hidden shrink-0"><AbbreviationChip value={ci.abbreviation} /></span>
-                  <div className="min-w-0">
-                    <h3 className="text-ink font-normal truncate" style={{ fontSize: '13px', letterSpacing: '-0.005em' }}>{ci.substance}</h3>
-                    <p className="text-ink/28 font-mono tabular-nums mt-0.5 truncate" style={{ fontSize: '9px', letterSpacing: '0.18em' }}>
-                      {ci.sku}
-                      {ci.classificationLabel && <span className="ml-2 text-ink/16">·</span>}
-                      {ci.classificationLabel && <span className="ml-2 uppercase" style={{ letterSpacing: '0.14em' }}>{ci.classificationLabel}</span>}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Scrollable module list */}
-              <div className="flex-1 overflow-y-auto overscroll-contain">
-
-                {/* Research media poster — top of the column, above summary. */}
-                {video && (
-                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
-                    <CompoundVideo url={video.url} title={video.title} description={video.description} />
-                  </div>
+            {/* Deeper technical sections — collapsible accordions, default
+                collapsed, so the module stays compact until expanded. */}
+            {moduleList.map((mod) => (
+              <IntelModule key={mod.key} index={mod.index} title={mod.title} defaultOpen={mod.defaultOpen} reserved={mod.reserved}>
+                {mod.kind === 'text' && (
+                  <ModuleBody><ModuleText>{mod.content}</ModuleText></ModuleBody>
                 )}
-
-                {/* Plain-English summary — sits directly under the name,
-                    before any technical module. The one friendly,
-                    colorized read; everything below it is the detail. */}
-                {ci.summary && (
-                  <div className="px-4 pt-4 pb-3.5" style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}>
-                    <p className="text-ink/35 uppercase mb-2" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                      Summary
-                    </p>
-                    <SummaryText
-                      text={ci.summary}
-                      className="text-[13px] leading-relaxed text-ink/70"
+                {mod.kind === 'datagrid' && (
+                  <ModuleBody><DataGrid rows={mod.rows} /></ModuleBody>
+                )}
+                {mod.kind === 'procurement' && (
+                  <ModuleBody><ProcurementSheet product={product} /></ModuleBody>
+                )}
+                {mod.kind === 'video' && (
+                  <ModuleBody><CompoundVideo url={mod.video.url} title={mod.video.title} description={mod.video.description} /></ModuleBody>
+                )}
+                {mod.kind === 'studies' && (
+                  <ModuleBody>
+                    <RegulatoryChipCluster
+                      humanTrials={ci.humanTrials}
+                      fdaStatus={ci.fdaStatus}
                     />
-                  </div>
+                    {ci.studies.map((study, idx) => (
+                      <StudyCard key={idx} study={study} index={idx} />
+                    ))}
+                  </ModuleBody>
                 )}
+              </IntelModule>
+            ))}
 
-                {/* Mobile identity block — buy controls first so price + dose +
-                    Add are reachable without scrolling past the specs; the
-                    identifiers (CAS/MW) + key stats sit just beneath. */}
-                <div className="lg:hidden px-4 py-3" style={{ borderBottom: '1px solid rgba(26,23,20,0.055)' }}>
-                  {visibleTiers.length > 0 && (
-                    <div className="mb-3">
-                      <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-ink/45 uppercase" style={{ fontSize: '9px', letterSpacing: '0.28em' }}>
-                          Select mg
-                        </span>
-                        <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
-                          {formatPrice(priceCents)}
-                        </span>
-                      </div>
-                      <TierStrip
-                        mode="select"
-                        sku={product.sku}
-                        variants={visibleTiers}
-                        selectedIndex={selectedTierIndex}
-                        onSelect={setSelectedTierIndex}
-                      />
-                      <div className="mt-2.5">
-                        <AvailabilityBadge sku={product.sku} dose={activeDoseLabel} />
-                      </div>
-                      <div className="mt-3 flex items-center gap-2">
-                        <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                        <button
-                          type="button"
-                          onClick={handleAddToInquiry}
-                          className="flex-1 h-9 rounded-[3px] bg-gold hover:bg-gold-dark text-base-900 font-normal uppercase tracking-[0.06em] text-[11px] active:scale-[0.98] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/50"
-                        >
-                          Add to Inquiry
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
-                    {ci.casNumber && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>CAS {ci.casNumber}</span>}
-                    {ci.molecularWeight && <span className="font-mono text-ink/38 tabular-nums" style={{ fontSize: '10px' }}>MW {ci.molecularWeight}</span>}
-                  </div>
-                  {passportStats.length > 0 && (
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-1">
-                      {passportStats.map((s) => <StatChip key={s.label} label={s.label} value={s.value} highlight={s.highlight} />)}
-                    </div>
-                  )}
-                </div>
-
-                {/* Module stack */}
-                {moduleList.map((mod) => (
-                  <IntelModule key={mod.key} index={mod.index} title={mod.title} defaultOpen={mod.defaultOpen} reserved={mod.reserved}>
-                    {mod.kind === 'text' && (
-                      <ModuleBody><ModuleText>{mod.content}</ModuleText></ModuleBody>
-                    )}
-                    {mod.kind === 'datagrid' && (
-                      <ModuleBody><DataGrid rows={mod.rows} /></ModuleBody>
-                    )}
-                    {mod.kind === 'procurement' && (
-                      <ModuleBody><ProcurementSheet product={product} /></ModuleBody>
-                    )}
-                    {mod.kind === 'studies' && (
-                      <ModuleBody>
-                        <RegulatoryChipCluster
-                          humanTrials={ci.humanTrials}
-                          fdaStatus={ci.fdaStatus}
-                        />
-                        {ci.studies.map((study, idx) => (
-                          <StudyCard key={idx} study={study} index={idx} />
-                        ))}
-                      </ModuleBody>
-                    )}
-                  </IntelModule>
-                ))}
-
-                <div className="h-4" />
-              </div>
-
-            </div>
+            <div className="h-4" />
           </div>
         </div>
       </div>

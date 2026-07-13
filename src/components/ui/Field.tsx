@@ -17,7 +17,7 @@ export const FIELD_SURFACE =
 export const FIELD_DEFAULT =
   'border-ink/12 hover:border-ink/20 focus:border-gold/70 focus:ring-2 focus:ring-gold/15';
 export const FIELD_ERROR =
-  'border-red-500/55 focus:border-red-500/80 focus:ring-2 focus:ring-red-500/15';
+  'border-[color:var(--color-status-error)] focus:border-[color:var(--color-status-error)] focus:ring-2 focus:ring-[color:var(--color-status-errorMuted)]';
 export const FIELD_LABEL =
   'block text-[11px] uppercase tracking-[0.22em] text-ink/55 mb-[var(--space-2)]';
 
@@ -82,7 +82,7 @@ export function Field({
         )}
       </div>
       {error && (
-        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400">
+        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-status-error)]">
           {error}
         </p>
       )}
@@ -132,7 +132,7 @@ export function TextAreaField({
         className={[FIELD_SURFACE, 'resize-y', error ? FIELD_ERROR : FIELD_DEFAULT].join(' ')}
       />
       {error && (
-        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400">
+        <p role="alert" className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-status-error)]">
           {error}
         </p>
       )}
