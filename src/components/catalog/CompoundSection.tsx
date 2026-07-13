@@ -63,7 +63,7 @@ export function CompoundSection({ sectionKey, label, products, onInspect, only24
         </span>
       </header>
 
-      <ul className="grid grid-cols-1 gap-x-[var(--space-5)] gap-y-[var(--space-5)] sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-2 gap-x-[var(--space-3)] gap-y-[var(--space-3)] sm:grid-cols-3 sm:gap-x-[var(--space-4)] sm:gap-y-[var(--space-4)] lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => (
           <li key={product.id}>
             <CompoundTile product={product} onInspect={onInspect} only24hrDoses={only24hrDoses} />
