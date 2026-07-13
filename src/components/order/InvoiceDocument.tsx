@@ -56,9 +56,12 @@ interface InvoiceDocumentProps {
   invoice: OrderInvoice;
   docKind: 'invoice' | 'receipt';
   onClose: () => void;
+  /** When true, the shipping line reads "Free — member" instead of an amount
+   *  (migration 049 per-customer free-shipping perk). */
+  memberFreeShipping?: boolean;
 }
 
-export function InvoiceDocument({ invoice: o, docKind, onClose }: InvoiceDocumentProps) {
+export function InvoiceDocument({ invoice: o, docKind, onClose, memberFreeShipping }: InvoiceDocumentProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -174,7 +177,7 @@ export function InvoiceDocument({ invoice: o, docKind, onClose }: InvoiceDocumen
             <div className="mt-4 flex justify-end">
               <dl className="grid grid-cols-[auto_auto] gap-x-8 gap-y-1 text-[12px]">
                 <dt className="text-[#6B635A]">Subtotal</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(computedSub)}</dd>
-                <dt className="text-[#6B635A]">Shipping</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{fmtUSD(shipping)}</dd>
+                <dt className="text-[#6B635A]">Shipping</dt><dd className="text-right font-mono tabular-nums text-[#1A1714]">{memberFreeShipping ? <span className="text-[#34727A] font-semibold">Free — member</span> : fmtUSD(shipping)}</dd>
                 {/* Itemize each coupon so the buyer sees exactly what was discounted. */}
                 {o.coupons && o.coupons.length > 0
                   ? o.coupons.filter((c) => c.discount_cents > 0).map((c) => (

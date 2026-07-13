@@ -23,6 +23,7 @@ import {
 } from '../../lib/tracking';
 import { allocateLineDiscounts } from '../../lib/lineDiscounts';
 import { InvoiceDocument } from '../../components/order/InvoiceDocument';
+import { useCustomerAuth } from '../../lib/customerAuth';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
 
@@ -52,6 +53,8 @@ type LoadState =
   | { kind: 'ok'; order: Extract<MyOrderResult, { found: true }> };
 
 function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
+  const { profile } = useCustomerAuth();
+  const memberFreeShipping = profile?.free_shipping === true;
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
 
@@ -276,7 +279,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
         )}
       </article>
 
-      {showDoc && <InvoiceDocument invoice={o} docKind={docKind} onClose={() => setShowDoc(false)} />}
+      {showDoc && <InvoiceDocument invoice={o} docKind={docKind} onClose={() => setShowDoc(false)} memberFreeShipping={memberFreeShipping} />}
     </>
   );
 }

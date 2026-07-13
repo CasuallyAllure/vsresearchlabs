@@ -13,7 +13,9 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCart, type AppliedCoupon } from '../../hooks/useCart';
+import { useCustomerAuth } from '../../lib/customerAuth';
 import {
   checkCoupon,
   couponBreakdown,
@@ -35,9 +37,11 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
   const items = useCart((s) => s.items);
   const addCoupon = useCart((s) => s.addCoupon);
   const removeCoupon = useCart((s) => s.removeCoupon);
+  const { user } = useCustomerAuth();
   const [draft, setDraft] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [memberGateCode, setMemberGateCode] = useState<string | null>(null);
 
   const compact = variant === 'drawer';
   const labelCls = compact
@@ -61,10 +65,18 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
     }
     setIsChecking(true);
     setError(null);
+    setMemberGateCode(null);
     const result = await checkCoupon(code, subtotalCents);
     setIsChecking(false);
     if (!result.ok) {
       setError(result.reason);
+      return;
+    }
+    // Member-gated code (048) + no signed-in account: block client-side and
+    // point the shopper at /account. place-order re-enforces this server-side
+    // regardless — this is UX only, not the authoritative gate.
+    if (result.coupon.requiresAccount && !user) {
+      setMemberGateCode(result.coupon.code);
       return;
     }
     addCoupon(result.coupon);
@@ -128,6 +140,7 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
           onChange={(e) => {
             setDraft(e.target.value.toUpperCase());
             if (error) setError(null);
+            if (memberGateCode) setMemberGateCode(null);
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -159,6 +172,11 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
       {error && (
         <p role="alert" className={`mt-1.5 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
           {error}
+        </p>
+      )}
+      {memberGateCode && (
+        <p role="alert" className={`mt-1.5 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>
+          This code is for members — <Link to="/account" className="underline decoration-ink/20 underline-offset-4 hover:text-ink hover:decoration-ink/50 transition-colors">sign in or create an account</Link> to use it.
         </p>
       )}
 

@@ -38,6 +38,9 @@ interface VideoTab {
    *  We do not re-host other people's video. Requires a `credit`. */
   youtubeId?: string;
   credit?: { name: string; url: string };
+  /** Optional still shown as the pre-play cover (e.g. a rendered vial group).
+   *  When set, it replaces the branded DNA plate behind the play button. */
+  cover?: string;
 }
 
 const TABS: VideoTab[] = [
@@ -50,6 +53,7 @@ const TABS: VideoTab[] = [
       'your body already produces to coordinate repair, growth, metabolism, and ' +
       'immune balance. Production naturally decreases with age. Research peptides ' +
       'are tools used to study these pathways.',
+    cover: '/media/intro/what-are-vials.webp',
     youtubeId: 'Ha7Chvv5pD8',
     credit: {
       name: 'What the Health',
@@ -200,37 +204,63 @@ export function VideoIntroModule() {
                 aria-label={`Play: ${tab.title}`}
                 className="group absolute inset-0 h-full w-full bg-display"
               >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-b from-ink/[0.03] via-transparent to-ink/[0.07]"
-                />
-                <span className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-2)] px-[var(--space-6)]">
-                  <img
-                    src="/brand/vs-dna-s-full-colour.png"
-                    alt=""
-                    aria-hidden="true"
-                    width="44"
-                    height="44"
-                    style={{ width: 44, height: 44 }}
-                  />
-                  <span className="font-serif font-medium uppercase tracking-[0.16em] leading-tight text-ink text-center text-[clamp(1rem,3vw,1.55rem)] [text-wrap:balance]">
-                    {tab.title}
-                  </span>
-                  <span
-                    className="font-mono text-[10px] uppercase tracking-[0.34em] bg-clip-text text-transparent"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(90deg, var(--color-accent-gold-dark), var(--color-accent-gold-light) 50%, var(--color-accent-gold-dark))',
-                    }}
-                  >
-                    Peptides Explained · {String(active + 1).padStart(2, '0')}
-                  </span>
-                  <span className="mt-[var(--space-2)] flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
-                    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                      <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
-                    </svg>
-                  </span>
-                </span>
+                {tab.cover ? (
+                  // Vial-group still: the image is the cover; title/eyebrow
+                  // already sit above the well, so we show only the play button.
+                  <>
+                    <img
+                      src={tab.cover}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-ink/0 transition-colors group-hover:bg-ink/[0.06]"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-ink/10 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                          <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
+                        </svg>
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-gradient-to-b from-ink/[0.03] via-transparent to-ink/[0.07]"
+                    />
+                    <span className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-2)] px-[var(--space-6)]">
+                      <img
+                        src="/brand/vs-dna-s-full-colour.png"
+                        alt=""
+                        aria-hidden="true"
+                        width="44"
+                        height="44"
+                        style={{ width: 44, height: 44 }}
+                      />
+                      <span className="font-serif font-medium uppercase tracking-[0.16em] leading-tight text-ink text-center text-[clamp(1rem,3vw,1.55rem)] [text-wrap:balance]">
+                        {tab.title}
+                      </span>
+                      <span
+                        className="font-mono text-[10px] uppercase tracking-[0.34em] bg-clip-text text-transparent"
+                        style={{
+                          backgroundImage:
+                            'linear-gradient(90deg, var(--color-accent-gold-dark), var(--color-accent-gold-light) 50%, var(--color-accent-gold-dark))',
+                        }}
+                      >
+                        Peptides Explained · {String(active + 1).padStart(2, '0')}
+                      </span>
+                      <span className="mt-[var(--space-2)] flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
+                        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                          <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
+                        </svg>
+                      </span>
+                    </span>
+                  </>
+                )}
               </button>
             )
           ) : playing === tab.id && posterOk[tab.id] ? (

@@ -27,6 +27,7 @@ interface ValidateCouponRow {
   free_label?: string | null;
   discount_cents?: number;
   min_subtotal_cents?: number;
+  requires_account?: boolean;
 }
 
 export type CouponCheckResult =
@@ -60,6 +61,7 @@ export async function checkCoupon(code: string, subtotalCents: number): Promise<
       freeDose: row.free_dose ?? null,
       freeLabel: row.free_label ?? null,
       minSubtotalCents: row.min_subtotal_cents ?? 0,
+      requiresAccount: row.requires_account ?? false,
     },
   };
 }

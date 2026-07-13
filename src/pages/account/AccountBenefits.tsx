@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { AccountLayout } from './AccountLayout';
+import { useCustomerAuth } from '../../lib/customerAuth';
 import { listMyDiscounts, type CustomerDiscountRow } from '../../lib/accountData';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
@@ -79,7 +80,21 @@ function HowDiscountsApply() {
   );
 }
 
+function MemberPerksNote({ freeShipping }: { freeShipping: boolean }) {
+  return (
+    <article className="research-surface-solid p-[var(--space-5)]">
+      <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Member perks</p>
+      <p className="text-[13px] leading-relaxed text-ink/75">
+        {freeShipping
+          ? 'Free shipping is active on your account — it applies automatically at checkout.'
+          : 'Some promo codes are member-only and require you to be signed in to redeem.'}
+      </p>
+    </article>
+  );
+}
+
 function AccountBenefitsContent() {
+  const { profile } = useCustomerAuth();
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   useEffect(() => {
@@ -117,6 +132,7 @@ function AccountBenefitsContent() {
       ) : (
         state.discounts.map((d) => <DiscountCard key={d.id} discount={d} />)
       )}
+      <MemberPerksNote freeShipping={profile?.free_shipping ?? false} />
       <HowDiscountsApply />
     </div>
   );

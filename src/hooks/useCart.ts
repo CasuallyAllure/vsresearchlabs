@@ -22,6 +22,8 @@ export interface AppliedCoupon {
   freeDose: string | null;
   freeLabel: string | null;
   minSubtotalCents: number;
+  /** Member-gated code (048) — only a signed-in account holder can redeem. */
+  requiresAccount: boolean;
 }
 
 interface CartStore {

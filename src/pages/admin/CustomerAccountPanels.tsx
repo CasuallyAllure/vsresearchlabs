@@ -41,6 +41,7 @@ interface ProfileRow {
   status: ProfileStatus;
   account_type: AccountType;
   business_name: string | null;
+  free_shipping: boolean;
 }
 
 interface RewardEntry {
@@ -88,7 +89,7 @@ function isMissingBackend(error: unknown): boolean {
 }
 
 const NOT_MIGRATED_NOTE =
-  'Portal backend not migrated yet — apply migrations 043–045 to enable this panel.';
+  'Portal backend not migrated yet — apply migrations 043–045 (and 049 for free shipping) to enable this panel.';
 
 function fmtDateShort(iso: string | null): string {
   if (!iso) return '—';
@@ -183,7 +184,7 @@ export function CustomerAccountPanels({ customerId, customerContact }: CustomerA
       }
       const { data, error } = await supabase
         .from('customer_profiles')
-        .select('user_id, full_name, tier, status, account_type, business_name')
+        .select('user_id, full_name, tier, status, account_type, business_name, free_shipping')
         .eq('customer_id', customerId)
         .limit(1);
       if (cancelled) return;
@@ -262,6 +263,7 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
   const [status, setStatus] = useState<ProfileStatus>(profile.status);
   const [accountType, setAccountType] = useState<AccountType>(profile.account_type);
   const [businessName, setBusinessName] = useState(profile.business_name ?? '');
+  const [freeShipping, setFreeShipping] = useState(profile.free_shipping);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -270,7 +272,8 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
     tier !== profile.tier ||
     status !== profile.status ||
     accountType !== profile.account_type ||
-    (accountType === 'business' ? businessName.trim() : '') !== (profile.business_name ?? '');
+    (accountType === 'business' ? businessName.trim() : '') !== (profile.business_name ?? '') ||
+    freeShipping !== profile.free_shipping;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -284,7 +287,7 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
     }
 
     const ok = await confirm(
-      `Set profile flags for ${profile.full_name}: tier ${tier}, status ${status}, ${accountType}${accountType === 'business' ? ` (${businessName.trim()})` : ''}?`,
+      `Set profile flags for ${profile.full_name}: tier ${tier}, status ${status}, ${accountType}${accountType === 'business' ? ` (${businessName.trim()})` : ''}${freeShipping ? ', free shipping' : ''}?`,
       { confirmLabel: 'Save flags' },
     );
     if (!ok) return;
@@ -296,6 +299,7 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
       p_status: status,
       p_account_type: accountType,
       p_business_name: accountType === 'business' ? businessName.trim() : null,
+      p_free_shipping: freeShipping,
     });
     setBusy(false);
     if (rpcError) {
@@ -320,6 +324,7 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
           </Badge>
           <Badge>{profile.account_type}</Badge>
           {profile.business_name && <Badge>{profile.business_name}</Badge>}
+          {profile.free_shipping && <Badge tone="good">free shipping</Badge>}
         </div>
       </div>
 
@@ -358,6 +363,11 @@ function ProfileFlagsPanel({ profile, contact, confirm, onSaved }: ProfileFlagsP
           placeholder={accountType === 'business' ? 'Acme Research LLC' : '—'}
           className={inputCls}
         />
+
+        <label className="mb-[var(--space-3)] flex items-center gap-2 text-[12px] text-ink/75">
+          <input type="checkbox" checked={freeShipping} onChange={(e) => setFreeShipping(e.target.checked)} />
+          Free shipping (lifetime)
+        </label>
 
         {error && <InlineError>{error}</InlineError>}
         {success && <InlineSuccess>{success}</InlineSuccess>}

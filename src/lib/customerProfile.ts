@@ -23,6 +23,8 @@ export interface CustomerProfile {
   country: string | null;
   tier: CustomerTier;
   status: CustomerStatus;
+  /** Admin-granted perk (049) — guarded column, customers can't set it themselves. */
+  free_shipping: boolean;
   created_at: string;
   updated_at: string;
 }

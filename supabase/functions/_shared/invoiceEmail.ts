@@ -112,8 +112,8 @@ const ZELLE_FOR_TEXT = ZELLE_EMAIL;
  * instead of html-only materially improves inbox placement — html-only is a
  * common spam-filter penalty. Resend takes both `text` and `html`.
  */
-export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
-  const { order, lines, coupons, confirmShippingUrl } = args;
+export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; coupons?: CouponLine[]; confirmShippingUrl?: string; memberFreeShipping?: boolean }): string {
+  const { order, lines, coupons, confirmShippingUrl, memberFreeShipping } = args;
   const speeds = lines.map((l) => l.fast_ship);
   const mixed = speeds.includes(true) && speeds.includes(false);
   const ship = [
@@ -155,7 +155,9 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
       : ((order.discount_cents ?? 0) > 0
           ? [`Discount${order.coupon_code ? ` (${order.coupon_code})` : ""}: -${fmtUsd(order.discount_cents)}`]
           : [])),
-    ...(((order.shipping_cents ?? 0) > 0) ? [`Shipping: ${fmtUsd(order.shipping_cents)}`] : []),
+    ...(memberFreeShipping
+      ? [`Shipping: Free — member`]
+      : (((order.shipping_cents ?? 0) > 0) ? [`Shipping: ${fmtUsd(order.shipping_cents)}`] : [])),
     `Total due: ${fmtUsd(order.invoice_amount_cents)}`,
     ``,
     `HOW TO PAY — Zelle to: ${ZELLE_FOR_TEXT}`,
@@ -173,8 +175,8 @@ export function buildInvoiceText(args: { order: OrderRow; lines: OrderLine[]; co
   ].join("\n");
 }
 
-export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[]; confirmShippingUrl?: string }): string {
-  const { order, lines, notes, coupons, confirmShippingUrl } = args;
+export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; notes?: string; coupons?: CouponLine[]; confirmShippingUrl?: string; memberFreeShipping?: boolean }): string {
+  const { order, lines, notes, coupons, confirmShippingUrl, memberFreeShipping } = args;
   const subtotal = order.subtotal_cents;
   const shipping = order.shipping_cents;
   const total    = order.invoice_amount_cents;
@@ -321,8 +323,8 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
       <table role="presentation" style="width:100%;border-collapse:collapse;">
         <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Subtotal</td>
             <td style="padding:5px 14px;text-align:right;width:120px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${fmtUsd(subtotal ?? total)}</td></tr>
-        <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Shipping estimate</td>
-            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${shipping !== null && shipping !== undefined ? fmtUsd(shipping) : '<span style="color:#A09689;">TBD</span>'}</td></tr>
+        <tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#6F665C;">Shipping${memberFreeShipping ? '' : ' estimate'}</td>
+            <td style="padding:5px 14px;text-align:right;font-family:'JetBrains Mono','SF Mono',monospace;font-size:13px;color:#1A1714;">${memberFreeShipping ? '<span style="color:#34727A;font-weight:700;">Free — member</span>' : (shipping !== null && shipping !== undefined ? fmtUsd(shipping) : '<span style="color:#A09689;">TBD</span>')}</td></tr>
         ${(coupons && coupons.length)
           ? coupons.filter((c) => c.discount_cents > 0).map((c) =>
               `<tr><td style="padding:5px 14px;text-align:right;font-size:12.5px;color:#34727A;">${escapeHtml(couponLabel(c))}</td>

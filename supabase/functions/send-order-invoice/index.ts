@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
     .from("orders")
     .select(`id, order_number, buyer_name, buyer_contact, buyer_organization,
              invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents,
-             discount_cents, coupon_code,
+             discount_cents, coupon_code, user_id,
              payment_method, status, notes,
              ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, created_at, lookup_token`)
     .eq("id", payload.order_id)
@@ -128,8 +128,21 @@ Deno.serve(async (req: Request) => {
   const confirmShippingUrl = order.lookup_token && !shipConfirmedAt
     ? `${SITE_BASE}/track?t=${order.lookup_token}#confirm-address`
     : undefined;
-  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes, coupons, confirmShippingUrl });
-  const text = buildInvoiceText({ order: orderRow, lines: orderLines, coupons, confirmShippingUrl });
+  // Member free-shipping perk (migration 049) → affirmative "Free — member"
+  // shipping line. recompute_order_totals has already zeroed the billed
+  // shipping; this only drives the label.
+  const ownerId = (order as { user_id?: string | null }).user_id ?? null;
+  let memberFreeShipping = false;
+  if (ownerId) {
+    const { data: profRow } = await supabase
+      .from("customer_profiles")
+      .select("free_shipping")
+      .eq("user_id", ownerId)
+      .maybeSingle();
+    memberFreeShipping = profRow?.free_shipping === true;
+  }
+  const html = buildInvoiceHtml({ order: orderRow, lines: orderLines, notes: payload.notes, coupons, confirmShippingUrl, memberFreeShipping });
+  const text = buildInvoiceText({ order: orderRow, lines: orderLines, coupons, confirmShippingUrl, memberFreeShipping });
   const result = await sendResendEmail({ to: order.buyer_contact, subject: invoiceSubject(order), html, text });
 
   if (!result.ok) {

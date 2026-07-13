@@ -44,6 +44,7 @@ interface CouponRow {
   max_uses: number | null;
   used_count: number;
   once_per_contact: boolean;
+  requires_account: boolean;
   starts_at: string | null;
   expires_at: string | null;
   active: boolean;
@@ -243,7 +244,7 @@ export function AdminCoupons() {
       const [couponsRes, affiliatesRes, redemptionsRes] = await Promise.all([
         supabase
           .from('coupons')
-          .select('id, code, kind, percent, amount_cents, free_sku, free_dose, free_label, min_subtotal_cents, max_uses, used_count, once_per_contact, starts_at, expires_at, active, affiliate_id, commission_percent, created_at, updated_at')
+          .select('id, code, kind, percent, amount_cents, free_sku, free_dose, free_label, min_subtotal_cents, max_uses, used_count, once_per_contact, requires_account, starts_at, expires_at, active, affiliate_id, commission_percent, created_at, updated_at')
           .order('created_at', { ascending: false }),
         supabase
           .from('affiliates')
@@ -424,6 +425,7 @@ function CodesTab({ coupons, affiliates, onChanged, confirm }: CodesTabProps) {
                         {row.active ? (expired ? 'expired' : 'active') : 'inactive'}
                       </Badge>
                       {row.once_per_contact && <Badge>1 / contact</Badge>}
+                      {row.requires_account && <Badge>Members</Badge>}
                       {row.affiliate_id && (
                         <Badge>{affiliateName.get(row.affiliate_id) ?? 'affiliate'}</Badge>
                       )}
@@ -487,6 +489,7 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
   const [minSubtotalUsd, setMinSubtotalUsd] = useState('');
   const [maxUses, setMaxUses] = useState('');
   const [oncePerContact, setOncePerContact] = useState(false);
+  const [requiresAccount, setRequiresAccount] = useState(false);
   const [startsAt, setStartsAt] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [affiliateId, setAffiliateId] = useState<string>('');
@@ -541,6 +544,7 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
       min_subtotal_cents: minSubtotalCents,
       max_uses: maxUsesValue,
       once_per_contact: oncePerContact,
+      requires_account: requiresAccount,
       starts_at: startsAt.trim() === '' ? null : new Date(startsAt).toISOString(),
       expires_at: expiresAt.trim() === '' ? null : new Date(expiresAt).toISOString(),
       affiliate_id: affiliateId === '' ? null : affiliateId,
@@ -609,6 +613,14 @@ function NewCouponForm({ affiliates, onCreated }: NewCouponFormProps) {
         <input type="checkbox" checked={oncePerContact} onChange={(e) => setOncePerContact(e.target.checked)} />
         Once per contact
       </label>
+
+      <label className="mb-1 flex items-center gap-2 text-[12px] text-ink/75">
+        <input type="checkbox" checked={requiresAccount} onChange={(e) => setRequiresAccount(e.target.checked)} />
+        Members only (requires account)
+      </label>
+      <p className="mb-[var(--space-3)] text-[11px] text-ink/45">
+        Only signed-in account holders can redeem.
+      </p>
 
       <div className="grid grid-cols-1 gap-[var(--space-3)] sm:grid-cols-2">
         <div>

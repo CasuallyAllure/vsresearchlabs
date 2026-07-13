@@ -109,6 +109,7 @@ interface CouponCheck {
   free_sku?: string | null;
   free_dose?: string | null;
   free_label?: string | null;
+  requires_account?: boolean;
 }
 
 /** Shape returned by the effective_customer_discount RPC (migration 045). */
@@ -760,6 +761,20 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Member free-shipping perk (migration 049) — for the invoice email's
+  // affirmative "Free — member" shipping line. The perk is enforced on the
+  // billed total server-side by recompute_order_totals when the admin sends the
+  // invoice; here it only drives the email label for a stamped owner.
+  let memberFreeShipping = false;
+  if (stampedUserId) {
+    const { data: profRow } = await supabase
+      .from("customer_profiles")
+      .select("free_shipping")
+      .eq("user_id", stampedUserId)
+      .maybeSingle();
+    memberFreeShipping = profRow?.free_shipping === true;
+  }
+
   // Coupon — the client sends only the CODE; the server validates it and
   // computes the money. percent/fixed reduce the billed total; free_item
   // appends a $0 line for the free product. Invalid codes reject the order
@@ -808,6 +823,15 @@ Deno.serve(async (req: Request) => {
       // The buyer saw it "applied" in the cart, so silently dropping it would
       // bill more than they expect — reject and let them fix the code.
       return jsonResponse({ error: coupon?.reason ?? `Code ${code} is not valid.` }, 400);
+    }
+    // Member-gated code (migration 048): authoritative check. validate_coupon
+    // can't judge account state (place-order calls it with the service role, so
+    // auth.uid() is null there) — the trustworthy signal is stampedUserId, set
+    // only when a verified account session matched the buyer email above.
+    if (coupon.requires_account === true && !stampedUserId) {
+      return jsonResponse({
+        error: `Code ${coupon.code ?? code} is for members only. Sign in to your account and try again.`,
+      }, 400);
     }
     const appliedCode = coupon.code ?? code;
 
@@ -1163,8 +1187,8 @@ Deno.serve(async (req: Request) => {
         const invRes = await sendResendEmail({
           to: contact,
           subject: invoiceSubject(invOrder),
-          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons }),
-          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons }),
+          html: buildInvoiceHtml({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons, memberFreeShipping }),
+          text: buildInvoiceText({ order: invOrder as OrderRow, lines: invLines, coupons: invCoupons, memberFreeShipping }),
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;
