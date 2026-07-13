@@ -25,6 +25,7 @@ import {
 } from '../../lib/accountData';
 import { OrderStatusChip, type AdminOrderStatus } from '../ui/OrderStatusChip';
 import { Button } from '../ui/Button';
+import { RewardTracker } from './RewardTracker';
 import { supabase } from '../../lib/supabase';
 
 /** `customer_profiles.account_type`/`business_name` (migration 043) aren't on
@@ -98,6 +99,12 @@ export function AccountDashboard() {
     };
   }, []);
 
+  async function reloadRewards() {
+    const { data, error } = await getMyRewardSummary();
+    if (error) setRewardsError(error);
+    setRewards(data);
+  }
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -165,19 +172,24 @@ export function AccountDashboard() {
 
       {/* Reward balance + active discounts */}
       <div className="mb-[var(--space-6)] grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
-        <div className="research-surface-solid p-[var(--space-5)]">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+        <div>
           {rewards ? (
             <>
-              <p className="text-[1.6rem] font-light tabular-nums text-ink">{rewards.balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">pts</span></p>
+              <RewardTracker summary={rewards} onChanged={reloadRewards} compact />
               <Link to="/account/rewards" className="mt-[var(--space-2)] inline-block text-[11px] uppercase tracking-[0.18em] text-teal hover:text-teal-dark transition-colors">
                 View history →
               </Link>
             </>
           ) : rewardsError ? (
-            <p className="text-[12.5px] text-ink/50">Rewards aren't available right now.</p>
+            <div className="research-surface-solid p-[var(--space-5)]">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+              <p className="text-[12.5px] text-ink/50">Rewards aren't available right now.</p>
+            </div>
           ) : (
-            <p className="text-[12.5px] text-ink/50">Loading…</p>
+            <div className="research-surface-solid p-[var(--space-5)]">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+              <p className="text-[12.5px] text-ink/50">Loading…</p>
+            </div>
           )}
         </div>
 

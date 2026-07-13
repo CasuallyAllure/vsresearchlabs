@@ -33,21 +33,41 @@ export interface MyOrderRow {
 /** `get_my_order` RPC result — same shape as `get_order_by_token`, plus `found`. */
 export type MyOrderResult = { found: false } | (OrderInvoice & { found: true });
 
-export type RewardEntryKind = 'earn' | 'reversal' | 'adjustment';
+export type RewardEntryKind = 'earn' | 'reversal' | 'adjustment' | 'redemption';
 
 export interface RewardLedgerEntry {
   id: string;
   kind: RewardEntryKind;
-  /** Signed — positive for earn, negative for reversal, either sign for a manual adjustment. */
+  /** Signed — positive for earn, negative for reversal/redemption, either sign for a manual adjustment. */
   points: number;
   note: string | null;
   order_number: string | null;
   created_at: string;
 }
 
+/** An active or historical redeemed reward voucher (migration 050). */
+export interface RewardVoucher {
+  id: string;
+  percent: number;
+  created_at: string;
+}
+
 export interface RewardSummary {
   balance: number;
+  threshold: number;
+  percent: number;
+  reward_ready: boolean;
+  /** The customer's single active (unused) voucher, if any — at most one at a time. */
+  active_voucher: RewardVoucher | null;
   entries: RewardLedgerEntry[];
+}
+
+/** `redeem_reward()` RPC result. */
+export interface RedeemRewardResult {
+  ok: boolean;
+  reason?: string;
+  voucher_id?: string;
+  percent?: number;
 }
 
 export type CustomerDiscountScope = 'lifetime' | 'business';
@@ -90,7 +110,25 @@ export async function getMyRewardSummary(): Promise<{ data: RewardSummary | null
   if (!supabase) return { data: null, error: NOT_CONFIGURED };
   const { data, error } = await supabase.rpc('get_my_reward_summary');
   if (error) return { data: null, error: error.message };
-  return { data: (data as RewardSummary) ?? { balance: 0, entries: [] }, error: null };
+  return {
+    data: (data as RewardSummary) ?? {
+      balance: 0,
+      threshold: 300,
+      percent: 40,
+      reward_ready: false,
+      active_voucher: null,
+      entries: [],
+    },
+    error: null,
+  };
+}
+
+/** Spend 300 points for a 40%-off-one-item voucher (`redeem_reward()`, migration 050). */
+export async function redeemReward(): Promise<{ data: RedeemRewardResult | null; error: string | null }> {
+  if (!supabase) return { data: null, error: NOT_CONFIGURED };
+  const { data, error } = await supabase.rpc('redeem_reward');
+  if (error) return { data: null, error: error.message };
+  return { data: (data as RedeemRewardResult) ?? { ok: false, reason: 'Unexpected response.' }, error: null };
 }
 
 /** The signed-in customer's own discount rules (active + inactive). */

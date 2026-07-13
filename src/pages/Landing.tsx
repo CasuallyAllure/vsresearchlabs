@@ -305,19 +305,20 @@ export function Landing() {
   const [compoundExpanded, setCompoundExpanded] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
-  const { loading: authLoading, user } = useCustomerAuth();
+  const { loading: authLoading, profile } = useCustomerAuth();
 
-  // First-visit greeting, once per browser session. Guests meet the member-
-  // access gate first; dismissing it (or already being signed in) opens the
-  // "what are peptides" intro video. The gate never shows to signed-in users.
+  // First-visit greeting, once per browser session. Only a real member (one
+  // with a customer profile) skips the gate and goes straight to the intro
+  // video — everyone else (guests AND signed-in non-members, e.g. an admin)
+  // gets the member-access gate first, so it reliably greets.
   useEffect(() => {
     if (authLoading) return;
-    if (user) {
+    if (profile) {
       if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
     } else if (sessionStorage.getItem('vsr.gateSeen') !== '1') {
       setGateOpen(true);
     }
-  }, [authLoading, user]);
+  }, [authLoading, profile]);
 
   function dismissGate() {
     sessionStorage.setItem('vsr.gateSeen', '1');

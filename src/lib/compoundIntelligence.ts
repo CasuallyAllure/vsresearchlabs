@@ -93,6 +93,34 @@ export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
     'The new & unproven group — investigational compounds where the science is still early: exploratory, not established.',
 };
 
+/** Short, one-line research-register descriptions for category section
+ *  headers (CompoundSection). Trimmed from CLASSIFICATION_DEFINITIONS —
+ *  class + research area only, no efficacy or therapeutic claims. */
+export const CLASSIFICATION_SECTION_BLURB: Record<ResearchClassification, string> = {
+  'incretin-metabolic-agonists':
+    'GLP-1 and dual/triple incretin receptor agonists studied in metabolic and body-composition research.',
+  'gh-secretagogue':
+    'Growth-hormone secretagogues and GHRH analogues used in endocrine and growth-axis research.',
+  'growth-factor-anabolic':
+    'Growth hormone and IGF-1 variants studied in nitrogen-retention and tissue-growth signaling research.',
+  'metabolic-cofactor':
+    'NAD+ precursors, mitochondrial peptides, and lipolytic cofactors studied in metabolic-regulation research.',
+  'regenerative':
+    'Peptides investigated in tissue-repair, recovery, and cytoprotection research.',
+  'nootropic-neuroactive':
+    'Neuropeptides and neuromodulators studied in cognitive, mood, and neurotrophic-signaling research.',
+  'bioregulator':
+    'Short tissue-derived peptides studied in longevity, circadian, and neuroendocrine-aging research.',
+  'immunomodulatory':
+    'Peptides studied for modulation of immune-signaling pathways and inflammatory response.',
+  'reproductive-hormonal':
+    'Hormones and neuroendocrine peptides studied in reproductive-axis and sexual-function signaling research.',
+  'antioxidant-beauty':
+    'Peptides and cofactors studied in collagen synthesis, pigmentation, and oxidative-stress research.',
+  'experimental':
+    'Investigational compounds with limited published evidence; exploratory research context.',
+};
+
 /** Canonical display order for the categories above. Used by filter
  *  surfaces so tabs/sections appear in a consistent, intentional order
  *  rather than data-insertion order. */

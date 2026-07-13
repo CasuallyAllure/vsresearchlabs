@@ -12,6 +12,7 @@ import { AccountLayout } from './AccountLayout';
 import { getMyRewardSummary, type RewardEntryKind, type RewardSummary } from '../../lib/accountData';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
+import { RewardTracker } from '../../components/account/RewardTracker';
 
 type LoadState =
   | { kind: 'loading' }
@@ -22,12 +23,14 @@ const KIND_LABEL: Record<RewardEntryKind, string> = {
   earn: 'Earned',
   reversal: 'Reversed',
   adjustment: 'Adjustment',
+  redemption: 'Redeemed',
 };
 
 const KIND_CLASS: Record<RewardEntryKind, string> = {
   earn: 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]',
   reversal: 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]',
   adjustment: 'border-ink/10 text-[color:var(--color-status-warning)] bg-[color:var(--color-status-warningMuted)]',
+  redemption: 'border-ink/10 text-[color:var(--color-status-info)] bg-[color:var(--color-status-infoMuted)]',
 };
 
 function formatDate(iso: string): string {
@@ -45,6 +48,15 @@ function formatPoints(points: number): string {
 
 function AccountRewardsContent() {
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
+
+  async function reload() {
+    const { data, error } = await getMyRewardSummary();
+    if (error || !data) {
+      setState({ kind: 'error', message: error ?? 'Rewards are unavailable right now.' });
+      return;
+    }
+    setState({ kind: 'ok', summary: data });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -70,15 +82,12 @@ function AccountRewardsContent() {
     return <ErrorState message={state.message} />;
   }
 
-  const { balance, entries } = state.summary;
+  const { entries } = state.summary;
 
   return (
     <>
-      <div className="research-surface-solid p-[var(--space-6)] mb-[var(--space-6)]">
-        <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Reward balance</p>
-        <p className="text-[2rem] font-light tabular-nums text-ink">
-          {balance.toLocaleString()} <span className="text-[13px] uppercase tracking-[0.16em] text-ink/45">points</span>
-        </p>
+      <div className="mb-[var(--space-6)]">
+        <RewardTracker summary={state.summary} onChanged={reload} />
       </div>
 
       <h2 className="mb-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/45">History</h2>

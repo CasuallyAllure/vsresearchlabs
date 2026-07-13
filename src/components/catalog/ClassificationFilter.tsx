@@ -239,14 +239,18 @@ export function ClassificationFilter({
       </div>
 
       {shippingTiers && (
-        <div className="mt-1.5 flex items-center gap-1">
+        <div className="mt-2">
+          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/40">
+            Shipping speed
+          </span>
+          <div className="flex items-center gap-1.5">
           <button
             type="button"
             role="switch"
             aria-checked={shippingTiers.fast}
             onClick={shippingTiers.onToggleFast}
             title={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
-            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -272,7 +276,7 @@ export function ClassificationFilter({
                 ? '7–10 business day shipping — tap to hide'
                 : 'Tap to show sourced (7–10 business day) compounds'
             }
-            className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -288,6 +292,7 @@ export function ClassificationFilter({
             />
             7–10 DAYS
           </button>
+          </div>
         </div>
       )}
 

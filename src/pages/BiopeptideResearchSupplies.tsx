@@ -5,7 +5,11 @@ import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntel
 import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInventoryModal';
 import { CompoundSection } from '../components/catalog/CompoundSection';
 import { useProducts } from '../hooks/useProducts';
-import { CLASSIFICATION_LABELS, CLASSIFICATION_ORDER } from '../lib/compoundIntelligence';
+import {
+  CLASSIFICATION_LABELS,
+  CLASSIFICATION_ORDER,
+  CLASSIFICATION_SECTION_BLURB,
+} from '../lib/compoundIntelligence';
 import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
 import { useProductOverrides, isSkuInStock, isSkuVisible } from '../lib/productOverrides';
 
@@ -22,11 +26,11 @@ export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
   // Two independent shipping-tier chips. Exactly one active narrows to that
-  // tier; both (or neither) active shows the full catalog. Both are on by
-  // default so the whole catalog is visible up front — tap either chip to
-  // narrow to just 24-hour or just sourced (7–10 day) compounds.
+  // tier; both (or neither) active shows the full catalog. 24-hour is on by
+  // default so the page loads showing only compounds cleared for next-day
+  // dispatch — tap "7–10 DAYS" to widen to the sourced catalog.
   const [fastOn, setFastOn] = useState(true);
-  const [sourcedOn, setSourcedOn] = useState(true);
+  const [sourcedOn, setSourcedOn] = useState(false);
   const showFastOnly = fastOn && !sourcedOn;
   const showSourcedOnly = sourcedOn && !fastOn;
   const [search, setSearch] = useState('');
@@ -89,11 +93,16 @@ export function BiopeptideResearchSupplies() {
         uncategorized.push(p);
       }
     }
-    const sections: { key: string; label: string; products: Product[] }[] = [];
+    const sections: { key: string; label: string; description?: string; products: Product[] }[] = [];
     for (const key of CLASSIFICATION_ORDER) {
       const groupProducts = byClass.get(key);
       if (groupProducts && groupProducts.length > 0) {
-        sections.push({ key, label: CLASSIFICATION_LABELS[key] ?? key, products: groupProducts });
+        sections.push({
+          key,
+          label: CLASSIFICATION_LABELS[key] ?? key,
+          description: CLASSIFICATION_SECTION_BLURB[key],
+          products: groupProducts,
+        });
       }
     }
     if (uncategorized.length > 0) {
@@ -166,6 +175,7 @@ export function BiopeptideResearchSupplies() {
               key={section.key}
               sectionKey={section.key}
               label={section.label}
+              description={section.description}
               products={section.products}
               onInspect={setInspectedId}
               only24hrDoses={showFastOnly}
