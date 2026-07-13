@@ -166,43 +166,71 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
       {/* Buy controls — outside the tap target */}
       <div className="px-3.5 pb-3.5 pt-1.5 border-t border-ink/[0.05] mt-auto">
         {variants.length > 0 && (() => {
-          // 24-hour doses first, then sourced doses — sourced doses share a
-          // single trailing "· 7–10 DAYS" marker instead of each repeating
-          // the tier in words (that's what the old standalone
-          // AvailabilityBadge did; removed in favor of this inline marker).
+          // 24-hour doses render as standalone chips in their own row.
+          // Sourced doses (7–10 business day sourcing) are grouped into a
+          // single bordered box: a segmented row of dose picks on top,
+          // separated by a hairline footer that labels the whole group —
+          // so the shipping window reads as belonging to every dose inside,
+          // not a loose trailing label next to the chips.
           const interactive = variants.length > 1;
           const withState = variants.map((v, i) => ({
             v,
             i,
             state: doseAvailability(product.sku, v.dose).state,
           }));
-          const ordered = [...withState].sort((a, b) => {
-            if (a.state === b.state) return 0;
-            return a.state === 'in_stock' ? -1 : 1;
-          });
-          const hasSourced = withState.some((o) => o.state === 'sourced');
+          const fastDoses = withState.filter((o) => o.state === 'in_stock');
+          const sourcedDoses = withState.filter((o) => o.state === 'sourced');
 
           return (
-            <div
-              role={interactive ? 'radiogroup' : undefined}
-              aria-label={interactive ? 'Select dose' : undefined}
-              className="flex flex-wrap items-center gap-1 mb-2"
-              onClick={interactive ? (e) => e.stopPropagation() : undefined}
-            >
-              {ordered.map(({ v, i }) => (
-                <DoseChip
-                  key={v.dose}
-                  sku={product.sku}
-                  dose={v.dose}
-                  interactive={interactive}
-                  isActive={i === tierIndex}
-                  onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
-                />
-              ))}
-              {hasSourced && (
-                <span className="font-mono leading-none text-[10px] uppercase tracking-[0.14em] text-ink/45 whitespace-nowrap">
-                  · 7–10 DAYS
-                </span>
+            <div className="flex flex-col gap-1.5 mb-2">
+              {fastDoses.length > 0 && (
+                <div
+                  role={interactive ? 'radiogroup' : undefined}
+                  aria-label={interactive ? 'Select dose' : undefined}
+                  className="flex flex-wrap items-center gap-1"
+                  onClick={interactive ? (e) => e.stopPropagation() : undefined}
+                >
+                  {fastDoses.map(({ v, i }) => (
+                    <DoseChip
+                      key={v.dose}
+                      sku={product.sku}
+                      dose={v.dose}
+                      interactive={interactive}
+                      isActive={i === tierIndex}
+                      onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {sourcedDoses.length > 0 && (
+                <div
+                  className="rounded-[var(--radius-field)] border border-ink/15 overflow-hidden"
+                  onClick={interactive ? (e) => e.stopPropagation() : undefined}
+                >
+                  <div
+                    role={interactive ? 'radiogroup' : undefined}
+                    aria-label={interactive ? 'Select sourced dose' : undefined}
+                    className="flex items-stretch"
+                  >
+                    {sourcedDoses.map(({ v, i }, idx) => (
+                      <SourcedDoseSegment
+                        key={v.dose}
+                        dose={v.dose}
+                        isActive={i === tierIndex}
+                        interactive={interactive}
+                        hasDivider={idx > 0}
+                        onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
+                      />
+                    ))}
+                  </div>
+                  <div className="border-t border-ink/12 py-1 text-center">
+                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                      7–10 Biz Days
+                      <ShippingVan />
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
           );
@@ -229,6 +257,30 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
         </div>
       </div>
     </article>
+  );
+}
+
+/** Small monochrome delivery-van glyph, inherits text color via currentColor. */
+function ShippingVan() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width="11"
+      height="11"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="inline-block shrink-0"
+    >
+      <path d="M14 17V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1" />
+      <path d="M14 9h4l3 3.5V17a1 1 0 0 1-1 1h-1" />
+      <path d="M9 18h4" />
+      <circle cx="6.5" cy="18" r="1.6" />
+      <circle cx="16.5" cy="18" r="1.6" />
+    </svg>
   );
 }
 
@@ -259,7 +311,7 @@ function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChipProps) 
       {doseTxt}
       {isFast && (
         <span
-          className="ml-1"
+          className="ml-1 inline-flex items-center gap-0.5 align-middle"
           style={{
             color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
             fontSize: '10px',
@@ -267,6 +319,7 @@ function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChipProps) 
           }}
         >
           · 24 HR
+          <ShippingVan />
         </span>
       )}
     </>
@@ -295,6 +348,55 @@ function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChipProps) 
       style={style}
     >
       {content}
+    </button>
+  );
+}
+
+interface SourcedDoseSegmentProps {
+  dose: string;
+  isActive: boolean;
+  /** Radio-button behavior (dose picker). Omit for a static single-dose label. */
+  interactive?: boolean;
+  /** Renders a thin vertical divider on the leading edge (all but the first segment). */
+  hasDivider: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}
+
+/** One segment of the sourced-dose box — sits flush against its siblings
+ *  (no independent border/radius) so the group reads as one bordered module
+ *  with the "7–10 Business Days" footer applying to every segment inside. */
+function SourcedDoseSegment({ dose, isActive, interactive, hasDivider, onClick }: SourcedDoseSegmentProps) {
+  const doseTxt = dose.replace(/\s+/g, '').toUpperCase();
+  const className = [
+    'flex-1 font-mono leading-none text-center px-2 py-1.5 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 focus-visible:ring-inset',
+    hasDivider ? 'border-l border-ink/12' : '',
+  ].join(' ');
+  const style = {
+    fontSize: '10px',
+    letterSpacing: '0.14em',
+    backgroundColor: isActive ? 'var(--color-content-primary)' : 'transparent',
+    color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
+  } as const;
+
+  if (!interactive) {
+    return (
+      <span className={className} style={style} title={dose}>
+        {doseTxt}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={isActive}
+      onClick={onClick}
+      title={`${dose} · sourced, 7–10 business days`}
+      className={className}
+      style={style}
+    >
+      {doseTxt}
     </button>
   );
 }
