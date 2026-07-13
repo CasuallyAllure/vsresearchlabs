@@ -22,10 +22,11 @@ export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
   // Two independent shipping-tier chips. Exactly one active narrows to that
-  // tier; both (or neither) active shows the full catalog. "24 Hour
-  // Shipping" is on by default — same as the old in-stock-only default.
+  // tier; both (or neither) active shows the full catalog. Both are on by
+  // default so the whole catalog is visible up front — tap either chip to
+  // narrow to just 24-hour or just sourced (7–10 day) compounds.
   const [fastOn, setFastOn] = useState(true);
-  const [sourcedOn, setSourcedOn] = useState(false);
+  const [sourcedOn, setSourcedOn] = useState(true);
   const showFastOnly = fastOn && !sourcedOn;
   const showSourcedOnly = sourcedOn && !fastOn;
   const [search, setSearch] = useState('');
