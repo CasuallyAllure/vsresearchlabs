@@ -18,6 +18,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '../ui/Button';
+import { Logo } from '../brand/Logo';
 import { useScrollLock } from '../../lib/useScrollLock';
 
 interface Perk {
@@ -133,7 +134,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
 
       {/* Panel — solid surface, one calm shadow, hairline top highlight. */}
       <div
-        className={`relative w-full max-w-[460px] max-h-[90dvh] overflow-y-auto rounded-[20px] border border-ink/12 bg-base-800 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)] p-[var(--space-6)] sm:p-[var(--space-7)] transition-[opacity,transform] duration-300 ease-out ${
+        className={`relative w-full max-w-[460px] max-h-[90dvh] overflow-y-auto rounded-[20px] border border-ink/15 bg-base-800 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.65),0_0_90px_-10px_rgba(255,255,255,0.10)] p-[var(--space-6)] sm:p-[var(--space-7)] transition-[opacity,transform] duration-300 ease-out ${
           open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.98]'
         }`}
       >
@@ -154,10 +155,19 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
           </svg>
         </button>
 
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-medium">
-          Member access
-        </p>
-        <h2 className="mt-[var(--space-2)] font-serif text-[clamp(1.45rem,5vw,1.9rem)] leading-[1.12] tracking-[-0.01em] text-ink">
+        {/* Brand header */}
+        <div className="flex flex-col items-center">
+          <Logo variant="stacked" to={null} markSize={40} wordSize={11} circled ariaLabel="VS Research Labs" />
+          <p className="mt-[var(--space-3)] text-[9.5px] uppercase tracking-[0.32em] text-ink/40 font-medium">
+            Member access
+          </p>
+        </div>
+        <div
+          aria-hidden="true"
+          className="my-[var(--space-4)] h-px w-full bg-gradient-to-r from-transparent via-ink/12 to-transparent"
+        />
+
+        <h2 className="font-serif text-[clamp(1.45rem,5vw,1.9rem)] leading-[1.12] tracking-[-0.01em] text-ink">
           Create an account.{' '}
           <span className="text-ink/70">Ship free, save more.</span>
         </h2>

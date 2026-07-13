@@ -239,8 +239,8 @@ export function ClassificationFilter({
       </div>
 
       {shippingTiers && (
-        <div className="mt-2">
-          <span className="mb-1 block text-[9px] uppercase tracking-[0.18em] text-ink/40">
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="shrink-0 text-[9px] uppercase tracking-[0.18em] text-ink/40">
             Shipping speed
           </span>
           <div className="flex items-center gap-1.5">
