@@ -41,6 +41,7 @@ import { CompoundIntelligenceHero } from '../components/landing/CompoundIntellig
 import { CompoundVisualizerFrame } from '../components/landing/CompoundVisualizerFrame';
 import { CompoundVisualizerModal } from '../components/landing/CompoundVisualizerModal';
 import { IntroModal } from '../components/landing/IntroModal';
+import { MembershipHero } from '../components/landing/MembershipHero';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
 import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
@@ -301,12 +302,17 @@ const BRIDGE_SUSPENDERS: ReadonlyArray<{ x: number; yTop: number }> = [
 export function Landing() {
   const [suppliesOpen, setSuppliesOpen] = useState(false);
   const [compoundExpanded, setCompoundExpanded] = useState(false);
+  const [introOpen, setIntroOpen] = useState(false);
   return (
     <>
-      {/* Floating intro — appears on first entry, must be dismissed. */}
-      <IntroModal />
+      {/* "What are peptides" intro — now opened on demand from the member hero,
+          no longer an auto-popup, so the membership module greets visitors. */}
+      <IntroModal open={introOpen} onClose={() => setIntroOpen(false)} />
       <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
       <CompoundVisualizerModal open={compoundExpanded} onClose={() => setCompoundExpanded(false)} />
+
+      {/* ── MEMBER ACCESS — first thing on the page ──────────────────────── */}
+      <MembershipHero onWatchIntro={() => setIntroOpen(true)} />
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section

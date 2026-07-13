@@ -1,12 +1,12 @@
 /**
  * IntroModal
  *
- * Floating, dismissible intro that appears every time the landing page loads
- * — the three-tab VideoIntroModule lifted out of the page flow into a centered
- * overlay you must dismiss (X / backdrop / ESC / "Enter site").
+ * The three-tab "what are peptides" VideoIntroModule, lifted out of the page
+ * flow into a centered overlay you dismiss (X / backdrop / ESC / "Enter site").
  *
- * Shows on every load/mount (no persistence). To show it only once per session
- * instead, gate the initial `render` on sessionStorage.
+ * CONTROLLED: opened on demand (from MembershipHero's "Watch the intro" link)
+ * rather than auto-popping on every load — the membership module now greets
+ * visitors instead. Pass `open`/`onClose`.
  *
  * Portaled to <body> so it escapes the sticky header's stacking context, and
  * scroll-locked while open. Honors prefers-reduced-motion.
@@ -18,16 +18,26 @@ import { VideoIntroModule } from './VideoIntroModule';
 import { useScrollLock } from '../../lib/useScrollLock';
 import { siteConfig } from '../../config';
 
-export function IntroModal() {
-  const [render, setRender] = useState(true);
+interface IntroModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function IntroModal({ open: isOpen, onClose }: IntroModalProps) {
+  const [render, setRender] = useState(isOpen);
   const [open, setOpen] = useState(false);
 
-  // Trigger the enter transition on the next frame after mount.
+  // Mount on open + run the enter transition; unmount after the exit.
   useEffect(() => {
-    if (!render) return;
-    const t = setTimeout(() => setOpen(true), 30);
+    if (isOpen) {
+      setRender(true);
+      const t = setTimeout(() => setOpen(true), 30);
+      return () => clearTimeout(t);
+    }
+    setOpen(false);
+    const t = setTimeout(() => setRender(false), 250);
     return () => clearTimeout(t);
-  }, [render]);
+  }, [isOpen]);
 
   // Body scroll lock while visible (ref-counted — won't clash with the gate).
   useScrollLock(render);
@@ -43,9 +53,7 @@ export function IntroModal() {
   }, [render]);
 
   function close() {
-    setOpen(false);
-    // Unmount after the exit transition.
-    setTimeout(() => setRender(false), 250);
+    onClose();
   }
 
   if (!render) return null;
