@@ -70,27 +70,27 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
  *  CLASSIFICATION_DEFINITIONS sits one swipe to the right. */
 export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
   'incretin-metabolic-agonists':
-    'The appetite & metabolism family — this is the GLP-1 group (the "Ozempic / Mounjaro" class). Studied for curbing appetite, steadying blood sugar, and how the body burns energy.',
+    'The appetite & metabolism family — the GLP-1 group (the same class as Ozempic and Mounjaro). Researched for appetite, blood sugar, and how energy is metabolized.',
   'gh-secretagogue':
-    'The "make your own growth hormone" group — rather than taking growth hormone directly, these nudge your body’s own pituitary to release more of it.',
+    'The growth-hormone-signaling group — compounds researched for how they trigger the pituitary to release growth hormone, rather than supplying the hormone directly.',
   'growth-factor-anabolic':
-    'The build-and-grow group — growth hormone and IGF-1-type compounds studied for muscle growth and tissue building.',
+    'The build-and-grow group — growth hormone and IGF-1-type compounds researched in muscle-growth and tissue-building studies.',
   'metabolic-cofactor':
-    'The cellular-energy & fat-metabolism group — NAD+, mitochondria helpers, and fat-handling cofactors that work outside the appetite pathway.',
+    'The cellular-energy & fat-metabolism group — NAD+, mitochondrial peptides, and fat-handling cofactors researched separately from the appetite pathway.',
   'regenerative':
-    'The repair crew — peptides studied for healing and recovery of gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
+    'The repair group — peptides researched for healing and recovery of gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
   'nootropic-neuroactive':
-    'The brain group — studied for focus, mood, and memory by supporting brain signaling and growth factors.',
+    'The brain group — researched for focus, mood, and memory through brain-signaling and growth-factor studies.',
   'bioregulator':
-    'Tiny "tune-up" peptides — very short chains studied in aging and tissue health, thought to gently nudge specific tissues back toward normal function.',
+    'Very short peptides researched in aging and tissue-health studies, examined for how they influence specific tissues.',
   'immunomodulatory':
-    'The immune-balancing group — studied for calming or rebalancing the immune response and inflammation.',
+    'The immune-balancing group — researched for how they influence immune response and inflammation.',
   'reproductive-hormonal':
-    'The hormones & libido group — tied to reproductive hormones and sexual-function signaling (for example, PT-141).',
+    'The hormones & libido group — tied to reproductive-hormone and sexual-function signaling (for example, PT-141), studied in that research area.',
   'antioxidant-beauty':
-    'The skin & antioxidant group — collagen, glutathione, and copper peptides studied for skin quality, glow, and oxidative stress.',
+    'The skin & antioxidant group — collagen, glutathione, and copper peptides researched in skin-quality and oxidative-stress studies.',
   'experimental':
-    'The new & unproven group — investigational compounds where the science is still early: exploratory, not established.',
+    'The new & unproven group — investigational compounds where the research is still early: exploratory, not established.',
 };
 
 /** Short, plain-language one-liners for category section headers
@@ -99,27 +99,27 @@ export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
  *  still lives in CLASSIFICATION_DEFINITIONS / the compound overlay. */
 export const CLASSIFICATION_SECTION_BLURB: Record<ResearchClassification, string> = {
   'incretin-metabolic-agonists':
-    'The GLP-1 group (the "Ozempic / Mounjaro" class) — studied for appetite, blood sugar, and weight loss.',
+    'The GLP-1 group (the same class as Ozempic and Mounjaro) — researched for appetite, blood sugar, and weight.',
   'gh-secretagogue':
-    'Nudge your body to make its own growth hormone — studied for recovery, sleep, and body composition.',
+    'Compounds researched for how they signal the release of growth hormone — studied in recovery and body-composition research.',
   'growth-factor-anabolic':
-    'The build-and-grow group — growth hormone and IGF-1 types studied for muscle and tissue growth.',
+    'Growth hormone and IGF-1-type compounds — researched in muscle and tissue-growth studies.',
   'metabolic-cofactor':
-    'Cellular energy and fat-burning helpers — NAD+ and mitochondria support, outside the appetite pathway.',
+    'NAD+, mitochondrial, and fat-metabolism compounds — researched in cellular-energy studies, separate from the appetite pathway.',
   'regenerative':
-    'The repair crew — studied for healing gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
+    'Compounds researched for tissue repair and recovery of gut, tendon, muscle, and blood vessels (the BPC-157 / TB-500 family).',
   'nootropic-neuroactive':
-    'The brain group — studied for focus, mood, and memory.',
+    'Compounds researched for brain signaling — studied in focus, mood, and memory research.',
   'bioregulator':
-    'Tiny "tune-up" peptides — studied in aging and keeping specific tissues working normally.',
+    'Very short peptides researched in aging and tissue-health studies.',
   'immunomodulatory':
-    'The immune-balancing group — studied for calming or rebalancing immune response and inflammation.',
+    'Compounds researched for how they influence immune response and inflammation.',
   'reproductive-hormonal':
-    'The hormones and libido group — tied to reproductive hormones and sexual function (for example, PT-141).',
+    'Compounds tied to reproductive-hormone and sexual-function signaling (for example, PT-141) — studied in that research area.',
   'antioxidant-beauty':
-    'The skin and antioxidant group — collagen, glutathione, and copper peptides studied for skin and glow.',
+    'Collagen, glutathione, and copper peptides — researched in skin-quality and oxidative-stress studies.',
   'experimental':
-    'The new and unproven group — investigational compounds where the science is still early.',
+    'Investigational compounds where the research is still early — exploratory, not established.',
 };
 
 /** Canonical display order for the categories above. Used by filter
