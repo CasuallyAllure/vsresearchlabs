@@ -51,6 +51,16 @@ const MAX_QTY = 999;
 const DRAWER_FIELD_SURFACE =
   'w-full rounded-field border bg-base-700 px-3 py-2.5 text-[13px] text-ink placeholder-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] focus:outline-none transition-[border-color,box-shadow] duration-150';
 
+/* Per-line reveal — while the drawer is open, each cart line joins the
+   staggered cascade (`.drawer-reveal` + inline --drawer-delay, see theme.css).
+   Closed → nothing, so reopening replays the cascade. Reduced-motion flattens
+   it to a plain present state. */
+function lineReveal(open: boolean, delay: number) {
+  return open
+    ? { className: 'drawer-reveal', style: { '--drawer-delay': `${delay}ms` } as React.CSSProperties }
+    : { className: '', style: undefined };
+}
+
 type View = 'list' | 'form';
 type SubmitState =
   | { kind: 'idle' }
@@ -209,49 +219,64 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — deeper blur pulls focus onto the panel; opacity trails the
+          slide slightly for a layered open. */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[6px] transition-opacity duration-[420ms] ease-out ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
 
-      {/* Drawer panel */}
+      {/* Drawer panel — glass chrome, inner edge rounded so it reads as a
+          floating module, and a weighted decelerate slide (settles, never
+          bounces). Enter slower than exit; reduced-motion zeroes both. */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Inquiry list"
-        className={`glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[340px] max-w-[90vw] sm:w-[380px] flex-col transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className="glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[344px] max-w-[90vw] sm:w-[388px] flex-col rounded-l-[22px] overflow-hidden"
+        style={{
+          transform: open ? 'translateX(0)' : 'translateX(100%)',
+          transition: open
+            ? 'transform 480ms cubic-bezier(0.32, 0.72, 0, 1)'
+            : 'transform 320ms cubic-bezier(0.4, 0, 0.7, 1)',
+          boxShadow: 'var(--glass-highlight), -28px 0 64px -24px rgba(26,23,20,0.4), var(--elev-3)',
+        }}
       >
         {/* Header — identity + close */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ink/[0.06]">
-          <div className="flex items-baseline gap-2.5">
-            <span className="font-serif text-[17px] leading-none tracking-[-0.01em] text-ink">
+        <div className="flex items-center justify-between px-6 pt-6 pb-5 border-b border-ink/[0.07]">
+          <div className="flex flex-col gap-1.5">
+            <span className="font-serif text-[21px] leading-none tracking-[-0.01em] text-ink">
               {submit.kind === 'success'
                 ? 'Inquiry filed'
                 : view === 'form'
                 ? 'Buyer details'
                 : 'Inquiry'}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/40 tabular-nums">
-              {itemCount > 0
-                ? `${itemCount} item${itemCount === 1 ? '' : 's'}`
-                : submit.kind === 'success'
-                ? 'Invoice on its way'
-                : 'Empty'}
+            <span className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="h-[1.5px] w-3.5 shrink-0 rounded-full"
+                style={{ backgroundColor: 'var(--color-accent-gold)' }}
+              />
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45 tabular-nums">
+                {itemCount > 0
+                  ? `${itemCount} item${itemCount === 1 ? '' : 's'}`
+                  : submit.kind === 'success'
+                  ? 'Invoice on its way'
+                  : 'Empty'}
+              </span>
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close inquiry list"
-            className="-mr-2 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
+            className="-mr-1.5 -mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink/50 hover:text-ink hover:bg-ink/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -260,30 +285,32 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
         {/* ── SUCCESS ─────────────────────────────────────────────────── */}
         {submit.kind === 'success' ? (
-          <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+            {/* Gold check seated in a soft ring — no glow (retired register) */}
             <span
               aria-hidden="true"
-              className="flex h-12 w-12 items-center justify-center rounded-full border"
-              style={{ borderColor: 'rgba(140, 144, 148,0.4)', boxShadow: '0 0 18px rgba(140, 144, 148,0.25)' }}
+              className="grid h-16 w-16 place-items-center rounded-full border border-gold/30 bg-gold/[0.07]"
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(140,144,148,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <span className="grid h-11 w-11 place-items-center rounded-full" style={{ backgroundColor: 'var(--color-accent-gold)' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16130F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
             </span>
-            <p className="mt-5 text-[14px] tracking-tight text-ink">Inquiry received.</p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink/50 max-w-[30ch]">
+            <p className="mt-6 font-serif text-[19px] leading-tight tracking-[-0.01em] text-ink">Inquiry received</p>
+            <p className="mt-2.5 text-[13px] leading-relaxed text-ink/55 max-w-[32ch]">
               We'll email your invoice to{' '}
-              <span className="text-holo-light">{submit.email}</span> shortly.
+              <span className="text-ink">{submit.email}</span> shortly.
             </p>
             {submit.reference && (
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink/40 tabular-nums">
                 Ref · {submit.reference}
               </p>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="mt-8 rounded-full border border-ink/15 px-6 py-2 text-[10px] uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+              className="mt-9 min-h-[44px] rounded-full border border-ink/15 px-8 text-[11px] uppercase tracking-[0.22em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
             >
               Done
             </button>
@@ -429,11 +456,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <button
                 type="submit"
                 disabled={formInvalid || submit.kind === 'submitting'}
-                className="cta-mint group relative flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-full px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+                className="cta-mint group relative flex min-h-[52px] w-full items-center justify-center overflow-hidden rounded-full px-4 text-[11px] font-medium uppercase tracking-[0.2em] text-ink transition-transform motion-safe:active:scale-[0.985] disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
               >
-                <span className="relative">
-                  {submit.kind === 'submitting' ? 'Sending…' : 'Send & Email Invoice'}
-                </span>
+                {submit.kind === 'submitting' ? 'Sending…' : 'Send & Email Invoice'}
               </button>
               <button
                 type="button"
@@ -450,27 +475,51 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         ) : (
           /* ── LIST ──────────────────────────────────────────────────── */
           <>
-            <div className="flex-1 overflow-y-auto px-2 py-3">
+            <div className="flex-1 overflow-y-auto px-3 py-4">
               {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/30">
-                    No items
+                /* Empty state with character — a specimen vial resting in a
+                   soft display well, an editorial line, and a quiet way in. */
+                <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+                  <span
+                    aria-hidden="true"
+                    className="grid h-20 w-20 place-items-center rounded-[20px] border border-ink/[0.08] bg-ink/[0.03] shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)]"
+                  >
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-content-tertiary)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 2h6" />
+                      <path d="M10 2v4.6L6.2 15a2.2 2.2 0 0 0 2 3.1h7.6a2.2 2.2 0 0 0 2-3.1L14 6.6V2" />
+                      <path d="M7.4 12h9.2" />
+                    </svg>
+                  </span>
+                  <p className="mt-6 font-serif text-[19px] leading-tight tracking-[-0.01em] text-ink">
+                    Your inquiry is empty
                   </p>
-                  <p className="mt-3 text-[12.5px] leading-relaxed text-ink/45 max-w-[28ch]">
-                    Add inventory from any product page to start an inquiry.
+                  <p className="mt-2.5 text-[13px] leading-relaxed text-ink/50 max-w-[30ch]">
+                    Add compounds from any product page and they'll gather here for a single quoted inquiry.
                   </p>
+                  <Link
+                    to="/research-supplies"
+                    onClick={onClose}
+                    className="mt-7 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-ink/15 px-6 text-[11px] uppercase tracking-[0.2em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
+                  >
+                    Browse compounds
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="m9 6 6 6-6 6" />
+                    </svg>
+                  </Link>
                 </div>
               ) : (
-                <ul className="flex flex-col">
-                  {items.map((item) => {
+                <ul className="flex flex-col gap-2.5">
+                  {items.map((item, i) => {
                     const imageUrl = item.product.images?.[0] ?? null;
                     const atMax = item.quantity >= MAX_QTY;
+                    const reveal = lineReveal(open, 120 + i * 55);
                     return (
                       <li
                         key={item.product.id}
-                        className="flex items-start gap-3.5 px-4 py-4 border-b border-ink/[0.05] last:border-b-0"
+                        {...reveal}
+                        className={`group flex items-start gap-3.5 rounded-[16px] border border-ink/[0.07] bg-[color:var(--surface-product)] p-3 transition-[border-color,box-shadow] duration-200 hover:border-ink/[0.12] hover:shadow-[var(--surface-highlight),var(--elev-1)] ${reveal.className}`}
                       >
-                        <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[10px] border border-ink/[0.09] bg-display shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)]">
+                        <div className="h-[76px] w-[76px] shrink-0 overflow-hidden rounded-[12px] border border-ink/[0.09] bg-display shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)]">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
@@ -486,17 +535,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          {/* Name + price on one baseline */}
+                          {/* Name + line total on one baseline */}
                           <div className="flex items-baseline justify-between gap-3">
-                            <p className="truncate text-[13.5px] font-medium tracking-[-0.01em] text-ink">
+                            <p className="truncate text-[14px] font-medium tracking-[-0.01em] text-ink">
                               {item.product.name}
                             </p>
-                            <p className="shrink-0 font-mono text-[12.5px] tabular-nums text-ink/85">
+                            <p className="shrink-0 font-mono text-[14px] tabular-nums text-ink">
                               {formatUsd(lineUnitCents(item) * item.quantity)}
                             </p>
                           </div>
                           {/* SKU + ship class, one quiet meta line */}
-                          <p className="mt-1 flex items-center gap-2 truncate">
+                          <p className="mt-1.5 flex items-center gap-2 truncate">
                             <SKUCode value={item.product.sku} className="text-[10px] text-ink/40" />
                             {lineIsFast(item, isMember) ? (
                               <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)] border border-[color:var(--color-status-success)]/25">
@@ -505,22 +554,22 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                             ) : null}
                           </p>
                           {item.quantity > 1 && (
-                            <p className="mt-0.5 font-mono text-[10.5px] tabular-nums text-ink/40">
+                            <p className="mt-1 font-mono text-[10.5px] tabular-nums text-ink/40">
                               {formatUsd(lineUnitCents(item))} each
                             </p>
                           )}
-                          {/* Controls: one segmented stepper + quiet remove */}
-                          <div className="mt-2.5 flex items-center">
-                            <div className="inline-flex items-center rounded-full border border-ink/[0.12] bg-ink/[0.03]">
+                          {/* Controls: segmented stepper (press feedback) + icon remove */}
+                          <div className="mt-3 flex items-center gap-2">
+                            <div className="inline-flex items-center rounded-full border border-ink/[0.14] bg-ink/[0.03]">
                               <button
                                 type="button"
                                 onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                 aria-label="Decrease quantity"
-                                className="flex h-7 w-7 items-center justify-center rounded-l-full text-[13px] text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                                className="grid h-9 w-9 place-items-center rounded-l-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                               >
                                 −
                               </button>
-                              <span className="w-7 text-center text-[12.5px] tabular-nums text-ink border-x border-ink/[0.08]" aria-live="polite">
+                              <span className="w-9 text-center text-[13px] tabular-nums text-ink border-x border-ink/[0.09]" aria-live="polite">
                                 {item.quantity}
                               </span>
                               <button
@@ -528,7 +577,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                                 onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                                 disabled={atMax}
                                 aria-label="Increase quantity"
-                                className="flex h-7 w-7 items-center justify-center rounded-r-full text-[13px] text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                                className="grid h-9 w-9 place-items-center rounded-r-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                               >
                                 +
                               </button>
@@ -537,9 +586,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               type="button"
                               onClick={() => remove(item.product.id)}
                               aria-label={`Remove ${item.product.name}`}
-                              className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-ink/35 underline decoration-ink/20 underline-offset-4 hover:text-ink hover:decoration-ink/50 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                              title="Remove"
+                              className="ml-auto grid h-9 w-9 place-items-center rounded-full text-ink/35 hover:text-[color:var(--color-status-error)] hover:bg-[color:var(--color-status-errorMuted)] transition-colors motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                             >
-                              Remove
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6M14 11v6" />
+                              </svg>
                             </button>
                           </div>
                         </div>
@@ -550,70 +605,72 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               )}
             </div>
 
-            {/* Footer — continue to the details step */}
-            <div className="border-t border-ink/[0.06] px-5 py-3">
+            {/* Footer — order summary + continue to the details step. Hidden
+                entirely when empty so the empty state (with its own CTA) owns
+                the panel; no redundant disabled button. */}
+            {items.length > 0 && (
+            <div className="border-t border-ink/[0.07] px-6 pt-4 pb-5" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
               {cartHasMixedShipping(items, isMember) && (
                 <div
-                  className="mb-2.5 flex items-start gap-1.5 rounded-[5px] px-2.5 py-2"
-                  style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}
+                  className="mb-3 flex items-start gap-2 rounded-[12px] border border-gold/30 bg-gold/[0.07] px-3 py-2.5"
                   role="note"
                 >
-                  <span aria-hidden="true" className="text-[11px] leading-none mt-0.5">⚡</span>
-                  <p className="text-[10px] leading-relaxed text-ink/75">
-                    24-hour-shipping + standard items may arrive in <span className="font-medium">separate shipments</span> — <span className="font-medium">no extra charge</span>.
+                  <span aria-hidden="true" className="text-[12px] leading-none mt-px">⚡</span>
+                  <p className="text-[10.5px] leading-relaxed text-ink/70">
+                    24-hour-shipping + standard items may arrive in <span className="font-medium text-ink/85">separate shipments</span> — <span className="font-medium text-ink/85">no extra charge</span>.
                   </p>
                 </div>
               )}
-              {items.length > 0 && (
-                <>
-                  <div className="mb-2.5 flex items-baseline justify-between">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
-                    <span className="font-mono text-[12.5px] tabular-nums text-ink">
-                      {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
-                    </span>
-                  </div>
-                  <PromoCode
-                    variant="drawer"
-                    subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
-                  />
-                  {/* Account discount (signed-in perk) — same pass-2a math the
-                      server bills, so this preview matches the invoice. */}
-                  {accountDiscount && (() => {
-                    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
-                    const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
-                    if (breakdown.accountCents <= 0) return null;
-                    return (
-                      <div className="mb-2.5">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">
-                            {accountDiscount.label}
-                          </span>
-                          <span className="font-mono text-[12.5px] tabular-nums text-ink">
-                            −{formatUsd(breakdown.accountCents)}
-                          </span>
-                        </div>
-                        <div className="mt-1.5 flex items-baseline justify-between">
-                          <span className="text-[10px] uppercase tracking-[0.25em] text-ink/45">
-                            Total after discounts
-                          </span>
-                          <span className="font-mono text-[12.5px] tabular-nums text-ink">
-                            {formatUsd(Math.max(subtotalCents - breakdown.total, 0))}
-                          </span>
-                        </div>
+              {items.length > 0 && (() => {
+                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const breakdown = accountDiscount
+                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
+                  : null;
+                const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
+                const totalCents = hasAccountDisc
+                  ? Math.max(subtotalCents - breakdown!.total, 0)
+                  : subtotalCents;
+                return (
+                  <>
+                    {/* Subtotal + account perk — quiet rows above the anchor total */}
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Subtotal</span>
+                      <span className="font-mono text-[13px] tabular-nums text-ink/70">
+                        {formatUsd(subtotalCents)}
+                      </span>
+                    </div>
+                    <PromoCode variant="drawer" subtotalCents={subtotalCents} />
+                    {hasAccountDisc && (
+                      <div className="mb-3 flex items-baseline justify-between">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                          {accountDiscount!.label}
+                        </span>
+                        <span className="font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
+                          −{formatUsd(breakdown!.accountCents)}
+                        </span>
                       </div>
-                    );
-                  })()}
-                </>
-              )}
+                    )}
+                    {/* Total — the anchor. A hairline separates it from the line
+                        items above; the figure is the largest number on screen. */}
+                    <div className="mb-4 flex items-baseline justify-between border-t border-ink/[0.08] pt-3.5">
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/60">Total</span>
+                      <span className="font-mono text-[19px] tabular-nums text-ink">
+                        {formatUsd(totalCents)}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
               <button
                 type="button"
                 onClick={() => setView('form')}
                 disabled={items.length === 0}
-                className="cta-mint group relative flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-full px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.22em] text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+                className="cta-mint group relative flex min-h-[52px] w-full items-center justify-center overflow-hidden rounded-full px-5 text-[11px] font-medium uppercase tracking-[0.2em] text-ink transition-transform motion-safe:active:scale-[0.985] disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
               >
-                <span className="relative">Review &amp; Send Inquiry</span>
+                Review &amp; Send Inquiry
               </button>
             </div>
+            )}
           </>
         )}
       </aside>

@@ -210,45 +210,69 @@ const TAIL_NAV: NavLinkDef[] = [
   { to: '/contact', label: 'Contact', caption: 'Open inquiries', icon: MailIcon, match: (p) => p.startsWith('/contact') },
 ];
 
+/* Per-item reveal helper — while the drawer is open, each row/label joins the
+   staggered cascade (`.drawer-reveal` + an inline --drawer-delay). Closed, it
+   carries nothing, so reopening cleanly replays the cascade. Reduced-motion
+   flattens `.drawer-reveal` to a plain present state (see theme.css). */
+function revealProps(open: boolean, delay: number) {
+  return open
+    ? { className: 'drawer-reveal', style: { '--drawer-delay': `${delay}ms` } as React.CSSProperties }
+    : { className: '', style: undefined };
+}
+
 /* ── Editorial section label — mono caps with a hairline running to the
       panel edge. The structural rhythm of the whole drawer. ─────────── */
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children, open, delay }: { children: React.ReactNode; open: boolean; delay: number }) {
+  const r = revealProps(open, delay);
   return (
-    <div className="flex items-center gap-2.5 px-2.5 mb-1.5">
-      <span className="font-mono text-[8.5px] uppercase tracking-[0.26em] text-ink/40 whitespace-nowrap">
+    <div className={`flex items-center gap-3 px-3 mb-2 ${r.className}`} style={r.style}>
+      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 whitespace-nowrap">
         {children}
       </span>
-      <span aria-hidden="true" className="h-px flex-1 bg-ink/[0.07]" />
+      <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-r from-ink/[0.12] to-transparent" />
     </div>
   );
 }
 
-function NavItem({ item, pathname, onClick }: { item: NavLinkDef; pathname: string; onClick: () => void }) {
+function NavItem({
+  item,
+  pathname,
+  onClick,
+  open,
+  delay,
+}: {
+  item: NavLinkDef;
+  pathname: string;
+  onClick: () => void;
+  open: boolean;
+  delay: number;
+}) {
   const isActive = item.match ? item.match(pathname) : pathname === item.to;
+  const r = revealProps(open, delay);
 
   // Coming-soon row — same concept as the landing's "Archive in
   // preparation" seal: blur/dim the real content so it never reads as
   // live, with a mono seal. Not a link; not focusable.
   if (item.comingSoon) {
     return (
-      <li>
+      <li className={r.className} style={r.style}>
         <div
           aria-disabled="true"
           title="Coming soon"
-          className="relative flex items-center gap-3 rounded-md px-2.5 py-2 cursor-not-allowed"
+          className="relative flex min-h-[44px] items-center gap-3.5 rounded-[12px] px-3 py-2.5 cursor-not-allowed"
         >
-          <div className="flex min-w-0 items-center gap-3 select-none blur-[1.5px] opacity-45 saturate-[0.6]">
-            <span className="grid h-[18px] w-[18px] shrink-0 place-items-center text-ink/55">{item.icon}</span>
+          <div className="flex min-w-0 items-center gap-3.5 select-none blur-[1.5px] opacity-45 saturate-[0.6]">
+            <span className="grid h-[20px] w-[20px] shrink-0 place-items-center text-ink/55">{item.icon}</span>
             <span className="flex min-w-0 flex-col">
-              <span className="text-[12.5px] leading-tight tracking-[-0.01em] text-ink/80">{item.label}</span>
+              <span className="text-[13.5px] leading-tight tracking-[-0.01em] text-ink/80">{item.label}</span>
               {item.caption && (
-                <span className="mt-0.5 truncate font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
+                <span className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">
                   {item.caption}
                 </span>
               )}
             </span>
           </div>
-          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-ink/55">
+          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ink/55">
             Soon
           </span>
         </div>
@@ -257,52 +281,62 @@ function NavItem({ item, pathname, onClick }: { item: NavLinkDef; pathname: stri
   }
 
   return (
-    <li>
+    <li className={r.className} style={r.style}>
       <Link
         to={item.to}
         onClick={onClick}
         aria-current={isActive ? 'page' : undefined}
         className={[
-          'group relative flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors',
-          'focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40',
-          isActive ? 'bg-holo/[0.07]' : 'hover:bg-ink/[0.04]',
+          'group relative flex min-h-[44px] items-center gap-3.5 rounded-[12px] px-3 py-2.5',
+          'transition-colors duration-200',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-holo/35',
+          isActive ? 'bg-holo/[0.07]' : 'hover:bg-ink/[0.045]',
         ].join(' ')}
       >
+        {/* Active rail — a machined teal edge, not a timid 2px sliver */}
         {isActive && (
           <span
             aria-hidden="true"
-            className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full"
+            className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
             style={{ backgroundColor: 'var(--color-accent-teal)' }}
           />
         )}
+        {/* Icon + label share a hairline-shift micro-interaction on hover so the
+            row feels physical without moving the hit area. */}
         <span
-          className={`grid h-[18px] w-[18px] shrink-0 place-items-center transition-colors ${
-            isActive ? 'text-holo-light' : 'text-ink/50 group-hover:text-ink/80'
+          className={`grid h-[20px] w-[20px] shrink-0 place-items-center transition-[color,transform] duration-200 motion-safe:group-hover:translate-x-[1px] ${
+            isActive ? 'text-holo-light' : 'text-ink/50 group-hover:text-ink'
           }`}
         >
           {item.icon}
         </span>
-        <span className="flex min-w-0 flex-col">
+        <span className="flex min-w-0 flex-col transition-transform duration-200 motion-safe:group-hover:translate-x-[2px]">
           <span
-            className={`text-[12.5px] leading-tight tracking-[-0.01em] transition-colors ${
+            className={`text-[13.5px] leading-tight tracking-[-0.01em] transition-colors ${
               isActive ? 'text-ink' : 'text-ink/85 group-hover:text-ink'
             }`}
           >
             {item.label}
           </span>
           {item.caption && (
-            <span className="mt-0.5 truncate font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
+            <span className="mt-[3px] truncate font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">
               {item.caption}
             </span>
           )}
         </span>
-        {isActive && (
-          <span
-            aria-hidden="true"
-            className="ml-auto h-1 w-1 shrink-0 rounded-full"
-            style={{ backgroundColor: 'var(--color-accent-teal)' }}
-          />
-        )}
+        {/* Trailing chevron reveals on hover / active — a quiet "go" affordance */}
+        <span
+          aria-hidden="true"
+          className={`ml-auto shrink-0 transition-[opacity,transform] duration-200 ${
+            isActive
+              ? 'opacity-100 text-holo-light'
+              : 'opacity-0 -translate-x-1 text-ink/40 group-hover:opacity-100 group-hover:translate-x-0'
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 6 6 6-6 6" />
+          </svg>
+        </span>
       </Link>
     </li>
   );
@@ -330,58 +364,65 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
 
+  // Staggered reveal cascade — a running counter advanced in source order as
+  // the sections render, so every label/row settles a beat after the one above.
+  let order = 0;
+  const nextDelay = () => 90 + 30 * order++;
+
   return createPortal(
     <>
-      {/* Backdrop */}
+      {/* Backdrop — a real scrim: deeper blur pulls focus off the page and onto
+          the panel, and the opacity ramps a touch behind the slide. */}
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] bg-[color:var(--scrim)] backdrop-blur-[6px] transition-opacity duration-[420ms] ease-out ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
 
-      {/* Drawer panel */}
+      {/* Drawer panel — glass chrome (consistent with CartDrawer), inner edge
+          rounded so it reads as a floating module, and a weighted decelerate
+          slide (Vaul/emil curve — settles, never bounces). Enter is slower than
+          exit; reduced-motion zeroes both via the global !important override. */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Primary navigation"
-        className={`fixed top-0 left-0 z-[60] h-[100dvh] w-[296px] max-w-[86vw] sm:w-[316px] flex flex-col transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className="glass-panel fixed top-0 left-0 z-[60] h-[100dvh] w-[300px] max-w-[86vw] sm:w-[324px] flex flex-col rounded-r-[22px] overflow-hidden"
         style={{
-          backgroundColor: 'var(--color-surface-elevated)',
-          borderRight: '1px solid rgba(26, 23, 20, 0.12)',
-          boxShadow: '24px 0 60px -20px rgba(26,23,20,0.25)',
-          backdropFilter: 'blur(10px)',
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          transition: open
+            ? 'transform 480ms cubic-bezier(0.32, 0.72, 0, 1)'
+            : 'transform 320ms cubic-bezier(0.4, 0, 0.7, 1)',
+          boxShadow: 'var(--glass-highlight), 28px 0 64px -24px rgba(26,23,20,0.4), var(--elev-3)',
         }}
       >
-        {/* Identity — letterhead lockup. Mark + wordmark + jurisdiction,
-            all sharing the panel's 20px left gutter. */}
-        <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-ink/[0.08]">
+        {/* Identity — letterhead lockup. Mark + wordmark + jurisdiction. */}
+        <div className="flex items-start justify-between px-6 pt-6 pb-5 border-b border-ink/[0.08]">
           <Link
             to="/"
             onClick={onClose}
             aria-label={`${siteConfig.brand.name} — Home`}
-            className="group flex items-center gap-3 min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+            className="group flex items-center gap-3 min-w-0 rounded-[10px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
           >
-            <DnaVMark size={34} static />
+            <DnaVMark size={36} static />
             <span className="flex flex-col gap-[5px] min-w-0">
               <span
                 className="font-serif font-medium uppercase leading-none text-ink"
-                style={{ fontSize: 14, letterSpacing: '0.18em' }}
+                style={{ fontSize: 15, letterSpacing: '0.18em' }}
               >
                 Research Labs
               </span>
               <span className="flex items-center gap-1.5 min-w-0">
                 <span
                   aria-hidden="true"
-                  className="h-[1.5px] w-3 shrink-0 rounded-full"
+                  className="h-[1.5px] w-3.5 shrink-0 rounded-full"
                   style={{ backgroundColor: 'var(--color-accent-gold)' }}
                 />
                 <span
                   className="truncate font-mono uppercase leading-none text-ink/50"
-                  style={{ fontSize: 8, letterSpacing: '0.18em' }}
+                  style={{ fontSize: 9, letterSpacing: '0.2em' }}
                 >
                   Bay Area · California
                 </span>
@@ -392,9 +433,9 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="-mr-2 -mt-1 p-2 text-ink/45 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm"
+            className="-mr-1.5 -mt-1.5 grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink/45 hover:text-ink hover:bg-ink/[0.05] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -402,18 +443,18 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         </div>
 
         {/* Nav body — primary destinations */}
-        <nav aria-label="Primary" className="px-2.5 py-4 flex-1 min-h-0 overflow-y-auto">
-          <SectionLabel>Navigate</SectionLabel>
-          <ul className="flex flex-col">
+        <nav aria-label="Primary" className="px-3 py-5 flex-1 min-h-0 overflow-y-auto">
+          <SectionLabel open={open} delay={nextDelay()}>Navigate</SectionLabel>
+          <ul className="flex flex-col gap-0.5">
             {TOP_NAV.map((item) => (
-              <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
+              <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} open={open} delay={nextDelay()} />
             ))}
           </ul>
 
           {/* Research Supplies — parent + a guided sub-tree of domains */}
-          <div className="mt-6">
-            <SectionLabel>Research Supplies</SectionLabel>
-            <ul className="flex flex-col">
+          <div className="mt-7">
+            <SectionLabel open={open} delay={nextDelay()}>Research Supplies</SectionLabel>
+            <ul className="flex flex-col gap-0.5">
               <NavItem
                 item={{
                   to: '/research-supplies',
@@ -424,75 +465,76 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                 }}
                 pathname={location.pathname}
                 onClick={onClose}
+                open={open}
+                delay={nextDelay()}
               />
-              <NavItem item={CATALOG_NAV} pathname={location.pathname} onClick={onClose} />
+              <NavItem item={CATALOG_NAV} pathname={location.pathname} onClick={onClose} open={open} delay={nextDelay()} />
             </ul>
             {/* Domains hang off a vertical guide rule aligned under the
                 parent's icon. Each carries its own signature glyph. */}
-            <ul className="mt-0.5 ml-[19px] flex flex-col border-l border-ink/[0.09] pl-2.5">
+            <ul className="mt-1 ml-[21px] flex flex-col gap-0.5 border-l border-ink/[0.09] pl-3">
               {RESEARCH_SUPPLIES_CHILDREN.map((item) => (
-                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
+                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} open={open} delay={nextDelay()} />
               ))}
             </ul>
           </div>
 
           {/* Equipment + ops */}
-          <div className="mt-6">
-            <SectionLabel>Operational</SectionLabel>
-            <ul className="flex flex-col">
+          <div className="mt-7">
+            <SectionLabel open={open} delay={nextDelay()}>Operational</SectionLabel>
+            <ul className="flex flex-col gap-0.5">
               {TAIL_NAV.map((item) => (
-                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} />
+                <NavItem key={item.to} item={item} pathname={location.pathname} onClick={onClose} open={open} delay={nextDelay()} />
               ))}
             </ul>
           </div>
 
-          {/* Inquiry — the primary action signal, gold-accented */}
-          <div className="mt-6">
-            <SectionLabel>Inquiry</SectionLabel>
-            <ul>
-              <li>
-                <Link
-                  to="/cart"
-                  onClick={onClose}
-                  aria-current={location.pathname === '/cart' ? 'page' : undefined}
-                  className="group relative flex items-center gap-3 rounded-md px-2.5 py-2 hover:bg-gold/[0.06] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/40"
+          {/* Inquiry — elevated to a gold-accented mini-module so the primary
+              commercial action anchors the foot of the nav. */}
+          <div className="mt-7">
+            <SectionLabel open={open} delay={nextDelay()}>Inquiry</SectionLabel>
+            <Link
+              to="/cart"
+              onClick={onClose}
+              aria-current={location.pathname === '/cart' ? 'page' : undefined}
+              style={open ? ({ '--drawer-delay': `${nextDelay()}ms` } as React.CSSProperties) : undefined}
+              className={`group relative flex min-h-[52px] items-center gap-3.5 rounded-[14px] border border-gold/25 bg-gold/[0.06] px-3.5 py-3 transition-[background-color,border-color] duration-200 hover:bg-gold/[0.1] hover:border-gold/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${open ? 'drawer-reveal' : ''}`}
+            >
+              <span className="grid h-[22px] w-[22px] shrink-0 place-items-center text-gold-dark group-hover:text-gold transition-colors">
+                {CartIcon}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-[13.5px] leading-tight tracking-[-0.01em] text-ink group-hover:text-ink transition-colors">
+                  Inquiry List
+                </span>
+                <span className="mt-[3px] font-mono text-[10px] uppercase tracking-[0.16em] text-ink/45">
+                  {itemCount > 0 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending` : 'Empty'}
+                </span>
+              </span>
+              {itemCount > 0 && (
+                <span
+                  className="grid h-[22px] min-w-[22px] shrink-0 place-items-center rounded-full px-1.5 text-[11px] font-medium tabular-nums"
+                  style={{ backgroundColor: 'var(--color-accent-gold)', color: '#16130F' }}
                 >
-                  <span className="grid h-[18px] w-[18px] shrink-0 place-items-center text-ink/50 group-hover:text-gold transition-colors">
-                    {CartIcon}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-[12.5px] leading-tight tracking-[-0.01em] text-ink/85 group-hover:text-ink transition-colors">
-                      Inquiry List
-                    </span>
-                    <span className="mt-0.5 font-mono text-[8.5px] uppercase tracking-[0.16em] text-ink/40">
-                      {itemCount > 0 ? `${itemCount} item${itemCount === 1 ? '' : 's'} pending` : 'Empty'}
-                    </span>
-                  </span>
-                  {itemCount > 0 && (
-                    <span className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-sm bg-gold px-1 text-[10px] font-medium text-ink tabular-nums">
-                      {itemCount}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            </ul>
+                  {itemCount}
+                </span>
+              )}
+            </Link>
           </div>
         </nav>
 
-        {/* Drawer footer — quiet legal/meta + admin sign-in. Real flex child
-            (not absolutely positioned) so it never overlaps the Inquiry List
-            badge above it. */}
+        {/* Drawer footer — quiet legal/meta + admin sign-in. */}
         <div
-          className="shrink-0 px-5 py-3 border-t border-ink/[0.07] flex items-center justify-between gap-3"
-          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          className="shrink-0 px-6 py-4 border-t border-ink/[0.07] flex items-center justify-between gap-3"
+          style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
         >
-          <p className="font-mono text-[8px] uppercase tracking-[0.22em] text-ink/35 leading-snug">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/35 leading-relaxed">
             {siteConfig.compliance.navLines[0]}<br />{siteConfig.compliance.navLines[1]}
           </p>
           <Link
             to="/admin"
             onClick={onClose}
-            className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink/45 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm px-2 py-1 -mr-1 shrink-0"
+            className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-holo/35 rounded-full px-2.5 py-1.5 -mr-1 shrink-0"
           >
             Admin →
           </Link>

@@ -740,6 +740,33 @@ html[data-theme="dark"] {
      opacity 0); the static micrograph stands on its own. */
 }
 
+/* ─── Drawer motion (NavDrawer + CartDrawer) ───────────────────────────────
+   Slide-out panels that should read as a physical object with weight, not a
+   CSS demo. The panel itself slides via a transform transition on the aside
+   (see the components) using the Vaul/emil decelerate curve — heavy settle,
+   NO bouncy overshoot (banned in the 2026 register). Panel CONTENTS reveal in
+   a short staggered cascade so the drawer "assembles" rather than snapping in
+   fully-formed. Everything gated behind reduced-motion; the static panel is
+   the accessible default. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes drawer-item-in {
+    from { opacity: 0; transform: translateY(9px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Applied to each row/section only while the drawer is open. The cascade is
+     driven by --drawer-delay set inline per item; `both` holds the from-state
+     during the delay so nothing flashes in before its turn. */
+  .drawer-reveal {
+    opacity: 0;
+    animation: drawer-item-in 460ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation-delay: var(--drawer-delay, 0ms);
+  }
+}
+/* Reduced-motion (or unsupported): contents are simply present. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer-reveal { opacity: 1; }
+}
+
 /* ============================================================================
    COMPOUND INTELLIGENCE HERO — carousel track
    The terminal's slide track is a native scroll-snap surface (free,

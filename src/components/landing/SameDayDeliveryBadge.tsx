@@ -40,13 +40,41 @@ export function SameDayDeliveryBadge() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label="View same-day delivery zones"
-        className="inline-flex items-center gap-0.5 cursor-pointer rounded-[2px] px-0.5 font-semibold text-ink underline decoration-ink/40 decoration-2 underline-offset-2 transition-colors hover:decoration-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+        className="sdd-trigger inline-flex items-center gap-1 cursor-pointer align-baseline font-semibold text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/60"
       >
         same-day
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mb-[1px]">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mb-[1px] text-holo">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
+
+      {/* Glowing "void" highlight — a teal-lit pill that gently breathes so the
+          eye lands on the delivery offer. Motion is idle-only + reduced-motion safe. */}
+      <style>{`
+        .sdd-trigger {
+          position: relative;
+          border-radius: 999px;
+          padding: 0.06em 0.55em;
+          background: rgb(var(--c-teal) / 0.10);
+          box-shadow: inset 0 0 0 1px rgb(var(--c-teal) / 0.40), 0 0 10px 0 rgb(var(--c-teal) / 0.28);
+          animation: sddGlow 2.6s ease-in-out infinite;
+          transition: transform 160ms ease, box-shadow 200ms ease, background-color 200ms ease;
+        }
+        .sdd-trigger:hover { background: rgb(var(--c-teal) / 0.17); }
+        @keyframes sddGlow {
+          0%, 100% {
+            box-shadow: inset 0 0 0 1px rgb(var(--c-teal) / 0.35), 0 0 7px 0 rgb(var(--c-teal) / 0.22);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: inset 0 0 0 1px rgb(var(--c-teal) / 0.60), 0 0 18px 2px rgb(var(--c-teal) / 0.55);
+            transform: scale(1.02);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sdd-trigger { animation: none; }
+        }
+      `}</style>
 
       {open && (
         <>
@@ -103,11 +131,13 @@ export function SameDayDeliveryBadge() {
             <div className="border-t border-holo/20 pt-2.5">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/70">
                 Minimum order: <span className="text-holo font-semibold">$300</span>
+                <span className="mx-1.5 text-ink/25">·</span>
+                Wholesale excluded
               </p>
               <p className="mt-1.5 text-[10.5px] leading-relaxed text-ink/55">
-                Same-day orders in these zones <span className="text-ink/80 font-medium">ship within 24 hours</span>.
-                Orders below the $300 minimum, or outside these zones, ship{' '}
-                <span className="text-ink/80 font-medium">next-day — within one business day</span> across the Bay Area.
+                Orders over <span className="text-ink/80 font-medium">$300</span> in these zones qualify for{' '}
+                <span className="text-ink/80 font-medium">same- to next-day delivery</span> — wholesale case orders excluded.
+                Everywhere else, in-stock <span className="text-ink/80 font-medium">24 Hour</span> items still ship within 24 hours; standard items in 7–10 business days.
               </p>
             </div>
           </div>
