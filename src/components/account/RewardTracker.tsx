@@ -85,7 +85,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
         {active_voucher ? (
           <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
             Reward ready — {active_voucher.percent}% off your single highest-priced item, applied automatically at
-            your next checkout. One-time use.
+            your next checkout. One-time use. Not valid on wholesale orders.
           </p>
         ) : (
           <>
@@ -104,6 +104,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
             {!compact && (
               <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/60">
                 Earn 1 point per $1. At {threshold.toLocaleString()} points, redeem {percent}% off any one item.
+                Points and rewards don’t apply to wholesale orders.
               </p>
             )}
 

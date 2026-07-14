@@ -269,6 +269,7 @@ export function BiopeptideResearchSupplies() {
           onClose={() => setInspectedId(null)}
           list={filtered}
           onNavigate={setInspectedId}
+          wholesale={wholesaleActive}
         />
       )}
 

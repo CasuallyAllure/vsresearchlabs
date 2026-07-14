@@ -29,8 +29,13 @@ interface Perk {
   body: string;
   /** Limited-time offer — renders the corner LTO stamp on the chip. */
   isLimitedTime?: boolean;
+  /** Brand-gold icon treatment — the money perks get warmth, not flat mono. */
+  isGold?: boolean;
   icon: ReactNode;
 }
+
+/** Brand gold — same value the catalog's WHOLESALE pill uses. */
+const GOLD = '#B5904B';
 
 const stroke = {
   fill: 'none',
@@ -55,9 +60,10 @@ const PERKS: Perk[] = [
   },
   {
     label: '15% off',
-    headline: '15% off the entire order',
-    body: 'Applied automatically for members — a limited-time offer that can end at any point.',
+    headline: '15% off the entire order — limited time',
+    body: 'Applied automatically for members — a limited-time offer that can end at any point. Not valid on wholesale orders.',
     isLimitedTime: true,
+    isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="M4 13 11 6a2 2 0 0 1 1.4-.6H18a2 2 0 0 1 2 2v5.6a2 2 0 0 1-.6 1.4L12 21a2 2 0 0 1-2.8 0L4 15.8a2 2 0 0 1 0-2.8z" />
@@ -66,12 +72,14 @@ const PERKS: Perk[] = [
     ),
   },
   {
-    label: 'Order history',
-    headline: 'Your complete order record',
-    body: 'Every order, invoice, and tracking number saved in one secure place.',
+    label: 'Wholesale pricing',
+    headline: 'Business wholesale pricing available',
+    body: 'Case of 10 at 40% off or half kit of 5 at 27% off — any compound, members only. Wholesale price is final; other discounts and rewards don’t apply.',
+    isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
-        <path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4" />
+        <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />
+        <path d="M4 7.5l8 4.5 8-4.5M12 12v9" />
       </svg>
     ),
   },
@@ -80,16 +88,20 @@ const PERKS: Perk[] = [
     headline: (
       <>
         40% off{' '}
-        <span className="font-sans text-[0.82em] font-semibold tracking-[0.04em] underline decoration-ink/30 underline-offset-[3px]">
+        <span
+          className="font-sans text-[0.82em] font-semibold tracking-[0.04em] underline underline-offset-[3px]"
+          style={{ textDecorationColor: 'rgba(181,144,75,0.55)' }}
+        >
           ANY
         </span>{' '}
         compound
       </>
     ),
-    body: 'Earn points on every order — bank 300 and the unlock is yours. Limited-time offer.',
+    body: 'Earn points on every order — bank 300 and the unlock is yours. Limited-time offer. Points and the 40% reward don’t apply to wholesale.',
     isLimitedTime: true,
+    isGold: true,
     icon: (
-      <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+      <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} fill="currentColor" fillOpacity={0.22} aria-hidden="true">
         <path d="m12 4 2.3 4.7 5.2.8-3.8 3.6.9 5.1L12 15.9 7.4 18.3l.9-5.1L4.5 9.5l5.2-.8z" />
       </svg>
     ),
@@ -204,7 +216,10 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 type="button"
                 aria-pressed={on}
                 onClick={() => setActive(i)}
-                style={{ animationDelay: `${140 + i * 60}ms` }}
+                style={{
+                  animationDelay: `${140 + i * 60}ms`,
+                  ...(on && perk.isGold ? { borderColor: 'rgba(181,144,75,0.45)' } : {}),
+                }}
                 className={[
                   'perk-chip group relative flex items-center justify-center gap-2 rounded-[14px] border px-3 py-3 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   on
@@ -214,15 +229,20 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
               >
                 {perk.isLimitedTime && (
                   <span
-                    className={`absolute -top-[8px] right-[10px] rounded-full border bg-base-800 px-[7px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] shadow-[var(--elev-1)] transition-colors ${
-                      on ? 'border-ink/30 text-ink/75' : 'border-ink/15 text-ink/45'
-                    }`}
+                    className="absolute -top-[8px] right-[10px] rounded-full border bg-base-800 px-[7px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] shadow-[var(--elev-1)] transition-colors"
+                    style={{
+                      color: GOLD,
+                      borderColor: on ? 'rgba(181,144,75,0.6)' : 'rgba(181,144,75,0.35)',
+                    }}
                   >
                     LTO
                   </span>
                 )}
                 <span
-                  className={`perk-icon shrink-0 ${on ? 'text-ink/80' : 'text-ink/40 group-hover:text-ink/55'}`}
+                  className={`perk-icon shrink-0 ${
+                    perk.isGold ? '' : on ? 'text-ink/80' : 'text-ink/40 group-hover:text-ink/55'
+                  }`}
+                  style={perk.isGold ? { color: GOLD, opacity: on ? 1 : 0.75 } : undefined}
                 >
                   {perk.icon}
                 </span>

@@ -40,6 +40,13 @@ import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
+import { useCustomerAuth } from '../../lib/customerAuth';
+import {
+  WHOLESALE_PACKS,
+  wholesaleDoses,
+  wholesalePackPricing,
+  formatPerVial,
+} from '../../lib/wholesale';
 import { ProcurementSheet, selectProcurementRows } from './intelligence/ProcurementSheet';
 import { QuantityStepper } from './intelligence/QuantityStepper';
 import { Button } from '../ui/Button';
@@ -56,6 +63,9 @@ function CloseIcon() {
 
 // ─── Main overlay ─────────────────────────────────────────────────────────────
 
+/** Brand gold — matches WholesaleTile / the catalog's WHOLESALE pill. */
+const GOLD = '#B5904B';
+
 interface CompoundIntelligenceOverlayProps {
   product: Product;
   onClose: () => void;
@@ -65,6 +75,11 @@ interface CompoundIntelligenceOverlayProps {
    *  leaving the modal. */
   list?: Product[];
   onNavigate?: (productId: string) => void;
+  /** Opened from the WHOLESALE catalog view — the buy block sells packs at
+   *  case pricing (unified 7–10 day dose picker, NO 24hr badge, member-gated
+   *  Add) instead of single retail vials. Keep the math in sync with
+   *  WholesaleTile (both read src/lib/wholesale.ts). */
+  wholesale?: boolean;
 }
 
 export function CompoundIntelligenceOverlay({
@@ -72,10 +87,12 @@ export function CompoundIntelligenceOverlay({
   onClose,
   list,
   onNavigate,
+  wholesale,
 }: CompoundIntelligenceOverlayProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+  const setItemNote = useCart((s) => s.setItemNote);
 
   // ── Carousel navigation (optional) ────────────────────────────────────────
   // The overlay is stateless about the current selection — parent owns it.
@@ -199,6 +216,39 @@ export function CompoundIntelligenceOverlay({
   const activeTier = visibleTiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
   const priceCents = effectiveTierPriceCents(product, activeDoseLabel);
+
+  // ── Wholesale mode ──────────────────────────────────────────────────────
+  // Pack pricing state — hooks run unconditionally; the block only renders
+  // when `wholesale` is set. Indices clamp so carousel navigation to a
+  // product with fewer doses never strands the selection.
+  const wsDoses = wholesale ? wholesaleDoses(product) : [];
+  const [wsDoseIndex, setWsDoseIndex] = useState(0);
+  const [wsPackIndex, setWsPackIndex] = useState(0);
+  const [wsAdded, setWsAdded] = useState(false);
+  const wsDose = wsDoses[Math.min(wsDoseIndex, Math.max(wsDoses.length - 1, 0))] ?? null;
+  const wsPack = WHOLESALE_PACKS[wsPackIndex];
+  const wsPricing = wsDose ? wholesalePackPricing(product, wsDose, wsPack) : null;
+  const { user } = useCustomerAuth();
+  const isMember = !!user;
+
+  function handleAddPack() {
+    if (!wsDose || !wsPricing) return;
+    const line = variantProduct(product, wsDose);
+    const currentItems = useCart.getState().items;
+    const existing = currentItems.find((i) => i.product.id === line.id);
+    if (existing) {
+      updateQuantity(line.id, existing.quantity + wsPack.size);
+    } else {
+      add(line);
+      updateQuantity(line.id, wsPack.size);
+    }
+    setItemNote(
+      line.id,
+      `Wholesale ${wsPack.label.toLowerCase()} ×${wsPack.size} — ${wsPack.percent}% off applied at checkout`,
+    );
+    setWsAdded(true);
+    setTimeout(() => setWsAdded(false), 1100);
+  }
 
   const passportStats = useMemo(() => {
     const s: Array<{ label: string; value: string; highlight?: boolean }> = [];
@@ -406,8 +456,145 @@ export function CompoundIntelligenceOverlay({
               </div>
             )}
 
-            {/* Select mg + live price + qty + Add to Inquiry */}
-            {visibleTiers.length > 0 && (
+            {/* Wholesale buy block — pack pricing, unified 7–10 day picker
+                (wholesale sources the whole case; never a 24hr badge here),
+                member-gated Add. Grammar mirrors WholesaleTile. */}
+            {wholesale && wsDose && wsPricing && (
+              <div className="px-5 py-4" style={{ borderTop: '1px solid var(--color-border-subtle)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="text-ink/45 uppercase" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
+                      Select mg
+                    </span>
+                    <span
+                      className="font-mono text-[9.5px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
+                      style={{ color: GOLD, borderColor: 'rgba(181,144,75,0.45)', backgroundColor: 'rgba(181,144,75,0.10)' }}
+                    >
+                      Wholesale
+                    </span>
+                  </span>
+                  <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                    {formatPerVial(wsPricing.packCents)}
+                  </span>
+                </div>
+
+                {/* ONE unified dose group — every pack ships 7–10 business days. */}
+                <div className="rounded-[var(--radius-field)] border border-ink/15 overflow-hidden">
+                  <div
+                    role={wsDoses.length > 1 ? 'radiogroup' : undefined}
+                    aria-label={wsDoses.length > 1 ? 'Select pack dose' : undefined}
+                    className="flex items-stretch"
+                  >
+                    {wsDoses.map((dose, i) => (
+                      <SourcedDoseSegment
+                        key={dose}
+                        dose={dose}
+                        isActive={dose === wsDose}
+                        interactive={wsDoses.length > 1}
+                        hasDivider={i > 0}
+                        onClick={wsDoses.length > 1 ? () => setWsDoseIndex(i) : undefined}
+                      />
+                    ))}
+                  </div>
+                  <div className="border-t border-ink/12 py-1 text-center">
+                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                      7–10 Biz Days
+                      <ShippingVan />
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pack picker — full case vs half kit. */}
+                <div
+                  role="radiogroup"
+                  aria-label="Select pack size"
+                  className="mt-1.5 flex items-stretch rounded-[var(--radius-field)] border border-ink/15 overflow-hidden"
+                >
+                  {WHOLESALE_PACKS.map((p, i) => {
+                    const on = i === wsPackIndex;
+                    return (
+                      <button
+                        key={p.key}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => setWsPackIndex(i)}
+                        className={[
+                          'flex-1 min-h-[34px] px-1 py-1.5 text-center leading-tight transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                          i > 0 ? 'border-l border-ink/12' : '',
+                          on ? 'bg-ink/[0.08]' : 'hover:bg-ink/[0.03]',
+                        ].join(' ')}
+                      >
+                        <span className={`block text-[11px] font-medium ${on ? 'text-ink' : 'text-ink/55'}`}>
+                          {p.label}
+                        </span>
+                        <span className={`block font-mono text-[9.5px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
+                          {p.size} vials · −{p.percent}%
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Price ledger — regular value, the wholesale cut, what's billed. */}
+                <dl className="mt-2 rounded-[var(--radius-field)] border border-ink/[0.08] bg-ink/[0.03] px-2.5 py-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <dt className="text-[11px] text-ink/50">
+                      {wsPack.size} vials · {wsDose}
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[11.5px] text-ink/45 line-through decoration-ink/30">
+                      {formatPerVial(wsPricing.regularCents)}
+                    </dd>
+                  </div>
+                  <div className="mt-0.5 flex items-baseline justify-between gap-2">
+                    <dt className="text-[11px]" style={{ color: GOLD }}>
+                      Wholesale −{wsPack.percent}%
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[11.5px]" style={{ color: GOLD }}>
+                      −{formatPerVial(wsPricing.discountCents)}
+                    </dd>
+                  </div>
+                  <div className="mt-1 flex items-baseline justify-between gap-2 border-t border-ink/[0.07] pt-1">
+                    <dt className="text-[11px] font-medium text-ink/75">
+                      {wsPack.size === 10 ? 'Case price' : 'Kit price'}
+                    </dt>
+                    <dd className="font-mono tabular-nums text-[14px] text-ink">
+                      {formatPerVial(wsPricing.packCents)}
+                    </dd>
+                  </div>
+                  <div className="mt-0.5 flex items-baseline justify-end gap-1">
+                    <span className="font-mono tabular-nums text-[10.5px] text-ink/45">
+                      {formatPerVial(wsPricing.unitCents)}
+                    </span>
+                    <span aria-hidden="true" className="text-[10.5px] text-ink/35">→</span>
+                    <span className="font-mono tabular-nums text-[10.5px] text-ink/60">
+                      {formatPerVial(wsPricing.perVialCents)} per vial
+                    </span>
+                  </div>
+                </dl>
+
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <span className="text-[10px] leading-snug text-ink/40">
+                    {isMember
+                      ? 'Wholesale price is final — codes, rewards, and other discounts don’t apply.'
+                      : 'Sign in to add cases at wholesale pricing.'}
+                  </span>
+                  {isMember ? (
+                    <Button variant="primary" size="sm" type="button" onClick={handleAddPack} className="shrink-0">
+                      {wsAdded ? '✓' : `+ Add ${wsPack.noun}`}
+                    </Button>
+                  ) : (
+                    <Button to="/account?mode=signin" variant="secondary" size="sm" className="shrink-0">
+                      Sign in
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Select mg + live price + qty + Add to Inquiry (retail — hidden
+                in wholesale mode, which sells packs above instead). */}
+            {(!wholesale || !wsPricing) && visibleTiers.length > 0 && (
               <div className="px-5 py-4" style={{ borderTop: '1px solid var(--color-border-subtle)', borderBottom: '1px solid var(--color-border-subtle)' }}>
                 <div className="flex items-baseline justify-between mb-2">
                   <span className="text-ink/45 uppercase" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
