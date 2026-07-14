@@ -88,5 +88,5 @@ export function b2g1EndsLabel(): string {
  *  for `sku`, or null when it isn't (caller shows the plain shipping copy). */
 export function b2g1TooltipContent(sku?: string | null): string | null {
   if (!isB2G1Active(sku)) return null;
-  return `Buy 2, Get 1 Free — limited-time offer${b2g1EndsLabel()}. Add 3 of a 7–10 day item to your cart and the 3rd is free at checkout.`;
+  return `Buy 2, Get 1 Free — limited-time offer${b2g1EndsLabel()}. Add 3 of a standard-shipping item to your cart and the 3rd is free at checkout.`;
 }

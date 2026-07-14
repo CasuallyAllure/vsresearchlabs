@@ -19,7 +19,7 @@ import { usePromoSettings, isB2G1Active, b2g1TooltipContent } from '../../lib/pr
 import { WHOLESALE_TOOLTIP } from '../../lib/wholesale';
 
 const FAST_SHIP_TOOLTIP = 'Ships within 24 hours — same-day delivery available for select ZIP codes.';
-const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
+const SOURCED_SHIP_PLAIN = 'Standard shipping — sourced to order, arrives in 7–10 business days.';
 
 /** Grid density for the catalog: one detailed tile per row → more tiles,
  *  less detail. Owned here (the control), consumed by CompoundSection. */
@@ -355,8 +355,8 @@ export function ClassificationFilter({
             aria-checked={shippingTiers.sourced}
             aria-label={
               shippingTiers.sourced
-                ? '7–10 business day shipping — tap to hide'
-                : 'Tap to show sourced (7–10 business day) compounds'
+                ? 'Standard shipping (7–10 business days) — tap to hide'
+                : 'Tap to show standard-shipping (7–10 business day) compounds'
             }
             onClick={shippingTiers.onToggleSourced}
             className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
@@ -373,7 +373,7 @@ export function ClassificationFilter({
               className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
               style={shippingTiers.sourced ? { backgroundColor: '#7E8288' } : undefined}
             />
-            7–10 DAYS
+            STANDARD
           </button>
           </Tooltip>
           </div>

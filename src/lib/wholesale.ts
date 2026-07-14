@@ -43,7 +43,7 @@ export const WHOLESALE_PACKS: WholesalePack[] = [
 export const WHOLESALE_TOOLTIP =
   'Wholesale business pricing — a full case (10 vials, 40% off) or half kit ' +
   '(5 vials, 27% off) of one compound, applied automatically at checkout. ' +
-  'Available on every compound; wholesale cases ship 7–10 business days.';
+  'Available on every compound; wholesale cases ship standard (7–10 business days).';
 
 /** Doses this product can sell wholesale: every publicly-priced, real variant
  *  dose with a usable per-vial price — 24-hour in-stock and 7–10-day sourced

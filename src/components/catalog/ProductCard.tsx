@@ -74,8 +74,8 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
 
   const stockPip = showStock ? (
     <span
-      aria-label={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
-      title={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
+      aria-label={stocked ? '24 Hour Shipping' : 'Standard shipping (7–10 business days)'}
+      title={stocked ? '24 Hour Shipping' : 'Standard shipping (7–10 business days)'}
       className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[10px] uppercase tracking-[0.12em]"
       style={{
         color: stocked ? STOCK_GREEN : SOURCED_GRAY,

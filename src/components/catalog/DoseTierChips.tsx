@@ -145,7 +145,7 @@ export function SourcedDoseSegment({ dose, isActive, interactive, hasDivider, on
       role="radio"
       aria-checked={isActive}
       onClick={onClick}
-      title={`${dose} · sourced, 7–10 business days`}
+      title={`${dose} · standard shipping, 7–10 business days`}
       className={className}
       style={style}
     >

@@ -182,8 +182,8 @@ export function BiopeptideResearchSupplies() {
         <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[13px] leading-relaxed">
           Lyophilized peptides, sourced for research-grade consistency. Use the shipping-tier
           chips to switch between compounds cleared for{' '}
-          <span className="text-ink/80">24-hour dispatch</span> and the wider catalog sourced
-          to order within 7–10 business days.{' '}
+          <span className="text-ink/80">24-hour dispatch</span> and the wider catalog on
+          standard shipping (sourced to order, 7–10 business days).{' '}
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
@@ -239,7 +239,7 @@ export function BiopeptideResearchSupplies() {
             wholesaleActive
               ? 'No compounds currently available at wholesale case pricing.'
               : showFastOnly
-                ? 'No compounds currently cleared for 24-hour dispatch — try 7–10 DAYS.'
+                ? 'No compounds currently cleared for 24-hour dispatch — try STANDARD.'
                 : 'No biopeptide research supplies match the active filter.'
           }
           onInspect={setInspectedId}

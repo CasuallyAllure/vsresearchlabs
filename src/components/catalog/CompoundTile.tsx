@@ -36,7 +36,7 @@ import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { Tooltip } from '../ui/Tooltip';
 import { usePromoSettings, b2g1TooltipContent } from '../../lib/promoSettings';
 
-const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
+const SOURCED_SHIP_PLAIN = 'Standard shipping — sourced to order, arrives in 7–10 business days.';
 
 interface CompoundTileProps {
   product: Product;
@@ -263,7 +263,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                       ariaId={`b2g1-${product.sku}`}
                     >
                       <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
-                        7–10 Biz Days
+                        Standard Shipping
                         <ShippingVan />
                       </span>
                     </Tooltip>

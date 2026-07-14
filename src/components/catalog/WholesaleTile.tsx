@@ -311,7 +311,7 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
           <div className="border-t border-ink/12 py-1 text-center">
             <Tooltip content={WHOLESALE_TOOLTIP} ariaId={`wholesale-${product.sku}`}>
               <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
-                7–10 Biz Days
+                Standard Shipping
                 <ShippingVan />
               </span>
             </Tooltip>

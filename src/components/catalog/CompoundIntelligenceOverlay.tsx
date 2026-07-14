@@ -498,7 +498,7 @@ export function CompoundIntelligenceOverlay({
                   </div>
                   <div className="border-t border-ink/12 py-1 text-center">
                     <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
-                      7–10 Biz Days
+                      Standard Shipping
                       <ShippingVan />
                     </span>
                   </div>
@@ -608,7 +608,7 @@ export function CompoundIntelligenceOverlay({
                   // Same shipping-tier treatment as CompoundTile: 24-hour
                   // doses render as standalone green "· 24 HR" chips;
                   // sourced doses group into one bordered box with a
-                  // "7–10 Biz Days" footer — no separate availability pill.
+                  // "Standard Shipping" footer — no separate availability pill.
                   const interactive = visibleTiers.length > 1;
                   const withState = visibleTiers.map((v, i) => ({
                     v,
@@ -659,7 +659,7 @@ export function CompoundIntelligenceOverlay({
                           </div>
                           <div className="border-t border-ink/12 py-1 text-center">
                             <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
-                              7–10 Biz Days
+                              Standard Shipping
                               <ShippingVan />
                             </span>
                           </div>

@@ -16,7 +16,7 @@ import { useProductOverrides, doseAvailability } from '../../lib/productOverride
 import { usePromoSettings, b2g1TooltipContent } from '../../lib/promoSettings';
 import { Tooltip } from '../ui/Tooltip';
 
-const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
+const SOURCED_SHIP_PLAIN = 'Standard shipping — sourced to order, arrives in 7–10 business days.';
 
 interface Props {
   sku: string;
@@ -64,7 +64,7 @@ export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
           className="inline-block h-1.5 w-1.5 rounded-full"
           style={{ backgroundColor: 'rgb(var(--c-ink) / 0.35)' }}
         />
-        Shipping 7–10 business days
+        Standard Shipping
       </span>
     </Tooltip>
   );

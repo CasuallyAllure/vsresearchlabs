@@ -62,8 +62,8 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   return (
     <div className="flex items-center gap-2 sm:gap-3 px-1.5 py-2 border-b border-ink/[0.06] hover:bg-ink/[0.02] transition-colors">
       <span
-        aria-label={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
-        title={stocked ? '24 Hour Shipping' : 'Shipping 7–10 business days'}
+        aria-label={stocked ? '24 Hour Shipping' : 'Standard shipping (7–10 business days)'}
+        title={stocked ? '24 Hour Shipping' : 'Standard shipping (7–10 business days)'}
         className="shrink-0 inline-block h-[7px] w-[7px] rounded-full"
         style={{ backgroundColor: stocked ? STOCK_GREEN : SOURCED_GRAY }}
       />
