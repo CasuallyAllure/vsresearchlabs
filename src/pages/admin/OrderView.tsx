@@ -34,6 +34,13 @@ import { siteConfig } from '../../config';
 import { PAYMENT_CONFIG } from '../../lib/payment';
 import { AdminCouponPicker } from './AdminCouponPicker';
 import { allocateLineDiscounts } from '../../lib/lineDiscounts';
+import { INDUSTRY_OPTIONS } from '../../lib/researchAttestation';
+
+/** Stored industry value → human label ("research_lab" → "Research laboratory").
+ *  Unknown values render as-is so old/foreign data never blanks the trail. */
+function industryLabel(value: string): string {
+  return INDUSTRY_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}
 
 /** SKU → catalog product, for resolving a unit price when an order line has no
  *  stored price yet (variant-aware: the dose in the item name drives the tier). */
@@ -95,6 +102,16 @@ interface OrderRecord {
   cancelled_at: string | null;
   created_at: string;
   lookup_token: string | null;
+  /** Research-use disclaimer acceptance snapshot stamped by place-order.
+   *  NULL = order predates the attestation trail (migration 056). */
+  research_attestation: {
+    accepted_at?: string;
+    recorded_at?: string;
+    disclaimer_version?: number;
+    industry?: string;
+    age_21_confirmed?: boolean;
+    research_use_confirmed?: boolean;
+  } | null;
 }
 
 interface OrderLine {
@@ -116,7 +133,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token';
+  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token, research_attestation';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -344,6 +361,23 @@ export function OrderView({
           <div className="mt-1.5">
             <ShipConfirmationChip order={order} />
           </div>
+          {/* Compliance trail — the buyer's research-use disclaimer acceptance
+              stamped at checkout. Absence is shown too, so the audit surface
+              never reads as "silently fine". */}
+          {order.research_attestation ? (
+            <p className="mt-1.5 text-[11px] leading-relaxed text-ink/50">
+              <span className="text-ink/70">Research-use disclaimer accepted</span>
+              {' · '}{fmtDate(order.research_attestation.accepted_at ?? order.research_attestation.recorded_at ?? '')}
+              {order.research_attestation.industry && (
+                <>{' · '}{industryLabel(order.research_attestation.industry)}</>
+              )}
+              {typeof order.research_attestation.disclaimer_version === 'number' && (
+                <>{' · '}v{order.research_attestation.disclaimer_version}</>
+              )}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-[11px] text-ink/35">No research-use attestation on file (pre-attestation order).</p>
+          )}
         </div>
         <div className="flex-1 text-right">
           <dl className="ml-auto inline-grid grid-cols-[auto_auto] gap-x-[var(--space-4)] gap-y-1 text-[12px]">

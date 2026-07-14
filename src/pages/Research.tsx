@@ -21,7 +21,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { ProductGrid } from '../components/ProductGrid';
+import { ResearchCompoundGrid } from '../components/catalog/ResearchCompoundGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
 import { useProducts } from '../hooks/useProducts';
@@ -126,7 +126,7 @@ export function Research() {
         {totalLabel}
       </p>
 
-      <ProductGrid
+      <ResearchCompoundGrid
         products={filtered}
         loading={loading}
         error={error}
@@ -136,7 +136,6 @@ export function Research() {
             : 'No compounds match the active filters.'
         }
         onInspect={setInspectedId}
-        compact
       />
 
       {inspectedProduct && (

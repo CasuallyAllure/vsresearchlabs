@@ -8,22 +8,25 @@
  * The buyer must:
  *   1. Confirm they are 21 or older
  *   2. Accept that purchases are research-only / not for human use
- * before the "Enter Site" button enables. Acceptance is persisted in
- * localStorage under STORAGE_KEY so it doesn't re-prompt across visits.
+ *   3. Declare their industry (research lab / B2B / academic / …)
+ * before the "Enter Site" button enables. Acceptance is persisted as a
+ * structured record (timestamp + industry, see lib/researchAttestation) so
+ * checkout can attach it to every order as a compliance audit trail.
  *
  * Behavior:
  *   - Body scroll locked while open
+ *   - Focus is TRAPPED inside the dialog — Tab cannot reach the page behind,
+ *     so the gate can't be walked past with a keyboard
  *   - Background blur + dim so the landing video module is hinted at
  *     behind the glass card
  *   - ESC does NOT close — this is a legal gate, not a dismissable dialog
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DnaVMark } from './DnaVMark';
 import { useScrollLock } from '../../lib/useScrollLock';
 import { siteConfig } from '../../config';
-
-const STORAGE_KEY = siteConfig.storage.disclaimerKey;
+import { INDUSTRY_OPTIONS, readDisclaimerAcceptance, writeDisclaimerAcceptance } from '../../lib/researchAttestation';
 
 // Card geometry. The gate is a normal centered modal — flex-centered in the
 // viewport so it always lands in the middle of the screen on every device,
@@ -33,23 +36,55 @@ const MARK_SIZE = 64;            // DnaVMark size in the gate
 
 export function DisclaimerGate() {
   // Show on first visit only — read storage during init (client-only SPA),
-  // so there's no flash and no setState-in-effect.
-  const [open, setOpen] = useState(() => {
-    try { return !localStorage.getItem(STORAGE_KEY); } catch { return true; }
-  });
+  // so there's no flash and no setState-in-effect. A valid STRUCTURED record
+  // is required: the legacy v1 bare-timestamp value (different key) no longer
+  // counts, so existing visitors re-attest once and declare an industry.
+  const [open, setOpen] = useState(() => readDisclaimerAcceptance() === null);
   const [age, setAge] = useState(false);
   const [terms, setTerms] = useState(false);
+  const [industry, setIndustry] = useState('');
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Ref-counted lock — safe even when the intro modal stacks on top.
   useScrollLock(open);
 
-  function accept() {
-    if (!age || !terms) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, new Date().toISOString());
-    } catch {
-      // Storage might be blocked (private mode etc); accept this session anyway.
+  // Focus trap: while the gate is open, Tab cycles inside the card only.
+  // Without this, keyboard focus walks straight out to the page behind the
+  // scrim — a real bypass of the legal gate.
+  useEffect(() => {
+    if (!open) return;
+    const card = cardRef.current;
+    if (!card) return;
+    const selector = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const first = card.querySelector<HTMLElement>(selector);
+    first?.focus();
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !cardRef.current) return;
+      const nodes = Array.from(cardRef.current.querySelectorAll<HTMLElement>(selector));
+      if (nodes.length === 0) return;
+      const firstNode = nodes[0];
+      const lastNode = nodes[nodes.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !cardRef.current.contains(active)) {
+        e.preventDefault();
+        firstNode.focus();
+      } else if (e.shiftKey && active === firstNode) {
+        e.preventDefault();
+        lastNode.focus();
+      } else if (!e.shiftKey && active === lastNode) {
+        e.preventDefault();
+        firstNode.focus();
+      }
     }
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [open]);
+
+  function accept() {
+    if (!age || !terms || !industry) return;
+    // Structured acceptance record — checkout attaches this to every order
+    // so there's an audit trail that the buyer attested before purchasing.
+    writeDisclaimerAcceptance(industry);
     setOpen(false);
     // Let downstream first-visit prompts (e.g. the member-access gate) hold
     // until the age/research disclaimer clears, so it's always shown first.
@@ -58,7 +93,7 @@ export function DisclaimerGate() {
 
   if (!open) return null;
 
-  const ready = age && terms;
+  const ready = age && terms && industry !== '';
 
   return (
     <div
@@ -95,6 +130,7 @@ export function DisclaimerGate() {
       `}</style>
 
       <div
+        ref={cardRef}
         style={{
           // Centered modal: the flex parent handles centering; the card just
           // caps its height to the viewport and scrolls internally if needed.
@@ -251,7 +287,7 @@ export function DisclaimerGate() {
             alignItems: 'flex-start',
             gap: '10px',
             padding: '12px 14px',
-            marginBottom: '20px',
+            marginBottom: '14px',
             border: '1px solid var(--color-border-default)',
             borderRadius: '8px',
             background: 'var(--color-interactive-secondary)',
@@ -278,6 +314,59 @@ export function DisclaimerGate() {
             I accept that purchases are <strong>for research only</strong> and
             not for human or animal consumption.
           </span>
+        </label>
+
+        {/* Declared industry — required, recorded with the acceptance and
+            attached to every order as part of the compliance trail. */}
+        <label
+          htmlFor="dgate-industry"
+          style={{
+            position: 'relative',
+            display: 'block',
+            marginBottom: '20px',
+            fontSize: '13px',
+            color: 'var(--color-content-primary)',
+            fontFamily: 'Inter, system-ui, Arial, sans-serif',
+          }}
+        >
+          <span
+            style={{
+              display: 'block',
+              marginBottom: '6px',
+              fontSize: '11px',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'var(--color-content-tertiary)',
+            }}
+          >
+            Purchasing on behalf of
+          </span>
+          <select
+            id="dgate-industry"
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              border: '1px solid var(--color-border-default)',
+              borderRadius: '8px',
+              background: 'var(--color-interactive-secondary)',
+              color: industry ? 'var(--color-content-primary)' : 'var(--color-content-tertiary)',
+              fontSize: '13px',
+              fontFamily: 'Inter, system-ui, Arial, sans-serif',
+              cursor: 'pointer',
+              appearance: 'auto',
+            }}
+          >
+            <option value="" disabled>
+              Select your industry…
+            </option>
+            {INDUSTRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <button

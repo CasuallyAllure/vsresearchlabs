@@ -33,8 +33,10 @@ import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
+import { orderAttestationPayload } from '../lib/researchAttestation';
 import { formatUsd } from '../lib/payment';
 import { Turnstile } from '../components/security/Turnstile';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
@@ -63,6 +65,10 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const items = useCart((s) => s.items);
+  // Wholesale is account-gated: only a signed-in buyer's pack lines count as
+  // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
+  const { user } = useCustomerAuth();
+  const isMember = !!user;
   // Subscribe so prices + FAST/standard badges re-render when overrides load.
   useProductOverrides((s) => s.variantBySku);
   const itemCount = useCart((s) => s.itemCount());
@@ -157,6 +163,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       ship_zip: zip.trim(),
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
+      // Research-use disclaimer acceptance (21+/research-only/industry) from
+      // the entry gate — stored on the order as the compliance audit trail.
+      research_attestation: orderAttestationPayload(),
       // Only the CODES travel — the server re-validates and prices each,
       // stacks them (additive, capped at subtotal), and adds any free items.
       coupon_codes: submittableCouponCodes(subtotalCents),
@@ -172,7 +181,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         // Same resolver the cart display uses (lib/cartActions.lineUnitCents).
         unitPriceCents: lineUnitCents(i),
         // FAST vs standard ship — carried into the emails so labels match.
-        fast: lineIsFast(i),
+        fast: lineIsFast(i, isMember),
       })),
     };
 
@@ -489,7 +498,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           {/* SKU + ship class, one quiet meta line */}
                           <p className="mt-1 flex items-center gap-2 truncate">
                             <SKUCode value={item.product.sku} className="text-[10px] text-ink/40" />
-                            {lineIsFast(item) ? (
+                            {lineIsFast(item, isMember) ? (
                               <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)] border border-[color:var(--color-status-success)]/25">
                                 ⚡ 24 hr
                               </span>
@@ -543,7 +552,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
             {/* Footer — continue to the details step */}
             <div className="border-t border-ink/[0.06] px-5 py-3">
-              {cartHasMixedShipping(items) && (
+              {cartHasMixedShipping(items, isMember) && (
                 <div
                   className="mb-2.5 flex items-start gap-1.5 rounded-[5px] px-2.5 py-2"
                   style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}

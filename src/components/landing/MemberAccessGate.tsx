@@ -23,7 +23,12 @@ import { useScrollLock } from '../../lib/useScrollLock';
 
 interface Perk {
   label: string;
-  detail: string;
+  /** Serif display line in the detail panel — the hook. */
+  headline: ReactNode;
+  /** Supporting sentence under the headline. */
+  body: string;
+  /** Limited-time offer — renders the corner LTO stamp on the chip. */
+  isLimitedTime?: boolean;
   icon: ReactNode;
 }
 
@@ -38,7 +43,8 @@ const stroke = {
 const PERKS: Perk[] = [
   {
     label: 'Free shipping',
-    detail: 'Shipping fees waived on every member order — applied automatically at checkout.',
+    headline: 'Every member order ships free',
+    body: 'Shipping fees waived automatically at checkout — no minimums, no codes.',
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z" />
@@ -48,8 +54,10 @@ const PERKS: Perk[] = [
     ),
   },
   {
-    label: '15% off · Q3',
-    detail: 'Members get an automatic 15% off the entire order for the remainder of Q3.',
+    label: '15% off',
+    headline: '15% off the entire order',
+    body: 'Applied automatically for members — a limited-time offer that can end at any point.',
+    isLimitedTime: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="M4 13 11 6a2 2 0 0 1 1.4-.6H18a2 2 0 0 1 2 2v5.6a2 2 0 0 1-.6 1.4L12 21a2 2 0 0 1-2.8 0L4 15.8a2 2 0 0 1 0-2.8z" />
@@ -59,7 +67,8 @@ const PERKS: Perk[] = [
   },
   {
     label: 'Order history',
-    detail: 'Every order, invoice, and tracking number saved in one secure place.',
+    headline: 'Your complete order record',
+    body: 'Every order, invoice, and tracking number saved in one secure place.',
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4" />
@@ -68,7 +77,17 @@ const PERKS: Perk[] = [
   },
   {
     label: 'Rewards',
-    detail: 'Earn reward points on every order. At 300 points, take 40% off any compound.',
+    headline: (
+      <>
+        40% off{' '}
+        <span className="font-sans text-[0.82em] font-semibold tracking-[0.04em] underline decoration-ink/30 underline-offset-[3px]">
+          ANY
+        </span>{' '}
+        compound
+      </>
+    ),
+    body: 'Earn points on every order — bank 300 and the unlock is yours. Limited-time offer.',
+    isLimitedTime: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="m12 4 2.3 4.7 5.2.8-3.8 3.6.9 5.1L12 15.9 7.4 18.3l.9-5.1L4.5 9.5l5.2-.8z" />
@@ -175,7 +194,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
           Guest checkout always stays open — an account just adds the perks. Tap one to see how it works.
         </p>
 
-        {/* Interactive perk chips — 2×2, one open at a time. */}
+        {/* Interactive perk chips — 2×2 raised tiles, one open at a time. */}
         <div className="mt-[var(--space-5)] grid grid-cols-2 gap-[var(--space-2)]">
           {PERKS.map((perk, i) => {
             const on = active === i;
@@ -185,14 +204,26 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 type="button"
                 aria-pressed={on}
                 onClick={() => setActive(i)}
+                style={{ animationDelay: `${140 + i * 60}ms` }}
                 className={[
-                  'group flex items-center justify-center gap-2 rounded-[11px] border px-3 py-2.5 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                  'perk-chip group relative flex items-center justify-center gap-2 rounded-[14px] border px-3 py-3 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   on
-                    ? 'border-ink/30 bg-ink/[0.08] text-ink'
-                    : 'border-ink/10 bg-ink/[0.02] text-ink/60 hover:border-ink/20 hover:text-ink/85',
+                    ? 'is-on border-ink/30 bg-ink/[0.08] text-ink'
+                    : 'border-ink/10 bg-ink/[0.03] text-ink/60 hover:border-ink/20 hover:text-ink/85',
                 ].join(' ')}
               >
-                <span className={`shrink-0 ${on ? 'text-ink/75' : 'text-ink/40 group-hover:text-ink/55'}`}>
+                {perk.isLimitedTime && (
+                  <span
+                    className={`absolute -top-[8px] right-[10px] rounded-full border bg-base-800 px-[7px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] shadow-[var(--elev-1)] transition-colors ${
+                      on ? 'border-ink/30 text-ink/75' : 'border-ink/15 text-ink/45'
+                    }`}
+                  >
+                    LTO
+                  </span>
+                )}
+                <span
+                  className={`perk-icon shrink-0 ${on ? 'text-ink/80' : 'text-ink/40 group-hover:text-ink/55'}`}
+                >
                   {perk.icon}
                 </span>
                 <span className="text-[12px] font-medium leading-tight">{perk.label}</span>
@@ -201,11 +232,15 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
           })}
         </div>
 
-        {/* Detail line for the open chip — reserved height so layout is steady. */}
-        <div className="mt-[var(--space-3)] flex min-h-[52px] items-center justify-center rounded-[11px] border border-ink/[0.08] bg-ink/[0.02] px-[var(--space-4)] py-[var(--space-3)]">
-          <p key={active} className="detail-fade text-center text-[12.5px] leading-[1.5] text-ink/60">
-            {PERKS[active].detail}
-          </p>
+        {/* Detail well for the open chip — recessed against the raised chips;
+            reserved height so layout is steady. */}
+        <div className="mt-[var(--space-3)] flex min-h-[88px] items-center justify-center rounded-[14px] border border-ink/[0.08] bg-ink/[0.035] px-[var(--space-4)] py-[var(--space-3)]">
+          <div key={active} className="detail-fade text-center">
+            <p className="font-serif text-[17px] leading-[1.25] tracking-[-0.005em] text-ink/90">
+              {PERKS[active].headline}
+            </p>
+            <p className="mt-1 text-[12px] leading-[1.5] text-ink/55">{PERKS[active].body}</p>
+          </div>
         </div>
 
         {/* Actions — equal primary/secondary, calm sizing. */}
@@ -232,7 +267,45 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
       <style>{`
         .detail-fade { animation: detailFade 220ms ease-out both; }
         @keyframes detailFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-        @media (prefers-reduced-motion: reduce) { .detail-fade { animation: none; } }
+
+        /* Raised-tile depth: lit top edge + layered elevation (theme-aware tokens).
+           Hover lifts, press flattens, the open chip stays lifted. */
+        .perk-chip {
+          box-shadow: var(--surface-highlight), var(--elev-1);
+          transition:
+            transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+            box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1),
+            border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+            background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+            color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+          animation: perkRise 420ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+        }
+        @media (hover: hover) {
+          .perk-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--surface-highlight-strong), var(--elev-2);
+          }
+        }
+        .perk-chip.is-on {
+          transform: translateY(-1px);
+          box-shadow: var(--surface-highlight-strong), var(--elev-2);
+        }
+        .perk-chip:active {
+          transform: translateY(0) scale(0.97);
+          box-shadow: var(--surface-highlight), 0 1px 2px rgba(26, 23, 20, 0.05);
+          transition-duration: 80ms;
+        }
+        .perk-icon { transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1); }
+        .perk-chip.is-on .perk-icon { transform: scale(1.12); }
+        @keyframes perkRise { from { opacity: 0; transform: translateY(7px); } }
+
+        @media (prefers-reduced-motion: reduce) {
+          .detail-fade, .perk-chip { animation: none; }
+          .perk-chip, .perk-chip.is-on, .perk-chip:active, .perk-icon, .perk-chip.is-on .perk-icon {
+            transform: none;
+            transition: none;
+          }
+        }
       `}</style>
     </div>,
     document.body,

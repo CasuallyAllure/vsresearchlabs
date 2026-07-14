@@ -28,6 +28,12 @@ import type { Product } from '../types';
 import { deriveProductDose } from '../types';
 import { effectiveTierPriceCents, tierPriceCents } from './pricing';
 import { variantPriceCents, doseAvailability, isVariantPublic } from './productOverrides';
+import { WHOLESALE_PACKS } from './wholesale';
+
+/** Smallest wholesale pack size (the half kit, 5). At or above this quantity a
+ *  line is bought as a wholesale case — the same threshold place-order uses to
+ *  detect and discount pack lines. */
+const WHOLESALE_MIN_PACK = Math.min(...WHOLESALE_PACKS.map((p) => p.size));
 
 /**
  * Returns a cart-line product for the given (product, dose). When `dose` is
@@ -112,23 +118,48 @@ export function lineUnitCents(item: { product: Product }): number {
 }
 
 /**
+ * Is this cart line a wholesale case? Wholesale is ACCOUNT-GATED: only a
+ * signed-in buyer transacts at case pricing, and only at pack quantity. Mirrors
+ * place-order's server gate (stampedUserId + qty ≥ smallest pack).
+ */
+export function lineIsWholesale(
+  item: { product: Product; quantity?: number },
+  isMember = false,
+): boolean {
+  return isMember && (item.quantity ?? 0) >= WHOLESALE_MIN_PACK;
+}
+
+/**
  * Is this cart line a FAST-ship item? Fast = physically reachable supply
  * (on-hand or in-transit) for the (sku, dose) — same definition the catalog
  * FAST badge uses (doseAvailability). Non-fast items ship from the drop-ship
  * warehouse, so a cart that mixes the two will arrive in separate shipments.
+ *
+ * A wholesale line (see lineIsWholesale) is NEVER fast: the whole case is
+ * sourced together and always ships 7–10 business days, even when the dose is a
+ * 24-hour retail item. This mirrors place-order and the wholesale rule
+ * ("everything is 7–10 business days"), so no wholesale line is ever badged or
+ * emailed as ⚡ 24-hour.
  */
-export function lineIsFast(item: { product: Product }): boolean {
+export function lineIsFast(
+  item: { product: Product; quantity?: number },
+  isMember = false,
+): boolean {
+  if (lineIsWholesale(item, isMember)) return false;
   const av = doseAvailability(item.product.sku, deriveProductDose(item.product));
   return av.state === 'in_stock' && av.fast;
 }
 
 /** True when the cart contains BOTH fast-ship and standard (drop-ship) lines —
  *  the buyer should be told the order may arrive in separate shipments. */
-export function cartHasMixedShipping(items: Array<{ product: Product }>): boolean {
+export function cartHasMixedShipping(
+  items: Array<{ product: Product; quantity?: number }>,
+  isMember = false,
+): boolean {
   let fast = false;
   let standard = false;
   for (const i of items) {
-    if (lineIsFast(i)) fast = true;
+    if (lineIsFast(i, isMember)) fast = true;
     else standard = true;
     if (fast && standard) return true;
   }

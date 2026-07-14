@@ -44,9 +44,11 @@ interface CompoundTileProps {
   onInspect?: (id: string) => void;
   /** When true, the dose chips list ONLY 24-hour doses (in-stock filter on). */
   only24hrDoses?: boolean;
+  /** Detail layout — full description plus a compact spec sheet. */
+  detailed?: boolean;
 }
 
-export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTileProps) {
+export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: CompoundTileProps) {
   const imageUrl = product.images?.[0] ?? null;
 
   // Subscribe to overrides so admin price/stock changes propagate live.
@@ -164,9 +166,29 @@ export function CompoundTile({ product, onInspect, only24hrDoses }: CompoundTile
             {product.name}
           </h3>
           {product.shortDescription && (
-            <p className="mt-1 text-[12px] leading-relaxed text-ink/55 line-clamp-2">
+            <p
+              className={`mt-1 text-[12px] leading-relaxed text-ink/55 ${
+                detailed ? '' : 'line-clamp-2'
+              }`}
+            >
               {product.shortDescription}
             </p>
+          )}
+          {/* Detail layout: a compact spec sheet under the description —
+              the data the grid tiles have no room for. */}
+          {detailed && product.specs.length > 0 && (
+            <dl className="mt-2 space-y-0.5 border-t border-ink/[0.06] pt-2">
+              {product.specs.slice(0, 4).map((spec) => (
+                <div key={spec.label} className="flex items-baseline justify-between gap-3">
+                  <dt className="shrink-0 text-[10.5px] uppercase tracking-[0.1em] text-ink/40">
+                    {spec.label}
+                  </dt>
+                  <dd className="min-w-0 truncate text-right font-mono text-[11px] text-ink/65">
+                    {spec.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           )}
         </div>
       </button>

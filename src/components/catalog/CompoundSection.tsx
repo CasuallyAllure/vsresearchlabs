@@ -13,6 +13,23 @@
 
 import type { Product } from '../../types';
 import { CompoundTile } from './CompoundTile';
+import { WholesaleTile } from './WholesaleTile';
+import type { CatalogDensity } from './ClassificationFilter';
+
+// Column ramps per density. Wholesale tiles carry a price ledger + pack
+// picker, so every wholesale ramp runs one step roomier than the regular one.
+const GRID_GAP =
+  'gap-x-[var(--space-3)] gap-y-[var(--space-3)] sm:gap-x-[var(--space-4)] sm:gap-y-[var(--space-4)]';
+const REGULAR_GRID: Record<CatalogDensity, string> = {
+  detail: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3',
+  standard: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+  compact: 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
+};
+const WHOLESALE_GRID: Record<CatalogDensity, string> = {
+  detail: 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2',
+  standard: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+  compact: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+};
 
 interface CompoundSectionProps {
   /** researchClassification key, or a fallback key for uncategorized products. */
@@ -26,6 +43,10 @@ interface CompoundSectionProps {
   onInspect?: (id: string) => void;
   /** When true, each tile's dose chips list ONLY 24-hour doses. */
   only24hrDoses?: boolean;
+  /** Wholesale view — render pack-pricing WholesaleTile instead of CompoundTile. */
+  wholesale?: boolean;
+  /** Grid density from the filter bar's layout picker (default: standard). */
+  density?: CatalogDensity;
 }
 
 function FlaskIcon() {
@@ -49,8 +70,9 @@ function FlaskIcon() {
   );
 }
 
-export function CompoundSection({ sectionKey, label, description, products, onInspect, only24hrDoses }: CompoundSectionProps) {
+export function CompoundSection({ sectionKey, label, description, products, onInspect, only24hrDoses, wholesale, density = 'standard' }: CompoundSectionProps) {
   if (products.length === 0) return null;
+  const detailed = density === 'detail';
 
   return (
     <section aria-labelledby={`compound-section-${sectionKey}`} className="mb-[var(--space-8)] last:mb-0">
@@ -74,10 +96,19 @@ export function CompoundSection({ sectionKey, label, description, products, onIn
         )}
       </header>
 
-      <ul className="grid grid-cols-2 gap-x-[var(--space-3)] gap-y-[var(--space-3)] sm:grid-cols-3 sm:gap-x-[var(--space-4)] sm:gap-y-[var(--space-4)] lg:grid-cols-4 xl:grid-cols-5">
+      <ul className={`grid ${GRID_GAP} ${(wholesale ? WHOLESALE_GRID : REGULAR_GRID)[density]}`}>
         {products.map((product) => (
           <li key={product.id}>
-            <CompoundTile product={product} onInspect={onInspect} only24hrDoses={only24hrDoses} />
+            {wholesale ? (
+              <WholesaleTile product={product} onInspect={onInspect} detailed={detailed} />
+            ) : (
+              <CompoundTile
+                product={product}
+                onInspect={onInspect}
+                only24hrDoses={only24hrDoses}
+                detailed={detailed}
+              />
+            )}
           </li>
         ))}
       </ul>

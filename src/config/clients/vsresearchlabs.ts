@@ -50,6 +50,9 @@ export const vsResearchLabsConfig: SiteConfig = {
     productsKey: 'vsresearchlabs.products.v4',
     cartKey: 'vsresearchlabs.cart.v1',
     themeKey: 'vsr.theme', // must match the boot script in index.html
-    disclaimerKey: 'vsrl_disclaimer_accepted_v1',
+    // v2: acceptance is a structured JSON record (timestamp + declared
+    // industry) instead of a bare ISO string. The key bump re-prompts every
+    // visitor once so the industry declaration gets on record.
+    disclaimerKey: 'vsrl_disclaimer_accepted_v2',
   },
 };

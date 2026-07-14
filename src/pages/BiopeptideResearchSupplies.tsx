@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Product } from '../types';
 import { ProductGrid } from '../components/ProductGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
@@ -10,8 +11,10 @@ import {
   CLASSIFICATION_ORDER,
   CLASSIFICATION_SECTION_BLURB,
 } from '../lib/compoundIntelligence';
-import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
+import { ClassificationFilter, type CatalogDensity } from '../components/catalog/ClassificationFilter';
 import { useProductOverrides, isSkuInStock, isSkuVisible } from '../lib/productOverrides';
+import { isWholesaleEligible } from '../lib/wholesale';
+import { useCustomerAuth } from '../lib/customerAuth';
 
 const UNCATEGORIZED_KEY = '__uncategorized__';
 
@@ -31,8 +34,38 @@ export function BiopeptideResearchSupplies() {
   // dispatch — tap "7–10 DAYS" to widen to the sourced catalog.
   const [fastOn, setFastOn] = useState(true);
   const [sourcedOn, setSourcedOn] = useState(false);
-  const showFastOnly = fastOn && !sourcedOn;
-  const showSourcedOnly = sourcedOn && !fastOn;
+  // Wholesale view — an exclusive mode (case-of-10 business pricing on the
+  // sourced tier). While on, the speed chips are ignored (and render dimmed);
+  // toggling either speed chip drops back to the regular catalog.
+  const [wholesaleOn, setWholesaleOn] = useState(false);
+  // Wholesale is ACCOUNT-GATED (owner's rule): anonymous visitors never see
+  // case pricing — the toggle prompts sign-in instead of entering the mode.
+  // `wholesaleActive` is the effective flag; guarding on it means a stale
+  // `wholesaleOn` can never leak wholesale pricing to a signed-out session
+  // (e.g. after sign-out). The server (place-order) is the real gate.
+  // Wholesale pricing is VISIBLE to everyone — browsing it is fine and good for
+  // sales. Only ADDING a case + checking out require an account: gated on the
+  // tile's Add button and enforced server-side (place-order). So wholesale never
+  // "disappears" for signed-out visitors; they get a sign-in nudge to buy.
+  const { user } = useCustomerAuth();
+  const canWholesale = !!user;
+  const wholesaleActive = wholesaleOn;
+  // Grid density (detail / grid / dense) — applies to the regular AND
+  // wholesale views. Remembered per session so browsing keeps your layout.
+  const [density, setDensity] = useState<CatalogDensity>(() => {
+    try {
+      const saved = sessionStorage.getItem('vsr.catalogDensity');
+      return saved === 'detail' || saved === 'compact' ? saved : 'standard';
+    } catch {
+      return 'standard';
+    }
+  });
+  function changeDensity(d: CatalogDensity) {
+    setDensity(d);
+    try { sessionStorage.setItem('vsr.catalogDensity', d); } catch { /* private mode */ }
+  }
+  const showFastOnly = !wholesaleActive && fastOn && !sourcedOn;
+  const showSourcedOnly = !wholesaleActive && sourcedOn && !fastOn;
   const [search, setSearch] = useState('');
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
@@ -52,8 +85,9 @@ export function BiopeptideResearchSupplies() {
   // Only the two single-tier filters read per-dose stock data — "All" (both
   // or neither chip active) doesn't narrow by stock, so it has nothing to
   // wait on. Block the grid on the overrides fetch only when it would
-  // otherwise render a false "no compounds" empty state.
-  const awaitingStockData = (showFastOnly || showSourcedOnly) && !overridesLoaded;
+  // otherwise render a false "no compounds" empty state. Wholesale reads the
+  // same per-dose data (sourced-tier eligibility), so it waits too.
+  const awaitingStockData = (showFastOnly || showSourcedOnly || wholesaleActive) && !overridesLoaded;
 
   const classificationTabs = useMemo<{ id: string; label: string }[]>(() => {
     const seen = new Set<string>();
@@ -80,15 +114,22 @@ export function BiopeptideResearchSupplies() {
     return products.filter((p) => {
       if (!isSkuVisible(p.sku)) return false;
       if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
-      if (showFastOnly && !isSkuInStock(p.sku)) return false;
-      if (showSourcedOnly && isSkuInStock(p.sku)) return false;
+      // Wholesale mode replaces the speed filters: a compound qualifies when
+      // it has at least one publicly-priced dose on the sourced (7–10 day)
+      // tier — the only tier the owner sells by the case.
+      if (wholesaleActive) {
+        if (!isWholesaleEligible(p)) return false;
+      } else {
+        if (showFastOnly && !isSkuInStock(p.sku)) return false;
+        if (showSourcedOnly && isSkuInStock(p.sku)) return false;
+      }
       if (q.length > 0) {
         const hay = `${p.name} ${p.sku} ${p.abbreviation ?? ''} ${p.family ?? ''}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [products, classFilter, showFastOnly, showSourcedOnly, search, variantOverrides]);
+  }, [products, classFilter, showFastOnly, showSourcedOnly, wholesaleActive, search, variantOverrides]);
 
   // Group the filtered list into category sections, ordered per
   // CLASSIFICATION_ORDER; empty groups are skipped and anything without a
@@ -162,14 +203,32 @@ export function BiopeptideResearchSupplies() {
         shippingTiers={{
           fast: fastOn,
           sourced: sourcedOn,
-          onToggleFast: () => setFastOn((v) => !v),
-          onToggleSourced: () => setSourcedOn((v) => !v),
+          // Touching a speed chip always exits wholesale mode — the chips
+          // and the case view describe different catalogs.
+          onToggleFast: () => { setWholesaleOn(false); setFastOn((v) => !v); },
+          onToggleSourced: () => { setWholesaleOn(false); setSourcedOn((v) => !v); },
+          wholesale: { on: wholesaleActive, toggle: () => setWholesaleOn((v) => !v) },
         }}
+        density={{ value: density, onChange: changeDensity }}
         search={search}
         onSearch={setSearch}
         suggestions={suggestions}
         searchPlaceholder="Search peptides…"
       />
+
+      {wholesaleActive && !canWholesale && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-field)] border border-ink/15 bg-ink/[0.03] px-3.5 py-2.5">
+          <span className="text-[12.5px] leading-snug text-ink/70">
+            Viewing wholesale case pricing. Sign in to add cases and check out at these prices.
+          </span>
+          <Link
+            to="/account"
+            className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-ink underline decoration-ink/30 underline-offset-2 hover:text-ink/70"
+          >
+            Sign in
+          </Link>
+        </div>
+      )}
 
       {loading || error || awaitingStockData || filtered.length === 0 ? (
         <ProductGrid
@@ -177,9 +236,11 @@ export function BiopeptideResearchSupplies() {
           loading={loading || awaitingStockData}
           error={error}
           emptyLabel={
-            showFastOnly
-              ? 'No compounds currently cleared for 24-hour dispatch — try 7–10 DAYS.'
-              : 'No biopeptide research supplies match the active filter.'
+            wholesaleActive
+              ? 'No compounds currently available at wholesale case pricing.'
+              : showFastOnly
+                ? 'No compounds currently cleared for 24-hour dispatch — try 7–10 DAYS.'
+                : 'No biopeptide research supplies match the active filter.'
           }
           onInspect={setInspectedId}
           compact
@@ -195,6 +256,8 @@ export function BiopeptideResearchSupplies() {
               products={section.products}
               onInspect={setInspectedId}
               only24hrDoses={showFastOnly}
+              wholesale={wholesaleActive}
+              density={density}
             />
           ))}
         </div>

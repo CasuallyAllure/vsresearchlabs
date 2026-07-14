@@ -829,13 +829,28 @@ Deno.serve(async (req: Request) => {
   }[] = [];
   let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
 
-  // Precompute Buy-2-Get-1-Free eligibility BEFORE validating codes, so the
+  // Precompute the automatic slow-ship promos BEFORE validating codes, so the
   // combinability gate can tell whether an automatic promo is active for a
-  // code that opts out of promos. Eligibility is cart-only (slow-ship + qty≥3),
-  // independent of coupons; the reduction is applied in the flat pass below,
-  // consuming this plan (one query, no divergence). idx points into `items` —
-  // free_item appends happen later at the tail, so captured indices stay valid.
+  // code that opts out of promos. Two standing rules share one slow-ship
+  // lookup (one query, no divergence):
+  //   • WHOLESALE — pack pricing, always on (the owner's standing business
+  //     offer — keep sizes/percents in sync with src/lib/wholesale.ts):
+  //     full cases of 10 at 40% off, plus one half kit of 5 at 27% off from
+  //     the remainder (e.g. qty 15 = one case + one half kit). Offered on
+  //     EVERY orderable dose — 24-hour in-stock and 7–10-day sourced alike —
+  //     so ship speed does NOT gate the case discount (mirrors wholesaleDoses).
+  //   • B2G1     — qty ≥ 3 slow-ship → 1 free per 3, when the admin promo is
+  //     live.
+  // The two must never stack on one line: whichever is worth MORE to the
+  // buyer claims the line (e.g. qty 6 under live B2G1 → 2 free ≈ 33% beats
+  // the 27% half kit; qty 10 → 40% case beats 3 free ≈ 30%).
+  // Reductions are applied in the flat pass below, consuming these plans.
+  // idx points into `items` — free_item appends happen later at the tail, so
+  // captured indices stay valid.
+  const WHOLESALE_CASE = { size: 10, percent: 40 };
+  const WHOLESALE_HALF = { size: 5, percent: 27 };
   const b2g1FreePlan: { idx: number; freeUnits: number; unit: number }[] = [];
+  const wholesalePlan: { idx: number; units: number; value: number }[] = [];
   {
     const { data: promo } = await supabase
       .from("promo_settings")
@@ -845,9 +860,18 @@ Deno.serve(async (req: Request) => {
     const promoLive = !!promo?.b2g1_enabled &&
       (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
     const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
-    const skus = promoLive
-      ? [...new Set(items.map((i) => i.product.sku).filter((s): s is string => !!s && !excluded.has(s)))]
-      : [];
+    // Slow-ship data is needed for any pack-size line, plus B2G1 candidates
+    // while that promo is live.
+    const skus = [...new Set(
+      items
+        .filter((i) => {
+          const qty = clampQty(i.quantity);
+          if (qty >= WHOLESALE_HALF.size) return true;
+          return promoLive && qty >= 3 && !!i.product.sku && !excluded.has(i.product.sku);
+        })
+        .map((i) => i.product.sku)
+        .filter((s): s is string => !!s),
+    )];
     if (skus.length > 0) {
       const { data: availRows } = await supabase
         .from("product_variant_stock")
@@ -871,14 +895,64 @@ Deno.serve(async (req: Request) => {
           const dose = key.slice(sku.length + 2);
           return dose === "" || haystack.includes(dose);
         });
-        if (!isSlow) return;
-        const freeUnits = Math.floor(qty / 3);
-        if (freeUnits > 0) b2g1FreePlan.push({ idx, freeUnits, unit });
+        // Wholesale applies to ANY orderable pack-quantity line regardless of
+        // ship speed (fast in-stock included); B2G1 stays slow-ship only. So we
+        // no longer early-return on fast lines — we just withhold B2G1 from them.
+        // Wholesale pack value — full cases first, then at most one half kit
+        // from the remainder (remainder < case size, so 0 or 1 half kits).
+        // Per-pack rounding matches the client tile's displayed math.
+        const cases = Math.floor(qty / WHOLESALE_CASE.size);
+        const rem = qty - cases * WHOLESALE_CASE.size;
+        const halfKits = rem >= WHOLESALE_HALF.size ? 1 : 0;
+        const packUnits = cases * WHOLESALE_CASE.size + halfKits * WHOLESALE_HALF.size;
+        const packValue =
+          cases * Math.round((WHOLESALE_CASE.size * unit * WHOLESALE_CASE.percent) / 100) +
+          halfKits * Math.round((WHOLESALE_HALF.size * unit * WHOLESALE_HALF.percent) / 100);
+        const b2g1Free = isSlow && promoLive && !excluded.has(sku) ? Math.floor(qty / 3) : 0;
+        const b2g1Value = b2g1Free * unit;
+        if (packValue > 0 && packValue >= b2g1Value) {
+          wholesalePlan.push({ idx, units: packUnits, value: packValue });
+        } else if (b2g1Free > 0) {
+          b2g1FreePlan.push({ idx, freeUnits: b2g1Free, unit });
+        }
       });
     }
   }
+  // Wholesale is ACCOUNT-GATED and a FINAL price (owner's rules) — enforced
+  // here, server-side, because the client guard can be bypassed:
+  //   • Account-gated — only a verified signed-in owner buys at case pricing.
+  //     Without one (no stampedUserId), drop the wholesale plan entirely: those
+  //     pack-quantity lines fall back to retail (normal per-vial price AND their
+  //     retail 24-hour ship speed — no discount, no forced slow-ship).
+  //   • Final price — when wholesale DOES apply, nothing else may discount the
+  //     order: reject user-entered coupon codes and suppress the automatic
+  //     account discount, reward voucher, and B2G1. "Wholesale price and that's
+  //     it." B2G1 was already per-line exclusive with wholesale; this also kills
+  //     it on any other line of a wholesale order.
+  if (wholesalePlan.length > 0 && !stampedUserId) {
+    wholesalePlan.length = 0;
+  }
+  const hasWholesale = wholesalePlan.length > 0;
+  if (hasWholesale) {
+    // Actual wholesale lines are sourced as a case → never 24-hour, regardless
+    // of the dose's retail stock or the client-sent flag.
+    for (const p of wholesalePlan) {
+      if (items[p.idx]) items[p.idx].fast = false;
+    }
+    if (couponCodes.length > 0) {
+      return jsonResponse({
+        error:
+          "Wholesale pricing is final and can't be combined with promo codes. Remove the code (or the wholesale items) to check out.",
+      }, 400);
+    }
+    accountDiscount = null;
+    rewardVoucher = null;
+    b2g1FreePlan.length = 0;
+  }
+
   // Combinability context — fixed BEFORE any code is admitted (order-independent).
   const willB2G1Apply = b2g1FreePlan.length > 0;
+  const willWholesaleApply = wholesalePlan.length > 0;
   const hasReward = !!rewardVoucher;
   const hasAccount = !!accountDiscount;
   const admittedCodes: string[] = [];
@@ -891,7 +965,7 @@ Deno.serve(async (req: Request) => {
       p_contact: contact,
       p_applied_codes: admittedCodes,
       p_has_reward: hasReward,
-      p_has_promo: willB2G1Apply,
+      p_has_promo: willB2G1Apply || willWholesaleApply,
       p_has_account: hasAccount,
     });
     if (checkErr) {
@@ -972,6 +1046,18 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Wholesale pack pricing — apply the precomputed plan as a FLAT reduction
+  // (before percents, like B2G1) so no percent code can compound on the
+  // packed units. Capped at the remaining subtotal.
+  let wholesaleReduction = 0;
+  let wholesaleUnits = 0;
+  for (const p of wholesalePlan) {
+    const value = Math.max(Math.min(p.value, grossSubtotalCents - flatCents), 0);
+    wholesaleReduction += value;
+    wholesaleUnits += p.units;
+    flatCents += value;
+  }
+
   // Buy-2-Get-1-Free (migrations 054/055) — apply the precomputed plan as a
   // FLAT reduction (before percents, like a free item) so no percent code can
   // discount the freed units. Eligibility (slow-ship, promo governance) was
@@ -1036,12 +1122,14 @@ Deno.serve(async (req: Request) => {
   let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
   const REWARD_CODE = "REWARD";
   const B2G1_CODE = "B2G1";
+  const WHOLESALE_CODE = "WHOLESALE";
   // Comma-joined label for the order row, invoice, and emails (all read this).
   // The synthetic account/reward/promo codes lead, matching the order_coupons rows.
-  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || appliedList.length)
+  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || wholesaleReduction > 0 || appliedList.length)
     ? [
         ...(accountDiscount ? [accountDiscount.code] : []),
         ...(rewardReduction > 0 ? [REWARD_CODE] : []),
+        ...(wholesaleReduction > 0 ? [WHOLESALE_CODE] : []),
         ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
         ...appliedList.map((a) => a.code),
       ].join(", ")
@@ -1200,6 +1288,24 @@ Deno.serve(async (req: Request) => {
       .eq("id", rewardVoucher.id)
       .eq("status", "active");
     if (voucherErr) console.error("Reward voucher consume failed:", voucherErr);
+  }
+
+  // Materialize the wholesale case discount as a synthetic 'fixed'
+  // order_coupons row (source='promo', like B2G1). recompute_order_totals
+  // reads it as a flat reduction, so admin edits keep the totals consistent,
+  // and every invoice surface itemizes it under "Discounts applied".
+  if (wholesaleReduction > 0) {
+    const { error: wholesaleRowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: WHOLESALE_CODE,
+      kind: "fixed",
+      amount_cents: wholesaleReduction,
+      free_label:
+        `Wholesale pack pricing — ${wholesaleUnits} vial${wholesaleUnits === 1 ? "" : "s"} at case rates`,
+      discount_cents: wholesaleReduction,
+      source: "promo",
+    });
+    if (wholesaleRowErr) console.error("Wholesale order_coupons insert failed:", wholesaleRowErr);
   }
 
   // Materialize the Buy-2-Get-1-Free promo as a synthetic 'fixed' order_coupons

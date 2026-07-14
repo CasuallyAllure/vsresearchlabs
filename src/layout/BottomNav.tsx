@@ -282,15 +282,15 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
               boxShadow: 'var(--botnav-shadow-sheet)',
             }}
           >
-            <div className="px-4 pt-4 pb-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink/40">
+            <div className="px-5 pt-[18px] pb-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/40">
                 Research Supplies
               </p>
-              <p className="mt-1 text-[11px] text-ink/55">
+              <p className="mt-2 text-[12px] leading-snug text-ink/55">
                 Choose a research domain.
               </p>
             </div>
-            <ul className="px-2 pb-2">
+            <ul className="px-2 pb-1.5">
               {RESEARCH_SUPPLIES_SHEET.map((entry) => {
                 const isActive = path.startsWith(entry.to);
                 return (
@@ -300,36 +300,44 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                       onClick={() => handleSheetEntry(entry.to)}
                       aria-current={isActive ? 'page' : undefined}
                       className={[
-                        'w-full flex items-center justify-between gap-3 px-3 py-3 rounded-[10px] transition-colors',
+                        'group w-full flex items-center gap-3 rounded-[12px] px-3 py-[13px] text-left transition-colors',
                         'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
                         isActive
-                          ? 'bg-ink/[0.10]'
+                          ? 'bg-ink/[0.08]'
                           : 'hover:bg-ink/[0.05] active:bg-ink/[0.08]',
                       ].join(' ')}
                     >
-                      <span className="flex flex-col items-start min-w-0">
-                        <span className={`text-[13px] tracking-tight ${isActive ? 'text-ink' : 'text-ink/85'}`}>
+                      <span className="min-w-0 flex-1">
+                        <span className={`block text-[14px] leading-none tracking-tight ${isActive ? 'text-ink' : 'text-ink/90'}`}>
                           {entry.label}
                         </span>
-                        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/40 mt-0.5">
+                        <span className="mt-[7px] block truncate font-mono text-[10px] uppercase tracking-[0.05em] text-ink/40">
                           {entry.caption}
                         </span>
                       </span>
-                      <span aria-hidden="true" className="text-ink/35 text-sm shrink-0">
-                        →
+                      <span
+                        aria-hidden="true"
+                        className="shrink-0 text-ink/25 transition-all duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-ink/60"
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+                        </svg>
                       </span>
                     </button>
                   </li>
                 );
               })}
             </ul>
-            <div className="px-4 pb-3 pt-1 border-t border-ink/[0.06]">
+            <div className="px-5 pb-[15px] pt-2 border-t border-ink/[0.06]">
               <Link
                 to="/research-supplies"
                 onClick={() => setSheetOpen(false)}
-                className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 hover:text-ink/80 transition-colors"
+                className="group inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45 transition-colors hover:text-ink/80"
               >
-                View hub →
+                View hub
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 ease-out group-hover:translate-x-0.5">
+                  <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
+                </svg>
               </Link>
             </div>
           </div>

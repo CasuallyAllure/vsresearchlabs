@@ -37,8 +37,10 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Fiel
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
+import { orderAttestationPayload } from '../lib/researchAttestation';
 import { PaymentInstructions } from '../components/order/PaymentInstructions';
 import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
@@ -63,6 +65,10 @@ const MAX_QTY = 999;
 
 export function CartPage() {
   const items = useCart((s) => s.items);
+  // Wholesale is account-gated: only a signed-in buyer's pack lines count as
+  // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
+  const { user } = useCustomerAuth();
+  const isMember = !!user;
   // Subscribe to variant overrides so prices + FAST/standard ship badges
   // re-render once the store finishes loading (e.g. on a direct /cart load).
   useProductOverrides((s) => s.variantBySku);
@@ -161,6 +167,9 @@ export function CartPage() {
       ship_zip:     shipZip.trim() || undefined,
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
+      // Research-use disclaimer acceptance (21+/research-only/industry) from
+      // the entry gate — stored on the order as the compliance audit trail.
+      research_attestation: orderAttestationPayload(),
       // Only the CODES travel — the server re-validates and prices each,
       // stacks them (additive, capped at subtotal), and adds any free items.
       coupon_codes: submittableCouponCodes(subtotalCents),
@@ -178,7 +187,7 @@ export function CartPage() {
         unitPriceCents: lineUnitCents(i),
         // FAST = reachable from shelf/in-transit; standard = drop-ship warehouse.
         // Carried into the invoice + business emails so labels match the cart.
-        fast: lineIsFast(i),
+        fast: lineIsFast(i, isMember),
       })),
     };
 
@@ -573,7 +582,7 @@ export function CartPage() {
                     )}
                   </p>
                   <p className="mt-1">
-                    {lineIsFast(item) ? (
+                    {lineIsFast(item, isMember) ? (
                       <span className="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full border border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]">
                         ⚡ 24 Hour Shipping
                       </span>
@@ -710,7 +719,7 @@ export function CartPage() {
               })()}
             </div>
           </div>
-          {cartHasMixedShipping(items) && (
+          {cartHasMixedShipping(items, isMember) && (
             <div
               className="mt-[var(--space-3)] flex items-start gap-2 rounded-[6px] px-[var(--space-4)] py-[var(--space-3)]"
               style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}

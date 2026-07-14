@@ -16,9 +16,61 @@ import { CLASSIFICATION_LAYMAN, CLASSIFICATION_DEFINITIONS } from '../../lib/com
 import type { ResearchClassification } from '../../types';
 import { Tooltip } from '../ui/Tooltip';
 import { usePromoSettings, isB2G1Active, b2g1TooltipContent } from '../../lib/promoSettings';
+import { WHOLESALE_TOOLTIP } from '../../lib/wholesale';
 
 const FAST_SHIP_TOOLTIP = 'Ships within 24 hours — same-day delivery available for select ZIP codes.';
 const SOURCED_SHIP_PLAIN = 'Sourced to order — ships in 7–10 business days.';
+
+/** Grid density for the catalog: one detailed tile per row → more tiles,
+ *  less detail. Owned here (the control), consumed by CompoundSection. */
+export type CatalogDensity = 'detail' | 'standard' | 'compact';
+
+const DENSITY_OPTIONS: { id: CatalogDensity; label: string; hint: string }[] = [
+  { id: 'detail', label: 'Detail', hint: 'One compound at a time with the full write-up' },
+  { id: 'standard', label: 'Grid', hint: 'The standard tile grid' },
+  { id: 'compact', label: 'Dense', hint: 'More tiles per row — scan the catalog faster' },
+];
+
+function DensityGlyph({ kind }: { kind: CatalogDensity }) {
+  const s = {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  if (kind === 'detail') {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" {...s} aria-hidden="true">
+        <rect x="3" y="4" width="18" height="7" rx="1.5" />
+        <rect x="3" y="14" width="18" height="7" rx="1.5" />
+      </svg>
+    );
+  }
+  if (kind === 'standard') {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" {...s} aria-hidden="true">
+        <rect x="3" y="3" width="8" height="8" rx="1.5" />
+        <rect x="13" y="3" width="8" height="8" rx="1.5" />
+        <rect x="3" y="13" width="8" height="8" rx="1.5" />
+        <rect x="13" y="13" width="8" height="8" rx="1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" {...s} aria-hidden="true">
+      <rect x="2.5" y="2.5" width="5.4" height="5.4" rx="1" />
+      <rect x="9.3" y="2.5" width="5.4" height="5.4" rx="1" />
+      <rect x="16.1" y="2.5" width="5.4" height="5.4" rx="1" />
+      <rect x="2.5" y="9.3" width="5.4" height="5.4" rx="1" />
+      <rect x="9.3" y="9.3" width="5.4" height="5.4" rx="1" />
+      <rect x="16.1" y="9.3" width="5.4" height="5.4" rx="1" />
+      <rect x="2.5" y="16.1" width="5.4" height="5.4" rx="1" />
+      <rect x="9.3" y="16.1" width="5.4" height="5.4" rx="1" />
+      <rect x="16.1" y="16.1" width="5.4" height="5.4" rx="1" />
+    </svg>
+  );
+}
 
 interface Tab {
   id: string;
@@ -39,8 +91,19 @@ interface ClassificationFilterProps {
   describe?: (id: string) => { layman: string; technical?: string } | undefined;
   inStock?: { on: boolean; toggle: () => void; color?: string };
   /** Two independent shipping-tier chips (24-hour vs 7–10 business days).
-   *  Takes precedence over `inStock` when both are passed. */
-  shippingTiers?: { fast: boolean; sourced: boolean; onToggleFast: () => void; onToggleSourced: () => void };
+   *  Takes precedence over `inStock` when both are passed. Pass `wholesale`
+   *  to append a separated WHOLESALE pill after the speed chips; while it's
+   *  active the speed chips render dimmed (the page ignores them). */
+  shippingTiers?: {
+    fast: boolean;
+    sourced: boolean;
+    onToggleFast: () => void;
+    onToggleSourced: () => void;
+    wholesale?: { on: boolean; toggle: () => void };
+  };
+  /** Grid-density picker (detail / grid / dense), rendered after the
+   *  shipping-tier chips behind its own separator. */
+  density?: { value: CatalogDensity; onChange: (d: CatalogDensity) => void };
   // ── Optional smart search ──
   search?: string;
   onSearch?: (v: string) => void;
@@ -58,6 +121,7 @@ export function ClassificationFilter({
   describe,
   inStock,
   shippingTiers,
+  density,
   search,
   onSearch,
   searchPlaceholder = 'Search compounds…',
@@ -255,7 +319,11 @@ export function ClassificationFilter({
           <span className="shrink-0 text-[9px] uppercase tracking-[0.18em] text-ink/40">
             Shipping speed
           </span>
-          <div className="flex items-center gap-1.5">
+          <div
+            className={`flex items-center gap-1.5 transition-opacity ${
+              shippingTiers.wholesale?.on ? 'opacity-45' : ''
+            }`}
+          >
           <Tooltip content={FAST_SHIP_TOOLTIP} ariaId="ship-24hr">
           <button
             type="button"
@@ -309,6 +377,76 @@ export function ClassificationFilter({
           </button>
           </Tooltip>
           </div>
+
+          {shippingTiers.wholesale && (
+            <>
+              <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
+              <Tooltip content={WHOLESALE_TOOLTIP} ariaId="ship-wholesale">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={shippingTiers.wholesale.on}
+                  aria-label={
+                    shippingTiers.wholesale.on
+                      ? 'Wholesale business pricing — tap to return to the regular catalog'
+                      : 'Tap to shop wholesale business pricing (case of 10, 40% off)'
+                  }
+                  onClick={shippingTiers.wholesale.toggle}
+                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+                    shippingTiers.wholesale.on ? '' : 'border-ink/25 text-ink/55'
+                  }`}
+                  style={
+                    shippingTiers.wholesale.on
+                      ? { borderColor: '#B5904B99', color: '#B5904B', backgroundColor: 'rgba(181,144,75,0.10)' }
+                      : undefined
+                  }
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${
+                      shippingTiers.wholesale.on ? '' : 'bg-ink/35'
+                    }`}
+                    style={shippingTiers.wholesale.on ? { backgroundColor: '#B5904B' } : undefined}
+                  />
+                  Wholesale
+                </button>
+              </Tooltip>
+            </>
+          )}
+
+          {density && (
+            <>
+              <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
+              <div
+                role="radiogroup"
+                aria-label="Catalog layout"
+                className="flex items-center overflow-hidden rounded-full border border-ink/15"
+              >
+                {DENSITY_OPTIONS.map((opt, i) => {
+                  const on = density.value === opt.id;
+                  return (
+                    <Tooltip key={opt.id} content={opt.hint} ariaId={`density-${opt.id}`}>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        aria-label={`${opt.label} layout — ${opt.hint}`}
+                        onClick={() => density.onChange(opt.id)}
+                        className={[
+                          'inline-flex items-center gap-1 px-2 py-[4px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                          i > 0 ? 'border-l border-ink/12' : '',
+                          on ? 'bg-ink/[0.08] text-ink/85' : 'text-ink/45 hover:text-ink/70',
+                        ].join(' ')}
+                      >
+                        <DensityGlyph kind={opt.id} />
+                        {opt.label}
+                      </button>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 
