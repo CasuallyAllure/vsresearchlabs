@@ -143,54 +143,55 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           </div>
         </div>
 
-        {/* Identity — the name reads as an all-caps brand label; the
-            description sits below in a recessed glass "spec plate" so it looks
-            like an engraved panel, not loose floating copy. */}
-        <div className="px-3.5 pt-2.5 pb-3">
-          <div className="flex items-start justify-between gap-2 min-w-0">
-            <h3 className="text-[13.5px] font-semibold uppercase tracking-[0.14em] text-ink leading-tight truncate">
-              {product.name}
-            </h3>
-            {product.nickname && (
-              <span
-                className="shrink-0 mt-[1px] font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
-              >
-                {product.nickname}
-              </span>
-            )}
-          </div>
-          {product.shortDescription && (
-            <div className="tile-spec-plate mt-2 rounded-[var(--radius-field)] px-2.5 py-2">
+        {/* Identity — the name (all-caps brand label) and the description live
+            together on ONE recessed glass plate, spanning the same width as the
+            image above so nothing reads squished. */}
+        <div className="px-1.5 pt-1.5 pb-2">
+          <div className="tile-spec-plate rounded-[var(--radius-field)] px-3 py-2.5">
+            <div className="flex items-start justify-between gap-2 min-w-0">
+              <h3 className="text-[13.5px] font-semibold uppercase tracking-[0.14em] text-ink leading-tight truncate">
+                {product.name}
+              </h3>
+              {product.nickname && (
+                <span
+                  className="shrink-0 mt-[1px] font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
+                >
+                  {product.nickname}
+                </span>
+              )}
+            </div>
+            {product.shortDescription && (
               <p
-                className={`text-[11px] leading-relaxed text-ink/60 ${
+                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[11px] leading-relaxed text-ink/60 ${
                   detailed ? '' : 'line-clamp-3'
                 }`}
               >
                 {product.shortDescription}
               </p>
-            </div>
-          )}
-          {/* Detail layout: a compact spec sheet under the description —
-              the data the grid tiles have no room for. */}
-          {detailed && product.specs.length > 0 && (
-            <dl className="mt-2 space-y-0.5 border-t border-ink/[0.06] pt-2">
-              {product.specs.slice(0, 4).map((spec) => (
-                <div key={spec.label} className="flex items-baseline justify-between gap-3">
-                  <dt className="shrink-0 text-[10.5px] uppercase tracking-[0.1em] text-ink/40">
-                    {spec.label}
-                  </dt>
-                  <dd className="min-w-0 truncate text-right font-mono text-[11px] text-ink/65">
-                    {spec.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
+            )}
+            {/* Detail layout: a compact spec sheet under the description —
+                the data the grid tiles have no room for. */}
+            {detailed && product.specs.length > 0 && (
+              <dl className="mt-1.5 space-y-0.5 border-t border-ink/[0.07] pt-1.5">
+                {product.specs.slice(0, 4).map((spec) => (
+                  <div key={spec.label} className="flex items-baseline justify-between gap-3">
+                    <dt className="shrink-0 text-[10.5px] uppercase tracking-[0.1em] text-ink/40">
+                      {spec.label}
+                    </dt>
+                    <dd className="min-w-0 truncate text-right font-mono text-[11px] text-ink/65">
+                      {spec.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
         </div>
       </button>
 
-      {/* Buy controls — outside the tap target */}
-      <div className="px-3.5 pb-3.5 pt-1.5 border-t border-ink/[0.05] mt-auto">
+      {/* Buy controls — outside the tap target. Same 6px inset as the image
+          and the identity plate so the whole column lines up edge to edge. */}
+      <div className="px-2 pb-3 pt-2 mt-auto">
         {variants.length > 0 && (() => {
           // 24-hour doses render as standalone chips in their own row.
           // Sourced doses (7–10 business day sourcing) are grouped into a
