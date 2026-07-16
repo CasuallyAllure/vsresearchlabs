@@ -128,11 +128,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             )}
             {puritySpec && (
               <span
-                className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.14em]"
+                className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full border px-1.5 py-[1.5px] text-[9px] uppercase tracking-[0.1em]"
                 style={{
                   color: '#fff',
-                  borderColor: 'rgba(255,255,255,0.28)',
-                  backgroundColor: 'rgba(20,20,20,0.55)',
+                  borderColor: 'rgba(255,255,255,0.26)',
+                  backgroundColor: 'rgba(20,20,20,0.5)',
                   backdropFilter: 'blur(2px)',
                 }}
                 title={`Purity (HPLC): ${puritySpec.value}`}
@@ -159,13 +159,10 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
               </span>
             )}
           </div>
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/35 truncate">
-            {product.abbreviation} · {product.family.split(' ')[0]}
-          </p>
           {product.shortDescription && (
             <p
               className={`mt-1.5 text-[12px] leading-relaxed text-ink/55 ${
-                detailed ? '' : 'line-clamp-2'
+                detailed ? '' : 'line-clamp-3'
               }`}
             >
               {product.shortDescription}
@@ -222,6 +219,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                       key={v.dose}
                       sku={product.sku}
                       dose={v.dose}
+                      compact
                       interactive={interactive}
                       isActive={i === tierIndex}
                       onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
@@ -271,8 +269,8 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           );
         })()}
 
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-mono tabular-nums text-[15px] font-medium text-ink leading-none whitespace-nowrap">
+        <div className="mt-2.5 flex items-center justify-between gap-2">
+          <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
             {formatPrice(priceCents)}
           </span>
 
@@ -281,7 +279,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             onClick={handleAdd}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
-              'tile-add-btn shrink-0 h-[34px] min-w-[62px] inline-flex items-center justify-center gap-1 rounded-full px-3.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              'tile-add-btn shrink-0 h-[30px] min-w-[56px] inline-flex items-center justify-center gap-1 rounded-full px-3 text-[9.5px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               added ? 'is-added' : '',
             ].join(' ')}
           >
