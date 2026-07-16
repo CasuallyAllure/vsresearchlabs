@@ -149,7 +149,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
       {/* Payment-recorded confirmation — shown when the buyer arrives from the
           "I've sent payment" email link (mark-payment-claimed redirect). */}
       {justClaimed && !o.paid && (
-        <div className="mb-[var(--space-4)] flex items-start gap-[var(--space-3)] rounded-sm border border-holo/30 bg-holo/[0.07] p-[var(--space-4)]">
+        <div className="mb-[var(--space-4)] flex items-start gap-[var(--space-3)] rounded-[var(--radius-procurement)] border border-holo/30 bg-holo/[0.07] p-[var(--space-4)]">
           <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-holo text-[13px] font-bold text-white">✓</span>
           <div>
             <p className="text-[13px] font-light text-ink">Payment recorded — thank you.</p>
@@ -312,7 +312,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
             </p>
           )}
         </div>
-        <ul className="divide-y divide-ink/[0.05] rounded-sm border border-ink/[0.08]">
+        <ul className="divide-y divide-ink/[0.05] rounded-[14px] border border-ink/[0.08] overflow-hidden">
           {o.lines.map((l, i) => {
             const u = unitOf(l);
             const d = perLineDiscount[i];
@@ -511,7 +511,7 @@ function ConfirmAddressCard({
         <h2 className="text-[1.05rem] font-medium text-ink leading-snug mb-[var(--space-3)]">
           Ship to exactly this address?
         </h2>
-        <div className="rounded-sm border border-ink/[0.10] bg-base-800 px-[var(--space-4)] py-[var(--space-3)] mb-[var(--space-4)]">
+        <div className="rounded-[var(--radius-procurement)] border border-ink/[0.10] bg-base-800 px-[var(--space-4)] py-[var(--space-3)] mb-[var(--space-4)]">
           <p className="text-[14px] leading-relaxed text-ink">
             {street.trim()}<br />
             {[city.trim(), stateRegion.trim(), zip.trim()].filter(Boolean).join(', ')}<br />

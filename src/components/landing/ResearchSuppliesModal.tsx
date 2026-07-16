@@ -70,7 +70,7 @@ export function ResearchSuppliesModal({ open, onClose }: { open: boolean; onClos
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[560px] max-h-[calc(100vh-2rem)] overflow-y-auto rounded-[14px] border border-ink/[0.12] bg-display shadow-[0_24px_60px_-18px_rgba(26,23,20,0.5)]"
+        className="w-full max-w-[560px] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[14px] border border-ink/[0.12] bg-display shadow-[0_24px_60px_-18px_rgba(26,23,20,0.5)]"
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-[var(--space-4)] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-4)] border-b border-ink/[0.06]">

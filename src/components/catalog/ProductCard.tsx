@@ -29,8 +29,8 @@ import { AvailabilityBadge } from './AvailabilityBadge';
 import { AbbreviationChip } from './AbbreviationChip';
 import { TierStrip } from './intelligence/TierStrip';
 
-const STOCK_GREEN = '#2E7D5B';
-const SOURCED_GRAY = '#8C9096';
+const STOCK_GREEN = 'var(--color-status-success)';
+const SOURCED_GRAY = 'var(--color-accent-teal-light)';
 
 interface ProductCardProps {
   product: Product;
@@ -158,7 +158,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
       </>
     );
     return (
-      <div className="research-surface-solid overflow-hidden group rounded-[4px]">
+      <div className="research-surface-solid overflow-hidden group rounded-[var(--radius-procurement)]">
         {onInspect ? (
           <button
             type="button"
@@ -208,9 +208,9 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
               style={{
                 padding: '0 14px',
                 fontSize: '10px',
-                backgroundColor: added ? 'rgba(140, 144, 148,0.14)' : 'var(--color-interactive-secondary)',
-                border: added ? '1px solid rgba(140, 144, 148,0.40)' : '1px solid var(--color-border-default)',
-                color: added ? '#9BD8FF' : 'var(--color-content-secondary)',
+                backgroundColor: added ? 'color-mix(in srgb, var(--color-accent-teal-light) 14%, transparent)' : 'var(--color-interactive-secondary)',
+                border: added ? '1px solid color-mix(in srgb, var(--color-accent-teal-light) 40%, transparent)' : '1px solid var(--color-border-default)',
+                color: added ? 'var(--color-accent-teal-light)' : 'var(--color-content-secondary)',
               }}
             >
               {added ? '✓ Added' : 'Add'}
@@ -226,7 +226,7 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
     <Link
       to={`/product/${product.id}`}
       onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}
-      className="block rounded-[4px] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
+      className="block rounded-[var(--radius-procurement)] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
     >
       <div className="research-surface-solid is-interactive overflow-hidden group">
         {imageBlock}

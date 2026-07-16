@@ -349,7 +349,7 @@ export function VideoIntroModule() {
               aria-label={`Go to ${t.title}`}
               aria-current={on ? 'true' : undefined}
               onClick={() => go(i)}
-              className="rounded-full transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+              className="rounded-full transition-[width,background-color] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
               style={{
                 width: on ? 22 : 7,
                 height: 7,

@@ -30,7 +30,7 @@ interface AnimatedPortalShellProps {
 
 export function AnimatedPortalShell({ children }: AnimatedPortalShellProps) {
   return (
-    <main id="main-content" className="mx-auto w-full max-w-[1100px] pt-2 pb-[var(--space-8)] px-[var(--space-6)]">
+    <main id="main-content" className="mx-auto w-full max-w-[1100px] pt-2 pb-[var(--space-8)] px-[var(--page-gutter)]">
       {children}
     </main>
   );

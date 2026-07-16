@@ -303,7 +303,7 @@ export function ProductPage() {
 
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
-          className="floating-module overflow-hidden lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
+          className="floating-module overflow-hidden lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
           aria-label="Compound reference and inquiry"
         >
           {/* Desktop visual identity zone */}

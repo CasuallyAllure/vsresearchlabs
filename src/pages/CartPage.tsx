@@ -746,8 +746,8 @@ export function CartPage() {
           </div>
           {cartHasMixedShipping(items, isMember) && (
             <div
-              className="mt-[var(--space-3)] flex items-start gap-2 rounded-[6px] px-[var(--space-4)] py-[var(--space-3)]"
-              style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}
+              className="mt-[var(--space-3)] flex items-start gap-2 rounded-[var(--radius-field)] px-[var(--space-4)] py-[var(--space-3)]"
+              style={{ backgroundColor: 'var(--color-status-warningMuted)', border: '1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)' }}
               role="note"
             >
               <span aria-hidden="true" className="text-[13px] leading-none mt-0.5">⚡</span>

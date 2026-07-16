@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const ZONES = [
   'Benicia, CA',
@@ -76,7 +77,7 @@ export function SameDayDeliveryBadge() {
         }
       `}</style>
 
-      {open && (
+      {open && createPortal(
         <>
           {/* Backdrop — closes on click, sits above page content */}
           <div
@@ -141,7 +142,8 @@ export function SameDayDeliveryBadge() {
               </p>
             </div>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </>
   );

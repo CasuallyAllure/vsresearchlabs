@@ -188,6 +188,13 @@
   --space-20: 80px;
   --space-24: 96px;
 
+  /* Page shell gutter — the single source for the main content column's side
+     padding AND the full-bleed sections' negative margins (they must always
+     cancel exactly, or the page overflows sideways). Phones get a tight
+     gutter so content uses the width (owner: "stop squishing everything into
+     the middle"); ≥640px returns to the roomier editorial gutter. */
+  --page-gutter: var(--space-3);
+
   /* ─────────────────────────────────────────────────────────────────────────
      RADIUS
      ───────────────────────────────────────────────────────────────────────── */
@@ -342,6 +349,13 @@
   --ease-enter: cubic-bezier(0.12, 0, 0.39, 0);
   --ease-micro: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+}
+
+/* ≥640px: restore the roomier editorial page gutter (see --page-gutter). */
+@media (min-width: 640px) {
+  :root {
+    --page-gutter: var(--space-6);
+  }
 }
 
 /* ============================================================================
@@ -950,23 +964,6 @@ html[data-theme='dark'] .wholesale-shine {
   0% { transform: scale(0.82); }
   60% { transform: scale(1.06); }
   100% { transform: scale(1); }
-}
-
-/* ── Card / panel surface — slim editorial container ─────────────────────── */
-
-.holo-surface {
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border-subtle);
-  box-shadow: 0 1px 2px rgba(26, 23, 20, 0.04);
-  transition:
-    border-color 220ms ease,
-    background 220ms ease,
-    box-shadow 220ms ease;
-}
-
-.holo-surface:hover {
-  border-color: var(--color-border-default);
-  box-shadow: 0 6px 18px -10px rgba(26, 23, 20, 0.18);
 }
 
 /* ── Holo warning — flickering red space-hologram register ───────────────

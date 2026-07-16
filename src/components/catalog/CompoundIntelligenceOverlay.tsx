@@ -467,7 +467,7 @@ export function CompoundIntelligenceOverlay({
                       Select mg
                     </span>
                     <span
-                      className="font-mono text-[9.5px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
+                      className="font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
                       style={{ color: GOLD, borderColor: 'rgba(181,144,75,0.45)', backgroundColor: 'rgba(181,144,75,0.10)' }}
                     >
                       Wholesale
@@ -497,7 +497,7 @@ export function CompoundIntelligenceOverlay({
                     ))}
                   </div>
                   <div className="border-t border-ink/12 py-1 text-center">
-                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[10px] uppercase tracking-[0.16em] text-ink/45">
                       Standard Shipping
                       <ShippingVan />
                     </span>
@@ -528,7 +528,7 @@ export function CompoundIntelligenceOverlay({
                         <span className={`block text-[11px] font-medium ${on ? 'text-ink' : 'text-ink/55'}`}>
                           {p.label}
                         </span>
-                        <span className={`block font-mono text-[9.5px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
+                        <span className={`block font-mono text-[10px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
                           {p.size} vials · −{p.percent}%
                         </span>
                       </button>
@@ -658,7 +658,7 @@ export function CompoundIntelligenceOverlay({
                             ))}
                           </div>
                           <div className="border-t border-ink/12 py-1 text-center">
-                            <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                            <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[10px] uppercase tracking-[0.16em] text-ink/45">
                               Standard Shipping
                               <ShippingVan />
                             </span>

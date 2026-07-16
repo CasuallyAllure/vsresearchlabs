@@ -326,7 +326,33 @@ export function AdminImport() {
             </div>
           )}
 
-          <div className="overflow-x-auto max-h-[420px] overflow-y-auto border border-ink/[0.08] rounded-[14px]">
+          {/* Mobile: one card per row — same preview data as the table. */}
+          <div className="md:hidden max-h-[420px] overflow-y-auto flex flex-col gap-[var(--space-2)]">
+            {parsed.slice(0, 300).map((r, i) => (
+              <div key={i} className="floating-module p-3">
+                <p className="font-mono text-[11px] text-holo-light/80">{r.sku || '—'}</p>
+                <p className="mt-0.5 text-[12px] text-ink/75">{r.name}</p>
+                <div className="mt-[var(--space-2)]">
+                  {r.error ? (
+                    <span className="text-[11px] text-red-400/85">{r.error}</span>
+                  ) : r.fields.length === 0 ? (
+                    <span className="text-[11px] text-ink/35">no change</span>
+                  ) : (
+                    <span className="flex flex-wrap gap-1">
+                      {r.fields.map((f) => (
+                        <span key={f} className="inline-flex items-center rounded-full bg-ink/[0.05] border border-ink/[0.10] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink/65">{f}</span>
+                      ))}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {parsed.length > 300 && (
+              <p className="py-[var(--space-2)] text-center text-[11px] text-ink/40">+{parsed.length - 300} more rows (all will be applied)</p>
+            )}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto max-h-[420px] overflow-y-auto border border-ink/[0.08] rounded-[14px]">
             <table className="w-full min-w-[640px] border-collapse">
               <thead className="sticky top-0 bg-base-800">
                 <tr className="border-b border-ink/[0.10]">
