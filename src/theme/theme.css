@@ -246,8 +246,12 @@
      ───────────────────────────────────────────────────────────────────────── */
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", "JetBrains Mono", monospace;
-  --font-display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  /* Shipping stack — self-hosted STIX Two Text + Geist (see theme/fonts-v2.css).
+     Set at :root so the stack applies with ZERO JavaScript: the site's CSP
+     (script-src 'self') forbids inline scripts, so a JS-set flag never runs in
+     production. CSS is the only reliable place for this default. */
+  --font-mono: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "STIX Two Text", "Times New Roman", Georgia, serif;
 
   /* ─────────────────────────────────────────────────────────────────────────
      TYPOGRAPHY — Font Sizes

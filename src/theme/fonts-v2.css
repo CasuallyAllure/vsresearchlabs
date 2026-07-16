@@ -5,10 +5,10 @@
    Identifiers  : Geist          (SIL OFL)   → replaces IBM Plex Mono
                   (numbers/prices/doses/SKU/CAS/badges), tabular lining figures
 
-   Gated behind html[data-fontstack="v2"] (set by the boot script in
-   index.html from ?fontstack= or localStorage 'vsr.fontstack'). Flag OFF =
-   the current Cormorant/Plex stack, pixel-for-pixel. Self-hosted woff2 in
-   /public/fonts — no Google Fonts / third-party CDN for these two faces.
+   These ARE the shipping faces. The family vars live at :root in theme.css so
+   the stack applies without any JavaScript — the site CSP (script-src 'self')
+   blocks inline scripts, so a JS-set flag silently never runs in production.
+   Self-hosted woff2 in /public/fonts — no third-party CDN for these two faces.
    font-display: swap on every face. Latin subset.
    ───────────────────────────────────────────────────────────────────────── */
 
@@ -68,19 +68,9 @@
   src: url('/fonts/geist-600.woff2') format('woff2');
 }
 
-/* ── The flip — only the family vars change. Tailwind's serif/display/mono
-      utilities resolve through these vars (see tailwind.config.js), so every
-      .font-serif / .font-display / .font-mono and any style="…var(--font-*)"
-      follows automatically. ── */
-html[data-fontstack='v2'] {
-  --font-display: 'STIX Two Text', 'Times New Roman', Georgia, serif;
-  --font-serif: 'STIX Two Text', 'Times New Roman', Georgia, serif;
-  --font-mono: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
-}
-
 /* Geist is proportional, so force tabular + lining figures on identifier
    surfaces to keep prices/doses/quantities aligned in columns. */
-html[data-fontstack='v2'] .font-mono {
+.font-mono {
   font-feature-settings: 'tnum' 1, 'lnum' 1;
   font-variant-numeric: tabular-nums lining-nums;
 }
