@@ -147,14 +147,14 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             together on ONE recessed glass plate, spanning the same width as the
             image above so nothing reads squished. */}
         <div className="px-1.5 pt-1.5 pb-2">
-          <div className="tile-spec-plate rounded-[var(--radius-field)] px-3 py-2.5">
+          <div className="tile-spec-plate rounded-[var(--radius-field)] px-2.5 py-2">
             <div className="flex items-center justify-center gap-1.5 min-w-0">
-              <h3 className="text-[12px] font-semibold uppercase tracking-[0.16em] text-ink leading-tight truncate text-center">
+              <h3 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-ink leading-tight truncate text-center">
                 {product.name}
               </h3>
               {product.nickname && (
                 <span
-                  className="shrink-0 font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
+                  className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
                 >
                   {product.nickname}
                 </span>
@@ -162,8 +162,8 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             </div>
             {product.shortDescription && (
               <p
-                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[11px] leading-relaxed text-ink/60 ${
-                  detailed ? '' : 'line-clamp-3'
+                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[10.5px] leading-relaxed text-ink/60 ${
+                  detailed ? '' : 'line-clamp-4'
                 }`}
               >
                 {product.shortDescription}
@@ -189,9 +189,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
         </div>
       </button>
 
-      {/* Buy controls — outside the tap target. Same 6px inset as the image
-          and the identity plate so the whole column lines up edge to edge. */}
-      <div className="px-2 pb-3 pt-2 mt-auto">
+      {/* Buy controls — outside the tap target, seated in their own footer
+          plate so the dose chip, price, and Add button have a defined home
+          instead of floating in the tile. Same inset as the identity plate. */}
+      <div className="px-1.5 pb-1.5 pt-1 mt-auto">
+       <div className="tile-spec-plate rounded-[var(--radius-field)] px-2.5 py-2">
         {variants.length > 0 && (() => {
           // 24-hour doses render as standalone chips in their own row.
           // Sourced doses (7–10 business day sourcing) are grouped into a
@@ -209,7 +211,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           const sourcedDoses = withState.filter((o) => o.state === 'sourced');
 
           return (
-            <div className="flex flex-col gap-1.5 mb-2">
+            <div className="flex flex-col gap-1.5">
               {fastDoses.length > 0 && (
                 <div
                   role={interactive ? 'radiogroup' : undefined}
@@ -272,7 +274,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           );
         })()}
 
-        <div className="mt-2.5 flex items-center justify-between gap-2">
+        <div
+          className={`flex items-center justify-between gap-2 ${
+            variants.length > 0 ? 'mt-2 border-t border-ink/[0.07] pt-2' : ''
+          }`}
+        >
           <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
             {formatPrice(priceCents)}
           </span>
@@ -282,13 +288,14 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             onClick={handleAdd}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
-              'tile-add-btn shrink-0 h-[30px] min-w-[56px] inline-flex items-center justify-center gap-1 rounded-full px-3 text-[9.5px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              'tile-add-btn shrink-0 h-[27px] min-w-[48px] inline-flex items-center justify-center gap-1 rounded-full px-2.5 text-[9px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               added ? 'is-added' : '',
             ].join(' ')}
           >
             {added ? '✓ Added' : 'Add'}
           </button>
         </div>
+       </div>
       </div>
     </article>
   );
