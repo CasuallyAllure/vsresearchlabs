@@ -53,101 +53,11 @@ function redirect(location: string): Response {
   });
 }
 
-function htmlResponse(body: string, status = 200): Response {
-  return new Response(body, {
-    status,
-    headers: { "Content-Type": "text/html; charset=utf-8", ...CORS_HEADERS },
-  });
-}
-
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
-}
-
-// ── Confirmation pages ──────────────────────────────────────────────────────
-
-function buildConfirmationPage(orderNumber: string, totalCents: number | null): string {
-  const total = totalCents !== null && totalCents !== undefined
-    ? `$${(totalCents / 100).toFixed(2)}`
-    : null;
-  return `<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Payment recorded — ${escapeHtml(EMAIL_BRAND.name)}</title>
-<style>
-  body { margin: 0; padding: 0; background: #F4EFE6;
-         font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         color: #1A1714; }
-  .wrap { max-width: 480px; margin: 0 auto; padding: 64px 20px; text-align: center; }
-  .card { background: #FBF9F4; border: 1px solid rgba(26,23,20,0.10);
-          border-radius: 16px; padding: 40px 28px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
-  h1 { font-weight: 300; font-size: 26px; letter-spacing: 0.02em;
-       margin: 16px 0 12px; line-height: 1.2; }
-  p  { font-size: 14px; color: #6F665C; line-height: 1.6; margin: 0 0 12px; }
-  .ord { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 18px;
-         color: #1A1714; font-weight: 700; letter-spacing: 0.04em; margin: 6px 0 18px; }
-  .check { display: inline-block; width: 56px; height: 56px;
-           border-radius: 999px; background: #34727A; color: #FBF9F4;
-           line-height: 56px; font-size: 28px; font-weight: 700; }
-  .home { display: inline-block; margin-top: 22px; padding: 12px 24px;
-          background: #1A1714; color: #FBF9F4; text-decoration: none;
-          font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-          border-radius: 999px; }
-</style></head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="check">✓</div>
-      <h1>Payment recorded</h1>
-      <p>Thanks — we received the heads-up.</p>
-      <div class="ord">${escapeHtml(orderNumber)}</div>
-      <p>
-        Our team will confirm the deposit landed${total ? ` (${escapeHtml(total)})` : ""}
-        and start fulfillment within one business day. You'll get a shipment
-        notification with tracking when the order ships.
-      </p>
-      <a class="home" href="${SITE_URL}/">${escapeHtml(EMAIL_BRAND.siteHost)}</a>
-    </div>
-  </div>
-</body></html>`;
-}
-
-function buildErrorPage(message: string): string {
-  return `<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Link expired — ${escapeHtml(EMAIL_BRAND.name)}</title>
-<style>
-  body { margin: 0; padding: 0; background: #F4EFE6;
-         font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         color: #1A1714; }
-  .wrap { max-width: 480px; margin: 0 auto; padding: 64px 20px; text-align: center; }
-  .card { background: #FBF9F4; border: 1px solid rgba(26,23,20,0.10);
-          border-radius: 16px; padding: 40px 28px; }
-  h1 { font-weight: 300; font-size: 22px; margin: 16px 0 12px; }
-  p  { font-size: 14px; color: #6F665C; line-height: 1.6; margin: 0 0 12px; }
-  .home { display: inline-block; margin-top: 22px; padding: 12px 24px;
-          background: #1A1714; color: #FBF9F4; text-decoration: none;
-          font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-          border-radius: 999px; }
-</style></head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>This link can't be processed</h1>
-      <p>${escapeHtml(message)}</p>
-      <p>If you've already sent your payment and want to follow up, reply to
-         the invoice email and we'll handle it manually.</p>
-      <a class="home" href="${SITE_URL}/">${escapeHtml(EMAIL_BRAND.siteHost)}</a>
-    </div>
-  </div>
-</body></html>`;
 }
 
 // ── Admin notification ──────────────────────────────────────────────────────

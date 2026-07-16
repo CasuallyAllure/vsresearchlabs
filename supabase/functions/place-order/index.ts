@@ -36,7 +36,6 @@
 //   RESEND_FROM_EMAIL       from header (default below)
 //   ALLOWED_ORIGIN          production domain (falls back to vsresearchlabs.com if unset)
 //   ZELLE_HANDLE            <-- SET THIS (phone/email Zelle is registered to)
-//   PAYPAL_HANDLE           <-- SET THIS (paypal.me link or email)
 //   BRAND_STAMP_URL         optional hosted PNG of the stamp for the email
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -52,6 +51,7 @@ import {
   type OrderLine,
   type CouponLine,
 } from "../_shared/invoiceEmail.ts";
+import { findPriceMismatches, type PriceMismatch } from "./priceCheck.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -126,14 +126,6 @@ function sanitizeAttestation(raw: OrderPayload["research_attestation"]): Record<
   };
 }
 
-/** One order line whose client-sent price disagrees with the admin-set price. */
-interface PriceMismatch {
-  sku: string;
-  name: string;
-  clientCents: number;
-  serverCents: number;
-}
-
 /** Shape returned by the validate_coupon RPC (migration 031). */
 interface CouponCheck {
   valid: boolean;
@@ -169,7 +161,6 @@ const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY") ?? "";
 const BUSINESS_EMAIL       = Deno.env.get("INQUIRY_TO_EMAIL") ?? "inquiries@vsresearchlabs.com";
 const FROM_EMAIL           = Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquiries@vsresearchlabs.com>";
 const ZELLE_HANDLE         = Deno.env.get("ZELLE_HANDLE") ?? "info@velariss.co";
-const PAYPAL_HANDLE        = Deno.env.get("PAYPAL_HANDLE") ?? "[SET PAYPAL_HANDLE]";
 const BRAND_STAMP_URL      = Deno.env.get("BRAND_STAMP_URL") ?? "";
 
 const CORS_HEADERS = buildCorsHeaders();
@@ -334,141 +325,10 @@ function paymentCode(orderNumber: string): string {
   return parts[parts.length - 1] || orderNumber;
 }
 
-function paymentBlockHtml(orderNumber: string, totalCents: number): string {
-  const code = paymentCode(orderNumber);
-  return `
-    <div style="border:1px solid #dcdcdc;border-radius:8px;padding:18px 20px;margin-top:24px;background:#fafafa;">
-      <h3 style="margin:0 0 10px;font-weight:600;letter-spacing:0.03em;color:#111;">How to pay</h3>
-      <p style="margin:0 0 12px;color:#222;">Amount due: <strong>${usd(totalCents)}</strong></p>
-      <p style="margin:0 0 10px;color:#333;">
-        Send payment using <strong>one</strong> of the methods below. You
-        <strong>must send it as Friends &amp; Family</strong> — any payment
-        not sent as Friends &amp; Family will be <strong>rejected</strong>.
-      </p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin:0 0 12px;">
-        <tr>
-          <td style="padding:8px 0;color:#666;width:80px;"><strong>Zelle</strong></td>
-          <td style="padding:8px 0;font-family:monospace;">${escapeHtml(ZELLE_HANDLE)} <span style="color:#888;font-family:Inter,Arial,sans-serif;">(Friends &amp; Family — not Goods &amp; Services)</span></td>
-        </tr>
-      </table>
-      <div style="border:1px solid #c9cdd2;border-radius:8px;padding:14px 18px;margin:0 0 12px;background:#fff;text-align:center;">
-        <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.3em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
-          Payment note · enter exactly
-        </div>
-        <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-weight:700;font-size:34px;letter-spacing:0.18em;color:#1A1714;line-height:1;">
-          ${escapeHtml(code)}
-        </div>
-        <div style="font-family:Inter,Arial,sans-serif;font-size:12px;color:#666;margin-top:8px;">
-          That's all you type in the Zelle note — no dashes, no letters.
-        </div>
-      </div>
-      <p style="margin:0 0 6px;color:#444;font-size:12px;">
-        Your full order reference is
-        <span style="font-family:monospace;color:#111;">${escapeHtml(orderNumber)}</span>
-        — we use that on our end; you don't need to retype it.
-      </p>
-      <p style="margin:0;color:#333;">
-        Once your payment is confirmed, your order will be processed and your
-        products shipped.
-      </p>
-    </div>`;
-}
-
-// Short acknowledgement sent at order-placement time. Confirms the order
-// was received and tells the buyer the formal invoice arrives shortly
-// (admin reviews + sends it manually via /admin/orders/:id). Replaces the
-// old "auto-invoice at cart submit" flow.
-function buildAcknowledgementHtml(
-  payload: OrderPayload, orderNumber: string,
-): string {
-  const shipLines: string[] = [];
-  if (payload.ship_street) shipLines.push(escapeHtml(payload.ship_street));
-  const cityState = [payload.ship_city, payload.ship_state].filter(Boolean).join(", ");
-  const cityStateZip = [cityState, payload.ship_zip].filter(Boolean).join(" ").trim();
-  if (cityStateZip) shipLines.push(escapeHtml(cityStateZip));
-  if (payload.ship_country) shipLines.push(escapeHtml(payload.ship_country));
-
-  return `
-    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:560px;margin:0 auto;padding:8px;">
-      ${brandHeaderHtml()}
-      <h2 style="font-weight:300;letter-spacing:0.04em;margin:18px 0 12px;text-align:center;">
-        We got your order, ${escapeHtml((payload.name ?? "").split(" ")[0] || "researcher")}.
-      </h2>
-      <p style="font-size:14px;color:#444;line-height:1.55;margin:0 0 16px;text-align:center;">
-        Your reference number is
-        <span style="font-family:monospace;font-weight:700;color:#111;">${escapeHtml(orderNumber)}</span>.
-        A team member will review pricing + availability, then email you a
-        formal invoice with payment instructions. You don't need to do
-        anything until that arrives — usually within a few hours during
-        business hours.
-      </p>
-      ${shipLines.length > 0 ? `
-        <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin:0 0 18px;background:#fafafa;">
-          <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.25em;color:#6a6f76;text-transform:uppercase;margin:0 0 8px;">
-            Ship to
-          </div>
-          <div style="font-size:13px;color:#111;line-height:1.5;">
-            ${escapeHtml(payload.name)}<br/>
-            ${shipLines.join("<br/>")}
-          </div>
-          <div style="font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:0.18em;color:#9aa0a6;text-transform:uppercase;margin-top:10px;">
-            Reply to this email if anything is wrong.
-          </div>
-        </div>
-      ` : ""}
-      <p style="margin-top:24px;color:#888;font-size:12px;text-align:center;">
-        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only · Not for Human Use
-      </p>
-    </div>`;
-}
-
-function buildInvoiceEmailHtml(
-  payload: OrderPayload, orderNumber: string, totalCents: number,
-): string {
-  return `
-    <div style="font-family:Inter,system-ui,Arial,sans-serif;color:#111;max-width:640px;margin:0 auto;padding:8px;">
-      ${brandHeaderHtml()}
-      <table style="width:100%;font-size:13px;color:#444;margin:0 0 14px;">
-        <tr>
-          <td style="padding:2px 0;">Order number</td>
-          <td style="padding:2px 0;text-align:right;font-family:monospace;font-weight:700;color:#111;">${escapeHtml(orderNumber)}</td>
-        </tr>
-        <tr>
-          <td style="padding:2px 0;">Billed to</td>
-          <td style="padding:2px 0;text-align:right;">${escapeHtml(payload.name)}</td>
-        </tr>
-      </table>
-      <h2 style="font-weight:300;letter-spacing:0.04em;margin:0 0 16px;">Your invoice</h2>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <thead>
-          <tr style="text-align:left;color:#666;">
-            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">SKU</th>
-            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;">Item</th>
-            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Qty</th>
-            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Unit</th>
-            <th style="padding:8px 12px;border-bottom:2px solid #ccc;font-weight:400;text-align:right;">Line</th>
-          </tr>
-        </thead>
-        <tbody>${lineRowsHtml(payload.items)}</tbody>
-        <tfoot>
-          <tr>
-            <td colspan="4" style="padding:12px;text-align:right;font-weight:600;">Total</td>
-            <td style="padding:12px;text-align:right;font-weight:700;font-family:monospace;">${usd(totalCents)}</td>
-          </tr>
-        </tfoot>
-      </table>
-      ${shipBlockHtml(payload, { heading: "Ship to · verify before paying" })}
-      ${paymentBlockHtml(orderNumber, totalCents)}
-      <p style="margin-top:24px;color:#888;font-size:12px;">
-        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only · Not for Human Use
-      </p>
-    </div>`;
-}
-
 function priceMismatchNoticeHtml(mismatches: PriceMismatch[]): string {
   if (mismatches.length === 0) return "";
   const rows = mismatches.map((m) =>
-    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(m.sku)} — billed <strong>${usd(m.clientCents)}</strong>, catalog says <strong>${usd(m.serverCents)}</strong></div>`,
+    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(m.sku)} — billed <strong>${usd(m.clientCents)}</strong>, catalog says <strong>${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}</strong></div>`,
   ).join("");
   return `<div style="border:1px solid rgba(196,64,64,0.5);background:rgba(196,64,64,0.08);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
     <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Price mismatch — verify before marking paid</strong>
@@ -692,8 +552,55 @@ Deno.serve(async (req: Request) => {
   // else the per-sku override). FLAG, don't block: payment is verified
   // manually against the invoice, so the operator gets a loud warning in the
   // business email + an order_events entry instead of a hard reject. Lines
-  // with no admin-set price (formula-priced catalog) are skipped.
+  // with no admin-set price (formula-priced catalog) are skipped. Runs on the
+  // raw client lines — server-generated free promo lines are appended later.
   const priceMismatches: PriceMismatch[] = [];
+  let priceCheckDidNotRun = false;
+  {
+    // Only well-formed SKUs go into the .in() filter. supabase-js does not
+    // escape embedded quotes inside a filter value, so a crafted sku (with a
+    // stray quote/paren) could malform the batched query and fail-open the
+    // check for the WHOLE order. Restrict to the catalog's sku charset; a line
+    // whose sku doesn't match is treated as unverifiable (skipped), never as a
+    // reason to disable the check for its siblings.
+    const SKU_RE = /^[A-Za-z0-9._-]{1,64}$/;
+    const checkSkus = [...new Set(
+      items.map((i) => i.product.sku).filter((s): s is string => !!s && SKU_RE.test(s)),
+    )];
+    if (checkSkus.length > 0) {
+      const [variantRes, overrideRes] = await Promise.all([
+        supabase.from("product_variant_stock")
+          .select("sku, dose, price_cents").in("sku", checkSkus),
+        supabase.from("product_stock")
+          .select("sku, price_cents_override").in("sku", checkSkus),
+      ]);
+      // Fail open on a read error: the check is advisory (flag-only), and a
+      // transient read failure must never take checkout down with it. But a
+      // silent skip is indistinguishable from "all matched", so record that
+      // the check could NOT run and surface it on the order timeline below.
+      if (variantRes.error) console.error("Price check variant read failed:", variantRes.error);
+      if (overrideRes.error) console.error("Price check override read failed:", overrideRes.error);
+      if (variantRes.error && overrideRes.error) priceCheckDidNotRun = true;
+      priceMismatches.push(...findPriceMismatches(
+        items
+          .filter((i) => i.product.sku && SKU_RE.test(i.product.sku))
+          .map((i) => ({
+            sku: i.product.sku,
+            name: i.product.name,
+            note: i.note,
+            unitPriceCents: clampCents(i.unitPriceCents),
+          })),
+        variantRes.data ?? [],
+        overrideRes.data ?? [],
+      ));
+      if (priceMismatches.length > 0) {
+        console.error(`Price mismatch on checkout (${priceMismatches.length} line(s)):`,
+          priceMismatches.map((m) =>
+            `${m.sku} billed ${m.clientCents}¢ vs catalog ${m.serverCents == null ? "UNRESOLVED" : m.serverCents + "¢"}`,
+          ).join("; "));
+      }
+    }
+  }
   // Server-verified slow-ship (7–10 day) lines — B2G1 promo candidates. A
   // line qualifies only when its matched dose variant has NO shelf or inbound
   // stock and a lead_days SLA (the exact condition that renders the 7–10-day
@@ -1237,10 +1144,12 @@ Deno.serve(async (req: Request) => {
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
   // Durable record of a price mismatch — lands on the admin order timeline
-  // (order_events is admin-read-only, so the buyer never sees it).
+  // (order_events is admin-read-only, so the buyer never sees it). Also record
+  // when the check could not run at all (both reads errored), so a silent
+  // fail-open is never indistinguishable from a clean order.
   if (priceMismatches.length > 0) {
     const mismatchNote = priceMismatches
-      .map((m) => `${m.sku}: billed ${usd(m.clientCents)}, catalog ${usd(m.serverCents)}`)
+      .map((m) => `${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved" : usd(m.serverCents)}`)
       .join("; ");
     const { error: evErr } = await supabase.from("order_events").insert({
       order_id: orderRow.id,
@@ -1249,6 +1158,14 @@ Deno.serve(async (req: Request) => {
       note: `⚠ Price mismatch on checkout — ${mismatchNote}. Verify the invoice amount before marking paid.`,
     });
     if (evErr) console.error("Price-mismatch event insert failed:", evErr);
+  } else if (priceCheckDidNotRun) {
+    const { error: evErr } = await supabase.from("order_events").insert({
+      order_id: orderRow.id,
+      stage: null,
+      kind: "system",
+      note: "⚠ Price check could not run (catalog read failed) — line prices were NOT verified. Confirm the invoice amount before marking paid.",
+    });
+    if (evErr) console.error("Price-check-skipped event insert failed:", evErr);
   }
 
   // Materialize the account discount as a synthetic order_coupons row
@@ -1505,7 +1422,7 @@ Deno.serve(async (req: Request) => {
     ...(priceMismatches.length > 0 ? [
       ``,
       `!! PRICE MISMATCH — verify before marking paid:`,
-      ...priceMismatches.map((m) => `  ${m.sku}: billed ${usd(m.clientCents)}, catalog ${usd(m.serverCents)}`),
+      ...priceMismatches.map((m) => `  ${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}`),
     ] : []),
     `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
     `Mark paid in Admin → Orders once confirmed.`,

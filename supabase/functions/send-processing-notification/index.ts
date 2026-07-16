@@ -7,13 +7,18 @@
 // Required env vars (same as send-shipment-notification):
 //   SUPABASE_URL              (auto-injected)
 //   SUPABASE_SERVICE_ROLE_KEY (auto-injected)
+//   SUPABASE_ANON_KEY         (auto-injected; used for the admin auth gate)
 //   RESEND_API_KEY
 //   RESEND_FROM_EMAIL
 //   ALLOWED_ORIGIN
+//
+// Admin-only: requires a valid session JWT for an active admin (see
+// ../_shared/adminGate.ts).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/cors.ts";
+import { requireAdmin } from "../_shared/adminGate.ts";
 import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
@@ -143,6 +148,10 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
+
+  const gate = await requireAdmin(req);
+  if (!gate.ok) return jsonResponse(gate.body, gate.status);
+
   if (req.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405);
   }
