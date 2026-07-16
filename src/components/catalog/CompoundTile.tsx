@@ -143,30 +143,32 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           </div>
         </div>
 
-        {/* Identity — name leads (big), the code reads as a quiet subordinate
-            caption beneath it (owner: the RTT·GIP/GLP prelabel must not float
-            above the name). */}
-        <div className="px-3.5 pt-2 pb-2.5">
+        {/* Identity — the name reads as an all-caps brand label; the
+            description sits below in a recessed glass "spec plate" so it looks
+            like an engraved panel, not loose floating copy. */}
+        <div className="px-3.5 pt-2.5 pb-3">
           <div className="flex items-start justify-between gap-2 min-w-0">
-            <h3 className="text-[16px] font-medium text-ink leading-tight truncate">
+            <h3 className="text-[13.5px] font-semibold uppercase tracking-[0.14em] text-ink leading-tight truncate">
               {product.name}
             </h3>
             {product.nickname && (
               <span
-                className="shrink-0 mt-[2px] font-mono text-[9.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
+                className="shrink-0 mt-[1px] font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
               >
                 {product.nickname}
               </span>
             )}
           </div>
           {product.shortDescription && (
-            <p
-              className={`mt-1.5 text-[12px] leading-relaxed text-ink/55 ${
-                detailed ? '' : 'line-clamp-3'
-              }`}
-            >
-              {product.shortDescription}
-            </p>
+            <div className="tile-spec-plate mt-2 rounded-[var(--radius-field)] px-2.5 py-2">
+              <p
+                className={`text-[11px] leading-relaxed text-ink/60 ${
+                  detailed ? '' : 'line-clamp-3'
+                }`}
+              >
+                {product.shortDescription}
+              </p>
+            </div>
           )}
           {/* Detail layout: a compact spec sheet under the description —
               the data the grid tiles have no room for. */}
