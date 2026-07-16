@@ -200,7 +200,7 @@ export function DisclaimerGate() {
         <div
           style={{
             position: 'relative',
-            fontFamily: '"IBM Plex Mono", "Courier New", monospace',
+            fontFamily: 'var(--font-mono)',
             fontSize: '10px',
             letterSpacing: '0.3em',
             color: '#868A90',
@@ -216,8 +216,7 @@ export function DisclaimerGate() {
           id="dgate-title"
           style={{
             position: 'relative',
-            fontFamily:
-              '"Cormorant Garamond", "EB Garamond", Garamond, Georgia, serif',
+            fontFamily: 'var(--font-display)',
             fontWeight: 400,
             fontSize: '26px',
             color: 'var(--color-content-primary)',
@@ -381,7 +380,7 @@ export function DisclaimerGate() {
             color: 'var(--color-content-inverse)',
             border: 'none',
             borderRadius: '8px',
-            fontFamily: '"IBM Plex Mono", "Courier New", monospace',
+            fontFamily: 'var(--font-mono)',
             fontSize: '11px',
             letterSpacing: '0.28em',
             textTransform: 'uppercase',
@@ -399,7 +398,7 @@ export function DisclaimerGate() {
             color: 'var(--color-content-tertiary)',
             textAlign: 'center',
             marginTop: '14px',
-            fontFamily: '"IBM Plex Mono", "Courier New", monospace',
+            fontFamily: 'var(--font-mono)',
             letterSpacing: '0.22em',
             textTransform: 'uppercase',
           }}

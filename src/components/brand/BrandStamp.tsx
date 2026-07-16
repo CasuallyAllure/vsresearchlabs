@@ -71,16 +71,15 @@ export function BrandStamp({
 
       {/* Top micro caption */}
       <text x="160" y="26" textAnchor="middle" fill="currentColor" fillOpacity="0.5"
-        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
-        letterSpacing="3" style={{ textTransform: 'uppercase' }}>
+        fontSize="6.5"
+        letterSpacing="3" style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
         {siteConfig.brand.stampCaption}
       </text>
 
       {/* Wordmark row: VS RESEARCH LABS (Cormorant serif) + three bodies */}
       <text x="150" y="57" textAnchor="middle" fill="currentColor"
-        fontFamily="'Cormorant Garamond', 'Times New Roman', Georgia, serif"
         fontSize="25" fontWeight="600" letterSpacing="2"
-        style={{ textTransform: 'uppercase' }}>
+        style={{ textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
         {siteConfig.brand.name}
       </text>
 
@@ -100,15 +99,15 @@ export function BrandStamp({
 
       {/* Sub-caption */}
       <text x="160" y="82" textAnchor="middle" fill="currentColor" fillOpacity="0.62"
-        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="6.5"
-        letterSpacing="2.4" style={{ textTransform: 'uppercase' }}>
+        fontSize="6.5"
+        letterSpacing="2.4" style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
         {siteConfig.brand.tagline}
       </text>
 
       {/* Bottom micro disclaimer */}
       <text x="160" y="93.5" textAnchor="middle" fill="currentColor" fillOpacity="0.4"
-        fontFamily="'IBM Plex Mono', ui-monospace, monospace" fontSize="5.5"
-        letterSpacing="2.2" style={{ textTransform: 'uppercase' }}>
+        fontSize="5.5"
+        letterSpacing="2.2" style={{ textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
         {siteConfig.compliance.stampLine}
       </text>
     </svg>

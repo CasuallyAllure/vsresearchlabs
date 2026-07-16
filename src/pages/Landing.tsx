@@ -580,7 +580,7 @@ export function Landing() {
                   positioned at the grid level above. */}
 
               <h1
-                className="op-reveal mt-[var(--space-4)] text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-ink"
+                className="op-reveal mt-[var(--space-4)] font-serif text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-ink"
                 style={{ ['--op-delay' as string]: '90ms' }}
               >
                 <span className="font-light text-ink/85">

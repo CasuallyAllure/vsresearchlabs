@@ -33,6 +33,7 @@ import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
@@ -627,9 +628,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
-                const totalCents = hasAccountDisc
+                // Shipping rides on top of the discounted subtotal — mirrors
+                // place-order, which recomputes it from the verified session.
+                const shippingCents = shippingCentsFor(isMember);
+                const totalCents = (hasAccountDisc
                   ? Math.max(subtotalCents - breakdown!.total, 0)
-                  : subtotalCents;
+                  : subtotalCents) + shippingCents;
                 return (
                   <>
                     {/* Subtotal + account perk — quiet rows above the anchor total */}
@@ -649,6 +653,27 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           −{formatUsd(breakdown!.accountCents)}
                         </span>
                       </div>
+                    )}
+                    {/* Shipping — members ship free; guests pay the flat fee and
+                        get a one-tap path to waive it. */}
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Shipping</span>
+                      <span className="font-mono text-[13px] tabular-nums text-ink/70">
+                        {isMember ? 'Free — member' : formatUsd(shippingCents)}
+                      </span>
+                    </div>
+                    {!isMember && (
+                      <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/45">
+                        <Link
+                          to="/account?mode=signup"
+                          onClick={onClose}
+                          className="font-medium text-ink underline decoration-ink/30 underline-offset-2 transition-colors hover:decoration-ink"
+                        >
+                          Create a free profile
+                        </Link>{' '}
+                        and we'll waive this — members always ship free and unlock wholesale case
+                        pricing. Your cart stays as it is.
+                      </p>
                     )}
                     {/* Total — the anchor. A hairline separates it from the line
                         items above; the figure is the largest number on screen. */}

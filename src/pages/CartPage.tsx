@@ -37,6 +37,7 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Fiel
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
@@ -466,7 +467,7 @@ export function CartPage() {
           <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
             Checkout
           </p>
-          <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <h1 className="font-serif text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             <span className="font-light text-ink/85">Your </span>
             <span className="font-light text-ink">order.</span>
           </h1>
@@ -504,7 +505,7 @@ export function CartPage() {
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Checkout
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+        <h1 className="font-serif text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
           <span className="font-light text-ink/85">Your </span>
           <span className="font-light text-ink">order.</span>
         </h1>
@@ -717,6 +718,30 @@ export function CartPage() {
                   </div>
                 );
               })()}
+              {/* Shipping — members ship free, guests pay the flat fee with a
+                  one-tap path to waive it. Display only: place-order recomputes
+                  the charge from the verified session, so this always matches
+                  what's billed. */}
+              <div className="mt-[var(--space-3)] border-t border-ink/[0.08] pt-[var(--space-3)]">
+                <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Shipping</span>
+                  <span className="text-sm font-mono tabular-nums text-ink">
+                    {isMember ? 'Free — member' : formatUsd(GUEST_SHIPPING_CENTS)}
+                  </span>
+                </div>
+                {!isMember && (
+                  <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-ink/45">
+                    <Link
+                      to="/account?mode=signup"
+                      className="font-medium text-ink underline decoration-ink/30 underline-offset-2 transition-colors hover:decoration-ink"
+                    >
+                      Create a free profile
+                    </Link>{' '}
+                    and we'll waive this — members always ship free and unlock wholesale case pricing.
+                    Your cart stays as it is.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           {cartHasMixedShipping(items, isMember) && (
@@ -735,8 +760,8 @@ export function CartPage() {
             </div>
           )}
           <p className="mt-[var(--space-3)] text-[11px] text-ink/40 leading-relaxed">
-            Shipping is calculated separately. Final pricing is confirmed on the
-            invoice we email you — you can adjust the order before paying.
+            Final pricing is confirmed on the invoice we email you — you can
+            adjust the order before paying.
           </p>
         </div>
 

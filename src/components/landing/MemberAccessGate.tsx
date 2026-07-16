@@ -31,6 +31,9 @@ interface Perk {
   isLimitedTime?: boolean;
   /** Brand-gold icon treatment — the money perks get warmth, not flat mono. */
   isGold?: boolean;
+  /** Optional rich chip label (e.g. the shining "Wholesale" word); `label`
+   *  stays the plain-string key + fallback. */
+  labelNode?: ReactNode;
   icon: ReactNode;
 }
 
@@ -73,8 +76,17 @@ const PERKS: Perk[] = [
   },
   {
     label: 'Wholesale pricing',
-    headline: 'Business wholesale pricing available',
-    body: 'Case of 10 at 40% off or half kit of 5 at 27% off — any compound, members only. Wholesale price is final; other discounts and rewards don’t apply.',
+    labelNode: (
+      <>
+        <span className="wholesale-shine">Wholesale</span> pricing
+      </>
+    ),
+    headline: (
+      <>
+        <span className="wholesale-shine">Wholesale</span> — now open to every industry
+      </>
+    ),
+    body: 'We supplied laboratories business-to-business for years; that pricing is now open to all industries. A $60 vial comes to $36 by the case of 10 (40% off) — half kits of 5 run 27% off. Members only; wholesale price is final, so other discounts and rewards don’t apply.',
     isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
@@ -246,7 +258,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 >
                   {perk.icon}
                 </span>
-                <span className="text-[12px] font-medium leading-tight">{perk.label}</span>
+                <span className="text-[12px] font-medium leading-tight">{perk.labelNode ?? perk.label}</span>
               </button>
             );
           })}

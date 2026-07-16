@@ -1,5 +1,16 @@
-/* ─── Google Fonts ─── */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* ─── Google Fonts — Inter only ───
+   The serif (STIX Two Text) and the identifier face (Geist) are SELF-HOSTED in
+   theme/fonts-v2.css; Inter is the only face still fetched third-party. Cormorant
+   Garamond + IBM Plex Mono were dropped when v2 became the default stack — nothing
+   on the default path references them any more (Logo, BrandStamp and DisclaimerGate
+   all resolve through --font-display / --font-mono).
+   NOTE: the ?fontstack=v1 escape hatch still switches the vars back, but Cormorant
+   and Plex are no longer downloaded, so v1 now falls back to Times/system mono.
+   v1 is an emergency revert only — v2 is the shipping stack. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Candidate stack (flag "v2" — self-hosted STIX Two Text + Geist) ─── */
+@import './theme/fonts-v2.css';
 
 /* ─── Theme Tokens ─── */
 @import './theme/theme.css';

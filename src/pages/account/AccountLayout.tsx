@@ -74,7 +74,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           Customer Portal
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)]">
+        <h1 className="font-serif text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)]">
           <span className="font-light text-ink/85">Accounts are </span>
           <span className="font-light text-ink">not available yet.</span>
         </h1>

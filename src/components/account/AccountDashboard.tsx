@@ -145,7 +145,7 @@ export function AccountDashboard() {
       {/* Header */}
       <header className="mb-[var(--space-6)] flex items-start justify-between gap-[var(--space-4)]">
         <div>
-          <h1 className="text-[clamp(1.4rem,2.6vw,1.9rem)] leading-[1.1] tracking-[-0.02em] text-ink">
+          <h1 className="font-serif text-[clamp(1.4rem,2.6vw,1.9rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             <span className="font-light text-ink/85">Welcome back, </span>
             <span className="font-medium text-ink">{firstName}.</span>
           </h1>

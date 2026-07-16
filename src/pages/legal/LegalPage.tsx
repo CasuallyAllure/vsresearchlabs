@@ -28,7 +28,7 @@ export function LegalPage({ eyebrow, title, intro, lastUpdated, children }: Lega
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
           {eyebrow}
         </p>
-        <h1 className="text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)] font-light">
+        <h1 className="font-serif text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.1] tracking-[-0.02em] text-ink mb-[var(--space-4)] font-light">
           {title}
         </h1>
         {intro && (

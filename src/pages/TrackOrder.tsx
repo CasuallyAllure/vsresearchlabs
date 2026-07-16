@@ -166,7 +166,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">
           Track your order
         </p>
-        <h1 className="text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
+        <h1 className="font-serif text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
           <span className="font-light text-ink/85">Order </span>
           <span className="font-light text-ink">{o.order_number}</span>
         </h1>
@@ -666,7 +666,7 @@ function StatusLookup() {
     <>
       <header className="mb-[var(--space-6)]">
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.3em] mb-[var(--space-2)]">Order status</p>
-        <h1 className="text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
+        <h1 className="font-serif text-[clamp(1.5rem,3.4vw,2.1rem)] leading-[1.05] tracking-[-0.01em] text-ink">
           <span className="font-light text-ink/85">Track your </span>
           <span className="font-light text-ink">order.</span>
         </h1>

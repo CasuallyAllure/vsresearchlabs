@@ -408,7 +408,9 @@ export function ClassificationFilter({
                     }`}
                     style={shippingTiers.wholesale.on ? { backgroundColor: '#B5904B' } : undefined}
                   />
-                  Wholesale
+                  {/* Word-only shine — the hover tooltip carries the full
+                      B2B-to-all-industries story. */}
+                  <span className="wholesale-shine font-medium">Wholesale</span>
                 </button>
               </Tooltip>
             </>

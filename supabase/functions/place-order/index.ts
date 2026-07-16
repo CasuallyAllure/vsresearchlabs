@@ -764,19 +764,20 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // Member free-shipping perk (migration 049) — for the invoice email's
-  // affirmative "Free — member" shipping line. The perk is enforced on the
-  // billed total server-side by recompute_order_totals when the admin sends the
-  // invoice; here it only drives the email label for a stamped owner.
-  let memberFreeShipping = false;
-  if (stampedUserId) {
-    const { data: profRow } = await supabase
-      .from("customer_profiles")
-      .select("free_shipping")
-      .eq("user_id", stampedUserId)
-      .maybeSingle();
-    memberFreeShipping = profRow?.free_shipping === true;
-  }
+  // Shipping (owner's rule) — EVERY signed-in member ships free; guests pay one
+  // flat fee. This is the authority: the charge is derived from the VERIFIED
+  // session (stampedUserId), never from anything the client sends, so a guest
+  // can't waive their own shipping. Keep GUEST_SHIPPING_CENTS in sync with
+  // src/lib/shipping.ts.
+  //
+  // Membership alone is now sufficient — this replaces the old per-customer
+  // customer_profiles.free_shipping lookup (migration 049), which required an
+  // admin to flip a switch and so never honored the member gate's advertised
+  // "ships free, no minimums, no codes". That column still forces $0 inside
+  // recompute_order_totals, so it survives as an admin override for guests.
+  const GUEST_SHIPPING_CENTS = 999;
+  const memberFreeShipping = !!stampedUserId;
+  const shippingCents = memberFreeShipping ? 0 : GUEST_SHIPPING_CENTS;
 
   // Reward redemption voucher (migration 050) — a stamped owner may hold ONE
   // active "40% off one item" voucher. Applied below as a flat reduction equal
@@ -1134,7 +1135,9 @@ Deno.serve(async (req: Request) => {
         ...appliedList.map((a) => a.code),
       ].join(", ")
     : null;
-  let totalCents = grossSubtotalCents - discountCents;
+  // Shipping rides on top of the discounted subtotal — discounts never eat the
+  // shipping fee, and no percent code can discount it (it isn't in the base).
+  let totalCents = grossSubtotalCents - discountCents + shippingCents;
 
   // 1) Inquiry row (history + customer trigger)
   const referenceId = generateReferenceId();
@@ -1181,7 +1184,7 @@ Deno.serve(async (req: Request) => {
       ship_zip:     shipZip     || null,
       ship_country: shipCountry || null,
       subtotal_cents:       grossSubtotalCents,
-      shipping_cents:       null,
+      shipping_cents:       shippingCents,
       discount_cents:       discountCents,
       coupon_code:          appliedCoupon,
       invoice_amount_cents: totalCents,
@@ -1357,7 +1360,7 @@ Deno.serve(async (req: Request) => {
     // Re-price the order keeping only the coupons that redeemed successfully.
     if (failedCodes.length > 0) {
       discountCents = Math.max(discountCents, 0);
-      totalCents = grossSubtotalCents - discountCents;
+      totalCents = grossSubtotalCents - discountCents + shippingCents;
       const survivors = appliedList.filter((a) => !failedCodes.includes(a.code));
       redeemedList = survivors;
       const survivorCodes = [

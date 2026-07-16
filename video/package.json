@@ -1,0 +1,21 @@
+{
+  "name": "vsrl-video",
+  "private": true,
+  "description": "Remotion workspace — renders branded videos into ../public/media. Not part of the site bundle.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render WhatAre out/what-are.mp4",
+    "still": "remotion still WhatAre"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.8.0"
+  }
+}

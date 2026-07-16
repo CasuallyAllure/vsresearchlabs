@@ -69,10 +69,13 @@ export default {
         'elev-3': 'var(--elev-3)',
       },
       fontFamily: {
+        // serif/display/mono resolve through CSS vars so the font-stack flag
+        // (html[data-fontstack]) flips them without touching markup. The vars
+        // carry their own fallbacks; default (:root) = Cormorant / Plex.
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['Cormorant Garamond', 'Times New Roman', 'Georgia', 'serif'],
-        display: ['Cormorant Garamond', 'Times New Roman', 'Georgia', 'serif'],
-        mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+        serif: ['var(--font-display)', 'Georgia', 'serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
       },
     },
   },
