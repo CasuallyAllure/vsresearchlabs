@@ -104,7 +104,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
   }
 
   return (
-    <article className="floating-module is-interactive overflow-hidden flex flex-col group">
+    <article className="compound-tile floating-module is-interactive overflow-hidden flex flex-col group">
       {/* Tappable head: purity badge + image + identity + description → inspect overlay */}
       <button
         type="button"
@@ -143,31 +143,28 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           </div>
         </div>
 
-        {/* Identity — name + one-line description */}
-        <div className="px-3.5 pt-1 pb-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/40 truncate">
-              {product.abbreviation} · {product.family.split(' ')[0]}
-            </p>
+        {/* Identity — name leads (big), the code reads as a quiet subordinate
+            caption beneath it (owner: the RTT·GIP/GLP prelabel must not float
+            above the name). */}
+        <div className="px-3.5 pt-2 pb-2.5">
+          <div className="flex items-start justify-between gap-2 min-w-0">
+            <h3 className="text-[16px] font-medium text-ink leading-tight truncate">
+              {product.name}
+            </h3>
             {product.nickname && (
               <span
-                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-[2px] border"
-                style={{
-                  color: '#7E8288',
-                  borderColor: 'rgba(140,144,148,0.40)',
-                  backgroundColor: 'rgba(140,144,148,0.10)',
-                }}
+                className="shrink-0 mt-[2px] font-mono text-[9.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
               >
                 {product.nickname}
               </span>
             )}
           </div>
-          <h3 className="text-[14px] font-normal text-ink leading-snug truncate">
-            {product.name}
-          </h3>
+          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/35 truncate">
+            {product.abbreviation} · {product.family.split(' ')[0]}
+          </p>
           {product.shortDescription && (
             <p
-              className={`mt-1 text-[12px] leading-relaxed text-ink/55 ${
+              className={`mt-1.5 text-[12px] leading-relaxed text-ink/55 ${
                 detailed ? '' : 'line-clamp-2'
               }`}
             >
@@ -274,24 +271,22 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           );
         })()}
 
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono tabular-nums text-[13px] text-ink/90 leading-none whitespace-nowrap">
-              {formatPrice(priceCents)}
-            </span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono tabular-nums text-[15px] font-medium text-ink leading-none whitespace-nowrap">
+            {formatPrice(priceCents)}
+          </span>
 
-            <button
-              type="button"
-              onClick={handleAdd}
-              aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-              className={[
-                'tile-add-btn shrink-0 min-h-[40px] min-w-[40px] inline-flex items-center justify-center gap-1 rounded-full px-3 text-[10px] uppercase tracking-[0.14em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
-                added ? 'is-added' : '',
-              ].join(' ')}
-            >
-              {added ? '✓' : '+ Add'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleAdd}
+            aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+            className={[
+              'tile-add-btn shrink-0 h-[34px] min-w-[62px] inline-flex items-center justify-center gap-1 rounded-full px-3.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              added ? 'is-added' : '',
+            ].join(' ')}
+          >
+            {added ? '✓ Added' : 'Add'}
+          </button>
         </div>
       </div>
     </article>
