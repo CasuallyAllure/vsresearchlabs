@@ -219,7 +219,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
         </p>
 
         {/* Interactive perk chips — 2×2 raised tiles, one open at a time. */}
-        <div className="mt-[var(--space-5)] grid grid-cols-2 gap-[var(--space-2)]">
+        <div className="mt-[var(--space-5)] grid grid-cols-2 gap-x-[var(--space-2)] gap-y-[var(--space-3)]">
           {PERKS.map((perk, i) => {
             const on = active === i;
             return (
@@ -233,7 +233,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                   ...(on && perk.isGold ? { borderColor: 'rgba(181,144,75,0.45)' } : {}),
                 }}
                 className={[
-                  'perk-chip group relative flex items-center justify-center gap-2 rounded-[14px] border px-3 py-3 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                  'perk-chip group relative flex items-center justify-center gap-1.5 rounded-full border px-3 py-3 sm:py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   on
                     ? 'is-on border-ink/30 bg-ink/[0.08] text-ink'
                     : 'border-ink/10 bg-ink/[0.03] text-ink/60 hover:border-ink/20 hover:text-ink/85',
@@ -241,7 +241,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
               >
                 {perk.isLimitedTime && (
                   <span
-                    className="absolute -top-[8px] right-[10px] rounded-full border bg-base-800 px-[7px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.1em] shadow-[var(--elev-1)] transition-colors"
+                    className="absolute -top-[7px] right-[12px] rounded-full border bg-base-800 px-[6px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.08em] shadow-[var(--elev-1)] transition-colors"
                     style={{
                       color: GOLD,
                       borderColor: on ? 'rgba(181,144,75,0.6)' : 'rgba(181,144,75,0.35)',
@@ -258,7 +258,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 >
                   {perk.icon}
                 </span>
-                <span className="text-[12px] font-medium leading-tight">{perk.labelNode ?? perk.label}</span>
+                <span className="text-[11.5px] font-medium leading-tight">{perk.labelNode ?? perk.label}</span>
               </button>
             );
           })}
