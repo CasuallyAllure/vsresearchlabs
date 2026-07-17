@@ -40,6 +40,7 @@ import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActi
 import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
+import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -107,6 +108,7 @@ export function CartPage() {
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
+  useAccountEmailPrefill(user?.email, setContact);
   const [organization, setOrganization] = useState('');
   const [shipStreet, setShipStreet] = useState('');
   const [shipCity, setShipCity] = useState('');

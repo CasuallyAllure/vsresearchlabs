@@ -37,6 +37,7 @@ import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActi
 import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
+import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -94,6 +95,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  useAccountEmailPrefill(user?.email, setEmail);
   const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [stateRegion, setStateRegion] = useState('');

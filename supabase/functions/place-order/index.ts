@@ -51,8 +51,19 @@ import {
   type OrderLine,
   type CouponLine,
 } from "../_shared/invoiceEmail.ts";
-import { findPriceMismatches, type PriceMismatch } from "./priceCheck.ts";
 import { alertOperator, logEvent, withTelemetry } from "../_shared/telemetry.ts";
+import {
+  isQueryableSku,
+  priceFailureMessage,
+  verifyLinePrices,
+  type UnverifiedLine,
+} from "./priceCheck.ts";
+import {
+  B2G1_GROUP,
+  buildPromoPlans,
+  type B2G1PlanEntry,
+  type WholesalePlanEntry,
+} from "./promoPlan.ts";
 
 const TELEMETRY_FN = "place-order";
 
@@ -340,21 +351,26 @@ function paymentCode(orderNumber: string): string {
   return parts[parts.length - 1] || orderNumber;
 }
 
-function priceMismatchNoticeHtml(mismatches: PriceMismatch[]): string {
-  if (mismatches.length === 0) return "";
-  const rows = mismatches.map((m) =>
-    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(m.sku)} — billed <strong>${usd(m.clientCents)}</strong>, catalog says <strong>${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}</strong></div>`,
+/** Mismatching prices no longer reach an invoice — they refuse the order
+ *  (priceCheck.ts, P0-1). What survives is the one case the server genuinely
+ *  cannot verify: a real catalog dose carrying no admin price, which the client
+ *  formula-prices. Those still ship, so the operator is told which lines were
+ *  taken on trust. Import a price for the dose and this notice disappears. */
+function unverifiedPriceNoticeHtml(unverified: UnverifiedLine[]): string {
+  if (unverified.length === 0) return "";
+  const rows = unverified.map((u) =>
+    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(u.sku)} — billed <strong>${usd(u.clientCents)}</strong>, catalog has <strong>no admin price for this dose</strong></div>`,
   ).join("");
   return `<div style="border:1px solid rgba(196,64,64,0.5);background:rgba(196,64,64,0.08);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
-    <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Price mismatch — verify before marking paid</strong>
-    The cart submitted prices that differ from the admin-set catalog prices.${rows}
+    <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Unverified price — confirm before marking paid</strong>
+    Every other line matched the catalog exactly. These doses have no admin-set price, so the price came from the cart and could not be checked. Set a price for the dose to close this.${rows}
   </div>`;
 }
 
 function buildBusinessEmailHtml(
   payload: OrderPayload, orderNumber: string, referenceId: string, totalCents: number,
   promo?: { code: string; discountCents: number },
-  mismatches: PriceMismatch[] = [],
+  unverified: UnverifiedLine[] = [],
 ): string {
   const org = payload.organization
     ? `<tr><td style="padding:2px 0;">Organization</td><td style="padding:2px 0;text-align:right;">${escapeHtml(payload.organization)}</td></tr>` : "";
@@ -417,7 +433,7 @@ function buildBusinessEmailHtml(
         </tfoot>
       </table>
       ${mixedShipNoticeHtml(payload.items)}
-      ${priceMismatchNoticeHtml(mismatches)}
+      ${unverifiedPriceNoticeHtml(unverified)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
         Buyer received their branded invoice with Zelle instructions.
@@ -499,6 +515,18 @@ const handleOrder = async (req: Request): Promise<Response> => {
     const productId   = typeof product.id === "string" ? product.id : "";
     const productName = typeof product.name === "string" ? product.name.trim() : "";
     if (!productId || !productName) return jsonResponse({ error: "Item product must include id and name." }, 400);
+    // Bound the line name. It is the text the price check resolves a dose from,
+    // and that resolution is superlinear in the name's length when a dose token
+    // repeats — an uncapped name is a cheap way to burn CPU inside the handler
+    // (a 128 KB name of repeated dose tokens already costs ~0.5s, and the promo
+    // planner resolves the same line a second time). The longest real cart-line
+    // name in the catalog is 51 chars; 200 matches the ship_street bound and
+    // leaves an order of magnitude of headroom. Reject rather than truncate —
+    // a silently shortened name is a wrong invoice, and every honest client is
+    // far under this.
+    if (productId.length > 200 || productName.length > 200) {
+      return jsonResponse({ error: "Item product details too long." }, 400);
+    }
     const category = typeof product.category === "string" ? product.category : null;
     const sku      = typeof product.sku === "string" ? product.sku.trim() : "";
     const noteRaw  = typeof r.note === "string" ? r.note.trim() : "";
@@ -562,58 +590,70 @@ const handleOrder = async (req: Request): Promise<Response> => {
     }
   }
 
-  // Server price check — compare each client-sent line price against the
-  // admin-set price where one authoritatively exists (per-dose variant price,
-  // else the per-sku override). FLAG, don't block: payment is verified
-  // manually against the invoice, so the operator gets a loud warning in the
-  // business email + an order_events entry instead of a hard reject. Lines
-  // with no admin-set price (formula-priced catalog) are skipped. Runs on the
-  // raw client lines — server-generated free promo lines are appended later.
-  const priceMismatches: PriceMismatch[] = [];
-  let priceCheckDidNotRun = false;
+  // Server price authority (P0-1) — every client-sent line price is verified
+  // against the admin-set price and the order is REFUSED on any discrepancy.
+  //
+  // FAIL CLOSED, not flag-only. Payment is manual (Zelle) and settles against
+  // the invoice this function creates, so a flag is only as good as an operator
+  // noticing a number before releasing goods. Refusing to create the order is
+  // the only control that actually holds. See priceCheck.ts for the resolution
+  // rules and the one documented gap (formula-priced doses, allowed + recorded).
+  //
+  // Runs on the raw client lines — server-generated free promo lines are
+  // appended later, after this gate.
+  const unverifiedLines: UnverifiedLine[] = [];
   {
-    // Only well-formed SKUs go into the .in() filter. supabase-js does not
-    // escape embedded quotes inside a filter value, so a crafted sku (with a
-    // stray quote/paren) could malform the batched query and fail-open the
-    // check for the WHOLE order. Restrict to the catalog's sku charset; a line
-    // whose sku doesn't match is treated as unverifiable (skipped), never as a
-    // reason to disable the check for its siblings.
-    const SKU_RE = /^[A-Za-z0-9._-]{1,64}$/;
+    const checkLines = items.map((i) => ({
+      sku: i.product.sku,
+      name: i.product.name,
+      unitPriceCents: clampCents(i.unitPriceCents),
+    }));
+    // Only well-formed SKUs go into the .in() filter (see priceCheck.SKU_RE).
+    // A malformed one is not dropped from the CHECK — verifyLinePrices rejects
+    // it — it's just kept out of the query it could malform.
     const checkSkus = [...new Set(
-      items.map((i) => i.product.sku).filter((s): s is string => !!s && SKU_RE.test(s)),
+      items.map((i) => i.product.sku).filter(isQueryableSku),
     )];
-    if (checkSkus.length > 0) {
-      const [variantRes, overrideRes] = await Promise.all([
+    const [variantRes, overrideRes] = checkSkus.length > 0
+      ? await Promise.all([
         supabase.from("product_variant_stock")
           .select("sku, dose, price_cents").in("sku", checkSkus),
         supabase.from("product_stock")
           .select("sku, price_cents_override").in("sku", checkSkus),
-      ]);
-      // Fail open on a read error: the check is advisory (flag-only), and a
-      // transient read failure must never take checkout down with it. But a
-      // silent skip is indistinguishable from "all matched", so record that
-      // the check could NOT run and surface it on the order timeline below.
-      if (variantRes.error) console.error("Price check variant read failed:", variantRes.error);
-      if (overrideRes.error) console.error("Price check override read failed:", overrideRes.error);
-      if (variantRes.error && overrideRes.error) priceCheckDidNotRun = true;
-      priceMismatches.push(...findPriceMismatches(
-        items
-          .filter((i) => i.product.sku && SKU_RE.test(i.product.sku))
-          .map((i) => ({
-            sku: i.product.sku,
-            name: i.product.name,
-            note: i.note,
-            unitPriceCents: clampCents(i.unitPriceCents),
-          })),
-        variantRes.data ?? [],
-        overrideRes.data ?? [],
-      ));
-      if (priceMismatches.length > 0) {
-        console.error(`Price mismatch on checkout (${priceMismatches.length} line(s)):`,
-          priceMismatches.map((m) =>
-            `${m.sku} billed ${m.clientCents}¢ vs catalog ${m.serverCents == null ? "UNRESOLVED" : m.serverCents + "¢"}`,
-          ).join("; "));
-      }
+      ])
+      : [{ data: [], error: null }, { data: [], error: null }];
+
+    // A read failure means the catalog price is UNKNOWN, not "matched". Under
+    // fail-closed that must refuse the order: the old fail-open kept checkout up
+    // at the cost of billing whatever the client claimed, and a partial failure
+    // (variants error, overrides fine) is the worst case — every priced line
+    // would silently resolve to "no rows → unknown". Refuse and let the buyer
+    // retry; the same database has to be up to create the order anyway.
+    if (variantRes.error || overrideRes.error) {
+      console.error(
+        `Price check read failed — order refused. variants=${variantRes.error?.message ?? "ok"} overrides=${overrideRes.error?.message ?? "ok"}`,
+      );
+      return jsonResponse({
+        error: "We couldn't verify catalog prices just now. Please try again in a moment.",
+      }, 503);
+    }
+
+    const verdict = verifyLinePrices(checkLines, variantRes.data ?? [], overrideRes.data ?? []);
+    if (!verdict.ok) {
+      console.error(
+        `Price verification FAILED — order refused (${verdict.failures.length} line(s)): ` +
+        verdict.failures.map((f) =>
+          `${f.sku || "(no sku)"} [${f.reason}] billed ${f.clientCents}¢ vs catalog ${f.serverCents == null ? "n/a" : f.serverCents + "¢"}`,
+        ).join("; "),
+      );
+      return jsonResponse({ error: priceFailureMessage(verdict.failures) }, 409);
+    }
+    unverifiedLines.push(...verdict.unverified);
+    if (unverifiedLines.length > 0) {
+      console.warn(
+        `Price check could not verify ${unverifiedLines.length} formula-priced line(s): ` +
+        unverifiedLines.map((u) => `${u.sku} at ${u.clientCents}¢`).join("; "),
+      );
     }
   }
   // Server-verified slow-ship (7–10 day) lines — B2G1 promo candidates. A
@@ -630,26 +670,43 @@ const handleOrder = async (req: Request): Promise<Response> => {
     return jsonResponse({ error: "Too many orders from this contact. Please wait before trying again." }, 429);
   }
 
-  // Ownership stamping (portal blueprint §2.1) — STRICTLY ADDITIVE. If the
-  // request carries a customer session JWT (supabase-js sends the session
-  // token as the Authorization bearer when signed in; the anon key otherwise),
-  // resolve it and stamp orders.user_id ONLY when the verified auth email
-  // equals the buyer contact (case-insensitive). Any failure — guest, anon-key
-  // bearer, bogus/expired token, email mismatch — proceeds exactly as today.
+  // Ownership + membership (P0-5) — resolved from the VERIFIED session alone.
+  //
+  // This used to additionally require contactIsEmail && authedEmail === contact,
+  // so a signed-in member who typed any other address — or a phone number, which
+  // the field explicitly invites ("Email or Phone *") — was silently billed as a
+  // guest: +$9.99 shipping, no account discount, no reward voucher, and their
+  // wholesale plan dropped. On the review's worked example that was +$249.99
+  // (+69.4%) over the advertised price, and NO price check can ever catch it:
+  // the client sends honest per-unit retail prices, and every one of those perks
+  // is a discount or a shipping line, not a unit price. Only the total is wrong.
+  //
+  // The bearer is a real GoTrue round-trip (auth.getUser), so it proves account
+  // identity by itself; `contact` proves nothing — it is a delivery/notification
+  // address the buyer types, not an identity claim. Treat it as one.
+  //
+  // Any failure — guest, anon-key bearer, bogus/expired token — is guest
+  // semantics exactly as before.
   let stampedUserId: string | null = null;
   {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-    if (bearer && SUPABASE_ANON_KEY && bearer !== SUPABASE_ANON_KEY && contactIsEmail) {
+    if (bearer && SUPABASE_ANON_KEY && bearer !== SUPABASE_ANON_KEY) {
       try {
         const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data: userData, error: userErr } = await authClient.auth.getUser(bearer);
-        const authedEmail = (userData?.user?.email ?? "").trim().toLowerCase();
-        if (!userErr && userData?.user && authedEmail && authedEmail === contact.toLowerCase()) {
+        if (!userErr && userData?.user) {
           stampedUserId = userData.user.id;
-          console.log("Checkout ownership stamped for user", stampedUserId);
+          const authedEmail = (userData.user.email ?? "").trim().toLowerCase();
+          if (contactIsEmail && authedEmail && authedEmail !== contact.toLowerCase()) {
+            // Not an error — the buyer may ship/notify anywhere they like. Worth
+            // a line in the log because it used to silently change the price.
+            console.log(
+              `Checkout contact differs from the account email for user ${stampedUserId} — member pricing still applies.`,
+            );
+          }
         }
       } catch {
         /* unresolved session → guest semantics, no log spam */
@@ -752,28 +809,30 @@ const handleOrder = async (req: Request): Promise<Response> => {
   }[] = [];
   let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
 
-  // Precompute the automatic slow-ship promos BEFORE validating codes, so the
+  // Precompute the automatic promos BEFORE validating codes, so the
   // combinability gate can tell whether an automatic promo is active for a
-  // code that opts out of promos. Two standing rules share one slow-ship
-  // lookup (one query, no divergence):
+  // code that opts out of promos. Two standing rules share one catalog lookup
+  // (one query, no divergence):
   //   • WHOLESALE — pack pricing, always on (the owner's standing business
-  //     offer — keep sizes/percents in sync with src/lib/wholesale.ts):
-  //     full cases of 10 at 40% off, plus one half kit of 5 at 27% off from
-  //     the remainder (e.g. qty 15 = one case + one half kit). Offered on
-  //     EVERY orderable dose — 24-hour in-stock and 7–10-day sourced alike —
-  //     so ship speed does NOT gate the case discount (mirrors wholesaleDoses).
+  //     offer): full cases of 10 at 40% off, plus one half kit of 5 at 27% off
+  //     from the remainder (e.g. qty 15 = one case + one half kit). Ship speed
+  //     does NOT gate it — a case is sourced whole (mirrors wholesaleDoses).
+  //     WHICH doses may be sold by the case is a SERVER fact
+  //     (product_variant_stock.wholesale_eligible, migration 063), not the
+  //     `category` the payload claims.
   //   • B2G1     — qty ≥ 3 slow-ship → 1 free per 3, when the admin promo is
   //     live.
-  // The two must never stack on one line: whichever is worth MORE to the
-  // buyer claims the line (e.g. qty 6 under live B2G1 → 2 free ≈ 33% beats
-  // the 27% half kit; qty 10 → 40% case beats 3 free ≈ 30%).
-  // Reductions are applied in the flat pass below, consuming these plans.
-  // idx points into `items` — free_item appends happen later at the tail, so
-  // captured indices stay valid.
-  const WHOLESALE_CASE = { size: 10, percent: 40 };
-  const WHOLESALE_HALF = { size: 5, percent: 27 };
-  const b2g1FreePlan: { idx: number; freeUnits: number; unit: number }[] = [];
-  const wholesalePlan: { idx: number; units: number; value: number }[] = [];
+  // The two must never stack on one line: whichever is worth MORE to the buyer
+  // claims it (qty 6 under live B2G1 → 2 free ≈ 33% beats the 27% half kit;
+  // qty 10 → 40% case beats 3 free ≈ 30%).
+  //
+  // The rules themselves live in promoPlan.ts — pure, unit-tested, and sharing
+  // the price check's dose resolver so the row that PRICED a line is the row
+  // that decides its promos. Reductions are applied in the flat pass below,
+  // consuming these plans. idx points into `items` — free_item appends happen
+  // later at the tail, so captured indices stay valid.
+  let b2g1FreePlan: B2G1PlanEntry[] = [];
+  let wholesalePlan: WholesalePlanEntry[] = [];
   {
     const { data: promo } = await supabase
       .from("promo_settings")
@@ -782,63 +841,40 @@ const handleOrder = async (req: Request): Promise<Response> => {
       .maybeSingle();
     const promoLive = !!promo?.b2g1_enabled &&
       (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
-    const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
-    // Slow-ship data is needed for any pack-size line, plus B2G1 candidates
-    // while that promo is live.
+    const excludedSkus = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
+    // Any line that could reach either promo's floor (B2G1's group of 3 is the
+    // lower of the two) needs its catalog row.
     const skus = [...new Set(
       items
-        .filter((i) => {
-          const qty = clampQty(i.quantity);
-          if (qty >= WHOLESALE_HALF.size) return true;
-          return promoLive && qty >= 3 && !!i.product.sku && !excluded.has(i.product.sku);
-        })
+        .filter((i) => clampQty(i.quantity) >= B2G1_GROUP)
         .map((i) => i.product.sku)
-        .filter((s): s is string => !!s),
+        .filter(isQueryableSku),
     )];
     if (skus.length > 0) {
-      const { data: availRows } = await supabase
+      const { data: availRows, error: availErr } = await supabase
         .from("product_variant_stock")
-        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents")
+        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents, wholesale_eligible")
         .in("sku", skus);
-      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
-      const slowByKey = new Map<string, boolean>();
-      for (const v of availRows ?? []) {
-        const fast = (v.on_hand ?? 0) > 0 || (v.inbound_units ?? 0) > 0;
-        const orderable = fast || v.lead_days != null || v.price_cents != null;
-        slowByKey.set(`${v.sku}::${squash(v.dose ?? "")}`, !fast && orderable);
+      // A read failure means no promo data — fail closed to full retail rather
+      // than guess. The buyer is never overcharged past the price they were
+      // quoted; they just miss an automatic discount, and the log says why.
+      if (availErr) {
+        console.error(`Promo catalog read failed — order proceeds at retail:`, availErr);
       }
-      items.forEach((item, idx) => {
-        const sku = item.product.sku;
-        const unit = clampCents(item.unitPriceCents);
-        const qty = clampQty(item.quantity);
-        if (!sku || unit <= 0 || qty < 3) return;
-        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
-        const isSlow = [...slowByKey.entries()].some(([key, slow]) => {
-          if (!slow || !key.startsWith(`${sku}::`)) return false;
-          const dose = key.slice(sku.length + 2);
-          return dose === "" || haystack.includes(dose);
-        });
-        // Wholesale applies to ANY orderable pack-quantity line regardless of
-        // ship speed (fast in-stock included); B2G1 stays slow-ship only. So we
-        // no longer early-return on fast lines — we just withhold B2G1 from them.
-        // Wholesale pack value — full cases first, then at most one half kit
-        // from the remainder (remainder < case size, so 0 or 1 half kits).
-        // Per-pack rounding matches the client tile's displayed math.
-        const cases = Math.floor(qty / WHOLESALE_CASE.size);
-        const rem = qty - cases * WHOLESALE_CASE.size;
-        const halfKits = rem >= WHOLESALE_HALF.size ? 1 : 0;
-        const packUnits = cases * WHOLESALE_CASE.size + halfKits * WHOLESALE_HALF.size;
-        const packValue =
-          cases * Math.round((WHOLESALE_CASE.size * unit * WHOLESALE_CASE.percent) / 100) +
-          halfKits * Math.round((WHOLESALE_HALF.size * unit * WHOLESALE_HALF.percent) / 100);
-        const b2g1Free = isSlow && promoLive && !excluded.has(sku) ? Math.floor(qty / 3) : 0;
-        const b2g1Value = b2g1Free * unit;
-        if (packValue > 0 && packValue >= b2g1Value) {
-          wholesalePlan.push({ idx, units: packUnits, value: packValue });
-        } else if (b2g1Free > 0) {
-          b2g1FreePlan.push({ idx, freeUnits: b2g1Free, unit });
-        }
+      const plans = buildPromoPlans({
+        lines: items.map((i) => ({
+          sku: i.product.sku,
+          name: i.product.name,
+          quantity: clampQty(i.quantity),
+          unitPriceCents: clampCents(i.unitPriceCents),
+        })),
+        variantRows: availRows ?? [],
+        promoLive,
+        excludedSkus,
+        isMember: !!stampedUserId,
       });
+      wholesalePlan = plans.wholesalePlan;
+      b2g1FreePlan = plans.b2g1FreePlan;
     }
   }
   // Bundle promo — 20% off every complete Retatrutide + GHK-Cu pair (any dose
@@ -882,20 +918,15 @@ const handleOrder = async (req: Request): Promise<Response> => {
     }
   }
 
-  // Wholesale is ACCOUNT-GATED and a FINAL price (owner's rules) — enforced
-  // here, server-side, because the client guard can be bypassed:
-  //   • Account-gated — only a verified signed-in owner buys at case pricing.
-  //     Without one (no stampedUserId), drop the wholesale plan entirely: those
-  //     pack-quantity lines fall back to retail (normal per-vial price AND their
-  //     retail 24-hour ship speed — no discount, no forced slow-ship).
-  //   • Final price — when wholesale DOES apply, nothing else may discount the
-  //     order: reject user-entered coupon codes and suppress the automatic
-  //     account discount, reward voucher, and B2G1. "Wholesale price and that's
-  //     it." B2G1 was already per-line exclusive with wholesale; this also kills
-  //     it on any other line of a wholesale order.
-  if (wholesalePlan.length > 0 && !stampedUserId) {
-    wholesalePlan.length = 0;
-  }
+  // Wholesale is a FINAL price (owner's rule) — when it applies, nothing else
+  // may discount the order: reject user-entered coupon codes and suppress the
+  // automatic account discount, reward voucher, and B2G1. "Wholesale price and
+  // that's it." B2G1 is already per-line exclusive with wholesale; this also
+  // kills it on any other line of a wholesale order.
+  //
+  // (The ACCOUNT gate — only a verified signed-in owner buys at case pricing —
+  // is applied inside buildPromoPlans, which is the only place that knows what
+  // a dropped wholesale line should fall back to.)
   const hasWholesale = wholesalePlan.length > 0;
   if (hasWholesale) {
     // Actual wholesale lines are sourced as a case → never 24-hour, regardless
@@ -1255,29 +1286,23 @@ const handleOrder = async (req: Request): Promise<Response> => {
     });
   }
 
-  // Durable record of a price mismatch — lands on the admin order timeline
-  // (order_events is admin-read-only, so the buyer never sees it). Also record
-  // when the check could not run at all (both reads errored), so a silent
-  // fail-open is never indistinguishable from a clean order.
-  if (priceMismatches.length > 0) {
-    const mismatchNote = priceMismatches
-      .map((m) => `${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved" : usd(m.serverCents)}`)
+  // Durable record of the lines the price check could NOT verify — lands on the
+  // admin order timeline (order_events is admin-read-only, so the buyer never
+  // sees it). A mismatching price can no longer reach this point: it refuses the
+  // order outright (P0-1). What remains is a real catalog dose with no admin
+  // price, which the client formula-prices — an unverified line must never be
+  // indistinguishable from a verified one.
+  if (unverifiedLines.length > 0) {
+    const note = unverifiedLines
+      .map((u) => `${u.sku}: billed ${usd(u.clientCents)}, no admin price for this dose`)
       .join("; ");
     const { error: evErr } = await supabase.from("order_events").insert({
       order_id: orderRow.id,
       stage: null,
       kind: "system",
-      note: `⚠ Price mismatch on checkout — ${mismatchNote}. Verify the invoice amount before marking paid.`,
+      note: `⚠ Unverified line price on checkout — ${note}. Every other line matched the catalog. Confirm the invoice amount before marking paid, and set a price for the dose to close this.`,
     });
-    if (evErr) console.error("Price-mismatch event insert failed:", evErr);
-  } else if (priceCheckDidNotRun) {
-    const { error: evErr } = await supabase.from("order_events").insert({
-      order_id: orderRow.id,
-      stage: null,
-      kind: "system",
-      note: "⚠ Price check could not run (catalog read failed) — line prices were NOT verified. Confirm the invoice amount before marking paid.",
-    });
-    if (evErr) console.error("Price-check-skipped event insert failed:", evErr);
+    if (evErr) console.error(`Unverified-price event insert failed for ${orderNumber}:`, evErr);
   }
 
   // Materialize the account discount as a synthetic order_coupons row
@@ -1588,21 +1613,21 @@ const handleOrder = async (req: Request): Promise<Response> => {
       `Code ${appliedCoupon}: ${discountCents > 0 ? "-" + usd(discountCents) : "free item added"}`,
     ] : []),
     `Total: ${usd(totalCents)}`,
-    ...(priceMismatches.length > 0 ? [
+    ...(unverifiedLines.length > 0 ? [
       ``,
-      `!! PRICE MISMATCH — verify before marking paid:`,
-      ...priceMismatches.map((m) => `  ${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}`),
+      `!! UNVERIFIED PRICE — confirm before marking paid (no admin price for this dose):`,
+      ...unverifiedLines.map((u) => `  ${u.sku}: billed ${usd(u.clientCents)}`),
     ] : []),
     `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
     `Mark paid in Admin → Orders once confirmed.`,
   ].join("\n");
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
-    subject: `${priceMismatches.length > 0 ? "⚠ " : ""}New order ${orderNumber} — ${name} (${usd(totalCents)})`,
+    subject: `${unverifiedLines.length > 0 ? "⚠ " : ""}New order ${orderNumber} — ${name} (${usd(totalCents)})`,
     html: buildBusinessEmailHtml(
       cleanPayload, orderNumber, referenceId, totalCents,
       appliedCoupon ? { code: appliedCoupon, discountCents } : undefined,
-      priceMismatches,
+      unverifiedLines,
     ),
     text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
