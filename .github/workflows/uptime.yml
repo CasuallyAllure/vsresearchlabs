@@ -1,0 +1,34 @@
+# External uptime probe (docs/UPTIME.md) — runs OUTSIDE our infrastructure
+# (GitHub-hosted runner), so it still fires when the Worker or Supabase is
+# down. A failed run emails the repo owner (GitHub's default notification on
+# scheduled-workflow failure) and shows red on the Actions tab.
+#
+# Schedule is */15 — GitHub cron is best-effort (runs may land late or be
+# skipped under load), which is fine for a small shop's outage pager. A
+# dedicated monitor (UptimeRobot etc., see docs/UPTIME.md) can be layered on
+# later without touching this.
+name: uptime
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Frontend serves and contains the brand string
+        run: |
+          body=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 https://vsresearchlabs.com/)
+          echo "$body" | grep -q "VS Research" || { echo "FRONTEND PROBE FAILED: keyword missing"; exit 1; }
+
+      - name: Edge gateway + database answer the health endpoint
+        run: |
+          out=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 \
+            https://ufaajzfuppohbxebftwp.supabase.co/functions/v1/health)
+          echo "$out"
+          echo "$out" | grep -q '"ok":true' || { echo "HEALTH PROBE FAILED: $out"; exit 1; }
