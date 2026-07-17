@@ -57,7 +57,11 @@ jobs:
       - run: deno check supabase/functions/
         env:
           DENO_NO_PACKAGE_JSON: "1"
-      - run: npm run test
+      # Coverage is a hard gate too: vitest.config.ts holds ratchet thresholds
+      # (set at the measured floor, raised as coverage grows toward the 80%
+      # bar) — the run fails on regression, so coverage is now enforceable,
+      # not just measurable.
+      - run: npm run test:coverage
       # Lint is a hard gate: zero errors enforced. React-Compiler-hazard rules
       # (set-state-in-effect, refs, etc.) run as warnings — visible but not
       # blocking, since this project doesn't run React Compiler.
