@@ -17,6 +17,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { resolveVariantRow } from '../../supabase/functions/place-order/priceCheck';
+import { deriveProductDose } from '../../src/types/product';
 
 interface CatalogRow {
   sku: string;
@@ -26,8 +27,17 @@ interface CatalogLine extends CatalogRow {
   name: string;
 }
 
-/** Mirrors cartActions.deriveProductDose's "does the name already carry a dose?" */
-const NAME_HAS_DOSE = /([\d.]+)\s*(mg|iu|ml)/i;
+/**
+ * The line name the cart would actually send, using the REAL predicate the
+ * client uses — cartActions.variantProduct asks deriveProductDose (a separator
+ * scan for " — " / " – " / " - "), NOT "does the name look dose-shaped?". An
+ * earlier cut of this test used a lookalike regex, which would have modelled a
+ * name like "Special Batch — Alpha" as needing its dose appended when the real
+ * client would not append it — hiding exactly the failure this guard exists to
+ * catch.
+ */
+const cartLineName = (name: string, dose: string): string =>
+  deriveProductDose({ name }).length > 0 ? name : `${name} — ${dose}`;
 
 function loadCatalog(): { rows: CatalogRow[]; lines: CatalogLine[] } {
   const rows: CatalogRow[] = [];
@@ -41,9 +51,7 @@ function loadCatalog(): { rows: CatalogRow[]; lines: CatalogLine[] } {
         lines.push({
           sku: product.sku,
           dose: variant.dose,
-          name: NAME_HAS_DOSE.test(product.name)
-            ? product.name
-            : `${product.name} — ${variant.dose}`,
+          name: cartLineName(product.name, variant.dose),
         });
       }
     }

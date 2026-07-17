@@ -500,6 +500,18 @@ Deno.serve(async (req: Request) => {
     const productId   = typeof product.id === "string" ? product.id : "";
     const productName = typeof product.name === "string" ? product.name.trim() : "";
     if (!productId || !productName) return jsonResponse({ error: "Item product must include id and name." }, 400);
+    // Bound the line name. It is the text the price check resolves a dose from,
+    // and that resolution is superlinear in the name's length when a dose token
+    // repeats — an uncapped name is a cheap way to burn CPU inside the handler
+    // (a 128 KB name of repeated dose tokens already costs ~0.5s, and the promo
+    // planner resolves the same line a second time). The longest real cart-line
+    // name in the catalog is 51 chars; 200 matches the ship_street bound and
+    // leaves an order of magnitude of headroom. Reject rather than truncate —
+    // a silently shortened name is a wrong invoice, and every honest client is
+    // far under this.
+    if (productId.length > 200 || productName.length > 200) {
+      return jsonResponse({ error: "Item product details too long." }, 400);
+    }
     const category = typeof product.category === "string" ? product.category : null;
     const sku      = typeof product.sku === "string" ? product.sku.trim() : "";
     const noteRaw  = typeof r.note === "string" ? r.note.trim() : "";

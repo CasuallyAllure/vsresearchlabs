@@ -193,14 +193,20 @@ export function resolveLinePrice(
       : { kind: "unpriced" };
   }
 
+  // Nothing matched. If the sku has dose rows, the line named no real dose —
+  // evasion or ambiguity, not an unpriced product. Refuse, and do NOT fall back
+  // to the per-sku override: that override is the price of a sku sold in ONE
+  // configuration (lab equipment prices on product_stock and has no dose rows),
+  // and letting a dose-priced sku fall back to it would hand an unresolvable
+  // line a price instead of a refusal. import_inventory only writes
+  // price_cents_override for rows with no dose, so a dose-priced sku should
+  // never carry one — this makes "should never" structural.
+  if (variantRows.some((r) => r.sku === sku)) return { kind: "unresolved" };
+
   const override = overrideBySku.get(sku);
   if (override != null) return { kind: "priced", cents: override };
 
-  // Nothing matched. If the sku nonetheless has catalog rows, the dose text was
-  // reworded or hidden — evasion, not an unpriced product.
-  return variantRows.some((r) => r.sku === sku)
-    ? { kind: "unresolved" }
-    : { kind: "unknown" };
+  return { kind: "unknown" };
 }
 
 export type PriceFailureReason =

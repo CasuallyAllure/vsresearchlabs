@@ -352,6 +352,39 @@ describe('per-sku override fallback', () => {
     expect(verdict.ok).toBe(false);
     expect(verdict.failures[0].reason).toBe('unknown_sku');
   });
+
+  test('a dose-priced sku does NOT fall back to a stray per-sku override', () => {
+    // The override is the price of a one-configuration sku (equipment). If a
+    // dose-priced sku somehow carries one, an unresolvable dose must still be
+    // refused — not quietly billed at the flat override.
+    const overrideRows: SkuOverrideRow[] = [{ sku: 'BPC-157', price_cents_override: 8_000 }];
+    const rows = [variant({ dose: '5mg', price_cents: 6_500 })];
+    const l = line({ name: 'BPC-157 (peptide)', unitPriceCents: 8_000 }); // names no dose
+
+    const verdict = verifyLinePrices([l], rows, overrideRows);
+
+    expect(verdict.ok).toBe(false);
+    expect(verdict.failures[0].reason).toBe('dose_unresolved');
+  });
+});
+
+describe('cost of resolution is bounded (DoS guard)', () => {
+  test('a pathological name resolves fast enough to be harmless', () => {
+    // Ambiguity detection compares dose occurrences pairwise, so a name that
+    // repeats a nested dose token is superlinear: "5mg" ⊂ "15mg" are real
+    // adjacent doses on VSR-RS-TZP-010. place-order caps product.name at 200
+    // chars, which is the actual defence (the longest real cart-line name is
+    // 51); this pins that even a name an order of magnitude over the cap stays
+    // trivial, so the cap has real headroom.
+    const rows = ['2.5mg', '5mg', '10mg', '15mg', '20mg', '30mg']
+      .map((dose) => ({ sku: 'VSR-RS-TZP-010', dose }));
+    const name = '15mg'.repeat(500); // 2000 chars — 10x the enforced cap
+
+    const started = performance.now();
+    resolveVariantRow('VSR-RS-TZP-010', name, rows);
+
+    expect(performance.now() - started).toBeLessThan(50);
+  });
 });
 
 describe('priceFailureMessage', () => {
