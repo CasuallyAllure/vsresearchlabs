@@ -281,13 +281,18 @@ export function variantPriceCents(sku: string, dose: string): number | null {
  * here — it'd defeat the no-price-means-hide policy by manufacturing a
  * placeholder price for every mg dose.
  *
- * If no per-dose row exists at all (no import has touched this variant) we
- * default to visible so a fresh seed install still shows everything; the
- * filter only kicks in once the import has written something. */
+ * If the SKU has no per-dose rows at all (no import has touched it, or the
+ * overrides haven't loaded / Supabase isn't configured) we default to visible
+ * so a fresh seed install still shows everything. But once an import HAS
+ * written rows for the SKU, a manifest dose with no DB row is a dead end —
+ * checkout 409s on it — so an untracked dose on a tracked SKU now HIDES
+ * instead of rendering an unbuyable chip. */
 export function isVariantPublic(sku: string, dose: string): boolean {
   const state = useProductOverrides.getState();
-  const v = state.variantBySku[sku]?.[dose];
-  if (!v) return true; // not yet tracked — don't hide
+  const variants = state.variantBySku[sku];
+  if (!variants) return true; // SKU untouched by any import — don't hide
+  const v = variants[dose];
+  if (!v) return false; // tracked SKU, untracked dose — dead-end chip, hide
   if (v.hidden) return false; // explicit per-dose hide (migration 047) — always wins
   if (v.price_cents != null) return true;
   // No admin price set. A dose still carrying a genuine supply/sourcing
