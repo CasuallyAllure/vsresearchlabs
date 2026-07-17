@@ -28,6 +28,19 @@ supabase secrets set ALLOWED_ORIGIN=https://vsresearchlabs.com
 |---|---|
 | `INQUIRY_TO_EMAIL` | `inquiries@vsresearchlabs.com` |
 
+## Optional — failure alerting (`_shared/telemetry.ts`)
+
+Both have working defaults; set them only to override.
+
+| Name | Default | Notes |
+|---|---|---|
+| `ALERT_TO_EMAIL` | falls back to `INQUIRY_TO_EMAIL` | Where order-path failure alerts land. Point it at a pager/on-call address to separate alerts from order mail. |
+| `ALERTS_ENABLED` | `1` | Set to `0` to silence alert emails (structured logs continue regardless). |
+
+Alerts reuse `RESEND_API_KEY` / `RESEND_FROM_EMAIL` — no new vendor, no new key.
+Note the dependency: if Resend itself is down, the alert email cannot send, and
+the structured log line in the function logs is the record of last resort.
+
 ## Auto-injected by Supabase runtime — DO NOT set manually
 
 | Name | Notes |

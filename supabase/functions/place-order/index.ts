@@ -52,6 +52,9 @@ import {
   type CouponLine,
 } from "../_shared/invoiceEmail.ts";
 import { findPriceMismatches, type PriceMismatch } from "./priceCheck.ts";
+import { alertOperator, logEvent, withTelemetry } from "../_shared/telemetry.ts";
+
+const TELEMETRY_FN = "place-order";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -437,7 +440,7 @@ async function sendResendEmail(args: { to: string; subject: string; html: string
 // Handler
 // ---------------------------------------------------------------------------
 
-Deno.serve(async (req: Request) => {
+const handleOrder = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST")    return jsonResponse({ error: "Method not allowed." }, 405);
   if (!RESEND_API_KEY)          return jsonResponse({ error: "Email service not configured." }, 500);
@@ -1064,6 +1067,13 @@ Deno.serve(async (req: Request) => {
     .select("id, reference_id, created_at").single();
   if (inqErr || !inquiryRow) {
     console.error("Inquiry insert failed:", inqErr);
+    await alertOperator({
+      fn: TELEMETRY_FN,
+      stage: "inquiry_insert",
+      summary: "Checkout dropped — inquiry row could not be written, nothing was recorded",
+      error: inqErr,
+      ctx: { referenceId, contact, itemCount },
+    });
     return jsonResponse({ error: "Failed to record order. Please try again." }, 502);
   }
 
@@ -1129,6 +1139,13 @@ Deno.serve(async (req: Request) => {
       }
     }
     console.error("Order insert failed:", ordErr);
+    await alertOperator({
+      fn: TELEMETRY_FN,
+      stage: "order_insert",
+      summary: "Order row could not be created — buyer was told the team will follow up",
+      error: ordErr,
+      ctx: { referenceId, orderNumber, contact, amountCents: totalCents },
+    });
     // Inquiry is recorded; surface a soft failure so the buyer can be followed up.
     return jsonResponse({ error: "Order could not be created. Our team has your request and will follow up.", referenceId }, 502);
   }
@@ -1141,7 +1158,18 @@ Deno.serve(async (req: Request) => {
     // badge the order-time invoice shows (column added in migration 023).
     fast_ship: typeof i.fast === "boolean" ? i.fast : null,
   })));
-  if (linesErr) console.error("Order lines insert failed:", linesErr);
+  if (linesErr) {
+    console.error("Order lines insert failed:", linesErr);
+    // The order exists but has no line items — the invoice and admin views
+    // will render an empty order. Silent until now.
+    await alertOperator({
+      fn: TELEMETRY_FN,
+      stage: "order_lines_insert",
+      summary: "Order created WITHOUT line items — invoice will be empty, fix before taking payment",
+      error: linesErr,
+      ctx: { orderNumber, referenceId, orderId: orderRow.id, contact, amountCents: totalCents },
+    });
+  }
 
   // Durable record of a price mismatch — lands on the admin order timeline
   // (order_events is admin-read-only, so the buyer never sees it). Also record
@@ -1288,7 +1316,22 @@ Deno.serve(async (req: Request) => {
       const { error: rollbackErr } = await supabase.from("orders")
         .update({ discount_cents: discountCents, coupon_code: appliedCoupon, invoice_amount_cents: totalCents })
         .eq("id", orderRow.id);
-      if (rollbackErr) console.error("Coupon rollback update failed:", rollbackErr, orderRow.id);
+      if (rollbackErr) {
+        console.error("Coupon rollback update failed:", rollbackErr, orderRow.id);
+        // The in-memory total no longer matches the persisted order: the
+        // buyer's invoice and the DB row disagree about what is owed.
+        await alertOperator({
+          fn: TELEMETRY_FN,
+          stage: "coupon_rollback",
+          summary: "Coupon rollback did NOT persist — stored order total may disagree with the invoice sent",
+          error: rollbackErr,
+          ctx: {
+            orderNumber, referenceId, orderId: orderRow.id, contact,
+            failedCodes: failedCodes.join(", "),
+            intendedTotalCents: totalCents,
+          },
+        });
+      }
     }
   }
 
@@ -1400,12 +1443,36 @@ Deno.serve(async (req: Request) => {
           replyTo: BUSINESS_EMAIL,
         });
         invoiceEmailSent = invRes.ok;
-        if (!invRes.ok) console.error("Buyer invoice email failed:", invRes.status, invRes.body);
+        if (!invRes.ok) {
+          console.error("Buyer invoice email failed:", invRes.status, invRes.body);
+          await alertOperator({
+            fn: TELEMETRY_FN,
+            stage: "buyer_invoice_email",
+            summary: "Buyer never received their invoice — send it manually from Admin → Orders",
+            ctx: {
+              orderNumber, referenceId, orderId: orderRow.id, contact,
+              resendStatus: invRes.status,
+            },
+          });
+        }
       } else {
         console.error("Buyer invoice: could not re-read order", orderRow.id);
+        await alertOperator({
+          fn: TELEMETRY_FN,
+          stage: "buyer_invoice_reread",
+          summary: "Order could not be re-read for the invoice — buyer received no invoice",
+          ctx: { orderNumber, referenceId, orderId: orderRow.id, contact },
+        });
       }
     } catch (err) {
       console.error("Buyer invoice email threw:", err);
+      await alertOperator({
+        fn: TELEMETRY_FN,
+        stage: "buyer_invoice_email",
+        summary: "Buyer invoice threw — buyer received no invoice",
+        error: err,
+        ctx: { orderNumber, referenceId, orderId: orderRow.id, contact },
+      });
     }
   }
   const bizText = [
@@ -1438,7 +1505,27 @@ Deno.serve(async (req: Request) => {
     text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
   });
-  if (!biz.ok) console.error("Business email failed:", biz);
+  if (!biz.ok) {
+    console.error("Business email failed:", biz);
+    // Worst silent case: a real, paid-for order that the operator is never
+    // told about. The alert goes through the same Resend account that just
+    // failed, so the structured log line above is the fallback of record.
+    await alertOperator({
+      fn: TELEMETRY_FN,
+      stage: "business_notification_email",
+      summary: "Order placed but the business notification failed — order is in Admin → Orders only",
+      ctx: {
+        orderNumber, referenceId, orderId: orderRow.id, contact,
+        amountCents: totalCents, resendStatus: biz.status,
+      },
+    });
+  } else {
+    logEvent("info", TELEMETRY_FN, "Order placed", {
+      orderNumber, referenceId, orderId: orderRow.id,
+      amountCents: totalCents, invoiceEmailSent,
+      priceMismatchCount: priceMismatches.length,
+    });
+  }
 
   return jsonResponse({
     success: true,
@@ -1449,4 +1536,8 @@ Deno.serve(async (req: Request) => {
     invoiceEmailSent,
     contactIsEmail,
   });
-});
+};
+
+// Instrumentation only: an unhandled throw is logged + alerted, then
+// rethrown so the response the caller sees is exactly what it is today.
+Deno.serve(withTelemetry(TELEMETRY_FN, handleOrder));

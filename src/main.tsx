@@ -4,6 +4,12 @@ import './index.css'
 import App from './App'
 import { useProductOverrides } from './lib/productOverrides'
 import { usePromoSettings } from './lib/promoSettings'
+import { installGlobalErrorHandlers } from './lib/telemetry'
+
+// Error tracking. Two listener registrations, no network, no SDK — cheap
+// enough to sit on the critical shell path, and it must, because errors
+// thrown before this point are errors we never hear about.
+installGlobalErrorHandlers();
 
 // Boot-time data: fetch per-SKU runtime overrides from Supabase so the
 // public catalog renders hidden / deleted / price changes immediately
