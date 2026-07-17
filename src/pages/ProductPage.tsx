@@ -473,7 +473,7 @@ export function ProductPage() {
         </aside>
 
         {/* ─── SCROLLABLE RIGHT — Module stack ───────────────────────────── */}
-        <main className="flex-1 min-w-0 lg:overflow-visible">
+        <div className="flex-1 min-w-0 lg:overflow-visible">
           <div className="floating-module overflow-hidden">
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>
@@ -487,7 +487,7 @@ export function ProductPage() {
               </div>
             ))}
           </div>
-        </main>
+        </div>
       </div>
 
       {/* Mobile sticky action bar — sits above the floating BottomNav pill
