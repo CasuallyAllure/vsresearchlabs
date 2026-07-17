@@ -1,28 +1,64 @@
 // supabase/functions/place-order/priceCheck.ts
-// Pure server-side price verification for checkout lines.
+// Pure server-side price authority for checkout lines.
 //
-// Mirrors the client's price resolution (src/lib/cartActions.ts lineUnitCents →
-// src/lib/productOverrides.ts variantPriceCents): the admin-set per-(sku,dose)
-// price from product_variant_stock wins, else the per-sku
-// product_stock.price_cents_override. Lines where NEITHER exists are
-// formula-priced on the client (src/lib/pricing.ts placeholder) and cannot be
-// verified — they are skipped, never flagged.
+// POLICY (2026-07-16, P0-1): FAIL CLOSED. A line whose client-sent price does
+// not match the admin-set price EXACTLY (to the cent, no tolerance) rejects the
+// whole order. The deployed build declared a `priceMismatches` array and never
+// populated it, so a buyer could invoice themselves any amount; the interim
+// build populated it but only flagged. Flagging relies on an operator noticing
+// a number before releasing goods — the money moves out-of-band (manual Zelle),
+// so the only control that actually holds is refusing to create the order.
+//
+// The server's source of truth, in precedence order (mirrors the client's
+// src/lib/cartActions.ts lineUnitCents → src/lib/productOverrides.ts
+// variantPriceCents):
+//   1. product_variant_stock.price_cents for the matched (sku, dose)
+//   2. product_stock.price_cents_override for the sku
 //
 // Dose matching reuses the cart-line convention: the dose is baked into the
 // line name ("BPC-157 — 5mg", see src/lib/cartActions.ts variantProduct), so a
-// variant row matches when its squashed dose appears in the squashed
-// name+note. The LONGEST matching dose wins so "15mg" is never claimed by the
-// "5mg" row.
+// variant row matches when its squashed dose appears in the squashed name+note.
+// The LONGEST matching dose wins, so "15mg" is never claimed by the "5mg" row.
 //
-// ANTI-EVASION (see security review 2026-07-16): the squash normalizer strips
-// Unicode format/control characters (e.g. zero-width U+200B) so a tampered
-// name can't hide the dose from the substring match. And a line whose sku HAS
-// priced variant rows but matches NONE of them is FLAGGED (serverCents=null),
-// not silently skipped — otherwise an attacker keeps a valid sku, rewords the
-// dose so nothing matches, and slips past. Only a sku with no priced row
-// anywhere (genuinely formula-priced) is skipped.
+// ANTI-EVASION: the squash normalizer strips Unicode format/control characters
+// (e.g. zero-width U+200B) so a tampered name can't hide the dose from the
+// substring match.
+//
+// WHY THE RESOLVER MATCHES UNPRICED ROWS TOO (and why that is not a hole):
+// the previous version filtered to `price_cents != null` BEFORE matching, so a
+// legitimately unpriced dose on a partially-priced sku matched nothing and came
+// back "unresolved". Under flag-only that was a documented false positive; under
+// FAIL CLOSED it would refuse real orders — live examples today: TB-500 5mg
+// (8 on hand, ships 24hr) sits on VSR-RS-TB4-005 whose 10mg IS priced; same
+// shape for Kisspeptin-10 5mg and Thymosin α-1 5mg. So the resolver matches
+// against ALL rows for the sku and branches on the matched row's price:
+//   • matched + priced   → verify (reject on any difference)
+//   • matched + no price → genuinely formula-priced → UNVERIFIABLE: allowed and
+//     recorded on the order timeline. This is the residual gap, and it closes
+//     for free the moment the operator imports a price for those doses.
+//   • matched nothing    → the sku IS in the catalog but the line's dose text
+//     resolves to no real dose → evasion → reject
+// This NARROWS the old false positive rather than widening it.
 //
 // Kept free of Deno/runtime imports so vitest can unit-test it directly.
+
+/** The catalog's sku charset. supabase-js does not escape embedded quotes
+ *  inside a filter value, so only well-formed skus may enter the batched .in()
+ *  query — a crafted sku could otherwise malform the query and fail the check
+ *  open for the WHOLE order. A line whose sku falls outside this charset can
+ *  never be reconciled with the catalog, so it is rejected, never skipped. */
+export const SKU_RE = /^[A-Za-z0-9._-]{1,64}$/;
+
+export const isQueryableSku = (sku: string | undefined): sku is string =>
+  !!sku && SKU_RE.test(sku);
+
+/** Lowercase, drop all whitespace, and strip Unicode format/control chars
+ *  (zero-width spaces, bidi marks, etc.) so they can't be used to hide a dose
+ *  token from the substring match. THE one definition — the promo/wholesale
+ *  matcher imports this rather than keeping its own weaker copy, so a line can
+ *  never resolve to different doses in the price check vs the discount path. */
+export const squash = (s: string): string =>
+  s.toLowerCase().replace(/[\s\p{Cf}\p{Cc}]+/gu, "");
 
 export interface PriceCheckLine {
   sku?: string;
@@ -31,9 +67,14 @@ export interface PriceCheckLine {
   unitPriceCents: number;
 }
 
-export interface VariantPriceRow {
+/** Any product_variant_stock row. Generic so the wholesale path can resolve the
+ *  same (sku, dose) row and then read its own columns off it. */
+export interface VariantRow {
   sku: string;
   dose: string | null;
+}
+
+export interface VariantPriceRow extends VariantRow {
   price_cents: number | null;
 }
 
@@ -42,98 +83,179 @@ export interface SkuOverrideRow {
   price_cents_override: number | null;
 }
 
-/** One order line whose client-sent price could not be reconciled with the
- *  admin-set price. `serverCents` is the authoritative price when known, or
- *  null when the sku is priced but the dose couldn't be resolved (possible
- *  evasion — operator must verify manually). */
-export interface PriceMismatch {
+/**
+ * The variant row a line refers to: the LONGEST dose whose squashed text
+ * appears in the line's squashed text, among the rows for this sku. Null when
+ * no dose matches. Rows with an empty dose never match (they would match every
+ * line).
+ *
+ * Shared by the price check and the wholesale/B2G1 planner so the two can never
+ * disagree about which dose a line is.
+ */
+export function resolveVariantRow<T extends VariantRow>(
+  sku: string,
+  lineText: string,
+  rows: readonly T[],
+): T | null {
+  const haystack = squash(lineText);
+  let best: { doseLen: number; row: T } | null = null;
+  for (const row of rows) {
+    if (row.sku !== sku) continue;
+    const dose = squash(row.dose ?? "");
+    if (dose.length === 0 || !haystack.includes(dose)) continue;
+    if (best == null || dose.length > best.doseLen) best = { doseLen: dose.length, row };
+  }
+  return best?.row ?? null;
+}
+
+/** The text a line is resolved against: the dose is baked into the name by
+ *  cartActions.variantProduct; `note` is included because a line can carry the
+ *  dose there. Both are client-controlled — which is precisely why the price
+ *  they imply is VERIFIED below rather than trusted. */
+export const lineText = (line: PriceCheckLine): string => `${line.name} ${line.note ?? ""}`;
+
+export type PriceResolution =
+  /** An admin-set price exists and is authoritative. */
+  | { kind: "priced"; cents: number }
+  /** The dose is a real catalog row carrying no admin price — the client
+   *  formula-prices it and the server has nothing to compare against. */
+  | { kind: "unpriced" }
+  /** The sku is in the catalog but the line's text matches no dose. */
+  | { kind: "unresolved" }
+  /** No variant rows and no per-sku override — not a catalog sku. */
+  | { kind: "unknown" };
+
+export function resolveLinePrice(
+  line: PriceCheckLine,
+  variantRows: readonly VariantPriceRow[],
+  overrideBySku: ReadonlyMap<string, number>,
+): PriceResolution {
+  const sku = line.sku;
+  if (!sku) return { kind: "unknown" };
+
+  const matched = resolveVariantRow(sku, lineText(line), variantRows);
+  if (matched != null) {
+    return matched.price_cents != null
+      ? { kind: "priced", cents: matched.price_cents }
+      : { kind: "unpriced" };
+  }
+
+  const override = overrideBySku.get(sku);
+  if (override != null) return { kind: "priced", cents: override };
+
+  // Nothing matched. If the sku nonetheless has catalog rows, the dose text was
+  // reworded or hidden — evasion, not an unpriced product.
+  return variantRows.some((r) => r.sku === sku)
+    ? { kind: "unresolved" }
+    : { kind: "unknown" };
+}
+
+export type PriceFailureReason =
+  | "price_mismatch"
+  | "zero_price"
+  | "missing_sku"
+  | "malformed_sku"
+  | "unknown_sku"
+  | "dose_unresolved";
+
+/** A line that failed verification — the order is refused. `serverCents` is the
+ *  authoritative price when one is known, else null. */
+export interface PriceFailure {
   sku: string;
   name: string;
   clientCents: number;
   serverCents: number | null;
+  reason: PriceFailureReason;
 }
 
-/** Lowercase, drop all whitespace, and strip Unicode format/control chars
- *  (zero-width spaces, bidi marks, etc.) so they can't be used to hide a dose
- *  token from the substring match below. */
-const squash = (s: string): string =>
-  s.toLowerCase().replace(/[\s\p{Cf}\p{Cc}]+/gu, "");
-
-/**
- * Resolve a line to its admin-set price and how confident we are:
- *   • {cents}            — a per-dose or per-sku admin price was found.
- *   • {cents:null,priced:true}  — the sku HAS priced variant rows but none
- *                          matched the line's dose text (unverifiable — flag).
- *   • null               — no priced row exists for this sku anywhere
- *                          (genuinely formula-priced — skip).
- */
-export function resolveServerPrice(
-  line: PriceCheckLine,
-  variantRows: VariantPriceRow[],
-  overrideBySku: Map<string, number>,
-): { cents: number | null; priced: boolean } | null {
-  const sku = line.sku;
-  if (!sku) return null;
-
-  const skuVariants = variantRows.filter((r) => r.sku === sku && r.price_cents != null);
-  const haystack = squash(`${line.name} ${line.note ?? ""}`);
-  let matched: { doseLen: number; cents: number } | null = null;
-  for (const row of skuVariants) {
-    const dose = squash(row.dose ?? "");
-    if (dose.length === 0 || !haystack.includes(dose)) continue;
-    if (matched == null || dose.length > matched.doseLen) {
-      matched = { doseLen: dose.length, cents: row.price_cents as number };
-    }
-  }
-  if (matched != null) return { cents: matched.cents, priced: true };
-
-  const override = overrideBySku.get(sku);
-  if (override != null) return { cents: override, priced: true };
-
-  // No dose matched and no per-sku override. If the sku nonetheless carries
-  // priced variant rows, the dose was hidden/unresolvable — flag it. If it has
-  // no priced row at all, it's a formula-priced catalog line — skip.
-  if (skuVariants.length > 0) return { cents: null, priced: true };
-  return null;
+/** A line the server genuinely cannot price (formula-priced catalog dose).
+ *  Allowed through, but recorded on the admin order timeline — a silent skip
+ *  must never be indistinguishable from a verified line. */
+export interface UnverifiedLine {
+  sku: string;
+  name: string;
+  clientCents: number;
 }
 
-/** Back-compat: the resolved price, or null when unverifiable OR unresolved. */
-export function serverPriceForLine(
-  line: PriceCheckLine,
-  variantRows: VariantPriceRow[],
-  overrideBySku: Map<string, number>,
-): number | null {
-  return resolveServerPrice(line, variantRows, overrideBySku)?.cents ?? null;
+export interface PriceVerdict {
+  /** False ⇒ refuse the order. */
+  ok: boolean;
+  failures: PriceFailure[];
+  unverified: UnverifiedLine[];
 }
 
 /**
- * Compare every client-sent line price against the admin-set price. Returns
- * the lines that don't reconcile:
- *   • a matched price that differs from the client's, or
- *   • a priced sku whose dose couldn't be resolved (serverCents=null).
- * Genuinely formula-priced lines (no admin price for the sku) are skipped.
+ * Verify every client-sent line price against the admin-set price.
+ *
+ * Rejects (fail closed):
+ *   • a matched admin price the client's price differs from — exact cents, no
+ *     tolerance
+ *   • unitPriceCents <= 0 — the client never legitimately sends a free line
+ *     (server-generated free promo lines are appended AFTER this check)
+ *   • a missing or malformed sku — unverifiable by construction; every catalog
+ *     product has a well-formed sku
+ *   • an unknown sku — no variant rows and no per-sku override anywhere
+ *   • a priced sku whose dose text resolves to no real dose — evasion
+ *
+ * Allows, and reports as `unverified`:
+ *   • a real dose row that carries no admin price (formula-priced)
  */
-export function findPriceMismatches(
-  lines: PriceCheckLine[],
-  variantRows: VariantPriceRow[],
-  overrideRows: SkuOverrideRow[],
-): PriceMismatch[] {
+export function verifyLinePrices(
+  lines: readonly PriceCheckLine[],
+  variantRows: readonly VariantPriceRow[],
+  overrideRows: readonly SkuOverrideRow[],
+): PriceVerdict {
   const overrideBySku = new Map<string, number>();
   for (const row of overrideRows) {
     if (row.price_cents_override != null) overrideBySku.set(row.sku, row.price_cents_override);
   }
-  const mismatches: PriceMismatch[] = [];
+
+  const failures: PriceFailure[] = [];
+  const unverified: UnverifiedLine[] = [];
+
   for (const line of lines) {
-    const resolved = resolveServerPrice(line, variantRows, overrideBySku);
-    if (resolved == null) continue; // formula-priced — unverifiable, skip
-    if (resolved.cents == null) {
-      // priced sku, dose unresolved → possible evasion, flag
-      mismatches.push({ sku: line.sku ?? "", name: line.name, clientCents: line.unitPriceCents, serverCents: null });
-      continue;
-    }
-    if (line.unitPriceCents !== resolved.cents) {
-      mismatches.push({ sku: line.sku ?? "", name: line.name, clientCents: line.unitPriceCents, serverCents: resolved.cents });
+    const fail = (reason: PriceFailureReason, serverCents: number | null = null) => {
+      failures.push({
+        sku: line.sku ?? "",
+        name: line.name,
+        clientCents: line.unitPriceCents,
+        serverCents,
+        reason,
+      });
+    };
+
+    if (!line.sku) { fail("missing_sku"); continue; }
+    if (!isQueryableSku(line.sku)) { fail("malformed_sku"); continue; }
+    if (!(line.unitPriceCents > 0)) { fail("zero_price"); continue; }
+
+    const resolved = resolveLinePrice(line, variantRows, overrideBySku);
+    switch (resolved.kind) {
+      case "priced":
+        if (line.unitPriceCents !== resolved.cents) fail("price_mismatch", resolved.cents);
+        break;
+      case "unpriced":
+        unverified.push({ sku: line.sku, name: line.name, clientCents: line.unitPriceCents });
+        break;
+      case "unresolved":
+        fail("dose_unresolved");
+        break;
+      case "unknown":
+        fail("unknown_sku");
+        break;
     }
   }
-  return mismatches;
+
+  return { ok: failures.length === 0, failures, unverified };
+}
+
+/** Buyer-facing explanation of a refusal. Catalog prices are public, so naming
+ *  the real price is not a leak — and it is the honest message for the common
+ *  legitimate case: the admin repriced while the buyer's cart sat open. */
+export function priceFailureMessage(failures: readonly PriceFailure[]): string {
+  const repriced = failures.filter((f) => f.reason === "price_mismatch");
+  if (repriced.length > 0 && repriced.length === failures.length) {
+    const what = repriced.length === 1 ? `“${repriced[0].name}”` : `${repriced.length} items in your cart`;
+    return `The price of ${what} changed while you were checking out. Refresh your cart to see the current price, then place the order again.`;
+  }
+  return "We couldn't verify every line in this order against the catalog. Refresh your cart and try again — if it keeps happening, contact us and we'll place the order for you.";
 }

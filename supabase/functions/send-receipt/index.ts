@@ -105,7 +105,7 @@ function buildReceiptHtml(order: OrderRow, lines: OrderLine[]): string {
     order.ship_street,
     [order.ship_city, order.ship_state, order.ship_zip].filter(Boolean).join(", "),
     order.ship_country,
-  ].filter(Boolean).map(escapeHtml).join("<br/>");
+  ].filter((s): s is string => !!s).map(escapeHtml).join("<br/>");
 
   const paidWhen = order.paid_at ? fmtDate(order.paid_at) : null;
   const deliveredWhen = order.delivered_at ? fmtDate(order.delivered_at) : null;

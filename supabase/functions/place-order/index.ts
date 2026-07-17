@@ -51,7 +51,12 @@ import {
   type OrderLine,
   type CouponLine,
 } from "../_shared/invoiceEmail.ts";
-import { findPriceMismatches, type PriceMismatch } from "./priceCheck.ts";
+import {
+  isQueryableSku,
+  priceFailureMessage,
+  verifyLinePrices,
+  type UnverifiedLine,
+} from "./priceCheck.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -325,21 +330,26 @@ function paymentCode(orderNumber: string): string {
   return parts[parts.length - 1] || orderNumber;
 }
 
-function priceMismatchNoticeHtml(mismatches: PriceMismatch[]): string {
-  if (mismatches.length === 0) return "";
-  const rows = mismatches.map((m) =>
-    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(m.sku)} — billed <strong>${usd(m.clientCents)}</strong>, catalog says <strong>${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}</strong></div>`,
+/** Mismatching prices no longer reach an invoice — they refuse the order
+ *  (priceCheck.ts, P0-1). What survives is the one case the server genuinely
+ *  cannot verify: a real catalog dose carrying no admin price, which the client
+ *  formula-prices. Those still ship, so the operator is told which lines were
+ *  taken on trust. Import a price for the dose and this notice disappears. */
+function unverifiedPriceNoticeHtml(unverified: UnverifiedLine[]): string {
+  if (unverified.length === 0) return "";
+  const rows = unverified.map((u) =>
+    `<div style="font-family:monospace;font-size:12px;margin-top:4px;">${escapeHtml(u.sku)} — billed <strong>${usd(u.clientCents)}</strong>, catalog has <strong>no admin price for this dose</strong></div>`,
   ).join("");
   return `<div style="border:1px solid rgba(196,64,64,0.5);background:rgba(196,64,64,0.08);border-radius:8px;padding:12px 16px;margin:14px 0;color:#1A1714;font-size:13px;">
-    <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Price mismatch — verify before marking paid</strong>
-    The cart submitted prices that differ from the admin-set catalog prices.${rows}
+    <strong style="display:block;margin-bottom:3px;color:#A03232;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;">⚠ Unverified price — confirm before marking paid</strong>
+    Every other line matched the catalog exactly. These doses have no admin-set price, so the price came from the cart and could not be checked. Set a price for the dose to close this.${rows}
   </div>`;
 }
 
 function buildBusinessEmailHtml(
   payload: OrderPayload, orderNumber: string, referenceId: string, totalCents: number,
   promo?: { code: string; discountCents: number },
-  mismatches: PriceMismatch[] = [],
+  unverified: UnverifiedLine[] = [],
 ): string {
   const org = payload.organization
     ? `<tr><td style="padding:2px 0;">Organization</td><td style="padding:2px 0;text-align:right;">${escapeHtml(payload.organization)}</td></tr>` : "";
@@ -402,7 +412,7 @@ function buildBusinessEmailHtml(
         </tfoot>
       </table>
       ${mixedShipNoticeHtml(payload.items)}
-      ${priceMismatchNoticeHtml(mismatches)}
+      ${unverifiedPriceNoticeHtml(unverified)}
       <div style="border:1px solid #dcdcdc;border-radius:8px;padding:14px 18px;margin-top:22px;background:#fafafa;color:#333;font-size:13px;">
         <strong style="display:block;margin-bottom:4px;color:#111;">Action</strong>
         Buyer received their branded invoice with Zelle instructions.
@@ -547,58 +557,71 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // Server price check — compare each client-sent line price against the
-  // admin-set price where one authoritatively exists (per-dose variant price,
-  // else the per-sku override). FLAG, don't block: payment is verified
-  // manually against the invoice, so the operator gets a loud warning in the
-  // business email + an order_events entry instead of a hard reject. Lines
-  // with no admin-set price (formula-priced catalog) are skipped. Runs on the
-  // raw client lines — server-generated free promo lines are appended later.
-  const priceMismatches: PriceMismatch[] = [];
-  let priceCheckDidNotRun = false;
+  // Server price authority (P0-1) — every client-sent line price is verified
+  // against the admin-set price and the order is REFUSED on any discrepancy.
+  //
+  // FAIL CLOSED, not flag-only. Payment is manual (Zelle) and settles against
+  // the invoice this function creates, so a flag is only as good as an operator
+  // noticing a number before releasing goods. Refusing to create the order is
+  // the only control that actually holds. See priceCheck.ts for the resolution
+  // rules and the one documented gap (formula-priced doses, allowed + recorded).
+  //
+  // Runs on the raw client lines — server-generated free promo lines are
+  // appended later, after this gate.
+  const unverifiedLines: UnverifiedLine[] = [];
   {
-    // Only well-formed SKUs go into the .in() filter. supabase-js does not
-    // escape embedded quotes inside a filter value, so a crafted sku (with a
-    // stray quote/paren) could malform the batched query and fail-open the
-    // check for the WHOLE order. Restrict to the catalog's sku charset; a line
-    // whose sku doesn't match is treated as unverifiable (skipped), never as a
-    // reason to disable the check for its siblings.
-    const SKU_RE = /^[A-Za-z0-9._-]{1,64}$/;
+    const checkLines = items.map((i) => ({
+      sku: i.product.sku,
+      name: i.product.name,
+      note: i.note,
+      unitPriceCents: clampCents(i.unitPriceCents),
+    }));
+    // Only well-formed SKUs go into the .in() filter (see priceCheck.SKU_RE).
+    // A malformed one is not dropped from the CHECK — verifyLinePrices rejects
+    // it — it's just kept out of the query it could malform.
     const checkSkus = [...new Set(
-      items.map((i) => i.product.sku).filter((s): s is string => !!s && SKU_RE.test(s)),
+      items.map((i) => i.product.sku).filter(isQueryableSku),
     )];
-    if (checkSkus.length > 0) {
-      const [variantRes, overrideRes] = await Promise.all([
+    const [variantRes, overrideRes] = checkSkus.length > 0
+      ? await Promise.all([
         supabase.from("product_variant_stock")
           .select("sku, dose, price_cents").in("sku", checkSkus),
         supabase.from("product_stock")
           .select("sku, price_cents_override").in("sku", checkSkus),
-      ]);
-      // Fail open on a read error: the check is advisory (flag-only), and a
-      // transient read failure must never take checkout down with it. But a
-      // silent skip is indistinguishable from "all matched", so record that
-      // the check could NOT run and surface it on the order timeline below.
-      if (variantRes.error) console.error("Price check variant read failed:", variantRes.error);
-      if (overrideRes.error) console.error("Price check override read failed:", overrideRes.error);
-      if (variantRes.error && overrideRes.error) priceCheckDidNotRun = true;
-      priceMismatches.push(...findPriceMismatches(
-        items
-          .filter((i) => i.product.sku && SKU_RE.test(i.product.sku))
-          .map((i) => ({
-            sku: i.product.sku,
-            name: i.product.name,
-            note: i.note,
-            unitPriceCents: clampCents(i.unitPriceCents),
-          })),
-        variantRes.data ?? [],
-        overrideRes.data ?? [],
-      ));
-      if (priceMismatches.length > 0) {
-        console.error(`Price mismatch on checkout (${priceMismatches.length} line(s)):`,
-          priceMismatches.map((m) =>
-            `${m.sku} billed ${m.clientCents}¢ vs catalog ${m.serverCents == null ? "UNRESOLVED" : m.serverCents + "¢"}`,
-          ).join("; "));
-      }
+      ])
+      : [{ data: [], error: null }, { data: [], error: null }];
+
+    // A read failure means the catalog price is UNKNOWN, not "matched". Under
+    // fail-closed that must refuse the order: the old fail-open kept checkout up
+    // at the cost of billing whatever the client claimed, and a partial failure
+    // (variants error, overrides fine) is the worst case — every priced line
+    // would silently resolve to "no rows → unknown". Refuse and let the buyer
+    // retry; the same database has to be up to create the order anyway.
+    if (variantRes.error || overrideRes.error) {
+      console.error(
+        `Price check read failed — order refused. variants=${variantRes.error?.message ?? "ok"} overrides=${overrideRes.error?.message ?? "ok"}`,
+      );
+      return jsonResponse({
+        error: "We couldn't verify catalog prices just now. Please try again in a moment.",
+      }, 503);
+    }
+
+    const verdict = verifyLinePrices(checkLines, variantRes.data ?? [], overrideRes.data ?? []);
+    if (!verdict.ok) {
+      console.error(
+        `Price verification FAILED — order refused (${verdict.failures.length} line(s)): ` +
+        verdict.failures.map((f) =>
+          `${f.sku || "(no sku)"} [${f.reason}] billed ${f.clientCents}¢ vs catalog ${f.serverCents == null ? "n/a" : f.serverCents + "¢"}`,
+        ).join("; "),
+      );
+      return jsonResponse({ error: priceFailureMessage(verdict.failures) }, 409);
+    }
+    unverifiedLines.push(...verdict.unverified);
+    if (unverifiedLines.length > 0) {
+      console.warn(
+        `Price check could not verify ${unverifiedLines.length} formula-priced line(s): ` +
+        unverifiedLines.map((u) => `${u.sku} at ${u.clientCents}¢`).join("; "),
+      );
     }
   }
   // Server-verified slow-ship (7–10 day) lines — B2G1 promo candidates. A
@@ -1143,29 +1166,23 @@ Deno.serve(async (req: Request) => {
   })));
   if (linesErr) console.error("Order lines insert failed:", linesErr);
 
-  // Durable record of a price mismatch — lands on the admin order timeline
-  // (order_events is admin-read-only, so the buyer never sees it). Also record
-  // when the check could not run at all (both reads errored), so a silent
-  // fail-open is never indistinguishable from a clean order.
-  if (priceMismatches.length > 0) {
-    const mismatchNote = priceMismatches
-      .map((m) => `${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved" : usd(m.serverCents)}`)
+  // Durable record of the lines the price check could NOT verify — lands on the
+  // admin order timeline (order_events is admin-read-only, so the buyer never
+  // sees it). A mismatching price can no longer reach this point: it refuses the
+  // order outright (P0-1). What remains is a real catalog dose with no admin
+  // price, which the client formula-prices — an unverified line must never be
+  // indistinguishable from a verified one.
+  if (unverifiedLines.length > 0) {
+    const note = unverifiedLines
+      .map((u) => `${u.sku}: billed ${usd(u.clientCents)}, no admin price for this dose`)
       .join("; ");
     const { error: evErr } = await supabase.from("order_events").insert({
       order_id: orderRow.id,
       stage: null,
       kind: "system",
-      note: `⚠ Price mismatch on checkout — ${mismatchNote}. Verify the invoice amount before marking paid.`,
+      note: `⚠ Unverified line price on checkout — ${note}. Every other line matched the catalog. Confirm the invoice amount before marking paid, and set a price for the dose to close this.`,
     });
-    if (evErr) console.error("Price-mismatch event insert failed:", evErr);
-  } else if (priceCheckDidNotRun) {
-    const { error: evErr } = await supabase.from("order_events").insert({
-      order_id: orderRow.id,
-      stage: null,
-      kind: "system",
-      note: "⚠ Price check could not run (catalog read failed) — line prices were NOT verified. Confirm the invoice amount before marking paid.",
-    });
-    if (evErr) console.error("Price-check-skipped event insert failed:", evErr);
+    if (evErr) console.error(`Unverified-price event insert failed for ${orderNumber}:`, evErr);
   }
 
   // Materialize the account discount as a synthetic order_coupons row
@@ -1419,21 +1436,21 @@ Deno.serve(async (req: Request) => {
       `Code ${appliedCoupon}: ${discountCents > 0 ? "-" + usd(discountCents) : "free item added"}`,
     ] : []),
     `Total: ${usd(totalCents)}`,
-    ...(priceMismatches.length > 0 ? [
+    ...(unverifiedLines.length > 0 ? [
       ``,
-      `!! PRICE MISMATCH — verify before marking paid:`,
-      ...priceMismatches.map((m) => `  ${m.sku}: billed ${usd(m.clientCents)}, catalog ${m.serverCents == null ? "dose unresolved — verify manually" : usd(m.serverCents)}`),
+      `!! UNVERIFIED PRICE — confirm before marking paid (no admin price for this dose):`,
+      ...unverifiedLines.map((u) => `  ${u.sku}: billed ${usd(u.clientCents)}`),
     ] : []),
     `Watch ${ZELLE_HANDLE} for a payment with note ${paymentCode(orderNumber)}.`,
     `Mark paid in Admin → Orders once confirmed.`,
   ].join("\n");
   const biz = await sendResendEmail({
     to: BUSINESS_EMAIL,
-    subject: `${priceMismatches.length > 0 ? "⚠ " : ""}New order ${orderNumber} — ${name} (${usd(totalCents)})`,
+    subject: `${unverifiedLines.length > 0 ? "⚠ " : ""}New order ${orderNumber} — ${name} (${usd(totalCents)})`,
     html: buildBusinessEmailHtml(
       cleanPayload, orderNumber, referenceId, totalCents,
       appliedCoupon ? { code: appliedCoupon, discountCents } : undefined,
-      priceMismatches,
+      unverifiedLines,
     ),
     text: bizText,
     replyTo: contactIsEmail ? contact : undefined,
