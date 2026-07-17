@@ -57,6 +57,12 @@ import {
   verifyLinePrices,
   type UnverifiedLine,
 } from "./priceCheck.ts";
+import {
+  B2G1_GROUP,
+  buildPromoPlans,
+  type B2G1PlanEntry,
+  type WholesalePlanEntry,
+} from "./promoPlan.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -760,28 +766,30 @@ Deno.serve(async (req: Request) => {
   }[] = [];
   let flatCents = 0; // free_item line values + fixed amounts (reduce the base first)
 
-  // Precompute the automatic slow-ship promos BEFORE validating codes, so the
+  // Precompute the automatic promos BEFORE validating codes, so the
   // combinability gate can tell whether an automatic promo is active for a
-  // code that opts out of promos. Two standing rules share one slow-ship
-  // lookup (one query, no divergence):
+  // code that opts out of promos. Two standing rules share one catalog lookup
+  // (one query, no divergence):
   //   • WHOLESALE — pack pricing, always on (the owner's standing business
-  //     offer — keep sizes/percents in sync with src/lib/wholesale.ts):
-  //     full cases of 10 at 40% off, plus one half kit of 5 at 27% off from
-  //     the remainder (e.g. qty 15 = one case + one half kit). Offered on
-  //     EVERY orderable dose — 24-hour in-stock and 7–10-day sourced alike —
-  //     so ship speed does NOT gate the case discount (mirrors wholesaleDoses).
+  //     offer): full cases of 10 at 40% off, plus one half kit of 5 at 27% off
+  //     from the remainder (e.g. qty 15 = one case + one half kit). Ship speed
+  //     does NOT gate it — a case is sourced whole (mirrors wholesaleDoses).
+  //     WHICH doses may be sold by the case is a SERVER fact
+  //     (product_variant_stock.wholesale_eligible, migration 063), not the
+  //     `category` the payload claims.
   //   • B2G1     — qty ≥ 3 slow-ship → 1 free per 3, when the admin promo is
   //     live.
-  // The two must never stack on one line: whichever is worth MORE to the
-  // buyer claims the line (e.g. qty 6 under live B2G1 → 2 free ≈ 33% beats
-  // the 27% half kit; qty 10 → 40% case beats 3 free ≈ 30%).
-  // Reductions are applied in the flat pass below, consuming these plans.
-  // idx points into `items` — free_item appends happen later at the tail, so
-  // captured indices stay valid.
-  const WHOLESALE_CASE = { size: 10, percent: 40 };
-  const WHOLESALE_HALF = { size: 5, percent: 27 };
-  const b2g1FreePlan: { idx: number; freeUnits: number; unit: number }[] = [];
-  const wholesalePlan: { idx: number; units: number; value: number }[] = [];
+  // The two must never stack on one line: whichever is worth MORE to the buyer
+  // claims it (qty 6 under live B2G1 → 2 free ≈ 33% beats the 27% half kit;
+  // qty 10 → 40% case beats 3 free ≈ 30%).
+  //
+  // The rules themselves live in promoPlan.ts — pure, unit-tested, and sharing
+  // the price check's dose resolver so the row that PRICED a line is the row
+  // that decides its promos. Reductions are applied in the flat pass below,
+  // consuming these plans. idx points into `items` — free_item appends happen
+  // later at the tail, so captured indices stay valid.
+  let b2g1FreePlan: B2G1PlanEntry[] = [];
+  let wholesalePlan: WholesalePlanEntry[] = [];
   {
     const { data: promo } = await supabase
       .from("promo_settings")
@@ -790,79 +798,52 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     const promoLive = !!promo?.b2g1_enabled &&
       (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
-    const excluded = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
-    // Slow-ship data is needed for any pack-size line, plus B2G1 candidates
-    // while that promo is live.
+    const excludedSkus = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
+    // Any line that could reach either promo's floor (B2G1's group of 3 is the
+    // lower of the two) needs its catalog row.
     const skus = [...new Set(
       items
-        .filter((i) => {
-          const qty = clampQty(i.quantity);
-          if (qty >= WHOLESALE_HALF.size) return true;
-          return promoLive && qty >= 3 && !!i.product.sku && !excluded.has(i.product.sku);
-        })
+        .filter((i) => clampQty(i.quantity) >= B2G1_GROUP)
         .map((i) => i.product.sku)
-        .filter((s): s is string => !!s),
+        .filter(isQueryableSku),
     )];
     if (skus.length > 0) {
-      const { data: availRows } = await supabase
+      const { data: availRows, error: availErr } = await supabase
         .from("product_variant_stock")
-        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents")
+        .select("sku, dose, on_hand, inbound_units, lead_days, price_cents, wholesale_eligible")
         .in("sku", skus);
-      const squash = (s: string) => s.toLowerCase().replace(/\s+/g, "");
-      const slowByKey = new Map<string, boolean>();
-      for (const v of availRows ?? []) {
-        const fast = (v.on_hand ?? 0) > 0 || (v.inbound_units ?? 0) > 0;
-        const orderable = fast || v.lead_days != null || v.price_cents != null;
-        slowByKey.set(`${v.sku}::${squash(v.dose ?? "")}`, !fast && orderable);
+      // A read failure means no promo data — fail closed to full retail rather
+      // than guess. The buyer is never overcharged past the price they were
+      // quoted; they just miss an automatic discount, and the log says why.
+      if (availErr) {
+        console.error(`Promo catalog read failed — order proceeds at retail:`, availErr);
       }
-      items.forEach((item, idx) => {
-        const sku = item.product.sku;
-        const unit = clampCents(item.unitPriceCents);
-        const qty = clampQty(item.quantity);
-        if (!sku || unit <= 0 || qty < 3) return;
-        const haystack = squash(`${item.product.name} ${item.note ?? ""}`);
-        const isSlow = [...slowByKey.entries()].some(([key, slow]) => {
-          if (!slow || !key.startsWith(`${sku}::`)) return false;
-          const dose = key.slice(sku.length + 2);
-          return dose === "" || haystack.includes(dose);
-        });
-        // Wholesale applies to ANY orderable pack-quantity line regardless of
-        // ship speed (fast in-stock included); B2G1 stays slow-ship only. So we
-        // no longer early-return on fast lines — we just withhold B2G1 from them.
-        // Wholesale pack value — full cases first, then at most one half kit
-        // from the remainder (remainder < case size, so 0 or 1 half kits).
-        // Per-pack rounding matches the client tile's displayed math.
-        const cases = Math.floor(qty / WHOLESALE_CASE.size);
-        const rem = qty - cases * WHOLESALE_CASE.size;
-        const halfKits = rem >= WHOLESALE_HALF.size ? 1 : 0;
-        const packUnits = cases * WHOLESALE_CASE.size + halfKits * WHOLESALE_HALF.size;
-        const packValue =
-          cases * Math.round((WHOLESALE_CASE.size * unit * WHOLESALE_CASE.percent) / 100) +
-          halfKits * Math.round((WHOLESALE_HALF.size * unit * WHOLESALE_HALF.percent) / 100);
-        const b2g1Free = isSlow && promoLive && !excluded.has(sku) ? Math.floor(qty / 3) : 0;
-        const b2g1Value = b2g1Free * unit;
-        if (packValue > 0 && packValue >= b2g1Value) {
-          wholesalePlan.push({ idx, units: packUnits, value: packValue });
-        } else if (b2g1Free > 0) {
-          b2g1FreePlan.push({ idx, freeUnits: b2g1Free, unit });
-        }
+      const plans = buildPromoPlans({
+        lines: items.map((i) => ({
+          sku: i.product.sku,
+          name: i.product.name,
+          note: i.note,
+          quantity: clampQty(i.quantity),
+          unitPriceCents: clampCents(i.unitPriceCents),
+        })),
+        variantRows: availRows ?? [],
+        promoLive,
+        excludedSkus,
+        isMember: !!stampedUserId,
       });
+      wholesalePlan = plans.wholesalePlan;
+      b2g1FreePlan = plans.b2g1FreePlan;
     }
   }
-  // Wholesale is ACCOUNT-GATED and a FINAL price (owner's rules) — enforced
-  // here, server-side, because the client guard can be bypassed:
-  //   • Account-gated — only a verified signed-in owner buys at case pricing.
-  //     Without one (no stampedUserId), drop the wholesale plan entirely: those
-  //     pack-quantity lines fall back to retail (normal per-vial price AND their
-  //     retail 24-hour ship speed — no discount, no forced slow-ship).
-  //   • Final price — when wholesale DOES apply, nothing else may discount the
-  //     order: reject user-entered coupon codes and suppress the automatic
-  //     account discount, reward voucher, and B2G1. "Wholesale price and that's
-  //     it." B2G1 was already per-line exclusive with wholesale; this also kills
-  //     it on any other line of a wholesale order.
-  if (wholesalePlan.length > 0 && !stampedUserId) {
-    wholesalePlan.length = 0;
-  }
+  // Wholesale is a FINAL price (owner's rule) — when it applies, nothing else
+  // may discount the order: reject user-entered coupon codes and suppress the
+  // automatic account discount, reward voucher, and B2G1. "Wholesale price and
+  // that's it." B2G1 is already per-line exclusive with wholesale; this also
+  // kills it on any other line of a wholesale order.
+  //
+  // (The ACCOUNT gate — only a verified signed-in owner buys at case pricing —
+  // is applied inside buildPromoPlans, which is the only place that knows what
+  // a dropped wholesale line should fall back to.)
   const hasWholesale = wholesalePlan.length > 0;
   if (hasWholesale) {
     // Actual wholesale lines are sourced as a case → never 24-hour, regardless
