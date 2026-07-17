@@ -65,6 +65,7 @@ import {
   type WholesalePlanEntry,
 } from "./promoPlan.ts";
 import { buildBundlePlan, bundleLineKey } from "./bundlePlan.ts";
+import { claimRewardVoucher, rollbackRewardPricing } from "./rewardVoucher.ts";
 
 const TELEMETRY_FN = "place-order";
 
@@ -662,11 +663,15 @@ const handleOrder = async (req: Request): Promise<Response> => {
   // stock and a lead_days SLA (the exact condition that renders the 7–10-day
   // chip),
 
-  // Rate limit (shared with inquiries by contact)
+  // Rate limit (shared with inquiries by contact). Case-insensitive on
+  // purpose: an exact .eq() let Foo@x.com / foo@x.com / FOO@x.com each open a
+  // fresh bucket, so the throttle could be bypassed by re-casing the contact.
+  // ilike with LIKE-metacharacters escaped is a case-folded equality match.
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const contactBucket = contact.replace(/([\\%_])/g, "\\$1");
   const { count: recentCount } = await supabase
     .from("inquiries").select("*", { count: "exact", head: true })
-    .eq("contact", contact).gte("created_at", oneHourAgo);
+    .ilike("contact", contactBucket).gte("created_at", oneHourAgo);
   if ((recentCount ?? 0) >= 5) {
     return jsonResponse({ error: "Too many orders from this contact. Please wait before trying again." }, 429);
   }
@@ -1302,30 +1307,73 @@ const handleOrder = async (req: Request): Promise<Response> => {
     if (acctRowErr) console.error("Account-discount order_coupons insert failed:", acctRowErr);
   }
 
-  // Materialize the reward voucher as a synthetic 'fixed' order_coupons row
-  // (migration 050, source='reward') and mark the voucher used. The status
-  // filter on the update makes double-consumption a no-op if this order raced.
+  // Reward voucher — CLAIM FIRST, atomically (migration 064). The RPC is one
+  // guarded UPDATE … WHERE status='active' RETURNING, so of two racing
+  // checkouts exactly one wins the active→used flip; the loser's claim comes
+  // back empty and the reward is rolled OFF this order (discount removed,
+  // totals re-persisted) before any email renders — the same fail-closed
+  // shape as the redeem_coupon rollback below. This replaces the old filtered
+  // update whose result was checked for a DB error but never for zero rows
+  // matched, which let one voucher be spent twice (TOCTOU double-spend).
   if (rewardVoucher && rewardReduction > 0) {
-    const { error: rewardRowErr } = await supabase.from("order_coupons").insert({
-      order_id: orderRow.id,
-      code: REWARD_CODE,
-      kind: "fixed",
-      // percent is informational on a fixed row, but recompute_order_totals
-      // (052) uses it to re-derive the fenced remainder of the reward item:
-      // remainder = discount × (100−pct)/pct.
-      percent: rewardVoucher.percent,
-      amount_cents: rewardReduction,
-      free_label: `${rewardVoucher.percent}% off one item`,
-      discount_cents: rewardReduction,
-      source: "reward",
-    });
-    if (rewardRowErr) console.error("Reward order_coupons insert failed:", rewardRowErr);
-
-    const { error: voucherErr } = await supabase.from("reward_vouchers")
-      .update({ status: "used", used_at: new Date().toISOString(), order_id: orderRow.id })
-      .eq("id", rewardVoucher.id)
-      .eq("status", "active");
-    if (voucherErr) console.error("Reward voucher consume failed:", voucherErr);
+    const claim = await claimRewardVoucher(supabase, rewardVoucher.id, orderRow.id);
+    if (claim.claimed) {
+      // Materialize the reward as a synthetic 'fixed' order_coupons row
+      // (migration 050, source='reward').
+      const { error: rewardRowErr } = await supabase.from("order_coupons").insert({
+        order_id: orderRow.id,
+        code: REWARD_CODE,
+        kind: "fixed",
+        // percent is informational on a fixed row, but recompute_order_totals
+        // (052) uses it to re-derive the fenced remainder of the reward item:
+        // remainder = discount × (100−pct)/pct.
+        percent: rewardVoucher.percent,
+        amount_cents: rewardReduction,
+        free_label: `${rewardVoucher.percent}% off one item`,
+        discount_cents: rewardReduction,
+        source: "reward",
+      });
+      if (rewardRowErr) console.error("Reward order_coupons insert failed:", rewardRowErr);
+    } else {
+      console.error(
+        `Reward voucher claim failed (${claim.reason}) — rolling the reward off ${orderNumber}:`,
+        rewardVoucher.id,
+      );
+      const rolled = rollbackRewardPricing({
+        grossSubtotalCents,
+        shippingCents,
+        discountCents,
+        rewardReduction,
+        appliedCoupon,
+        rewardCode: REWARD_CODE,
+      });
+      discountCents = rolled.discountCents;
+      totalCents = rolled.totalCents;
+      appliedCoupon = rolled.appliedCoupon;
+      rewardReduction = 0;
+      rewardVoucher = null;
+      const { error: rewardRollbackErr } = await supabase.from("orders")
+        .update({
+          discount_cents: discountCents,
+          coupon_code: appliedCoupon,
+          invoice_amount_cents: totalCents,
+        })
+        .eq("id", orderRow.id);
+      if (rewardRollbackErr) {
+        console.error("Reward rollback update failed:", rewardRollbackErr, orderRow.id);
+        // The persisted order still carries a discount whose voucher was never
+        // consumed — the invoice would under-bill. Same alert shape as the
+        // coupon rollback below.
+        await alertOperator({
+          fn: TELEMETRY_FN,
+          stage: "reward_rollback",
+          summary:
+            "Reward voucher lost its claim race but the rollback did NOT persist — stored order total may under-bill",
+          error: rewardRollbackErr,
+          ctx: { orderNumber, referenceId, orderId: orderRow.id, contact, intendedTotalCents: totalCents },
+        });
+      }
+    }
   }
 
   // Materialize the wholesale case discount as a synthetic 'fixed'
