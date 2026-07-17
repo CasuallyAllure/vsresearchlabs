@@ -50,7 +50,13 @@ jobs:
       - run: npm ci
       # Hard gates — must pass to merge.
       - run: npx tsc -b
+      # DENO_NO_PACKAGE_JSON: keep Deno out of the repo's package.json/node_modules.
+      # supabase-js@2.110.2 on jsr declares npm: deps (realtime-js) that Deno
+      # otherwise tries — and fails — to resolve from the Vite app's node_modules.
+      # The edge runtime resolves them natively at deploy; this only affects check.
       - run: deno check supabase/functions/
+        env:
+          DENO_NO_PACKAGE_JSON: "1"
       - run: npm run test
       # Lint is a hard gate: zero errors enforced. React-Compiler-hazard rules
       # (set-state-in-effect, refs, etc.) run as warnings — visible but not
