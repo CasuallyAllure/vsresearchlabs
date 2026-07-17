@@ -11,6 +11,20 @@ import { installGlobalErrorHandlers } from './lib/telemetry'
 // thrown before this point are errors we never hear about.
 installGlobalErrorHandlers();
 
+// Stale-deploy self-heal. Every deploy renames the hashed route chunks, so a
+// browser holding yesterday's HTML asks for chunk files that no longer exist
+// and the lazy route dies mid-navigation ("the page won't load"). Vite fires
+// this event on exactly that failure — one reload fetches the fresh HTML and
+// the right chunks. Guarded to a single attempt per pageview so a genuinely
+// broken deploy can't reload-loop the visitor (flag lives for the session).
+window.addEventListener('vite:preloadError', (event) => {
+  const KEY = 'vsrl_chunk_reload';
+  if (sessionStorage.getItem(KEY) === '1') return; // already tried — let it surface
+  sessionStorage.setItem(KEY, '1');
+  event.preventDefault();
+  window.location.reload();
+});
+
 // Boot-time data: fetch per-SKU runtime overrides from Supabase so the
 // public catalog renders hidden / deleted / price changes immediately
 // without a redeploy. No-op when Supabase isn't configured.

@@ -5,6 +5,7 @@ import { ProductGrid } from '../components/ProductGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
 import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInventoryModal';
 import { CompoundSection } from '../components/catalog/CompoundSection';
+import { BundleOfferTile } from '../components/catalog/BundleOfferTile';
 import { useProducts } from '../hooks/useProducts';
 import {
   CLASSIFICATION_LABELS,
@@ -214,6 +215,8 @@ export function BiopeptideResearchSupplies() {
           searchPlaceholder="Search peptides…"
         />
       </div>
+
+      <BundleOfferTile />
 
       {wholesaleActive && !canWholesale && (
         <div className="mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-field)] border border-ink/15 bg-ink/[0.03] px-3.5 py-2.5">

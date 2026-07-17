@@ -101,6 +101,18 @@ interface OrderPayload {
   };
 }
 
+/** The standing bundle offer: any Retatrutide + any GHK-Cu, 20% off each
+ *  complete pair, applied automatically. FINAL price — nothing stacks on it
+ *  (owner rule), and wholesale outranks it. This is the authoritative copy;
+ *  keep it in sync with BUNDLE_PROMO in src/lib/bundle.ts (display mirror). */
+const BUNDLE_PROMO = {
+  code: "BUNDLE",
+  label: "Retatrutide + GHK-Cu bundle",
+  skuA: "VSR-RS-RTT-005",
+  skuB: "VSR-RS-GHK",
+  percent: 20,
+} as const;
+
 /** Declared-industry whitelist — must match INDUSTRY_OPTIONS in
  *  src/lib/researchAttestation.ts. Unknown values are stored as "other". */
 const ATTESTATION_INDUSTRIES = new Set([
@@ -829,6 +841,47 @@ const handleOrder = async (req: Request): Promise<Response> => {
       });
     }
   }
+  // Bundle promo — 20% off every complete Retatrutide + GHK-Cu pair (any dose
+  // of each). Computed here, BEFORE code validation, so the exclusivity gate
+  // below and validate_coupon's combinability context both see it.
+  //
+  // Pairs are capped by the lesser of the two SKUs' total quantities, and the
+  // discount is taken on the buyer's HIGHEST-priced qualifying units first
+  // (same "best unit" spirit as the reward voucher) — a mixed-dose cart never
+  // gets the discount computed off its cheapest vials. Keep BUNDLE_PROMO in
+  // sync with src/lib/bundle.ts (the client display mirror).
+  const bundlePlan: { pairs: number; value: number } = { pairs: 0, value: 0 };
+  {
+    // Qualifying units for a sku, grouped by unit price, dearest first. No
+    // per-unit expansion — quantities are clamped to 9999 per line.
+    const groupsFor = (sku: string) =>
+      items
+        .filter((i) => i.product.sku === sku && clampCents(i.unitPriceCents) > 0)
+        .map((i) => ({ unit: clampCents(i.unitPriceCents), qty: clampQty(i.quantity) }))
+        .sort((a, b) => b.unit - a.unit);
+    const totalQty = (gs: { qty: number }[]) => gs.reduce((s, g) => s + g.qty, 0);
+    /** Value of the top `n` units across the (dearest-first) groups. */
+    const topValue = (gs: { unit: number; qty: number }[], n: number) => {
+      let need = n;
+      let val = 0;
+      for (const g of gs) {
+        if (need <= 0) break;
+        const take = Math.min(need, g.qty);
+        val += take * g.unit;
+        need -= take;
+      }
+      return val;
+    };
+    const aGroups = groupsFor(BUNDLE_PROMO.skuA);
+    const bGroups = groupsFor(BUNDLE_PROMO.skuB);
+    const pairs = Math.min(totalQty(aGroups), totalQty(bGroups));
+    if (pairs > 0) {
+      const pairedValue = topValue(aGroups, pairs) + topValue(bGroups, pairs);
+      bundlePlan.pairs = pairs;
+      bundlePlan.value = Math.round((pairedValue * BUNDLE_PROMO.percent) / 100);
+    }
+  }
+
   // Wholesale is ACCOUNT-GATED and a FINAL price (owner's rules) — enforced
   // here, server-side, because the client guard can be bypassed:
   //   • Account-gated — only a verified signed-in owner buys at case pricing.
@@ -854,6 +907,27 @@ const handleOrder = async (req: Request): Promise<Response> => {
       return jsonResponse({
         error:
           "Wholesale pricing is final and can't be combined with promo codes. Remove the code (or the wholesale items) to check out.",
+      }, 400);
+    }
+    accountDiscount = null;
+    rewardVoucher = null;
+    b2g1FreePlan.length = 0;
+    // Wholesale outranks the bundle: it's the deeper standing offer (40% a
+    // case) and its "nothing else applies" rule is absolute.
+    bundlePlan.pairs = 0;
+    bundlePlan.value = 0;
+  }
+
+  // The bundle is likewise a FINAL price (owner-confirmed): when it applies,
+  // nothing else may discount the order — reject user-entered codes and
+  // suppress the automatic account discount, reward voucher, and B2G1. Same
+  // shape as the wholesale gate above, and unreachable when wholesale won.
+  const hasBundle = bundlePlan.pairs > 0;
+  if (hasBundle) {
+    if (couponCodes.length > 0) {
+      return jsonResponse({
+        error:
+          "Bundle pricing is final and can't be combined with promo codes. Remove the code (or one of the bundle items) to check out.",
       }, 400);
     }
     accountDiscount = null;
@@ -969,6 +1043,14 @@ const handleOrder = async (req: Request): Promise<Response> => {
     flatCents += value;
   }
 
+  // Bundle promo — apply the precomputed pair discount as a FLAT reduction
+  // (before percents, like wholesale), capped at the remaining subtotal.
+  let bundleReduction = 0;
+  if (bundlePlan.value > 0) {
+    bundleReduction = Math.max(Math.min(bundlePlan.value, grossSubtotalCents - flatCents), 0);
+    flatCents += bundleReduction;
+  }
+
   // Buy-2-Get-1-Free (migrations 054/055) — apply the precomputed plan as a
   // FLAT reduction (before percents, like a free item) so no percent code can
   // discount the freed units. Eligibility (slow-ship, promo governance) was
@@ -1034,13 +1116,15 @@ const handleOrder = async (req: Request): Promise<Response> => {
   const REWARD_CODE = "REWARD";
   const B2G1_CODE = "B2G1";
   const WHOLESALE_CODE = "WHOLESALE";
+  const BUNDLE_CODE = BUNDLE_PROMO.code;
   // Comma-joined label for the order row, invoice, and emails (all read this).
   // The synthetic account/reward/promo codes lead, matching the order_coupons rows.
-  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || wholesaleReduction > 0 || appliedList.length)
+  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || wholesaleReduction > 0 || bundleReduction > 0 || appliedList.length)
     ? [
         ...(accountDiscount ? [accountDiscount.code] : []),
         ...(rewardReduction > 0 ? [REWARD_CODE] : []),
         ...(wholesaleReduction > 0 ? [WHOLESALE_CODE] : []),
+        ...(bundleReduction > 0 ? [BUNDLE_CODE] : []),
         ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
         ...appliedList.map((a) => a.code),
       ].join(", ")
@@ -1254,6 +1338,24 @@ const handleOrder = async (req: Request): Promise<Response> => {
       source: "promo",
     });
     if (wholesaleRowErr) console.error("Wholesale order_coupons insert failed:", wholesaleRowErr);
+  }
+
+  // Materialize the bundle promo as a synthetic 'fixed' order_coupons row
+  // (source='promo', like wholesale/B2G1 — no schema change needed).
+  // recompute_order_totals reads it as a flat pre-percent reduction, so admin
+  // edits keep the totals consistent and every invoice surface itemizes it.
+  if (bundleReduction > 0) {
+    const { error: bundleRowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: BUNDLE_CODE,
+      kind: "fixed",
+      amount_cents: bundleReduction,
+      free_label:
+        `${BUNDLE_PROMO.label} — ${BUNDLE_PROMO.percent}% off ${bundlePlan.pairs} pair${bundlePlan.pairs === 1 ? "" : "s"}`,
+      discount_cents: bundleReduction,
+      source: "promo",
+    });
+    if (bundleRowErr) console.error("Bundle order_coupons insert failed:", bundleRowErr);
   }
 
   // Materialize the Buy-2-Get-1-Free promo as a synthetic 'fixed' order_coupons
