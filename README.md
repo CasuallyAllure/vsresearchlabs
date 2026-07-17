@@ -37,6 +37,10 @@ npm run test:e2e     # Playwright smoke (local only)
 
 Secrets live in Supabase (`supabase secrets list`) — never in code.
 
+**Going backwards:** see [docs/ROLLBACK.md](docs/ROLLBACK.md). Reverting a commit
+deploys nothing — each target has its own reverse, and only the frontend has a
+real rollback verb.
+
 ## Repo map
 
 - `src/pages/` — routes (public, `account/`, `admin/`, `legal/`); all lazy-loaded via `src/App.tsx`
