@@ -123,6 +123,46 @@ describe('allocateLineDiscounts — free-line handling', () => {
     // Assert
     expect(allocation).toEqual([0]);
   });
+
+  test('a free_item coupon with discount_cents <= 0 is skipped without zeroing any line', () => {
+    // Arrange
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'A' }];
+    const retail = [1_000];
+    const coupons: DiscountCoupon[] = [{ kind: 'free_item', discount_cents: 0, free_sku: 'A' }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert
+    expect(allocation).toEqual([0]);
+  });
+
+  test('a missing retailUnitCents entry falls back to 0 for that line\'s base', () => {
+    // Arrange — retail array shorter than lines: index 1 is undefined.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'A' }, { quantity: 1, sku: 'B' }];
+    const retail = [4_000];
+    const coupons: DiscountCoupon[] = [{ kind: 'percent', discount_cents: 400 }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — line B has base 0 so it's excluded from the proportional split.
+    expect(allocation).toEqual([400, 0]);
+  });
+
+  test('a free_item coupon with no SKU and no exact price match falls back to the first available paid line', () => {
+    // Arrange — no free_sku, and discount_cents (1_000) doesn't equal any
+    // line's base (2_000 / 3_000), so both SKU and price-match lookups miss.
+    const lines: DiscountLine[] = [{ quantity: 1 }, { quantity: 1 }];
+    const retail = [2_000, 3_000];
+    const coupons: DiscountCoupon[] = [{ kind: 'free_item', discount_cents: 1_000 }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — falls back to the first line with a positive, un-zeroed base.
+    expect(allocation).toEqual([1_000, 0]);
+  });
 });
 
 describe('allocateLineDiscounts — reward fencing (source: "reward")', () => {
@@ -187,5 +227,40 @@ describe('allocateLineDiscounts — reward fencing (source: "reward")', () => {
 
     // Assert — the fixed 500 has nowhere left to land; totals foot to 2000 + 3000.
     expect(allocation).toEqual([2_000, 3_000]);
+  });
+
+  test('a reward coupon with discount_cents <= 0 is skipped and fences no line', () => {
+    // Arrange
+    const lines: DiscountLine[] = [{ quantity: 1 }, { quantity: 1 }];
+    const retail = [5_000, 3_000];
+    const coupons: DiscountCoupon[] = [
+      { kind: 'percent', discount_cents: 0, source: 'reward' },
+      { kind: 'fixed', discount_cents: 800 },
+    ];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — no line is fenced, so the fixed coupon splits proportionally
+    // across both lines (5000:3000 base).
+    expect(allocation).toEqual([500, 300]);
+  });
+
+  test('a reward coupon finds no eligible line (all zeroed or missing retail price) and fences nothing', () => {
+    // Arrange — free_item zeroes the only priced line; the second line has no
+    // retailUnitCents entry (falls back to 0), so the reward's unit > 0 check
+    // never picks a target and idx stays -1.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'A' }, { quantity: 1, sku: 'B' }];
+    const retail = [2_000];
+    const coupons: DiscountCoupon[] = [
+      { kind: 'free_item', discount_cents: 2_000, free_sku: 'A' },
+      { kind: 'percent', discount_cents: 500, source: 'reward' },
+    ];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — the reward finds nothing to fence; its discount lands nowhere.
+    expect(allocation).toEqual([2_000, 0]);
   });
 });

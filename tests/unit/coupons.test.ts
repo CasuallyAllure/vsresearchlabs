@@ -294,6 +294,72 @@ describe('couponBreakdown — account discount (pass 2a, blueprint worked exampl
   });
 });
 
+describe('couponBreakdown — additional branch coverage', () => {
+  test('a coupon that no longer qualifies for the subtotal contributes zero and is skipped', () => {
+    // Arrange
+    const coupons = [
+      { ...fixedCoupon('BIGMIN', 1_000), minSubtotalCents: 50_000 },
+      percentCoupon('SAVE10', 10),
+    ];
+    const subtotalCents = 10_000;
+
+    // Act
+    const result = couponBreakdown(coupons, subtotalCents);
+
+    // Assert — BIGMIN never qualifies at this subtotal; SAVE10 still applies.
+    expect(result.perCode.BIGMIN).toBe(0);
+    expect(result.perCode.SAVE10).toBe(1_000);
+    expect(result.total).toBe(1_000);
+  });
+
+  test('a fixed coupon with a null amountCents contributes zero instead of throwing', () => {
+    // Arrange — shouldn't occur in practice (server always sets amount_cents
+    // for kind='fixed'), but the client must not crash on a malformed row.
+    const coupons = [{ ...fixedCoupon('BROKEN', 0), amountCents: null }];
+    const subtotalCents = 10_000;
+
+    // Act
+    const result = couponBreakdown(coupons, subtotalCents);
+
+    // Assert
+    expect(result.perCode.BROKEN).toBe(0);
+    expect(result.total).toBe(0);
+  });
+
+  test('a percent coupon with a null percent contributes zero instead of throwing', () => {
+    // Arrange
+    const coupons = [{ ...percentCoupon('BROKEN', 0), percent: null }];
+    const subtotalCents = 10_000;
+
+    // Act
+    const result = couponBreakdown(coupons, subtotalCents);
+
+    // Assert
+    expect(result.perCode.BROKEN).toBe(0);
+    expect(result.total).toBe(0);
+  });
+});
+
+describe('checkCoupon — no-backend fail-closed behavior', () => {
+  test('returns ok:false without throwing when the module-level supabase client is null', async () => {
+    // Arrange — isolate this one dynamic import so only it sees a null client;
+    // the rest of the suite keeps the static rpcMock-backed mock above.
+    vi.resetModules();
+    vi.doMock('../../src/lib/supabase', () => ({ supabase: null }));
+    const { checkCoupon: checkCouponNoBackend } = await import('../../src/lib/coupons');
+
+    // Act
+    const result = await checkCouponNoBackend('SAVE20', 1_000);
+
+    // Assert — fails closed with a user-facing message, never throws.
+    expect(result).toEqual({ ok: false, reason: 'Promo codes are unavailable right now.' });
+
+    // Cleanup — restore the module registry for subsequent tests.
+    vi.doUnmock('../../src/lib/supabase');
+    vi.resetModules();
+  });
+});
+
 describe('checkCoupon — input validation (no network)', () => {
   beforeEach(() => {
     rpcMock.mockReset();
