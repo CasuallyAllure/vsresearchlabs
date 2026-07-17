@@ -66,9 +66,19 @@ import {
 } from "./promoPlan.ts";
 import { buildBundlePlan, bundleLineKey } from "./bundlePlan.ts";
 import { claimRewardVoucher, rollbackRewardPricing } from "./rewardVoucher.ts";
-import { EMAIL_REGEX, UUID_REGEX, escapeHtml, clampQty, clampCents, usd } from "./orderFormat.ts";
+import { UUID_REGEX, escapeHtml, clampQty, clampCents, usd } from "./orderFormat.ts";
 import { generateReferenceId, generateOrderNumber } from "./orderIdentifiers.ts";
-import { sanitizeAttestation } from "./sanitizeAttestation.ts";
+import {
+  validateOrderPayload,
+  type OrderItemPayload,
+  type OrderPayload,
+} from "./orderPayload.ts";
+import { shippingCentsFor } from "./orderShipping.ts";
+import {
+  buildAppliedCouponLabel,
+  computeOrderTotals,
+  normalizeCouponCodes,
+} from "./orderTotals.ts";
 
 const TELEMETRY_FN = "place-order";
 
@@ -76,46 +86,8 @@ const TELEMETRY_FN = "place-order";
 // Types
 // ---------------------------------------------------------------------------
 
-interface OrderItemPayload {
-  product: { id: string; name: string; category: string | null; sku?: string };
-  quantity: number;
-  note?: string;
-  unitPriceCents?: number;
-  /** true = fast ship, false = standard (drop-ship). Drives the email badges. */
-  fast?: boolean;
-}
-
-interface OrderPayload {
-  name: string;
-  contact: string;
-  organization?: string;
-  notes?: string;
-  ship_street?: string;
-  ship_city?: string;
-  ship_state?: string;
-  ship_zip?: string;
-  ship_country?: string;
-  items: OrderItemPayload[];
-  /** Promo/affiliate code. Validated + priced SERVER-SIDE via validate_coupon —
-   *  the client never supplies a discount amount, only the code. */
-  coupon_code?: string;
-  /** Stackable promo codes — the buyer may apply more than one. Superset of
-   *  `coupon_code`; each is validated + priced SERVER-SIDE and stacked
-   *  (additive off the original subtotal, capped so the order never < $0). */
-  coupon_codes?: string[];
-  /** Client-generated UUID, stable across retries of the SAME checkout —
-   *  a seen key returns the existing order instead of creating a duplicate. */
-  idempotency_key?: string;
-  /** Research-use disclaimer acceptance captured by the entry gate —
-   *  re-sanitized here and stored on the order as the compliance trail. */
-  research_attestation?: {
-    accepted_at?: string;
-    disclaimer_version?: number;
-    industry?: string;
-    age_21_confirmed?: boolean;
-    research_use_confirmed?: boolean;
-  };
-}
+// OrderItemPayload / OrderPayload live in orderPayload.ts (imported above)
+// alongside validateOrderPayload, the boundary that produces them.
 
 /** The standing bundle offer: any Retatrutide + any GHK-Cu, 20% off each
  *  complete pair, applied automatically. FINAL price — nothing stacks on it
@@ -415,74 +387,17 @@ const handleOrder = async (req: Request): Promise<Response> => {
   );
   if (!ts.ok) return jsonResponse({ error: ts.reason ?? "Verification failed." }, 403);
 
-  const name         = (payload.name ?? "").trim();
-  const contact      = (payload.contact ?? "").trim();
-  const organization = (payload.organization ?? "").trim();
-  const notes        = (payload.notes ?? "").trim();
-  const shipStreet   = (payload.ship_street  ?? "").trim().slice(0, 200);
-  const shipCity     = (payload.ship_city    ?? "").trim().slice(0, 120);
-  const shipState    = (payload.ship_state   ?? "").trim().slice(0,  60);
-  const shipZip      = (payload.ship_zip     ?? "").trim().slice(0,  20);
-  const shipCountry  = (payload.ship_country ?? "US").trim().slice(0,  60);
-  const attestation  = sanitizeAttestation(payload.research_attestation);
-  const rawItems: unknown[] = Array.isArray(payload.items) ? (payload.items as unknown[]) : [];
-
-  if (!name)                     return jsonResponse({ error: "Name is required." }, 400);
-  if (name.length > 120)         return jsonResponse({ error: "Name too long." }, 400);
-  if (!contact)                  return jsonResponse({ error: "Contact is required." }, 400);
-  if (contact.length > 200)      return jsonResponse({ error: "Contact too long." }, 400);
-  if (organization.length > 200) return jsonResponse({ error: "Organization too long." }, 400);
-  if (notes.length > 4000)       return jsonResponse({ error: "Notes too long." }, 400);
-  if (rawItems.length === 0)     return jsonResponse({ error: "Order must contain at least one item." }, 400);
-  if (rawItems.length > 100)     return jsonResponse({ error: "Too many items in order." }, 400);
-
-  const items: OrderItemPayload[] = [];
-  for (const raw of rawItems) {
-    if (!raw || typeof raw !== "object") return jsonResponse({ error: "Malformed item." }, 400);
-    const r = raw as Record<string, unknown>;
-    const product = (r.product ?? null) as Record<string, unknown> | null;
-    if (!product || typeof product !== "object") return jsonResponse({ error: "Item missing product details." }, 400);
-    const productId   = typeof product.id === "string" ? product.id : "";
-    const productName = typeof product.name === "string" ? product.name.trim() : "";
-    if (!productId || !productName) return jsonResponse({ error: "Item product must include id and name." }, 400);
-    // Bound the line name. It is the text the price check resolves a dose from,
-    // and that resolution is superlinear in the name's length when a dose token
-    // repeats — an uncapped name is a cheap way to burn CPU inside the handler
-    // (a 128 KB name of repeated dose tokens already costs ~0.5s, and the promo
-    // planner resolves the same line a second time). The longest real cart-line
-    // name in the catalog is 51 chars; 200 matches the ship_street bound and
-    // leaves an order of magnitude of headroom. Reject rather than truncate —
-    // a silently shortened name is a wrong invoice, and every honest client is
-    // far under this.
-    if (productId.length > 200 || productName.length > 200) {
-      return jsonResponse({ error: "Item product details too long." }, 400);
-    }
-    const category = typeof product.category === "string" ? product.category : null;
-    const sku      = typeof product.sku === "string" ? product.sku.trim() : "";
-    const noteRaw  = typeof r.note === "string" ? r.note.trim() : "";
-    items.push({
-      product: { id: productId, name: productName, category, sku: sku || undefined },
-      quantity: clampQty(r.quantity),
-      note: noteRaw.length > 0 ? noteRaw.slice(0, 1000) : undefined,
-      unitPriceCents: clampCents(r.unitPriceCents),
-      fast: typeof r.fast === "boolean" ? r.fast : undefined,
-    });
-  }
-
-  let itemCount = items.reduce((s, i) => s + clampQty(i.quantity), 0);
-  const grossSubtotalCents = items.reduce((s, i) => s + clampCents(i.unitPriceCents) * clampQty(i.quantity), 0);
-  const contactIsEmail = EMAIL_REGEX.test(contact);
-  const cleanPayload: OrderPayload = {
-    name, contact,
-    organization: organization || undefined,
-    notes: notes || undefined,
-    ship_street:  shipStreet  || undefined,
-    ship_city:    shipCity    || undefined,
-    ship_state:   shipState   || undefined,
-    ship_zip:     shipZip     || undefined,
-    ship_country: shipCountry || undefined,
-    items,
-  };
+  // Boundary validation + normalization — the whole trim/guard/item loop lives
+  // in orderPayload.ts (pure, unit-tested); an { ok: false } result carries the
+  // exact error message + status the inline checks always returned.
+  const validated = validateOrderPayload(payload);
+  if (!validated.ok) return jsonResponse({ error: validated.error }, validated.status);
+  const {
+    name, contact, organization, notes,
+    shipStreet, shipCity, shipState, shipZip, shipCountry,
+    attestation, items, grossSubtotalCents, contactIsEmail, cleanPayload,
+  } = validated.value;
+  let itemCount = validated.value.itemCount;
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -680,17 +595,16 @@ const handleOrder = async (req: Request): Promise<Response> => {
   // Shipping (owner's rule) — EVERY signed-in member ships free; guests pay one
   // flat fee. This is the authority: the charge is derived from the VERIFIED
   // session (stampedUserId), never from anything the client sends, so a guest
-  // can't waive their own shipping. Keep GUEST_SHIPPING_CENTS in sync with
-  // src/lib/shipping.ts.
+  // can't waive their own shipping. The rule lives in orderShipping.ts (pure,
+  // unit-tested); keep its GUEST_SHIPPING_CENTS in sync with src/lib/shipping.ts.
   //
   // Membership alone is now sufficient — this replaces the old per-customer
   // customer_profiles.free_shipping lookup (migration 049), which required an
   // admin to flip a switch and so never honored the member gate's advertised
   // "ships free, no minimums, no codes". That column still forces $0 inside
   // recompute_order_totals, so it survives as an admin override for guests.
-  const GUEST_SHIPPING_CENTS = 999;
   const memberFreeShipping = !!stampedUserId;
-  const shippingCents = memberFreeShipping ? 0 : GUEST_SHIPPING_CENTS;
+  const shippingCents = shippingCentsFor(memberFreeShipping);
 
   // Reward redemption voucher (migration 050) — a stamped owner may hold ONE
   // active "40% off one item" voucher. Applied below as a flat reduction equal
@@ -721,11 +635,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
   const rawCodes = Array.isArray(payload.coupon_codes)
     ? payload.coupon_codes
     : (payload.coupon_code ? [payload.coupon_code] : []);
-  const couponCodes = [...new Set(
-    rawCodes
-      .map((c) => String(c ?? "").trim().toUpperCase().slice(0, 40))
-      .filter((c) => c.length > 0),
-  )].slice(0, 10);
+  const couponCodes = normalizeCouponCodes(rawCodes);
 
   // Per-code ledger — drives redemption + per-code rollback below. `fullDiscount`
   // holds a percent code's discount off the FULL subtotal; pass 2 re-scales it
@@ -976,107 +886,57 @@ const handleOrder = async (req: Request): Promise<Response> => {
     }
   }
 
-  // Wholesale pack pricing — apply the precomputed plan as a FLAT reduction
-  // (before percents, like B2G1) so no percent code can compound on the
-  // packed units. Capped at the remaining subtotal.
-  let wholesaleReduction = 0;
-  let wholesaleUnits = 0;
-  for (const p of wholesalePlan) {
-    const value = Math.max(Math.min(p.value, grossSubtotalCents - flatCents), 0);
-    wholesaleReduction += value;
-    wholesaleUnits += p.units;
-    flatCents += value;
+  // The whole reduction engine — wholesale → bundle → B2G1 → reward (fenced)
+  // → account percent (2a) → code percents (2b) → cap, then shipping on top —
+  // lives in orderTotals.ts (pure, unit-tested). Pass 1's flat code cents go
+  // in; the per-code percent contributions come back and are written onto
+  // appliedList (redemption + the invoice email read .contribution).
+  const totals = computeOrderTotals({
+    grossSubtotalCents,
+    shippingCents,
+    flatCentsFromCodes: flatCents,
+    itemUnitPricesCents: items.map((i) => clampCents(i.unitPriceCents)),
+    wholesalePlan,
+    bundleValue: bundlePlan.value,
+    b2g1FreePlan,
+    rewardPercent: rewardVoucher ? rewardVoucher.percent : null,
+    accountPercent: accountDiscount ? accountDiscount.percent : null,
+    percentEntries: appliedList.filter((a) => a.kind === "percent"),
+  });
+  const {
+    wholesaleReduction, wholesaleUnits,
+    bundleReduction,
+    b2g1Reduction, b2g1FreeUnits,
+    accountCents,
+  } = totals;
+  let rewardReduction = totals.rewardReduction;
+  {
+    let pctIdx = 0;
+    for (const a of appliedList) {
+      if (a.kind !== "percent") continue;
+      a.contribution = totals.percentContributions[pctIdx++];
+    }
   }
-
-  // Bundle promo — apply the precomputed pair discount as a FLAT reduction
-  // (before percents, like wholesale), capped at the remaining subtotal.
-  let bundleReduction = 0;
-  if (bundlePlan.value > 0) {
-    bundleReduction = Math.max(Math.min(bundlePlan.value, grossSubtotalCents - flatCents), 0);
-    flatCents += bundleReduction;
-  }
-
-  // Buy-2-Get-1-Free (migrations 054/055) — apply the precomputed plan as a
-  // FLAT reduction (before percents, like a free item) so no percent code can
-  // discount the freed units. Eligibility (slow-ship, promo governance) was
-  // resolved above, before code validation.
-  let b2g1Reduction = 0;
-  let b2g1FreeUnits = 0;
-  for (const p of b2g1FreePlan) {
-    const value = Math.max(Math.min(p.freeUnits * p.unit, grossSubtotalCents - flatCents), 0);
-    b2g1Reduction += value;
-    b2g1FreeUnits += p.freeUnits;
-    flatCents += value;
-  }
-
-  // Reward voucher (migration 050) — a FLAT reduction of `percent`% of the
-  // single highest unit price in the cart ("40% off one item"), applied like a
-  // fixed coupon (reduces the base before percents), capped at the remaining
-  // subtotal. Materialized as a synthetic order_coupons row below.
-  let rewardReduction = 0;
-  let rewardRemainder = 0;
-  if (rewardVoucher) {
-    const maxUnit = items.reduce((m, i) => Math.max(m, clampCents(i.unitPriceCents)), 0);
-    const raw = Math.round((maxUnit * rewardVoucher.percent) / 100);
-    rewardReduction = Math.max(Math.min(raw, grossSubtotalCents - flatCents), 0);
-    flatCents += rewardReduction;
-    // The discounted unit is fully spoken for: its remaining (100−percent)%
-    // is FENCED OFF from account/code percent discounts, so a 15% code can't
-    // compound on top of the 40% item — it only sees the rest of the cart.
-    // Mirrored in recompute_order_totals (migration 052).
-    rewardRemainder = Math.max(maxUnit - rewardReduction, 0);
-  }
-
-  // Pass 2 — percents apply to the base AFTER the flat reductions, minus the
-  // reward item's fenced remainder. A percent's discount off the full subtotal,
-  // scaled by (percentBase / subtotal), equals `percent × percentBase`.
-  const baseAfterFlat = Math.max(grossSubtotalCents - flatCents, 0);
-  const percentBase = Math.max(baseAfterFlat - rewardRemainder, 0);
-  let percentUsed = 0;
-
-  // Pass 2a — the ACCOUNT discount applies first on the same post-flat base;
-  // code percents (pass 2b below) keep computing off that same base but their
-  // running cap now starts after the account slice. This mirrors
-  // recompute_order_totals (045, reward fence 052): account rows first, same
-  // base per percent row, cap = base − used.
-  let accountCents = 0;
-  if (accountDiscount) {
-    accountCents = Math.max(
-      Math.min(Math.round((percentBase * accountDiscount.percent) / 100), percentBase),
-      0,
-    );
-    percentUsed += accountCents;
-  }
-
-  for (const a of appliedList) {
-    if (a.kind !== "percent") continue;
-    const scaled = grossSubtotalCents > 0
-      ? Math.round((a.fullDiscount * percentBase) / grossSubtotalCents)
-      : 0;
-    a.contribution = Math.max(Math.min(scaled, percentBase - percentUsed), 0);
-    percentUsed += a.contribution;
-  }
-
-  let discountCents = Math.min(flatCents + percentUsed, grossSubtotalCents);
+  let discountCents = totals.discountCents;
   const REWARD_CODE = "REWARD";
   const B2G1_CODE = "B2G1";
   const WHOLESALE_CODE = "WHOLESALE";
   const BUNDLE_CODE = BUNDLE_PROMO.code;
   // Comma-joined label for the order row, invoice, and emails (all read this).
   // The synthetic account/reward/promo codes lead, matching the order_coupons rows.
-  let appliedCoupon: string | null = (accountDiscount || rewardReduction > 0 || b2g1Reduction > 0 || wholesaleReduction > 0 || bundleReduction > 0 || appliedList.length)
-    ? [
-        ...(accountDiscount ? [accountDiscount.code] : []),
-        ...(rewardReduction > 0 ? [REWARD_CODE] : []),
-        ...(wholesaleReduction > 0 ? [WHOLESALE_CODE] : []),
-        ...(bundleReduction > 0 ? [BUNDLE_CODE] : []),
-        ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
-        ...appliedList.map((a) => a.code),
-      ].join(", ")
-    : null;
-  // Shipping rides on top of the discounted subtotal — discounts never eat the
-  // shipping fee, and no percent code can discount it (it isn't in the base).
-  let totalCents = grossSubtotalCents - discountCents + shippingCents;
+  let appliedCoupon: string | null = buildAppliedCouponLabel({
+    accountCode: accountDiscount ? accountDiscount.code : null,
+    rewardApplied: rewardReduction > 0,
+    wholesaleApplied: wholesaleReduction > 0,
+    bundleApplied: bundleReduction > 0,
+    b2g1Applied: b2g1Reduction > 0,
+    codes: appliedList.map((a) => a.code),
+    rewardCode: REWARD_CODE,
+    wholesaleCode: WHOLESALE_CODE,
+    bundleCode: BUNDLE_CODE,
+    b2g1Code: B2G1_CODE,
+  });
+  let totalCents = totals.totalCents;
 
   // 1) Inquiry row (history + customer trigger)
   const referenceId = generateReferenceId();
@@ -1417,15 +1277,18 @@ const handleOrder = async (req: Request): Promise<Response> => {
       // even when a CODE coupon loses its redemption race, so they must stay
       // in the label too — dropping them here left admin seeing a discount
       // larger than the labeled codes explain.
-      const survivorCodes = [
-        ...(accountDiscount ? [accountDiscount.code] : []),
-        ...(rewardReduction > 0 ? [REWARD_CODE] : []),
-        ...(wholesaleReduction > 0 ? [WHOLESALE_CODE] : []),
-        ...(bundleReduction > 0 ? [BUNDLE_CODE] : []),
-        ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
-        ...survivors.map((a) => a.code),
-      ];
-      appliedCoupon = survivorCodes.length ? survivorCodes.join(", ") : null;
+      appliedCoupon = buildAppliedCouponLabel({
+        accountCode: accountDiscount ? accountDiscount.code : null,
+        rewardApplied: rewardReduction > 0,
+        wholesaleApplied: wholesaleReduction > 0,
+        bundleApplied: bundleReduction > 0,
+        b2g1Applied: b2g1Reduction > 0,
+        codes: survivors.map((a) => a.code),
+        rewardCode: REWARD_CODE,
+        wholesaleCode: WHOLESALE_CODE,
+        bundleCode: BUNDLE_CODE,
+        b2g1Code: B2G1_CODE,
+      });
       const { error: rollbackErr } = await supabase.from("orders")
         .update({ discount_cents: discountCents, coupon_code: appliedCoupon, invoice_amount_cents: totalCents })
         .eq("id", orderRow.id);

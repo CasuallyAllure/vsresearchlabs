@@ -23,13 +23,14 @@ export default defineConfig({
       include: ['supabase/functions/place-order/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['supabase/functions/place-order/index.ts'],
       reporter: ['text-summary', 'text'],
-      // Measured floor on 2026-07-17 (evening, launch pass): 40.42 L /
-      // 40.24 S / 40.76 B / 42.12 F — the three newly-extracted place-order
-      // modules (orderFormat/orderIdentifiers/sanitizeAttestation) at ~100%
-      // on top of the money mirrors; place-order modules ~100%,
-      // productOverrides ~54% (reload() network branches untested).
+      // Measured floor on 2026-07-17 (night, money-path extraction wave):
+      // 45.20 L / 44.60 S / 46.63 B / 44.05 F — the place-order money engine
+      // (orderTotals/orderPayload/orderShipping + the earlier extractions) now
+      // measures ~100% (dir: 99.67 S / 96.88 B / 100 F / 100 L), clearing the
+      // 80% bar ON the checkout money path; index.ts is I/O orchestration.
+      // Functions floor kept at 43 (0.05 margin at 44 is too brittle).
       // RATCHET: raise as coverage grows toward the 80% bar; never lower.
-      thresholds: { lines: 40, statements: 40, branches: 40, functions: 42 },
+      thresholds: { lines: 45, statements: 44, branches: 46, functions: 43 },
     },
   },
 });
