@@ -1333,7 +1333,27 @@ const handleOrder = async (req: Request): Promise<Response> => {
         discount_cents: rewardReduction,
         source: "reward",
       });
-      if (rewardRowErr) console.error("Reward order_coupons insert failed:", rewardRowErr);
+      if (rewardRowErr) {
+        console.error("Reward order_coupons insert failed:", rewardRowErr);
+        // The voucher is already consumed and the order carries the discount
+        // in discount_cents, but recompute_order_totals reads ONLY
+        // order_coupons — without this row the next admin line edit silently
+        // re-prices the order WITHOUT the reward. Alert with the exact row
+        // payload so the operator can reconcile (re-insert) before that.
+        await alertOperator({
+          fn: TELEMETRY_FN,
+          stage: "reward_row_insert",
+          summary:
+            "Voucher consumed but its order_coupons row did NOT persist — an admin line edit would silently drop the reward discount",
+          error: rewardRowErr,
+          ctx: {
+            orderNumber, referenceId, orderId: orderRow.id, contact,
+            voucherId: rewardVoucher.id,
+            rewardPercent: rewardVoucher.percent,
+            rewardDiscountCents: rewardReduction,
+          },
+        });
+      }
     } else {
       console.error(
         `Reward voucher claim failed (${claim.reason}) — rolling the reward off ${orderNumber}:`,
@@ -1464,8 +1484,17 @@ const handleOrder = async (req: Request): Promise<Response> => {
       totalCents = grossSubtotalCents - discountCents + shippingCents;
       const survivors = appliedList.filter((a) => !failedCodes.includes(a.code));
       redeemedList = survivors;
+      // Mirror the original label build above: the synthetic reward/promo
+      // codes keep their cents in discount_cents and their order_coupons rows
+      // even when a CODE coupon loses its redemption race, so they must stay
+      // in the label too — dropping them here left admin seeing a discount
+      // larger than the labeled codes explain.
       const survivorCodes = [
         ...(accountDiscount ? [accountDiscount.code] : []),
+        ...(rewardReduction > 0 ? [REWARD_CODE] : []),
+        ...(wholesaleReduction > 0 ? [WHOLESALE_CODE] : []),
+        ...(bundleReduction > 0 ? [BUNDLE_CODE] : []),
+        ...(b2g1Reduction > 0 ? [B2G1_CODE] : []),
         ...survivors.map((a) => a.code),
       ];
       appliedCoupon = survivorCodes.length ? survivorCodes.join(", ") : null;
