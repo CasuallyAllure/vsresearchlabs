@@ -125,17 +125,19 @@ describe('verifyLinePrices — reject vs pass vs allow-unverified', () => {
 
   test('REFUSES a client-sent $0 line unconditionally', () => {
     // The client never legitimately sends a free line — server-generated free
-    // promo lines are appended after this gate. Kills the reachable $0-line
-    // class (HCG 1000iu et al, whose non-mg dose formula-resolves to null → 0).
+    // promo lines are appended after this gate.
     const verdict = verifyLinePrices([line({ unitPriceCents: 0 })], [variant()], []);
     expect(verdict.ok).toBe(false);
     expect(verdict.failures[0].reason).toBe('zero_price');
   });
 
   test('REFUSES a $0 line even when the sku is unpriceable', () => {
+    // The live case: VSR-RS-HGH 24IU is visible and unpriced, and its dose has
+    // no mg magnitude, so the client's formula returns null and lineUnitCents'
+    // `?? 0` bills it at $0. Refusing beats shipping it free.
     const verdict = verifyLinePrices(
-      [line({ sku: 'HCG', name: 'HCG — 5000iu', unitPriceCents: 0 })],
-      [{ sku: 'HCG', dose: '5000iu', price_cents: null }],
+      [line({ sku: 'VSR-RS-HGH', name: 'HGH — 24IU', unitPriceCents: 0 })],
+      [{ sku: 'VSR-RS-HGH', dose: '24IU', price_cents: null }],
       [],
     );
     expect(verdict.ok).toBe(false);

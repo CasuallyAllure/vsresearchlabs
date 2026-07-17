@@ -28,10 +28,10 @@
 // the previous version filtered to `price_cents != null` BEFORE matching, so a
 // legitimately unpriced dose on a partially-priced sku matched nothing and came
 // back "unresolved". Under flag-only that was a documented false positive; under
-// FAIL CLOSED it would refuse real orders — live examples today: TB-500 5mg
-// (8 on hand, ships 24hr) sits on VSR-RS-TB4-005 whose 10mg IS priced; same
-// shape for Kisspeptin-10 5mg and Thymosin α-1 5mg. So the resolver matches
-// against ALL rows for the sku and branches on the matched row's price:
+// FAIL CLOSED it would refuse real orders — verified against the live database:
+// TB-500 5mg (8 on hand, ships 24hr) sits on VSR-RS-TB4-005 whose 10mg IS
+// priced; same shape for Kisspeptin-10 5mg and Thymosin α-1 5mg. So the resolver
+// matches against ALL rows for the sku and branches on the matched row's price:
 //   • matched + priced   → verify (reject on any difference)
 //   • matched + no price → genuinely formula-priced → UNVERIFIABLE: allowed and
 //     recorded on the order timeline. This is the residual gap, and it closes
