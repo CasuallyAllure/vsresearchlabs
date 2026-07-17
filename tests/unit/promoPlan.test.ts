@@ -100,12 +100,13 @@ describe('wholesale eligibility is a server fact (P0-3)', () => {
     expect(wholesalePlan).toEqual([{ idx: 0, units: 10, value: 24_000 }]);
   });
 
-  test('the note cannot flip B2G1 eligibility (P1-2 spoof)', () => {
+  test('a fast line cannot borrow a slow sibling dose to earn B2G1 (P1-2 spoof)', () => {
     // `note: "5mg"` on a fast-shipping "X — 20mg" line used to match the slow
-    // 5mg row and earn free vials. The planner resolves on the name only, by the
-    // same rules as the price check.
+    // 5mg row and earn free vials. PromoLine no longer carries a note at all,
+    // and the planner resolves on the name by the same rules as the price check,
+    // so the line resolves to its own fast 20mg row and earns nothing.
     const { b2g1FreePlan } = plan({
-      lines: [line({ name: 'BPC-157 — 20mg', note: '5mg', quantity: 3 })],
+      lines: [line({ name: 'BPC-157 — 20mg', quantity: 3 })],
       variantRows: [
         row({ dose: '20mg', on_hand: 8, lead_days: null }), // fast → no B2G1
         row({ dose: '5mg' }), // slow

@@ -33,10 +33,10 @@ export const WHOLESALE_HALF = { size: 5, percent: 27 } as const;
 /** Buy-2-get-1: one free unit per group of 3. */
 export const B2G1_GROUP = 3;
 
+/** Like PriceCheckLine, carries NO `note` — see priceCheck.lineText. */
 export interface PromoLine {
   sku?: string;
   name: string;
-  note?: string;
   /** Already clamped by the caller. */
   quantity: number;
   /** Already clamped by the caller. Used for arithmetic ONLY after the price

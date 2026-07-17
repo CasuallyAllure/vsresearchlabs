@@ -205,25 +205,14 @@ describe('resolveLinePrice — dose matching', () => {
     expect(priceOf(line({ name: 'BPC-157 — 15mg' }), rows)).toBe(15_500);
   });
 
-  test('the note is NOT an identity signal — a dose only in the note resolves nothing', () => {
-    // `note` is a free-text message to the seller. The dose lives in the name by
-    // construction (cartActions.variantProduct), which is also what the operator
-    // reads when picking the vial — so it is the only field where "billed for"
-    // and "shipped" are the same string.
+  test('a name with no dose resolves nothing (the dose is not hiding elsewhere)', () => {
+    // PriceCheckLine deliberately has no `note` field — the buyer's free text is
+    // not visible to this module, so it cannot carry a dose. A name without one
+    // is simply unresolvable.
     const rows = [variant({ dose: '10mg', price_cents: 11_000 })];
-    const l = line({ name: 'BPC-157', note: 'dose: 10mg', unitPriceCents: 11_000 });
+    const l = line({ name: 'BPC-157', unitPriceCents: 11_000 });
     expect(priceOf(l, rows)).toBeNull();
     expect(verifyLinePrices([l], rows, []).failures[0].reason).toBe('dose_unresolved');
-  });
-
-  test('a note cannot pull the price down to a cheaper dose', () => {
-    const rows = [
-      variant({ dose: '5mg', price_cents: 6_000 }),
-      variant({ dose: '20mg', price_cents: 20_000 }),
-    ];
-    const l = line({ name: 'BPC-157 — 20mg', note: '5mg', unitPriceCents: 6_000 });
-    expect(priceOf(l, rows)).toBe(20_000);
-    expect(verifyLinePrices([l], rows, []).failures[0].reason).toBe('price_mismatch');
   });
 
   test('ignores rows for other SKUs', () => {
@@ -295,46 +284,41 @@ describe('resolveVariantRow — shared by the price check and the promo planner'
 });
 
 describe('dose substitution (the whole point of resolving server-side)', () => {
-  test('REFUSES a 1mg line billed at the 0.1mg price via the note', () => {
-    // The note is not read at all, so the name resolves honestly to the 1mg row
-    // and the tampered price is caught as a plain mismatch against the real $50.
-    const rows: VariantPriceRow[] = [
-      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
-      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
-    ];
-    const attack = line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', note: '0.1mg', unitPriceCents: 1_000 });
+  const IGF_ROWS: VariantPriceRow[] = [
+    { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
+    { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
+  ];
 
-    const verdict = verifyLinePrices([attack], rows, []);
-
-    expect(verdict.ok).toBe(false);
-    expect(verdict.failures[0]).toMatchObject({ reason: 'price_mismatch', serverCents: 5_000 });
-  });
-
-  test('REFUSES a 1mg line billed at the 0.1mg price via a second dose in the NAME', () => {
-    // Moving the token into the name is the same attack without the note. Here
-    // the text genuinely names two doses, so it resolves to neither.
-    const rows: VariantPriceRow[] = [
-      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
-      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
-    ];
+  test('REFUSES a 1mg line billed at the 0.1mg price (second dose in the NAME)', () => {
+    // The live exploit: squashing removes the space, so "IGF-1 LR3 — 1mg 0.1mg"
+    // contains both doses and longest-match alone would take 0.1mg — billing an
+    // honest-looking 1mg line at $10 while the operator ships the $50 vial. The
+    // two matches sit on separate regions, so the text resolves to neither.
     const attack = line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg 0.1mg', unitPriceCents: 1_000 });
 
-    const verdict = verifyLinePrices([attack], rows, []);
+    const verdict = verifyLinePrices([attack], IGF_ROWS, []);
 
     expect(verdict.ok).toBe(false);
     expect(verdict.failures[0].reason).toBe('dose_unresolved');
   });
 
+  test('the note route is closed by construction, not by matching', () => {
+    // The same attack used to be spelled name "IGF-1 LR3 — 1mg" + note "0.1mg".
+    // PriceCheckLine has no `note` field at all now, so the honest name resolves
+    // to the 1mg row and the tampered price is a plain mismatch against $50.
+    const attack = line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', unitPriceCents: 1_000 });
+
+    const verdict = verifyLinePrices([attack], IGF_ROWS, []);
+
+    expect(verdict.failures[0]).toMatchObject({ reason: 'price_mismatch', serverCents: 5_000 });
+  });
+
   test('the honest 1mg and 0.1mg orders both still go through', () => {
-    const rows: VariantPriceRow[] = [
-      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
-      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
-    ];
     expect(verifyLinePrices(
-      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', unitPriceCents: 5_000 })], rows, [],
+      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', unitPriceCents: 5_000 })], IGF_ROWS, [],
     ).ok).toBe(true);
     expect(verifyLinePrices(
-      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 0.1mg', unitPriceCents: 1_000 })], rows, [],
+      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 0.1mg', unitPriceCents: 1_000 })], IGF_ROWS, [],
     ).ok).toBe(true);
   });
 });

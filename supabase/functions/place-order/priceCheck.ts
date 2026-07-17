@@ -60,10 +60,13 @@ export const isQueryableSku = (sku: string | undefined): sku is string =>
 export const squash = (s: string): string =>
   s.toLowerCase().replace(/[\s\p{Cf}\p{Cc}]+/gu, "");
 
+/** Deliberately has NO `note` field: the line's dose identity comes from the
+ *  name alone (see lineText), so the buyer's free-text note is not even visible
+ *  to this module. It used to be part of the matched text, which let it steer
+ *  the resolved price and flip B2G1 eligibility. */
 export interface PriceCheckLine {
   sku?: string;
   name: string;
-  note?: string;
   unitPriceCents: number;
 }
 
@@ -160,8 +163,9 @@ export function resolveVariantRow<T extends VariantRow>(
  *  "what you're sent" are the same string. `note` is a free-text message to the
  *  seller and must never be an identity signal: it used to be able to flip B2G1
  *  eligibility (note "5mg" on a "X — 20mg" line) and to steer this resolver onto
- *  a cheaper dose. */
-export const lineText = (line: PriceCheckLine): string => line.name;
+ *  a cheaper dose. Neither line type carries it any more, so it cannot come back
+ *  without a type change. */
+export const lineText = (line: { name: string }): string => line.name;
 
 export type PriceResolution =
   /** An admin-set price exists and is authoritative. */

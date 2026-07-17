@@ -579,7 +579,6 @@ Deno.serve(async (req: Request) => {
     const checkLines = items.map((i) => ({
       sku: i.product.sku,
       name: i.product.name,
-      note: i.note,
       unitPriceCents: clampCents(i.unitPriceCents),
     }));
     // Only well-formed SKUs go into the .in() filter (see priceCheck.SKU_RE).
@@ -839,7 +838,6 @@ Deno.serve(async (req: Request) => {
         lines: items.map((i) => ({
           sku: i.product.sku,
           name: i.product.name,
-          note: i.note,
           quantity: clampQty(i.quantity),
           unitPriceCents: clampCents(i.unitPriceCents),
         })),
