@@ -173,18 +173,24 @@ export function buildPromoPlans(input: PromoPlanInput): PromoPlan {
     const offer = offerFor(line, idx, input);
     if (offer == null) return;
 
-    if (offer.packValue > 0 && offer.packValue >= offer.b2g1Value) {
-      wholesalePlan.push({ idx: offer.idx, units: offer.packUnits, value: offer.packValue });
+    // Account gate (P0-4) — only a verified signed-in buyer transacts at case
+    // pricing, so a guest's wholesale offer is simply worth nothing and loses
+    // the arbitration below. It used to be applied AFTER arbitration, by
+    // emptying the plan: a line that had already beaten B2G1 on value was
+    // dropped and fell back to NOTHING, discarding the discount it had earned.
+    // That is the $240 cliff — guest qty 9 = $369.99, qty 10 = $609.99 — and it
+    // started at qty 5, where the half kit beat one free vial.
+    //
+    // Arbitrating once, on the values that actually apply to THIS buyer, is what
+    // makes the result monotonic: adding a unit can never cost more than a unit.
+    const packValue = input.isMember ? offer.packValue : 0;
+
+    if (packValue > 0 && packValue >= offer.b2g1Value) {
+      wholesalePlan.push({ idx: offer.idx, units: offer.packUnits, value: packValue });
     } else if (offer.b2g1FreeUnits > 0) {
       b2g1FreePlan.push({ idx: offer.idx, freeUnits: offer.b2g1FreeUnits, unit: offer.unit });
     }
   });
-
-  // Account gate — only a verified signed-in buyer transacts at case pricing.
-  // KNOWN GAP (P0-4, closed in the next packet): a line routed to wholesale and
-  // then dropped here falls back to NOTHING, not to the B2G1 it would otherwise
-  // have earned — which is why a guest's 10th vial costs $240 more than their 9th.
-  if (!input.isMember) wholesalePlan.length = 0;
 
   return { wholesalePlan, b2g1FreePlan };
 }

@@ -229,6 +229,82 @@ describe('account gate', () => {
   });
 });
 
+describe('monotonic pricing (P0-4)', () => {
+  const UNIT = 6_000;
+
+  /** What the buyer is billed for `qty` of one slow-ship $60 vial, before
+   *  shipping — gross minus the flat reductions the handler applies from these
+   *  plans. */
+  const billedCents = (qty: number, opts: { isMember: boolean; promoLive: boolean }): number => {
+    const { wholesalePlan, b2g1FreePlan } = buildPromoPlans({
+      lines: [line({ quantity: qty, unitPriceCents: UNIT })],
+      variantRows: [row({ price_cents: UNIT })],
+      excludedSkus: new Set(),
+      ...opts,
+    });
+    const discount =
+      wholesalePlan.reduce((s, p) => s + p.value, 0) +
+      b2g1FreePlan.reduce((s, p) => s + p.freeUnits * p.unit, 0);
+    return qty * UNIT - discount;
+  };
+
+  test('the scan cliff: a guest buying 10 does not pay $240 more than buying 9', () => {
+    // Live shape at the time of the review: $60 slow vial, guest, B2G1 on.
+    // qty 9  → packValue $81 < b2g1Value $180 → B2G1        → $360 (+$9.99 ship)
+    // qty 10 → packValue $240 >= $180 → wholesale → DROPPED for a guest, and the
+    //          B2G1 it would have earned was discarded with it → $600 (+$9.99).
+    // One more vial cost $240.
+    const nine = billedCents(9, { isMember: false, promoLive: true });
+    const ten = billedCents(10, { isMember: false, promoLive: true });
+
+    expect(nine).toBe(36_000); // $360 — 3 free
+    expect(ten).toBe(42_000); // $420 — 3 free, NOT $600
+    expect(ten).toBeLessThanOrEqual(nine + UNIT);
+  });
+
+  test.each([
+    { isMember: false, promoLive: true },
+    { isMember: false, promoLive: false },
+    { isMember: true, promoLive: true },
+    { isMember: true, promoLive: false },
+  ])('adding one unit never costs more than one unit (%j)', (opts) => {
+    // The property the cliff violated: total(n+1) <= total(n) + unit, always.
+    for (let qty = 1; qty < 20; qty++) {
+      const here = billedCents(qty, opts);
+      const next = billedCents(qty + 1, opts);
+      expect(
+        next,
+        `qty ${qty} → ${here / 100}, qty ${qty + 1} → ${next / 100}`,
+      ).toBeLessThanOrEqual(here + UNIT);
+    }
+  });
+
+  test('a pack tier may make a larger order cheaper — that is the offer, not a cliff', () => {
+    // Member, 14 → $600; 15 → $579, because the 15th vial completes a half kit
+    // (27% off 5). Every tiered-pack scheme does this at a tier boundary, and
+    // it is the advertised deal — the buyer wins. Pinned so nobody "fixes" it
+    // into charging more than the published pack price.
+    const member = { isMember: true, promoLive: true };
+    expect(billedCents(14, member)).toBe(60_000);
+    expect(billedCents(15, member)).toBe(57_900);
+  });
+
+  test('the guest cliff is gone at every pack boundary, not just qty 10', () => {
+    // The property test found the first cliff at qty 5, where the review only
+    // reported qty 10: a guest's half kit was claimed and dropped just like the
+    // full case, taking the B2G1 with it (qty 4 → $180, qty 5 → $300).
+    const guest = { isMember: false, promoLive: true };
+    expect(billedCents(4, guest)).toBe(18_000); // 1 free
+    expect(billedCents(5, guest)).toBe(24_000); // 1 free — was $300
+  });
+
+  test('a guest still never receives wholesale pricing', () => {
+    // The fallback restores B2G1, not the case discount: 10 × $60 with the promo
+    // OFF stays full retail for a guest.
+    expect(billedCents(10, { isMember: false, promoLive: false })).toBe(60_000);
+  });
+});
+
 describe('multi-line orders', () => {
   test('each line is planned independently and keeps its index', () => {
     const { wholesalePlan } = plan({
