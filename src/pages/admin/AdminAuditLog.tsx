@@ -106,8 +106,55 @@ export function AdminAuditLog() {
         </div>
       )}
 
+      {/* Mobile: one card per audit entry — same click-to-expand behavior as the table row. */}
       {rows && rows.length > 0 && (
-        <div className="research-surface-solid overflow-x-auto">
+        <div className="md:hidden flex flex-col gap-[var(--space-3)]">
+          {rows.map((row) => {
+            const isOpen = expanded === row.id;
+            return (
+              <div
+                key={row.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setExpanded(isOpen ? null : row.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter') setExpanded(isOpen ? null : row.id); }}
+                className="floating-module p-4 cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-[var(--space-3)]">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[10px] tabular-nums text-ink/45">{formatTs(row.occurred_at)}</p>
+                    <p className="font-mono text-[11px] text-holo-light/80 mt-0.5">{row.action}</p>
+                  </div>
+                  <p className="shrink-0 font-mono text-[10.5px] text-ink/55 text-right">
+                    {row.actor_email ?? <span className="text-ink/35">system</span>}
+                  </p>
+                </div>
+                <p className="mt-[var(--space-2)] text-[12.5px] text-ink/85">
+                  {row.summary ?? <span className="text-ink/35">—</span>}
+                  {row.entity_type === 'order' && row.entity_id && (
+                    <Link
+                      to={`/admin/orders/${row.entity_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-2 text-[11px] text-holo-light/70 hover:text-holo-light underline underline-offset-2"
+                    >
+                      Open ↗
+                    </Link>
+                  )}
+                </p>
+                {isOpen && (row.before_value !== null || row.after_value !== null) && (
+                  <div className="mt-[var(--space-3)] grid grid-cols-1 gap-[var(--space-3)] border-t border-ink/[0.06] pt-[var(--space-3)]">
+                    <DetailJson title="Before" value={row.before_value} />
+                    <DetailJson title="After"  value={row.after_value} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {rows && rows.length > 0 && (
+        <div className="hidden md:block research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[820px] border-collapse">
             <thead>
               <tr className="border-b border-ink/[0.08]">

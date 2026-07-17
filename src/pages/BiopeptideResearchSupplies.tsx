@@ -170,51 +170,50 @@ export function BiopeptideResearchSupplies() {
   );
 
   return (
-    <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
-      <header className="mb-[var(--space-3)]">
-        <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
-          Research Supplies · Biopeptide
-        </p>
-        <h1 className="font-serif text-[clamp(1.5rem,2.8vw,2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
-          <span className="font-light text-ink/85">Biopeptide </span>
-          <span className="font-light text-ink">research supplies.</span>
-        </h1>
-        <p className="holo-text-body mt-[var(--space-2)] max-w-[60ch] text-[13px] leading-relaxed">
-          Lyophilized peptides, sourced for research-grade consistency. Use the shipping-tier
-          chips to switch between compounds cleared for{' '}
-          <span className="text-ink/80">24-hour dispatch</span> and the wider catalog on
-          standard shipping (sourced to order, 7–10 business days).{' '}
-          <button
-            type="button"
-            onClick={() => setInventoryOpen(true)}
-            className="whitespace-nowrap font-medium text-holo underline decoration-holo/30 underline-offset-4 transition-colors hover:decoration-holo/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm"
-          >
-            View full inventory&nbsp;↗
-          </button>
-        </p>
-      </header>
+    <section className="pt-[var(--space-2)] pb-[var(--space-8)]">
+      <div className="relative isolate mb-[var(--space-3)]">
+        <div aria-hidden="true" className="bio-mercury-bg pointer-events-none absolute inset-0 -z-10" />
 
-      <ClassificationFilter
-        tabs={classificationTabs}
-        value={classFilter}
-        onChange={setClassFilter}
-        allLayman={ALL_LAYMAN}
-        allTechnical={ALL_DESCRIPTION}
-        shippingTiers={{
-          fast: fastOn,
-          sourced: sourcedOn,
-          // Touching a speed chip always exits wholesale mode — the chips
-          // and the case view describe different catalogs.
-          onToggleFast: () => { setWholesaleOn(false); setFastOn((v) => !v); },
-          onToggleSourced: () => { setWholesaleOn(false); setSourcedOn((v) => !v); },
-          wholesale: { on: wholesaleActive, toggle: () => setWholesaleOn((v) => !v) },
-        }}
-        density={{ value: density, onChange: changeDensity }}
-        search={search}
-        onSearch={setSearch}
-        suggestions={suggestions}
-        searchPlaceholder="Search peptides…"
-      />
+        <header className="mb-[var(--space-2)]">
+          <h1 className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
+            Research Supplies · Biopeptide
+          </h1>
+          <p className="holo-text-body max-w-[60ch] text-[13px] leading-relaxed">
+            Lyophilized peptides, research-grade consistency. Toggle{' '}
+            <span className="text-ink/80">24-hour dispatch</span> vs. the wider
+            standard-shipping catalog (7–10 business days).{' '}
+            <button
+              type="button"
+              onClick={() => setInventoryOpen(true)}
+              className="whitespace-nowrap font-medium text-holo underline decoration-holo/30 underline-offset-4 transition-colors hover:decoration-holo/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40 rounded-sm"
+            >
+              View full inventory&nbsp;↗
+            </button>
+          </p>
+        </header>
+
+        <ClassificationFilter
+          tabs={classificationTabs}
+          value={classFilter}
+          onChange={setClassFilter}
+          allLayman={ALL_LAYMAN}
+          allTechnical={ALL_DESCRIPTION}
+          shippingTiers={{
+            fast: fastOn,
+            sourced: sourcedOn,
+            // Touching a speed chip always exits wholesale mode — the chips
+            // and the case view describe different catalogs.
+            onToggleFast: () => { setWholesaleOn(false); setFastOn((v) => !v); },
+            onToggleSourced: () => { setWholesaleOn(false); setSourcedOn((v) => !v); },
+            wholesale: { on: wholesaleActive, toggle: () => setWholesaleOn((v) => !v) },
+          }}
+          density={{ value: density, onChange: changeDensity }}
+          search={search}
+          onSearch={setSearch}
+          suggestions={suggestions}
+          searchPlaceholder="Search peptides…"
+        />
+      </div>
 
       {wholesaleActive && !canWholesale && (
         <div className="mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-field)] border border-ink/15 bg-ink/[0.03] px-3.5 py-2.5">
@@ -277,6 +276,32 @@ export function BiopeptideResearchSupplies() {
         open={inventoryOpen}
         onClose={() => setInventoryOpen(false)}
       />
+
+      <style>{`
+        /* Ethereal "mercury stream" backdrop for the header + filter module —
+           gives the glass panel something to refract against so it reads as
+           real glass instead of flat smoke. Silver + a whisper of graphite
+           (--c-teal), theme-aware via channel vars. Transform/opacity only. */
+        .bio-mercury-bg {
+          background:
+            radial-gradient(58% 60% at 14% 0%, rgb(var(--c-ink) / 0.05) 0%, transparent 72%),
+            radial-gradient(50% 55% at 88% 6%, rgb(var(--c-teal) / 0.07) 0%, transparent 74%),
+            linear-gradient(205deg, rgb(var(--c-ink) / 0.03) 0%, transparent 60%);
+          will-change: transform;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+          .bio-mercury-bg {
+            animation: bioMercuryDrift 26s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+          }
+        }
+
+        @keyframes bioMercuryDrift {
+          0%   { transform: translate3d(0, -10px, 0) rotate(0deg); }
+          50%  { transform: translate3d(0, 10px, 0) rotate(0.5deg); }
+          100% { transform: translate3d(0, -6px, 0) rotate(-0.35deg); }
+        }
+      `}</style>
     </section>
   );
 }

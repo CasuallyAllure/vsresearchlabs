@@ -72,6 +72,34 @@ function DensityGlyph({ kind }: { kind: CatalogDensity }) {
   );
 }
 
+/** Single-icon layout control (owner's rule: one small grid icon, not a
+ *  segmented row). Shows the CURRENT layout's glyph; each tap cycles
+ *  detail → grid → dense. The tooltip/labels always say what a tap does. */
+function DensityCycleButton({
+  value,
+  onChange,
+}: {
+  value: CatalogDensity;
+  onChange: (d: CatalogDensity) => void;
+}) {
+  const i = DENSITY_OPTIONS.findIndex((o) => o.id === value);
+  const current = DENSITY_OPTIONS[i === -1 ? 1 : i];
+  const next = DENSITY_OPTIONS[(i + 1) % DENSITY_OPTIONS.length];
+  return (
+    <Tooltip content={`${current.label} layout — tap for ${next.label}`} ariaId="density-cycle">
+      <button
+        type="button"
+        aria-label={`Catalog layout: ${current.label}. Tap to switch to ${next.label}.`}
+        title={`${current.label} layout — tap for ${next.label}`}
+        onClick={() => onChange(next.id)}
+        className="inline-flex shrink-0 items-center justify-center rounded-full border border-ink/15 p-[6px] text-ink/55 transition-colors hover:border-ink/30 hover:text-ink/85 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+      >
+        <DensityGlyph kind={current.id} />
+      </button>
+    </Tooltip>
+  );
+}
+
 interface Tab {
   id: string;
   label: string;
@@ -128,7 +156,7 @@ export function ClassificationFilter({
   suggestions,
 }: ClassificationFilterProps) {
   const allId = tabs[0]?.id;
-  const stockColor = inStock?.color ?? '#2E7D5B';
+  const stockColor = inStock?.color ?? 'var(--color-status-success)';
 
   // Subscribe so the 7–10-day chip's tooltip flips to the LTO promo copy the
   // moment promo settings load (or an admin toggles the promo).
@@ -178,7 +206,8 @@ export function ClassificationFilter({
       : [];
 
   return (
-    <div className="mb-[var(--space-3)] rounded-[var(--radius-procurement)] border border-ink/[0.09] bg-ink/[0.025] p-1.5">
+    <>
+    <div className="catalog-filter-glass mb-[var(--space-3)] rounded-[var(--radius-procurement)] p-2">
       {/* One compact row on every breakpoint: the search field grows, the
           in-stock toggle + category dropdown stay pinned right. The category
           menu is right-anchored (and viewport-width-capped) so it can never
@@ -248,7 +277,7 @@ export function ClassificationFilter({
             // Off-state colors use the theme-bound `ink` tokens (NOT a hardcoded
             // dark rgba) so the control stays visible in dark mode — a fixed
             // near-black border/text was invisible on the black surface.
-            className={`inline-flex shrink-0 min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.12em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+            className={`inline-flex shrink-0 min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.12em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
               inStock.on ? '' : 'border-ink/25 text-ink/55'
             }`}
             style={
@@ -259,7 +288,7 @@ export function ClassificationFilter({
           >
             <span
               aria-hidden="true"
-              className={`inline-block h-[6px] w-[6px] rounded-full transition-all ${inStock.on ? '' : 'bg-ink/35'}`}
+              className={`inline-block h-[6px] w-[6px] rounded-full transition-colors ${inStock.on ? '' : 'bg-ink/35'}`}
               style={
                 inStock.on
                   ? { backgroundColor: stockColor, boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.35)' }
@@ -315,138 +344,140 @@ export function ClassificationFilter({
       </div>
 
       {shippingTiers && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="shrink-0 text-[9px] uppercase tracking-[0.18em] text-ink/40">
-            Shipping speed
-          </span>
-          <div
-            className={`flex items-center gap-1.5 transition-opacity ${
-              shippingTiers.wholesale?.on ? 'opacity-45' : ''
-            }`}
+        <div className="mt-2 flex flex-nowrap items-center gap-1.5">
+          <svg
+            aria-hidden="true"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0 text-ink/40"
           >
-          <Tooltip content={FAST_SHIP_TOOLTIP} ariaId="ship-24hr">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={shippingTiers.fast}
-            aria-label={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
-            onClick={shippingTiers.onToggleFast}
-            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
-              shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
-            }`}
-            style={
-              shippingTiers.fast
-                ? { borderColor: '#2E7D5B99', color: '#2E7D5B', backgroundColor: '#2E7D5B14' }
-                : undefined
-            }
-          >
-            <span
-              aria-hidden="true"
-              className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${shippingTiers.fast ? '' : 'bg-ink/35'}`}
-              style={shippingTiers.fast ? { backgroundColor: '#2E7D5B' } : undefined}
-            />
-            24 HR
-          </button>
-          </Tooltip>
-          <Tooltip content={sourcedShipTooltip} ariaId="ship-sourced">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={shippingTiers.sourced}
-            aria-label={
-              shippingTiers.sourced
-                ? 'Standard shipping (7–10 business days) — tap to hide'
-                : 'Tap to show standard-shipping (7–10 business day) compounds'
-            }
-            onClick={shippingTiers.onToggleSourced}
-            className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
-              shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
-            }`}
-            style={
-              shippingTiers.sourced
-                ? { borderColor: 'rgba(126,130,136,0.6)', color: '#7E8288', backgroundColor: 'rgba(126,130,136,0.10)' }
-                : undefined
-            }
-          >
-            <span
-              aria-hidden="true"
-              className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
-              style={shippingTiers.sourced ? { backgroundColor: '#7E8288' } : undefined}
-            />
-            STANDARD
-          </button>
-          </Tooltip>
-          </div>
+            <rect x="1" y="7" width="12.5" height="9" rx="1.2" />
+            <path d="M13.5 10h3.6L20 13.4V16h-2.7" />
+            <circle cx="5.7" cy="17.2" r="1.5" />
+            <circle cx="16.3" cy="17.2" r="1.5" />
+          </svg>
+          <span className="sr-only">Shipping speed</span>
 
-          {shippingTiers.wholesale && (
-            <>
-              <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
-              <Tooltip content={WHOLESALE_TOOLTIP} ariaId="ship-wholesale">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={shippingTiers.wholesale.on}
-                  aria-label={
-                    shippingTiers.wholesale.on
-                      ? 'Wholesale business pricing — tap to return to the regular catalog'
-                      : 'Tap to shop wholesale business pricing (case of 10, 40% off)'
-                  }
-                  onClick={shippingTiers.wholesale.toggle}
-                  className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
-                    shippingTiers.wholesale.on ? '' : 'border-ink/25 text-ink/55'
-                  }`}
-                  style={
-                    shippingTiers.wholesale.on
-                      ? { borderColor: '#B5904B99', color: '#B5904B', backgroundColor: 'rgba(181,144,75,0.10)' }
-                      : undefined
-                  }
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-all ${
-                      shippingTiers.wholesale.on ? '' : 'bg-ink/35'
+          {/* No overflow container here: it clipped the hover tooltips AND hid
+              the Wholesale chip off-screen at 375px. Slim chips + the single
+              layout icon fit on one visible line instead. */}
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            <div
+              className={`flex shrink-0 items-center gap-1.5 transition-opacity ${
+                shippingTiers.wholesale?.on ? 'opacity-45' : ''
+              }`}
+            >
+            <Tooltip content={FAST_SHIP_TOOLTIP} ariaId="ship-24hr">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shippingTiers.fast}
+              aria-label={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
+              onClick={shippingTiers.onToggleFast}
+              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+                shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
+              }`}
+              style={
+                shippingTiers.fast
+                  ? {
+                      borderColor: 'color-mix(in srgb, var(--color-status-success) 60%, transparent)',
+                      color: 'var(--color-status-success)',
+                      backgroundColor: 'var(--color-status-successMuted)',
+                    }
+                  : undefined
+              }
+            >
+              <span
+                aria-hidden="true"
+                className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-colors ${shippingTiers.fast ? '' : 'bg-ink/35'}`}
+                style={shippingTiers.fast ? { backgroundColor: 'var(--color-status-success)' } : undefined}
+              />
+              24 HR
+            </button>
+            </Tooltip>
+            <Tooltip content={sourcedShipTooltip} ariaId="ship-sourced">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={shippingTiers.sourced}
+              aria-label={
+                shippingTiers.sourced
+                  ? 'Standard shipping (7–10 business days) — tap to hide'
+                  : 'Tap to show standard-shipping (7–10 business day) compounds'
+              }
+              onClick={shippingTiers.onToggleSourced}
+              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+                shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
+              }`}
+              style={
+                shippingTiers.sourced
+                  ? {
+                      borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 60%, transparent)',
+                      color: 'var(--color-accent-gold-dark)',
+                      backgroundColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 10%, transparent)',
+                    }
+                  : undefined
+              }
+            >
+              <span
+                aria-hidden="true"
+                className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-colors ${shippingTiers.sourced ? '' : 'bg-ink/35'}`}
+                style={shippingTiers.sourced ? { backgroundColor: 'var(--color-accent-gold-dark)' } : undefined}
+              />
+              STANDARD
+            </button>
+            </Tooltip>
+            </div>
+
+            {shippingTiers.wholesale && (
+              <>
+                <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
+                <Tooltip content={WHOLESALE_TOOLTIP} ariaId="ship-wholesale">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={shippingTiers.wholesale.on}
+                    aria-label={
+                      shippingTiers.wholesale.on
+                        ? 'Wholesale business pricing — tap to return to the regular catalog'
+                        : 'Tap to shop wholesale business pricing (case of 10, 40% off)'
+                    }
+                    onClick={shippingTiers.wholesale.toggle}
+                    className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+                      shippingTiers.wholesale.on ? '' : 'border-ink/25 text-ink/55'
                     }`}
-                    style={shippingTiers.wholesale.on ? { backgroundColor: '#B5904B' } : undefined}
-                  />
-                  {/* Word-only shine — the hover tooltip carries the full
-                      B2B-to-all-industries story. */}
-                  <span className="wholesale-shine font-medium">Wholesale</span>
-                </button>
-              </Tooltip>
-            </>
-          )}
+                    style={
+                      shippingTiers.wholesale.on
+                        ? { borderColor: '#B5904B99', color: '#B5904B', backgroundColor: 'rgba(181,144,75,0.10)' }
+                        : undefined
+                    }
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-colors ${
+                        shippingTiers.wholesale.on ? '' : 'bg-ink/35'
+                      }`}
+                      style={shippingTiers.wholesale.on ? { backgroundColor: '#B5904B' } : undefined}
+                    />
+                    {/* Word-only shine — the hover tooltip carries the full
+                        B2B-to-all-industries story. */}
+                    <span className="wholesale-shine font-medium">Wholesale</span>
+                  </button>
+                </Tooltip>
+              </>
+            )}
+          </div>
 
           {density && (
             <>
               <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
-              <div
-                role="radiogroup"
-                aria-label="Catalog layout"
-                className="flex items-center overflow-hidden rounded-full border border-ink/15"
-              >
-                {DENSITY_OPTIONS.map((opt, i) => {
-                  const on = density.value === opt.id;
-                  return (
-                    <Tooltip key={opt.id} content={opt.hint} ariaId={`density-${opt.id}`}>
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        aria-label={`${opt.label} layout — ${opt.hint}`}
-                        onClick={() => density.onChange(opt.id)}
-                        className={[
-                          'inline-flex items-center gap-1 px-2 py-[4px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
-                          i > 0 ? 'border-l border-ink/12' : '',
-                          on ? 'bg-ink/[0.08] text-ink/85' : 'text-ink/45 hover:text-ink/70',
-                        ].join(' ')}
-                      >
-                        <DensityGlyph kind={opt.id} />
-                        {opt.label}
-                      </button>
-                    </Tooltip>
-                  );
-                })}
-              </div>
+              <DensityCycleButton value={density.value} onChange={density.onChange} />
             </>
           )}
         </div>
@@ -455,27 +486,38 @@ export function ClassificationFilter({
       {/* Description — compact, wraps, with plain/technical swap */}
       <div className="mt-[var(--space-2)] border-t border-ink/[0.07] pt-[var(--space-2)]">
         {hasTech && (
-          <div className="mb-1 flex items-center gap-1">
+          <div className="mb-1.5 flex items-center gap-1">
             <button
               type="button"
               onClick={() => setShowTech(false)}
-              className={`rounded-full px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${!showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${!showTech ? 'bg-ink text-base-900 font-medium' : 'text-ink/40 hover:text-ink/65'}`}
             >
               Plain terms
             </button>
             <button
               type="button"
               onClick={() => setShowTech(true)}
-              className={`rounded-full px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${showTech ? 'bg-ink/[0.08] text-ink/80' : 'text-ink/40 hover:text-ink/70'}`}
+              className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${showTech ? 'bg-ink text-base-900 font-medium' : 'text-ink/40 hover:text-ink/65'}`}
             >
               Technical detail
             </button>
           </div>
         )}
-        <p className="text-[12px] leading-relaxed text-ink/65">
-          {showTech && hasTech ? technical : layman}
+        <p className="flex gap-1.5 text-[13px] leading-relaxed text-ink/60">
+          <span aria-hidden="true" className="text-ink/35">—</span>
+          <span>{showTech && hasTech ? technical : layman}</span>
         </p>
       </div>
     </div>
+    <style>{`
+      .catalog-filter-glass {
+        background: color-mix(in srgb, var(--color-surface-elevated) 82%, transparent);
+        -webkit-backdrop-filter: var(--glass-blur);
+        backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--surface-highlight-strong), var(--elev-2);
+      }
+    `}</style>
+    </>
   );
 }

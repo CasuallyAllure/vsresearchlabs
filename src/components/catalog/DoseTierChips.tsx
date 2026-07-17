@@ -43,22 +43,26 @@ interface DoseChipProps {
   isActive: boolean;
   /** Radio-button behavior (dose picker). Omit for a static single-dose label. */
   interactive?: boolean;
+  /** Tighter padding/type for dense surfaces (catalog tile). */
+  compact?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }
 
 /** One dose pill — interactive (radio, part of the multi-dose picker) or
  *  static (single-dose products, which still need their dose visible). */
-export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChipProps) {
+export function DoseChip({ sku, dose, isActive, interactive, compact, onClick }: DoseChipProps) {
   const av = doseAvailability(sku, dose);
   const isFast = av.state === 'in_stock' && av.fast;
   const doseTxt = dose.replace(/\s+/g, '').toUpperCase();
+  const fontSize = compact ? '9px' : '10px';
   const style = {
-    fontSize: '10px',
-    letterSpacing: '0.14em',
+    fontSize,
+    letterSpacing: '0.12em',
     backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
     color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
     borderColor: isActive ? 'var(--color-content-primary)' : 'rgb(var(--c-ink) / 0.12)',
   } as const;
+  const box = compact ? 'px-1.5 py-[2px]' : 'px-2 py-1';
   const content = (
     <>
       {doseTxt}
@@ -67,8 +71,8 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
           className="ml-1 inline-flex items-center gap-0.5 align-middle"
           style={{
             color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
-            fontSize: '10px',
-            letterSpacing: '0.16em',
+            fontSize,
+            letterSpacing: '0.14em',
           }}
         >
           · 24 HR
@@ -81,7 +85,7 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
   if (!interactive) {
     return (
       <span
-        className="font-mono leading-none px-2 py-1 rounded-full border"
+        className={`font-mono leading-none rounded-full border ${box}`}
         style={style}
         title={isFast ? `${dose} · 24 hour shipping` : dose}
       >
@@ -97,7 +101,7 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
       aria-checked={isActive}
       onClick={onClick}
       title={isFast ? `${dose} · 24 hour shipping` : dose}
-      className="font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+      className={`font-mono leading-none rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${box}`}
       style={style}
     >
       {content}

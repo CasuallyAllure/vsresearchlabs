@@ -1045,8 +1045,78 @@ function CommissionsTab({ redemptions, affiliates, onChanged, confirm }: Commiss
         </div>
       )}
 
+      {/* Mobile: one card per redemption — same data + actions as the table row. */}
       {filtered.length > 0 && (
-        <div className="research-surface-solid rounded-[14px] overflow-hidden">
+        <div className="md:hidden flex flex-col gap-[var(--space-3)]">
+          {filtered.map((row) => {
+            const busy = busyIds.has(row.id);
+            return (
+              <div key={row.id} className="floating-module p-4">
+                <div className="flex items-start justify-between gap-[var(--space-3)]">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[11.5px] text-ink/80">{row.code}</p>
+                    <p className="font-mono text-[10.5px] text-ink/45 mt-0.5">{fmtDateShort(row.created_at)}</p>
+                  </div>
+                  <CommissionChip status={row.commission_status} />
+                </div>
+                <p className="mt-[var(--space-2)] text-[11.5px] text-ink/70 truncate">{row.buyer_contact ?? '—'}</p>
+                <div className="mt-[var(--space-3)] flex items-end justify-between gap-[var(--space-3)] border-t border-ink/[0.06] pt-[var(--space-3)]">
+                  <div className="flex items-center gap-[var(--space-4)]">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-ink/40">Order net</p>
+                      <p className="font-mono tabular-nums text-[12.5px] text-ink">{fmtUSD(row.order_net_cents)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-ink/40">Commission</p>
+                      <p className="font-mono tabular-nums text-[12.5px] text-ink">{fmtUSD(row.commission_cents)}</p>
+                    </div>
+                  </div>
+                  {row.order_id ? (
+                    <Link to={`/admin/orders/${row.order_id}`} className="text-[10.5px] uppercase tracking-[0.16em] text-ink/70 underline decoration-ink/20 hover:text-ink">
+                      View
+                    </Link>
+                  ) : (
+                    <span className="text-[11px] text-ink/30">—</span>
+                  )}
+                </div>
+                {row.commission_status === 'pending' && (
+                  <div className="mt-[var(--space-3)] flex items-center gap-1.5">
+                    <ActionButton
+                      disabled={busy}
+                      title="Mark paid"
+                      onClick={() =>
+                        confirm(
+                          `Mark commission for ${row.code} (${fmtUSD(row.commission_cents)}) as paid?`,
+                          () => updateStatus([row.id], 'paid'),
+                        )
+                      }
+                    >
+                      Mark paid
+                    </ActionButton>
+                    <ActionButton
+                      danger
+                      disabled={busy}
+                      title="Void"
+                      onClick={() =>
+                        confirm(
+                          `Void commission for ${row.code} (${fmtUSD(row.commission_cents)})?`,
+                          () => updateStatus([row.id], 'void'),
+                          true,
+                        )
+                      }
+                    >
+                      Void
+                    </ActionButton>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {filtered.length > 0 && (
+        <div className="hidden md:block research-surface-solid rounded-[14px] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse">
               <thead>

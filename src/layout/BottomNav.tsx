@@ -317,7 +317,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                       </span>
                       <span
                         aria-hidden="true"
-                        className="shrink-0 text-ink/25 transition-all duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-ink/60"
+                        className="shrink-0 text-ink/25 transition-[color,transform] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-ink/60"
                       >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
@@ -368,13 +368,13 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
             className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap"
           >
             <span
-              className={`relative inline-block rounded-full px-2 py-[2.5px] text-[10px] font-medium uppercase tracking-[0.22em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
+              className={`relative inline-block rounded-full px-[9px] py-[2px] text-[10px] font-medium uppercase tracking-[0.2em] ${reduce ? '' : 'vsr-nav-hint-glitch'}`}
               style={{
                 color: 'var(--color-content-inverse)',
-                background: 'linear-gradient(180deg, rgb(var(--c-gold)) 0%, rgb(var(--c-gold-dark)) 100%)',
-                border: '0.5px solid rgba(140,110,50,0.6)',
+                background: 'rgb(var(--c-gold-dark) / 0.94)',
+                border: '0.5px solid rgb(var(--c-gold-light) / 0.4)',
                 boxShadow:
-                  '0 2px 8px -2px rgba(26,23,20,0.35)',
+                  '0 0 0 1px rgb(var(--c-gold-light) / 0.25), 0 0 7px 0 rgb(var(--c-gold) / 0.3), 0 1px 3px -1px rgba(26,23,20,0.28)',
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
               }}
@@ -386,16 +386,16 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                 style={{
                   width: 0,
                   height: 0,
-                  borderLeft: '4px solid transparent',
-                  borderRight: '4px solid transparent',
-                  borderTop: '4px solid rgb(var(--c-gold-dark))',
+                  borderLeft: '3px solid transparent',
+                  borderRight: '3px solid transparent',
+                  borderTop: '3px solid rgb(var(--c-gold-dark))',
                 }}
               />
             </span>
           </div>
         )}
 
-        <ul className="flex items-center gap-2 px-3 py-1">
+        <ul className="flex items-center gap-1.5 px-2.5 py-[3px]">
           <NavSlot isActive={isHome} ariaLabel="Home" kind="link" to="/">
             <HomeIcon active={isHome} reduce={reduce} />
           </NavSlot>
@@ -444,7 +444,7 @@ type NavSlotProps =
 
 function NavSlot(props: NavSlotProps) {
   const baseClass = [
-    'relative flex items-center justify-center h-7 w-14 rounded-full transition-colors duration-150',
+    'relative flex items-center justify-center h-[26px] w-12 rounded-full transition-colors duration-150',
     'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
     props.isActive ? 'text-ink' : 'text-ink/50 hover:text-ink/90',
   ].join(' ');

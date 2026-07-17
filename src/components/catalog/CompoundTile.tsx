@@ -104,7 +104,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
   }
 
   return (
-    <article className="floating-module is-interactive overflow-hidden flex flex-col group">
+    <article className="compound-tile floating-module is-interactive overflow-hidden flex flex-col group">
       {/* Tappable head: purity badge + image + identity + description → inspect overlay */}
       <button
         type="button"
@@ -128,11 +128,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             )}
             {puritySpec && (
               <span
-                className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.14em]"
+                className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full border px-1.5 py-[1.5px] text-[9px] uppercase tracking-[0.1em]"
                 style={{
                   color: '#fff',
-                  borderColor: 'rgba(255,255,255,0.28)',
-                  backgroundColor: 'rgba(20,20,20,0.55)',
+                  borderColor: 'rgba(255,255,255,0.26)',
+                  backgroundColor: 'rgba(20,20,20,0.5)',
                   backdropFilter: 'blur(2px)',
                 }}
                 title={`Purity (HPLC): ${puritySpec.value}`}
@@ -143,58 +143,57 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           </div>
         </div>
 
-        {/* Identity — name + one-line description */}
-        <div className="px-3.5 pt-1 pb-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/40 truncate">
-              {product.abbreviation} · {product.family.split(' ')[0]}
-            </p>
-            {product.nickname && (
-              <span
-                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-[2px] border"
-                style={{
-                  color: '#7E8288',
-                  borderColor: 'rgba(140,144,148,0.40)',
-                  backgroundColor: 'rgba(140,144,148,0.10)',
-                }}
+        {/* Identity — the name (all-caps brand label) and the description live
+            together on ONE recessed glass plate, spanning the same width as the
+            image above so nothing reads squished. */}
+        <div className="px-1.5 pt-1.5 pb-2">
+          <div className="tile-spec-plate rounded-[var(--radius-field)] px-2.5 py-2">
+            <div className="flex items-center justify-center gap-1.5 min-w-0">
+              <h3 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-ink leading-tight truncate text-center">
+                {product.name}
+              </h3>
+              {product.nickname && (
+                <span
+                  className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
+                >
+                  {product.nickname}
+                </span>
+              )}
+            </div>
+            {product.shortDescription && (
+              <p
+                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[10.5px] leading-relaxed text-ink/60 ${
+                  detailed ? '' : 'line-clamp-4'
+                }`}
               >
-                {product.nickname}
-              </span>
+                {product.shortDescription}
+              </p>
+            )}
+            {/* Detail layout: a compact spec sheet under the description —
+                the data the grid tiles have no room for. */}
+            {detailed && product.specs.length > 0 && (
+              <dl className="mt-1.5 space-y-0.5 border-t border-ink/[0.07] pt-1.5">
+                {product.specs.slice(0, 4).map((spec) => (
+                  <div key={spec.label} className="flex items-baseline justify-between gap-3">
+                    <dt className="shrink-0 text-[10.5px] uppercase tracking-[0.1em] text-ink/40">
+                      {spec.label}
+                    </dt>
+                    <dd className="min-w-0 truncate text-right font-mono text-[11px] text-ink/65">
+                      {spec.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             )}
           </div>
-          <h3 className="text-[14px] font-normal text-ink leading-snug truncate">
-            {product.name}
-          </h3>
-          {product.shortDescription && (
-            <p
-              className={`mt-1 text-[12px] leading-relaxed text-ink/55 ${
-                detailed ? '' : 'line-clamp-2'
-              }`}
-            >
-              {product.shortDescription}
-            </p>
-          )}
-          {/* Detail layout: a compact spec sheet under the description —
-              the data the grid tiles have no room for. */}
-          {detailed && product.specs.length > 0 && (
-            <dl className="mt-2 space-y-0.5 border-t border-ink/[0.06] pt-2">
-              {product.specs.slice(0, 4).map((spec) => (
-                <div key={spec.label} className="flex items-baseline justify-between gap-3">
-                  <dt className="shrink-0 text-[10.5px] uppercase tracking-[0.1em] text-ink/40">
-                    {spec.label}
-                  </dt>
-                  <dd className="min-w-0 truncate text-right font-mono text-[11px] text-ink/65">
-                    {spec.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
         </div>
       </button>
 
-      {/* Buy controls — outside the tap target */}
-      <div className="px-3.5 pb-3.5 pt-1.5 border-t border-ink/[0.05] mt-auto">
+      {/* Buy controls — outside the tap target, seated in their own footer
+          plate so the dose chip, price, and Add button have a defined home
+          instead of floating in the tile. Same inset as the identity plate. */}
+      <div className="px-1.5 pb-1.5 pt-1 mt-auto">
+       <div className="tile-spec-plate rounded-[var(--radius-field)] px-2.5 py-2">
         {variants.length > 0 && (() => {
           // 24-hour doses render as standalone chips in their own row.
           // Sourced doses (7–10 business day sourcing) are grouped into a
@@ -212,7 +211,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           const sourcedDoses = withState.filter((o) => o.state === 'sourced');
 
           return (
-            <div className="flex flex-col gap-1.5 mb-2">
+            <div className="flex flex-col gap-1.5">
               {fastDoses.length > 0 && (
                 <div
                   role={interactive ? 'radiogroup' : undefined}
@@ -225,6 +224,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                       key={v.dose}
                       sku={product.sku}
                       dose={v.dose}
+                      compact
                       interactive={interactive}
                       isActive={i === tierIndex}
                       onClick={interactive ? (e) => { e.stopPropagation(); setTierIndex(i); } : undefined}
@@ -274,25 +274,28 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           );
         })()}
 
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono tabular-nums text-[13px] text-ink/90 leading-none whitespace-nowrap">
-              {formatPrice(priceCents)}
-            </span>
+        <div
+          className={`flex items-center justify-between gap-2 ${
+            variants.length > 0 ? 'mt-2 border-t border-ink/[0.07] pt-2' : ''
+          }`}
+        >
+          <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
+            {formatPrice(priceCents)}
+          </span>
 
-            <button
-              type="button"
-              onClick={handleAdd}
-              aria-label={`Add ${product.name} ${activeDose} to inquiry`}
-              className={[
-                'tile-add-btn shrink-0 min-h-[40px] min-w-[40px] inline-flex items-center justify-center gap-1 rounded-full px-3 text-[10px] uppercase tracking-[0.14em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
-                added ? 'is-added' : '',
-              ].join(' ')}
-            >
-              {added ? '✓' : '+ Add'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleAdd}
+            aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+            className={[
+              'tile-add-btn shrink-0 h-[27px] min-w-[48px] inline-flex items-center justify-center gap-1 rounded-full px-2.5 text-[9px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              added ? 'is-added' : '',
+            ].join(' ')}
+          >
+            {added ? '✓ Added' : 'Add'}
+          </button>
         </div>
+       </div>
       </div>
     </article>
   );

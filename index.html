@@ -12,12 +12,6 @@
     <script src="/theme-boot.js"></script>
 
 
-    <!-- Fonts — warm the connection early so Cormorant Garamond is ready
-         for the first-paint brand loader wordmark (avoids a Times fallback
-         flash that reads as less refined than the header). -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <!-- Self-hosted shipping faces — preload the critical weights. Static <link>
          tags, NOT a script: the CSP (script-src 'self') blocks inline scripts. -->
     <link rel="preload" as="font" type="font/woff2" href="/fonts/stix-two-text-400.woff2" crossorigin />

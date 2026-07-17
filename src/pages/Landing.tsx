@@ -110,7 +110,7 @@ function Module({ index, label, meta, children, aria, id }: ModuleProps) {
   return (
     <section
       id={id}
-      className="-mx-[var(--space-6)] border-b border-ink/[0.1]"
+      className="-mx-[var(--page-gutter)] border-b border-ink/[0.1]"
       aria-label={aria}
       style={id ? { scrollMarginTop: '4rem' } : undefined}
     >
@@ -358,7 +358,7 @@ export function Landing() {
 
       {/* ── HERO · COMPOUND INTELLIGENCE ─────────────────────────────────── */}
       <section
-        className="-mx-[var(--space-6)] border-b border-ink/[0.1]"
+        className="-mx-[var(--page-gutter)] border-b border-ink/[0.1]"
         aria-label="Compound intelligence"
       >
         <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] pt-[var(--space-6)] pb-[var(--space-12)] sm:pt-[var(--space-8)] sm:pb-[var(--space-16)]">
@@ -738,15 +738,17 @@ export function Landing() {
               .hero-whatsapp-cta:hover { transform: none; }
             }
 
-            /* Begin Inquiry — flat brushed silver (mirrors .cta-mint):
-               no gradient, no glow, hairline machined top edge. Fixed dark
-               text (display-base is dark in both themes) since the silver
-               fill is light-toned in both. */
+            /* Begin Inquiry — flat brushed silver (mirrors .cta-mint), now
+               with a breathing gold-token glow (owner-approved override of
+               the no-glow ban for this one primary-conversion CTA — same
+               pattern family as .sdd-trigger's sddGlow). Fixed dark text
+               (display-base is dark in both themes) since the silver fill
+               is light-toned in both. */
             .hero-cta-gold {
               background: var(--color-accent-gold);
               color: var(--color-display-base);
               border: 1px solid rgba(0, 0, 0, 0.16);
-              box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+              animation: heroCtaGoldGlow 2.6s ease-in-out infinite;
               transition:
                 background-color 180ms var(--easing-easeOut),
                 border-color 180ms var(--easing-easeOut);
@@ -754,8 +756,48 @@ export function Landing() {
             .hero-cta-gold:hover {
               background: var(--color-accent-gold-light);
               border-color: rgba(0, 0, 0, 0.22);
+              animation: heroCtaGoldGlowHover 1.8s ease-in-out infinite;
             }
             .hero-cta-gold:active { background: var(--color-accent-gold-dark); }
+            @keyframes heroCtaGoldGlow {
+              0%, 100% {
+                box-shadow:
+                  inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                  0 0 0 1px rgb(var(--c-gold) / 0.18),
+                  0 0 14px 0 rgb(var(--c-gold) / 0.35);
+                transform: scale(1);
+              }
+              50% {
+                box-shadow:
+                  inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                  0 0 0 1px rgb(var(--c-gold) / 0.32),
+                  0 0 26px 3px rgb(var(--c-gold) / 0.6);
+                transform: scale(1.015);
+              }
+            }
+            @keyframes heroCtaGoldGlowHover {
+              0%, 100% {
+                box-shadow:
+                  inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                  0 0 0 1px rgb(var(--c-gold) / 0.35),
+                  0 0 22px 2px rgb(var(--c-gold) / 0.55);
+                transform: scale(1.01);
+              }
+              50% {
+                box-shadow:
+                  inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                  0 0 0 1px rgb(var(--c-gold) / 0.5),
+                  0 0 34px 6px rgb(var(--c-gold) / 0.85);
+                transform: scale(1.025);
+              }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .hero-cta-gold {
+                animation: none;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 16px 0 rgb(var(--c-gold) / 0.45);
+              }
+              .hero-cta-gold:hover { animation: none; }
+            }
 
             /* View Research — quiet neutral outline sibling of the silver primary. */
             .hero-cta-holo {

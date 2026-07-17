@@ -30,8 +30,8 @@ import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 
-const STOCK_GREEN = '#2E7D5B';
-const SOURCED_GRAY = '#8C9096';
+const STOCK_GREEN = 'var(--color-status-success)';
+const SOURCED_GRAY = 'var(--color-accent-teal-light)';
 
 interface CompactProductTileProps {
   product: Product;
@@ -126,9 +126,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
               <span
                 className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-[2px] border"
                 style={{
-                  color: '#7E8288',
-                  borderColor: 'rgba(140,144,148,0.40)',
-                  backgroundColor: 'rgba(140,144,148,0.10)',
+                  color: 'var(--color-accent-gold-dark)',
+                  borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 40%, transparent)',
+                  backgroundColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 10%, transparent)',
                 }}
               >
                 {product.nickname}
@@ -177,7 +177,12 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                     <span
                       className="ml-1"
                       style={{
-                        color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
+                        // The light mint (active branch) is a fixed contrast
+                        // tint tuned for the pill's inverted dark fill
+                        // (var(--color-content-primary)) and has no matching
+                        // status token — left as-is. Inactive branch routes
+                        // through the theme-aware success token.
+                        color: isActive ? 'rgba(155,196,163,1)' : 'var(--color-status-success)',
                         fontSize: '10px',
                         letterSpacing: '0.16em',
                       }}
@@ -201,10 +206,11 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
               'shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
-              // Theme-bound ink tokens (silver in dark mode) — never hardcode the
-              // near-black ink hex here or the label goes invisible on dark.
+              // Theme-bound teal-light token (was a hardcoded hex) — never
+              // hardcode the near-black ink hex here or the label goes
+              // invisible on dark.
               added
-                ? 'bg-[#868A90]/[0.16] border-[#868A90]/45 text-[#868A90]'
+                ? 'bg-teal-light/[0.16] border-teal-light/45 text-teal-light'
                 : 'bg-ink/[0.05] border-ink/[0.14] text-ink/[0.78] hover:bg-ink/[0.09] hover:text-ink',
             ].join(' ')}
           >

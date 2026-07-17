@@ -25,8 +25,8 @@ import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, isSkuInStock, doseAvailability } from '../../lib/productOverrides';
 
 const ALL_TAB = '__all__';
-const STOCK_GREEN = '#2E7D5B';
-const SOURCED_GRAY = '#8C9096';
+const STOCK_GREEN = 'var(--color-status-success)';
+const SOURCED_GRAY = 'var(--color-accent-teal-light)';
 const ALL_LAYMAN =
   'The full biopeptide catalog — pick a category to filter the list and read what it does in plain terms. Swipe right for the technical detail.';
 const ALL_DESCRIPTION =
@@ -70,10 +70,10 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
       <button
         type="button"
         onClick={() => onInspect(product.id)}
-        className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm"
+        className="min-w-0 flex-1 text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-[var(--radius-field)]"
       >
         <p className="text-[12.5px] font-medium text-ink truncate">{product.name}</p>
-        <p className="text-[9.5px] font-mono uppercase tracking-[0.06em] text-ink/45 truncate">
+        <p className="text-[10px] font-mono uppercase tracking-[0.06em] text-ink/45 truncate">
           {product.abbreviation} · {product.family}
         </p>
       </button>
@@ -97,9 +97,9 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
                 aria-checked={isActive}
                 onClick={() => setTierIndex(i)}
                 title={isFast ? `${v.dose} · 24 hour shipping` : v.dose}
-                className="font-mono leading-none px-1.5 py-1 rounded-[3px] border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                className="font-mono leading-none px-1.5 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                 style={{
-                  fontSize: '9px',
+                  fontSize: '10px',
                   letterSpacing: '0.14em',
                   backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
                   color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
@@ -111,8 +111,12 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
                   <span
                     className="ml-1"
                     style={{
-                      color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
-                      fontSize: '8px',
+                      // Light mint (active branch) is a fixed contrast tint
+                      // tuned for the pill's inverted dark fill
+                      // (var(--color-content-primary)) — no status token
+                      // matches this contrast requirement, left as-is.
+                      color: isActive ? 'rgba(155,196,163,1)' : 'var(--color-status-success)',
+                      fontSize: '10px',
                       letterSpacing: '0.20em',
                     }}
                   >
@@ -136,11 +140,12 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
         onClick={handleAdd}
         aria-label={`Add ${product.name} ${activeDose} to inquiry`}
         className={[
-          'shrink-0 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
-          // Theme-bound ink tokens (silver in dark mode) — never hardcode the
-          // near-black ink hex here or the label goes invisible on dark.
+          'shrink-0 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+          // Theme-bound teal-light token (was a hardcoded hex) — never
+          // hardcode the near-black ink hex here or the label goes
+          // invisible on dark.
           added
-            ? 'bg-[#868A90]/[0.16] border-[#868A90]/45 text-[#868A90]'
+            ? 'bg-teal-light/[0.16] border-teal-light/45 text-teal-light'
             : 'bg-ink/[0.05] border-ink/[0.14] text-ink/[0.78] hover:bg-ink/[0.09] hover:text-ink',
         ].join(' ')}
       >
@@ -232,7 +237,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
       >
         <div
           className="pointer-events-auto flex flex-col w-full max-w-[1080px] max-h-[90vh] overflow-hidden rounded-2xl border border-ink/[0.12] bg-base-800"
-          style={{ boxShadow: '0 24px 60px rgba(26,23,20,0.22), 0 0 0 0.5px rgba(26,23,20,0.06)' }}
+          style={{ boxShadow: 'var(--elev-3)' }}
         >
           {/* Header + filter */}
           <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.08]">
@@ -254,7 +259,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                 type="button"
                 onClick={onClose}
                 aria-label="Close inventory"
-                className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-sm shrink-0"
+                className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-full shrink-0"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18" />

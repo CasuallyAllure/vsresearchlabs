@@ -70,48 +70,82 @@ export function HeroSegmentMenu({
         <div
           role="menu"
           aria-label={heading}
-          className={`absolute top-full z-50 mt-2 w-[238px] max-w-[82vw] rounded-[10px] p-1.5 ${
+          className={`glass-panel hero-segment-menu-panel absolute top-full z-50 mt-2 w-[238px] max-w-[82vw] rounded-[16px] p-1.5 ${
             alignRight ? 'right-0' : 'left-0'
           }`}
-          style={{
-            backgroundColor: 'var(--color-surface-elevated)',
-            border: '1px solid rgba(26, 23, 20, 0.12)',
-            boxShadow: '0 14px 38px -14px rgba(26,23,20,0.32)',
-            backdropFilter: 'blur(8px)',
-          }}
+          style={{ boxShadow: 'var(--glass-highlight), var(--elev-3)' }}
         >
-          {/* caret */}
+          {/* caret — matches the glass fill/border so it reads as one piece */}
           <span
             aria-hidden="true"
             className={`absolute -top-[5px] h-2.5 w-2.5 rotate-45 ${alignRight ? 'right-5' : 'left-5'}`}
-            style={{ backgroundColor: 'var(--color-surface-elevated)', borderLeft: '1px solid var(--color-border-default)', borderTop: '1px solid var(--color-border-default)' }}
+            style={{ backgroundColor: 'var(--glass-bg)', borderLeft: '1px solid var(--glass-border)', borderTop: '1px solid var(--glass-border)' }}
           />
           <p className="px-2.5 pb-1 pt-1.5 font-mono text-[10px] uppercase tracking-[0.26em] text-ink/40">
             {heading}
           </p>
-          {items.map((it) => (
-            <Link
-              key={`${it.label}-${it.to}`}
-              to={it.to}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="group flex items-center justify-between gap-2 rounded-[7px] px-2.5 py-2 transition-colors hover:bg-ink/[0.05] focus:outline-none focus-visible:bg-ink/[0.05]"
-            >
-              <span className="flex min-w-0 flex-col">
-                <span className="text-[12.5px] tracking-tight text-ink">{it.label}</span>
-                {it.caption && (
-                  <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">
-                    {it.caption}
+          {items.map((it, index) => {
+            const featured = index === 0;
+            return (
+              <Link
+                key={`${it.label}-${it.to}`}
+                to={it.to}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className={
+                  featured
+                    ? 'group flex min-h-[40px] items-center justify-between gap-2 rounded-[10px] border-l-2 border-gold/60 bg-gold/[0.08] py-2 pl-[9px] pr-2.5 transition-colors hover:bg-gold/[0.14] focus:outline-none focus-visible:bg-gold/[0.14]'
+                    : 'group flex min-h-[40px] items-center justify-between gap-2 rounded-[10px] py-2 pl-2.5 pr-2.5 transition-colors hover:bg-ink/[0.05] focus:outline-none focus-visible:bg-ink/[0.05]'
+                }
+              >
+                <span className="flex min-w-0 flex-col">
+                  <span
+                    className={
+                      featured
+                        ? 'text-[13.5px] font-medium tracking-tight text-ink'
+                        : 'text-[12.5px] tracking-tight text-ink/70'
+                    }
+                  >
+                    {it.label}
                   </span>
-                )}
-              </span>
-              <span aria-hidden="true" className="shrink-0 text-ink/30 transition-colors group-hover:text-holo">
-                →
-              </span>
-            </Link>
-          ))}
+                  {it.caption && (
+                    <span className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">
+                      {it.caption}
+                    </span>
+                  )}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={
+                    featured
+                      ? 'shrink-0 text-gold/70 transition-colors group-hover:text-gold'
+                      : 'shrink-0 text-ink/30 transition-colors group-hover:text-holo'
+                  }
+                >
+                  →
+                </span>
+              </Link>
+            );
+          })}
         </div>
       )}
+      <style>{`
+        @keyframes heroSegmentMenuEnter {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .hero-segment-menu-panel {
+          transform-origin: top;
+          animation: heroSegmentMenuEnter 180ms cubic-bezier(0.23, 1, 0.32, 1);
+          /* The menu floats over the busy 3D molecule — the stock glass fill is
+             too transparent there and the labels fight the background. Keep the
+             blur/border/highlight, but back the text with a near-solid fill. */
+          background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-segment-menu-panel { animation: none; }
+        }
+      `}</style>
     </span>
   );
 }

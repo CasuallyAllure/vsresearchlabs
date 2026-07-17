@@ -120,12 +120,13 @@ function ReceptorMap({ ci }: { ci: CompoundIntelligence }) {
       className="h-full w-full"
       aria-hidden="true"
     >
-      {/* Central compound node */}
-      <circle cx={cx} cy={cy} r="30" fill="#070707" stroke="rgba(140,144,148,0.5)" strokeWidth="1.25" />
-      <text x={cx} y={cy - 2} textAnchor="middle" fontFamily="monospace" fontSize="13" fill="rgba(26,23,20,0.85)" letterSpacing="1">
+      {/* Central compound node — near-black "display case" fill, fixed dark
+          in both themes (same token the specimen/hologram insets use). */}
+      <circle cx={cx} cy={cy} r="30" fill="var(--color-display-base)" stroke="rgba(var(--c-teal-light) / 0.5)" strokeWidth="1.25" />
+      <text x={cx} y={cy - 2} textAnchor="middle" fontFamily="monospace" fontSize="13" fill="rgba(var(--c-ink) / 0.85)" letterSpacing="1">
         {ci.abbreviation}
       </text>
-      <text x={cx} y={cy + 12} textAnchor="middle" fontFamily="monospace" fontSize="7" fill="rgba(26,23,20,0.32)" letterSpacing="1.5">
+      <text x={cx} y={cy + 12} textAnchor="middle" fontFamily="monospace" fontSize="7" fill="rgba(var(--c-ink) / 0.32)" letterSpacing="1.5">
         AGONIST
       </text>
       {targets.map((t, i) => {
@@ -136,26 +137,26 @@ function ReceptorMap({ ci }: { ci: CompoundIntelligence }) {
             <path
               d={`M${cx + 30},${cy} C 150,${cy} 160,${ty + 14} ${tx - 8},${ty + 14}`}
               fill="none"
-              stroke="rgba(26,23,20,0.22)"
+              stroke="rgba(var(--c-ink) / 0.22)"
               strokeWidth="1.25"
               pathLength={1}
               className="op-draw"
               style={{ ['--op-delay' as string]: `${360 + i * 160}ms` }}
             />
-            <circle cx={cx + 30} cy={cy} r="2" fill="rgba(140,144,148,0.7)" />
+            <circle cx={cx + 30} cy={cy} r="2" fill="rgba(var(--c-teal-light) / 0.7)" />
             <rect
               x={tx - 8}
               y={ty}
               width="128"
               height="30"
               rx="2"
-              fill="rgba(26,23,20,0.025)"
-              stroke="rgba(26,23,20,0.12)"
+              fill="rgba(var(--c-ink) / 0.025)"
+              stroke="rgba(var(--c-ink) / 0.12)"
             />
-            <text x={tx + 4} y={ty + 13} fontFamily="monospace" fontSize="11" fill="rgba(26,23,20,0.82)" letterSpacing="0.5">
+            <text x={tx + 4} y={ty + 13} fontFamily="monospace" fontSize="11" fill="rgba(var(--c-ink) / 0.82)" letterSpacing="0.5">
               {t.receptor}
             </text>
-            <text x={tx + 4} y={ty + 24} fontFamily="monospace" fontSize="8.5" fill="#9AA0A6" opacity="0.8">
+            <text x={tx + 4} y={ty + 24} fontFamily="monospace" fontSize="8.5" fill="rgb(var(--c-gold))" opacity="0.8">
               EC50 {t.ec50}
             </text>
           </g>
@@ -441,7 +442,7 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
               {ci.receptorTargets.map((t) => (
                 <span
                   key={t.receptor}
-                  className="rounded-[2px] border border-ink/10 bg-ink/[0.03] px-2 py-1 font-mono text-[10.5px] text-ink/60"
+                  className="rounded-full border border-ink/10 bg-ink/[0.03] px-2 py-1 font-mono text-[10.5px] text-ink/60"
                 >
                   {t.receptor}{' '}
                   <span className="text-gold/80">EC50 {t.ec50}</span>
@@ -505,7 +506,7 @@ function SlideDossier({ ci }: { ci: CompoundIntelligence }) {
           {ci.tiers.map((v) => (
             <span
               key={v.dose}
-              className="rounded-[2px] border border-ink/12 bg-ink/[0.03] px-3 py-1.5 font-mono text-[11px] text-ink/70"
+              className="rounded-full border border-ink/12 bg-ink/[0.03] px-3 py-1.5 font-mono text-[11px] text-ink/70"
             >
               {v.dose}
             </span>
@@ -556,7 +557,7 @@ function StudyEntry({ study }: { study: ProductStudy }) {
             study.title
           )}
         </h4>
-        <span className="shrink-0 rounded-[2px] border border-ink/12 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">
+        <span className="shrink-0 rounded-full border border-ink/12 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">
           {study.phase ?? MODEL_LABEL[study.model]}
         </span>
       </div>
@@ -779,7 +780,7 @@ export function CompoundIntelligenceHero() {
               <ul
                 role="listbox"
                 aria-label="Featured compound"
-                className="absolute right-0 top-full z-40 mt-1.5 max-h-[300px] w-[210px] overflow-y-auto rounded-lg border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.35)]"
+                className="absolute right-0 top-full z-40 mt-1.5 max-h-[300px] w-[210px] overflow-y-auto rounded-[var(--radius-procurement)] border border-ink/12 py-1 shadow-[0_14px_38px_-14px_rgba(26,23,20,0.35)]"
                 style={{ backgroundColor: 'var(--color-surface-elevated)', backdropFilter: 'blur(8px)' }}
               >
                 {FEATURED.map((p) => {
@@ -897,7 +898,7 @@ export function CompoundIntelligenceHero() {
               onClick={() => go(active - 1)}
               disabled={active === 0}
               aria-label="Previous slide"
-              className="flex h-7 w-7 items-center justify-center rounded-[2px] border border-ink/12 text-ink/55 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-ink/12 text-ink/55 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
             >
               <ChevIcon dir="l" />
             </button>
@@ -906,7 +907,7 @@ export function CompoundIntelligenceHero() {
               onClick={() => go(active + 1)}
               disabled={active === SLIDES.length - 1}
               aria-label="Next slide"
-              className="flex h-7 w-7 items-center justify-center rounded-[2px] border border-ink/12 text-ink/55 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-ink/12 text-ink/55 transition-colors hover:border-ink/30 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
             >
               <ChevIcon dir="r" />
             </button>
