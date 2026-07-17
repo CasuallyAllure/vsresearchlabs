@@ -644,26 +644,44 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Too many orders from this contact. Please wait before trying again." }, 429);
   }
 
-  // Ownership stamping (portal blueprint §2.1) — STRICTLY ADDITIVE. If the
-  // request carries a customer session JWT (supabase-js sends the session
-  // token as the Authorization bearer when signed in; the anon key otherwise),
-  // resolve it and stamp orders.user_id ONLY when the verified auth email
-  // equals the buyer contact (case-insensitive). Any failure — guest, anon-key
-  // bearer, bogus/expired token, email mismatch — proceeds exactly as today.
+  // Ownership + membership (P0-5) — resolved from the VERIFIED session alone.
+  //
+  // This used to additionally require contactIsEmail && authedEmail === contact,
+  // so a signed-in member who typed any other address — or a phone number, which
+  // the field explicitly invites ("Email or Phone *") — was silently billed as a
+  // guest: +$9.99 shipping, no account discount, no reward voucher, and their
+  // wholesale plan dropped. On the review's worked example that was +$249.99
+  // (+69.4%) over the advertised price, and NO price check can ever catch it:
+  // the client sends honest per-unit retail prices, and every one of those perks
+  // is a discount or a shipping line, not a unit price. Only the total is wrong.
+  //
+  // The bearer is a real GoTrue round-trip (auth.getUser), so it proves account
+  // identity by itself; `contact` proves nothing — it is a delivery/notification
+  // address the buyer types, not an identity claim. Treat it as one.
+  //
+  // Any failure — guest, anon-key bearer, bogus/expired token — is guest
+  // semantics exactly as before.
   let stampedUserId: string | null = null;
+  let authedEmail = "";
   {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-    if (bearer && SUPABASE_ANON_KEY && bearer !== SUPABASE_ANON_KEY && contactIsEmail) {
+    if (bearer && SUPABASE_ANON_KEY && bearer !== SUPABASE_ANON_KEY) {
       try {
         const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
         const { data: userData, error: userErr } = await authClient.auth.getUser(bearer);
-        const authedEmail = (userData?.user?.email ?? "").trim().toLowerCase();
-        if (!userErr && userData?.user && authedEmail && authedEmail === contact.toLowerCase()) {
+        if (!userErr && userData?.user) {
           stampedUserId = userData.user.id;
-          console.log("Checkout ownership stamped for user", stampedUserId);
+          authedEmail = (userData.user.email ?? "").trim().toLowerCase();
+          if (contactIsEmail && authedEmail && authedEmail !== contact.toLowerCase()) {
+            // Not an error — the buyer may ship/notify anywhere they like. Worth
+            // a line in the log because it used to silently change the price.
+            console.log(
+              `Checkout contact differs from the account email for user ${stampedUserId} — member pricing still applies.`,
+            );
+          }
         }
       } catch {
         /* unresolved session → guest semantics, no log spam */
