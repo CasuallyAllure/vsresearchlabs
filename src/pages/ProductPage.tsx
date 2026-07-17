@@ -32,6 +32,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { variantProduct } from '../lib/cartActions';
+import { useProductOverrides, isSkuVisible } from '../lib/productOverrides';
 import { useDocumentsByProduct } from '../hooks/useDocuments';
 import { getCompoundIntelligence } from '../lib/compoundIntelligence';
 import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
@@ -90,6 +91,15 @@ export function ProductPage() {
   const { product, error } = useProduct(id);
   const addToInquiry = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+
+  // Subscribe to the overrides store so this recomputes once inventory loads.
+  // A SKU whose product_stock row is hidden (or soft-deleted) must not be
+  // reachable by deep link either — otherwise a hidden compound (e.g. an
+  // unpriced SKU pulled from sale) still renders addable dose chips here and
+  // dead-ends at a checkout refusal. Catalog grids already filter on this;
+  // the direct /product/:id route did not.
+  useProductOverrides((s) => s.bySku);
+  const skuHidden = product ? !isSkuVisible(product.sku) : false;
 
   const productDocs = useDocumentsByProduct(product?.abbreviation);
 
@@ -161,10 +171,10 @@ export function ProductPage() {
     window.setTimeout(() => setAdded(false), 1800);
   }
 
-  if (error || !product || !ci) {
+  if (error || !product || !ci || skuHidden) {
     return (
       <ErrorState
-        message={error ?? 'Inventory record could not be resolved.'}
+        message={error ?? (skuHidden ? 'This compound is not currently available.' : 'Inventory record could not be resolved.')}
         action={
           <button
             type="button"
