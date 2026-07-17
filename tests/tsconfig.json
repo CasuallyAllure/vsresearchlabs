@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.tests.tsbuildinfo",
     "target": "ES2023",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
@@ -12,5 +13,16 @@
     "esModuleInterop": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["**/*.ts", "../src/**/*.ts", "../src/**/*.tsx"]
+  // priceCheck.ts is listed explicitly, not left to transitive resolution from
+  // priceCheck.test.ts: it is the checkout price-verification module, and it is
+  // the one file under supabase/functions/ that tsc can read (it is
+  // deliberately free of Deno globals and remote imports so vitest can drive
+  // it). Naming it here keeps it typechecked even if the test's import moves.
+  // The rest of supabase/functions/ is Deno and is gated by `deno check` in CI.
+  "include": [
+    "**/*.ts",
+    "../src/**/*.ts",
+    "../src/**/*.tsx",
+    "../supabase/functions/place-order/priceCheck.ts"
+  ]
 }
