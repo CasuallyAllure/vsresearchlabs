@@ -1650,7 +1650,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
     logEvent("info", TELEMETRY_FN, "Order placed", {
       orderNumber, referenceId, orderId: orderRow.id,
       amountCents: totalCents, invoiceEmailSent,
-      priceMismatchCount: priceMismatches.length,
+      unverifiedLineCount: unverifiedLines.length,
     });
   }
 
