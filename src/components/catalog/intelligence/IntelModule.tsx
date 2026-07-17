@@ -145,7 +145,7 @@ export function ModuleBody({ children }: { children: ReactNode }) {
 }
 
 export function ModuleText({ children }: { children: string }) {
-  return <p className="text-ink/60 leading-[1.65]" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>{children}</p>;
+  return <p className="text-ink/60 leading-[1.65]" style={{ fontSize: '13px', maxWidth: '65ch' }}>{children}</p>;
 }
 
 interface DataGridRow {

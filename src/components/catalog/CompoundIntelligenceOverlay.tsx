@@ -65,7 +65,7 @@ function CloseIcon() {
 // ─── Main overlay ─────────────────────────────────────────────────────────────
 
 /** Brand gold — matches WholesaleTile / the catalog's WHOLESALE pill. */
-const GOLD = '#B5904B';
+const GOLD = 'var(--color-accent-gold-dark)';
 
 interface CompoundIntelligenceOverlayProps {
   product: Product;
@@ -342,14 +342,14 @@ export function CompoundIntelligenceOverlay({
                 onClick={goPrev}
                 disabled={!prevProduct}
                 aria-label={prevProduct ? `Previous: ${prevProduct.name}` : 'No previous compound'}
-                className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                className="h-10 w-10 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </button>
             ) : (
-              <span className="h-8 w-8" aria-hidden="true" />
+              <span className="h-10 w-10" aria-hidden="true" />
             )}
             {hasNav && (
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] tabular-nums text-ink/45" aria-live="polite">
@@ -363,7 +363,7 @@ export function CompoundIntelligenceOverlay({
                   onClick={goNext}
                   disabled={!nextProduct}
                   aria-label={nextProduct ? `Next: ${nextProduct.name}` : 'No next compound'}
-                  className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                  className="h-10 w-10 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <polyline points="9 18 15 12 9 6" />
@@ -374,7 +374,7 @@ export function CompoundIntelligenceOverlay({
                 type="button"
                 onClick={handleClose}
                 aria-label="Close compound intelligence"
-                className="h-8 w-8 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                className="h-10 w-10 flex items-center justify-center rounded-full border border-ink/15 text-ink/60 transition-colors hover:text-ink hover:border-ink/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
               >
                 <CloseIcon />
               </button>
@@ -469,7 +469,7 @@ export function CompoundIntelligenceOverlay({
                     </span>
                     <span
                       className="font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
-                      style={{ color: GOLD, borderColor: 'rgba(181,144,75,0.45)', backgroundColor: 'rgba(181,144,75,0.10)' }}
+                      style={{ color: GOLD, borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark), transparent 55%)', backgroundColor: 'color-mix(in srgb, var(--color-accent-gold-dark), transparent 90%)' }}
                     >
                       Wholesale
                     </span>
@@ -521,7 +521,7 @@ export function CompoundIntelligenceOverlay({
                         aria-checked={on}
                         onClick={() => setWsPackIndex(i)}
                         className={[
-                          'flex-1 min-h-[34px] px-1 py-1.5 text-center leading-tight transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                          'flex-1 min-h-[40px] px-1 py-1.5 text-center leading-tight transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                           i > 0 ? 'border-l border-ink/12' : '',
                           on ? 'bg-ink/[0.08]' : 'hover:bg-ink/[0.03]',
                         ].join(' ')}

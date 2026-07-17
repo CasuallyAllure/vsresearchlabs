@@ -252,7 +252,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         // walks into invisible controls. `inert` also drops it from the a11y
         // tree, which `translateX` alone never did.
         inert={!open}
-        className="glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[344px] max-w-[90vw] sm:w-[388px] flex-col rounded-l-[22px] overflow-hidden"
+        className="glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[344px] max-w-[92vw] sm:w-[388px] flex-col rounded-l-[22px] overflow-hidden"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           transition: open
@@ -400,7 +400,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'mb-2'].join(' ')}
                   placeholder="Street address"
                 />
-                <div className="grid grid-cols-[1fr_70px_90px] gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2">
                   <input
                     aria-label="City"
                     value={city}
@@ -417,7 +417,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     autoComplete="address-level1"
                     required
                     maxLength={3}
-                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'uppercase'].join(' ')}
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'uppercase', 'sm:w-[70px]'].join(' ')}
                     placeholder="ST"
                   />
                   <input
@@ -427,13 +427,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     autoComplete="postal-code"
                     inputMode="numeric"
                     required
-                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT].join(' ')}
+                    className={[DRAWER_FIELD_SURFACE, FIELD_DEFAULT, 'sm:w-[90px]'].join(' ')}
                     placeholder="ZIP"
                   />
                 </div>
                 <p className="mt-1.5 text-[10px] text-ink/40">The ZIP is how you’ll look up your order at <span className="font-mono">/track</span>.</p>
               </div>
-              <label className="flex min-h-[40px] items-start gap-2 py-2 cursor-pointer select-none">
+              <label className="flex min-h-[44px] items-start gap-2 py-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={human}
@@ -457,7 +457,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             </div>
 
             {submit.kind === 'error' && (
-              <p role="alert" className="mt-4 text-[11px] text-red-400">
+              <p role="alert" className="mt-4 text-[11px] text-[color:var(--color-status-error)]">
                 {submit.message}
               </p>
             )}
@@ -581,7 +581,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                                 type="button"
                                 onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                 aria-label="Decrease quantity"
-                                className="grid h-9 w-9 place-items-center rounded-l-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+                                className="grid h-10 w-10 place-items-center rounded-l-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                               >
                                 −
                               </button>
@@ -593,7 +593,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                                 onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                                 disabled={atMax}
                                 aria-label="Increase quantity"
-                                className="grid h-9 w-9 place-items-center rounded-r-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+                                className="grid h-10 w-10 place-items-center rounded-r-full text-[15px] text-ink/60 hover:text-ink hover:bg-ink/[0.05] transition-[color,background-color,transform] motion-safe:active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                               >
                                 +
                               </button>
@@ -603,7 +603,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               onClick={() => remove(item.product.id)}
                               aria-label={`Remove ${item.product.name}`}
                               title="Remove"
-                              className="ml-auto grid h-9 w-9 place-items-center rounded-full text-ink/35 hover:text-[color:var(--color-status-error)] hover:bg-[color:var(--color-status-errorMuted)] transition-colors motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+                              className="ml-auto grid h-10 w-10 place-items-center rounded-full text-ink/35 hover:text-[color:var(--color-status-error)] hover:bg-[color:var(--color-status-errorMuted)] transition-colors motion-safe:active:scale-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                 <path d="M3 6h18" />

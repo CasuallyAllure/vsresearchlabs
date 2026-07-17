@@ -175,7 +175,7 @@ export function DocumentDetail() {
         </div>
 
         {/* Metadata column — floating module on lg+ */}
-        <div className="lg:col-span-8 flex flex-col gap-y-[var(--space-6)] lg:floating-module lg:p-[var(--space-6)]">
+        <div className="lg:col-span-8 flex flex-col gap-y-[var(--space-6)] floating-module p-[var(--space-6)]">
 
           {/* Provenance */}
           <div>

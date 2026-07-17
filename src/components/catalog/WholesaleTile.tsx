@@ -50,7 +50,7 @@ import {
   formatPerVial,
 } from '../../lib/wholesale';
 
-const GOLD = '#B5904B';
+const GOLD = 'var(--color-accent-gold-dark)';
 
 /** One vial in the pack shot — center-x/top as % of the bay, width as % of
  *  the bay, plus depth treatment (blur/brightness) and stacking order. */
@@ -253,8 +253,8 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
               className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
               style={{
                 color: GOLD,
-                borderColor: 'rgba(181,144,75,0.45)',
-                backgroundColor: 'rgba(181,144,75,0.10)',
+                borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark), transparent 55%)',
+                backgroundColor: 'color-mix(in srgb, var(--color-accent-gold-dark), transparent 90%)',
               }}
             >
               Wholesale
@@ -310,7 +310,7 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
           </div>
           <div className="border-t border-ink/12 py-1 text-center">
             <Tooltip content={WHOLESALE_TOOLTIP} ariaId={`wholesale-${product.sku}`}>
-              <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
+              <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[10px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
                 Standard Shipping
                 <ShippingVan />
               </span>
@@ -338,7 +338,7 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
                   setPackIndex(i);
                 }}
                 className={[
-                  'flex-1 min-h-[34px] px-1 py-1.5 text-center leading-tight transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
+                  'flex-1 min-h-[40px] px-1 py-1.5 text-center leading-tight transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   i > 0 ? 'border-l border-ink/12' : '',
                   on ? 'bg-ink/[0.08]' : 'hover:bg-ink/[0.03]',
                 ].join(' ')}
@@ -346,7 +346,7 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
                 <span className={`block text-[11px] font-medium ${on ? 'text-ink' : 'text-ink/55'}`}>
                   {p.label}
                 </span>
-                <span className={`block font-mono text-[9.5px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
+                <span className={`block font-mono text-[10px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
                   {p.size} vials · −{p.percent}%
                 </span>
               </button>

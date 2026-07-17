@@ -220,13 +220,13 @@ export function ProductPage() {
           />
         ) : (
           product.shortDescription && (
-            <p className="text-ink/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '12px', maxWidth: '60ch' }}>
+            <p className="text-ink/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '13px', maxWidth: '60ch' }}>
               {product.shortDescription}
             </p>
           )
         )}
         {product.longDescription && (
-          <p className="text-ink/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '12.5px', maxWidth: '65ch' }}>
+          <p className="text-ink/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '13px', maxWidth: '65ch' }}>
             {product.longDescription}
           </p>
         )}
@@ -349,7 +349,7 @@ export function ProductPage() {
                         aria-label={`View image ${idx + 1} of ${images.length}`}
                         onClick={() => setActiveImageIndex(idx)}
                         className={[
-                          'shrink-0 w-14 h-14 overflow-hidden bg-display border transition-colors',
+                          'shrink-0 w-14 h-14 overflow-hidden rounded-[10px] bg-display border transition-colors',
                           'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                           isActive ? 'border-ink' : 'border-ink/[0.06] hover:border-ink/20',
                         ].join(' ')}
@@ -473,7 +473,7 @@ export function ProductPage() {
         </aside>
 
         {/* ─── SCROLLABLE RIGHT — Module stack ───────────────────────────── */}
-        <div className="flex-1 min-w-0 lg:overflow-visible">
+        <div className="flex-1 min-w-0 lg:max-w-[680px] lg:overflow-visible">
           <div className="floating-module overflow-hidden">
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>

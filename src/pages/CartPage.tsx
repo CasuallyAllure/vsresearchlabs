@@ -33,7 +33,8 @@ import { BrandStamp } from '../components/brand/BrandStamp';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
-import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Field';
+import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR, FIELD_LABEL } from '../components/ui/Field';
+import { Button } from '../components/ui/Button';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
@@ -355,7 +356,30 @@ export function CartPage() {
                 · {record.itemCount} unit{record.itemCount !== 1 ? 's' : ''}
               </span>
             </p>
-            <div className="overflow-x-auto">
+            {/* Mobile fallback — stacked label/value cards (DataList grammar).
+                Table below stays the source of truth at md:+ and in print. */}
+            <div className="md:hidden print:hidden space-y-[var(--space-3)]">
+              {record.procurementSummary.map((item) => (
+                <div
+                  key={item.sku}
+                  className="rounded-[14px] border border-ink/[0.08] bg-ink/[0.02] p-[var(--space-4)]"
+                >
+                  <div className="flex items-baseline justify-between gap-[var(--space-3)]">
+                    <SKUCode value={item.sku} className="text-ink/60" />
+                    <span className="text-sm font-mono tabular-nums text-ink/70">
+                      Qty {item.quantity}
+                    </span>
+                  </div>
+                  <p className="mt-[var(--space-2)] text-sm text-ink/75">{item.name}</p>
+                  {item.note && (
+                    <p className="mt-[var(--space-2)] text-[11px] text-ink/45 leading-relaxed">
+                      {item.note}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="hidden md:block print:block overflow-x-auto">
               <table className="w-full min-w-[480px] border-collapse">
                 <thead>
                   <tr className="border-t border-b border-ink/[0.06] print:border-black/15">
@@ -447,25 +471,15 @@ export function CartPage() {
 
         {/* Actions — suppressed in print */}
         <div className="mt-[var(--space-8)] flex flex-col sm:flex-row gap-[var(--space-3)] print:hidden">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-          >
+          <Button type="button" variant="secondary" size="lg" onClick={() => window.print()}>
             Print Record
-          </button>
-          <Link
-            to="/documentation"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-          >
+          </Button>
+          <Button to="/documentation" variant="secondary" size="lg">
             Documentation Archive
-          </Link>
-          <Link
-            to="/research-supplies"
-            className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-          >
+          </Button>
+          <Button to="/research-supplies" variant="secondary" size="lg">
             Research Supplies
-          </Link>
+          </Button>
         </div>
 
       </div>
@@ -493,18 +507,12 @@ export function CartPage() {
             Your cart is empty. Add inventory from any product page.
           </p>
           <div className="flex flex-col sm:flex-row gap-[var(--space-3)] justify-center">
-            <Link
-              to="/research-supplies"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-            >
+            <Button to="/research-supplies" variant="secondary" size="lg">
               Research Supplies
-            </Link>
-            <Link
-              to="/laboratory-equipment"
-              className="px-[var(--space-6)] py-[var(--space-3)] rounded-full border border-ink/15 text-xs uppercase tracking-[0.25em] text-ink/80 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
-            >
+            </Button>
+            <Button to="/laboratory-equipment" variant="secondary" size="lg">
               Laboratory Equipment
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -617,7 +625,7 @@ export function CartPage() {
                     type="button"
                     onClick={() => handleDecrement(item.product.id, item.quantity)}
                     aria-label="Decrease quantity"
-                    className="w-7 h-7 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                    className="w-10 h-10 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   >
                     −
                   </button>
@@ -632,7 +640,7 @@ export function CartPage() {
                     onClick={() => handleIncrement(item.product.id, item.quantity)}
                     disabled={atMax}
                     aria-label="Increase quantity"
-                    className="w-7 h-7 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-ink/70 disabled:hover:border-ink/15"
+                    className="w-10 h-10 rounded-full border border-ink/15 text-ink/70 hover:text-ink hover:border-ink/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-ink/70 disabled:hover:border-ink/15"
                   >
                     +
                   </button>
@@ -792,6 +800,31 @@ export function CartPage() {
                   </p>
                 )}
               </div>
+              {/* Total — always-visible anchor combining subtotal, any
+                  discounts, and shipping. Mirrors CartDrawer's Total row so
+                  the two surfaces read the same figure before checkout. */}
+              {(() => {
+                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const discBreakdown = accountDiscount && bundle.pairs === 0
+                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
+                  : null;
+                const hasAccountDisc = !!discBreakdown && discBreakdown.accountCents > 0;
+                const shippingCents = isMember ? 0 : GUEST_SHIPPING_CENTS;
+                const discountedSubtotal = bundle.pairs > 0
+                  ? Math.max(subtotalCents - bundle.discountCents, 0)
+                  : hasAccountDisc
+                    ? Math.max(subtotalCents - discBreakdown!.total, 0)
+                    : subtotalCents;
+                const totalCents = discountedSubtotal + shippingCents;
+                return (
+                  <div className="mt-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-4)] border-t border-ink/[0.08] pt-[var(--space-3)]">
+                    <span className="text-[11px] uppercase tracking-[0.2em] text-ink/60">Total</span>
+                    <span className="font-mono text-[19px] tabular-nums text-ink">
+                      {formatUsd(totalCents)}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
           {cartHasMixedShipping(items, isMember) && (
@@ -832,7 +865,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-name"
-              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+              className={FIELD_LABEL}
             >
               Name <span className="text-ink/65">*</span>
             </label>
@@ -852,7 +885,7 @@ export function CartPage() {
             {showNameError && (
               <p
                 id="inquiry-name-error"
-                className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400"
+                className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-status-error)]"
               >
                 Name is required.
               </p>
@@ -862,7 +895,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-contact"
-              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+              className={FIELD_LABEL}
             >
               Email or Phone <span className="text-ink/65">*</span>
             </label>
@@ -884,7 +917,7 @@ export function CartPage() {
             {showContactError && (
               <p
                 id="inquiry-contact-error"
-                className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-red-400"
+                className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-status-error)]"
               >
                 Email or phone is required.
               </p>
@@ -903,7 +936,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-organization"
-              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+              className={FIELD_LABEL}
             >
               Institution (optional)
             </label>
@@ -932,7 +965,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="ship-street"
-              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+              className={FIELD_LABEL}
             >
               Street address
             </label>
@@ -951,7 +984,7 @@ export function CartPage() {
             <div>
               <label
                 htmlFor="ship-city"
-                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+                className={FIELD_LABEL}
               >
                 City
               </label>
@@ -968,7 +1001,7 @@ export function CartPage() {
             <div className="sm:w-[100px]">
               <label
                 htmlFor="ship-state"
-                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+                className={FIELD_LABEL}
               >
                 State
               </label>
@@ -986,7 +1019,7 @@ export function CartPage() {
             <div className="sm:w-[140px]">
               <label
                 htmlFor="ship-zip"
-                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+                className={FIELD_LABEL}
               >
                 ZIP
               </label>
@@ -1013,7 +1046,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-notes"
-              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
+              className={FIELD_LABEL}
             >
               Notes (optional)
             </label>
@@ -1031,7 +1064,7 @@ export function CartPage() {
         {submit.kind === 'error' && (
           <p
             role="alert"
-            className="mt-[var(--space-4)] text-xs text-red-400"
+            className="mt-[var(--space-4)] text-xs text-[color:var(--color-status-error)]"
           >
             {submit.message}
           </p>
@@ -1043,14 +1076,16 @@ export function CartPage() {
           <Turnstile onToken={setTsToken} className="w-full" />
         </div>
 
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
           onClick={() => setTouched({ name: true, contact: true })}
           disabled={formInvalid || submit.kind === 'submitting'}
-          className="cta-mint group relative inline-flex items-center justify-center overflow-hidden rounded-full mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block px-[var(--space-10)] py-[var(--space-4)] text-xs uppercase tracking-[0.25em] font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-1 focus-visible:ring-offset-base-900"
+          className="mt-[var(--space-8)] w-full sm:w-auto sm:ml-auto sm:block"
         >
-          <span className="relative">{submit.kind === 'submitting' ? 'Placing order…' : 'Place Order'}</span>
-        </button>
+          {submit.kind === 'submitting' ? 'Placing order…' : 'Place Order'}
+        </Button>
             </form>
           </div>
         </div>

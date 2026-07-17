@@ -75,7 +75,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
       <Link
         to={`/product/${product.id}`}
         onClick={onInspect ? (e) => { e.preventDefault(); onInspect(product.id); } : undefined}
-        className="block px-[var(--space-4)] py-[var(--space-3)] pr-12 focus:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink/25"
+        className="block px-[var(--space-4)] py-[var(--space-3)] pr-14 focus:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink/25"
       >
         {/* Row 1 — abbreviation chip + family (primary) + dose chip (caption right).
             Wave 7c — chip prefixes the family for quick procurement scanning. */}
@@ -116,7 +116,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
         }
         className={[
           'absolute right-[var(--space-3)] top-1/2 -translate-y-1/2',
-          'h-7 w-7 rounded-full border flex items-center justify-center',
+          'h-10 w-10 rounded-full border flex items-center justify-center',
           'transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/50',
           added
             ? 'bg-holo/15 border-holo/40 text-holo-light'
@@ -167,7 +167,7 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
 export function InventoryRowSkeleton() {
   return (
     <div
-      className="research-surface-solid relative px-[var(--space-4)] py-[var(--space-3)] pr-12"
+      className="research-surface-solid relative px-[var(--space-4)] py-[var(--space-3)] pr-14"
       aria-hidden="true"
     >
       <div className="flex items-center gap-[var(--space-3)]">
@@ -175,7 +175,7 @@ export function InventoryRowSkeleton() {
         <div className="ml-auto h-3 bg-ink/[0.06] rounded animate-pulse w-10" />
       </div>
       <div className="mt-2 h-2.5 bg-ink/[0.06] rounded animate-pulse w-2/3" />
-      <div className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-ink/[0.06] animate-pulse" />
+      <div className="absolute right-[var(--space-3)] top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-ink/[0.06] animate-pulse" />
     </div>
   );
 }

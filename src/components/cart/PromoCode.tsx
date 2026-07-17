@@ -25,6 +25,7 @@ import {
 } from '../../lib/coupons';
 import { fetchMyAccountDiscount } from '../../lib/accountDiscount';
 import { formatUsd } from '../../lib/payment';
+import { Button } from '../ui/Button';
 
 interface PromoCodeProps {
   /** Current cart subtotal in cents (caller computes it with lineUnitCents). */
@@ -55,7 +56,7 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
 
   const compact = variant === 'drawer';
   const labelCls = compact
-    ? 'text-[9px] uppercase tracking-[0.25em] text-ink/45'
+    ? 'text-[10px] uppercase tracking-[0.25em] text-ink/45'
     : 'text-[11px] uppercase tracking-[0.25em] text-ink/45';
   const valueCls = compact
     ? 'font-mono text-[12.5px] tabular-nums text-ink'
@@ -124,7 +125,7 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
                   type="button"
                   onClick={() => removeCoupon(c.code)}
                   aria-label={`Remove code ${c.code}`}
-                  className="text-[9px] uppercase tracking-[0.2em] text-ink/35 transition-colors hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                  className="inline-flex min-h-[40px] items-center px-1 text-[10px] uppercase tracking-[0.2em] text-ink/35 transition-colors hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove
                 </button>
@@ -170,20 +171,20 @@ export function PromoCode({ subtotalCents, variant }: PromoCodeProps) {
           autoCorrect="off"
           spellCheck={false}
           maxLength={40}
-          className={`min-w-0 flex-1 rounded-[5px] border border-ink/15 bg-transparent px-2.5 font-mono uppercase tracking-[0.12em] text-ink placeholder:text-ink/30 focus:border-ink/40 focus:outline-none ${
+          className={`min-w-0 flex-1 rounded-field border border-ink/15 bg-transparent px-2.5 font-mono uppercase tracking-[0.12em] text-ink placeholder:text-ink/30 focus:border-ink/40 focus:outline-none ${
             compact ? 'py-1.5 text-[11px]' : 'py-2 text-[13px]'
           }`}
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => void handleApply()}
           disabled={isChecking || draft.trim().length === 0}
-          className={`shrink-0 rounded-[5px] border border-ink/20 px-3 uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-ink/45 hover:text-ink disabled:pointer-events-none disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${
-            compact ? 'text-[9px]' : 'text-[10px]'
-          }`}
+          className="min-h-[44px] shrink-0 px-3"
         >
           {isChecking ? 'Checking…' : hasApplied ? 'Add' : 'Apply'}
-        </button>
+        </Button>
       </div>
       {error && (
         <p role="alert" className={`mt-1.5 text-ink/60 ${compact ? 'text-[10px]' : 'text-[11.5px]'}`}>

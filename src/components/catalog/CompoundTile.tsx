@@ -128,7 +128,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             )}
             {puritySpec && (
               <span
-                className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full border px-1.5 py-[1.5px] text-[9px] uppercase tracking-[0.1em]"
+                className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.1em]"
                 style={{
                   color: '#fff',
                   borderColor: 'rgba(255,255,255,0.26)',
@@ -157,7 +157,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                 // well under WCAG 1.4.3 AA (4.5:1) for text this small. /65 is
                 // the first step that clears it (5.28:1) on every light surface.
                 <span
-                  className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/65"
+                  className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/65"
                 >
                   {product.nickname}
                 </span>
@@ -267,7 +267,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                       content={b2g1TooltipContent(product.sku) ?? SOURCED_SHIP_PLAIN}
                       ariaId={`b2g1-${product.sku}`}
                     >
-                      <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[9px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
+                      <span className="inline-flex cursor-help items-center justify-center gap-1 font-mono text-[10px] uppercase leading-none tracking-[0.16em] text-ink/45 underline decoration-dotted decoration-ink/30 underline-offset-2">
                         Standard Shipping
                         <ShippingVan />
                       </span>
@@ -293,7 +293,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             onClick={handleAdd}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
-              'tile-add-btn shrink-0 h-[27px] min-w-[48px] inline-flex items-center justify-center gap-1 rounded-full px-2.5 text-[9px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              'tile-add-btn shrink-0 min-h-[44px] min-w-[48px] inline-flex items-center justify-center gap-1 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               added ? 'is-added' : '',
             ].join(' ')}
           >

@@ -273,7 +273,7 @@ function NavItem({
               )}
             </span>
           </div>
-          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-ink/55">
+          <span className="ml-auto shrink-0 rounded-full border border-ink/15 bg-ink/[0.04] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/55">
             Soon
           </span>
         </div>
@@ -543,7 +543,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           <Link
             to="/admin"
             onClick={onClose}
-            className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-holo/35 rounded-full px-2.5 py-1.5 -mr-1 shrink-0"
+            className="inline-flex min-h-[40px] shrink-0 items-center justify-center rounded-full px-3 -mr-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45 hover:text-holo-light transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-holo/35"
           >
             Admin →
           </Link>

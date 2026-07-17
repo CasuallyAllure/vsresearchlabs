@@ -43,7 +43,7 @@ interface DoseChipProps {
   isActive: boolean;
   /** Radio-button behavior (dose picker). Omit for a static single-dose label. */
   interactive?: boolean;
-  /** Tighter padding/type for dense surfaces (catalog tile). */
+  /** Tighter padding for dense surfaces (catalog tile); type stays at the 10px floor. */
   compact?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }
@@ -54,7 +54,7 @@ export function DoseChip({ sku, dose, isActive, interactive, compact, onClick }:
   const av = doseAvailability(sku, dose);
   const isFast = av.state === 'in_stock' && av.fast;
   const doseTxt = dose.replace(/\s+/g, '').toUpperCase();
-  const fontSize = compact ? '9px' : '10px';
+  const fontSize = '10px';
   const style = {
     fontSize,
     letterSpacing: '0.12em',
@@ -66,7 +66,7 @@ export function DoseChip({ sku, dose, isActive, interactive, compact, onClick }:
   // a wrap row a few px apart, so the hit area can NOT be widened past the
   // painted box with a pseudo-element: neighbouring chips would overlap and a
   // stray tap would silently select a different dose — i.e. a different price.
-  // The box has to be genuinely big enough. Matches CompoundTile's h-[27px].
+  // The box has to be genuinely big enough.
   // inline-flex so min-h applies to the static <span> branch too (min-height is
   // inert on an inline box) and so both branches keep the label optically centred.
   const box = compact

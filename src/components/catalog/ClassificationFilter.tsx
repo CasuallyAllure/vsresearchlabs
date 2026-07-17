@@ -92,7 +92,7 @@ function DensityCycleButton({
         aria-label={`Catalog layout: ${current.label}. Tap to switch to ${next.label}.`}
         title={`${current.label} layout — tap for ${next.label}`}
         onClick={() => onChange(next.id)}
-        className="inline-flex shrink-0 items-center justify-center rounded-full border border-ink/15 p-[6px] text-ink/55 transition-colors hover:border-ink/30 hover:text-ink/85 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+        className="inline-flex shrink-0 min-h-[40px] min-w-[40px] items-center justify-center rounded-full border border-ink/15 p-[6px] text-ink/55 transition-colors hover:border-ink/30 hover:text-ink/85 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
       >
         <DensityGlyph kind={current.id} />
       </button>
@@ -207,7 +207,7 @@ export function ClassificationFilter({
 
   return (
     <>
-    <div className="catalog-filter-glass mb-[var(--space-3)] rounded-[var(--radius-procurement)] p-2">
+    <div className="catalog-filter-glass mb-[var(--space-3)] rounded-[var(--radius-procurement)] p-3">
       {/* One compact row on every breakpoint: the search field grows, the
           in-stock toggle + category dropdown stay pinned right. The category
           menu is right-anchored (and viewport-width-capped) so it can never
@@ -380,7 +380,7 @@ export function ClassificationFilter({
               aria-checked={shippingTiers.fast}
               aria-label={shippingTiers.fast ? '24-hour shipping — tap to hide' : 'Tap to show 24-hour shipping compounds'}
               onClick={shippingTiers.onToggleFast}
-              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+              className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
                 shippingTiers.fast ? '' : 'border-ink/25 text-ink/55'
               }`}
               style={
@@ -412,7 +412,7 @@ export function ClassificationFilter({
                   : 'Tap to show standard-shipping (7–10 business day) compounds'
               }
               onClick={shippingTiers.onToggleSourced}
-              className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+              className={`inline-flex min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
                 shippingTiers.sourced ? '' : 'border-ink/25 text-ink/55'
               }`}
               style={
@@ -449,12 +449,16 @@ export function ClassificationFilter({
                         : 'Tap to shop wholesale business pricing (case of 10, 40% off)'
                     }
                     onClick={shippingTiers.wholesale.toggle}
-                    className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
+                    className={`inline-flex shrink-0 min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
                       shippingTiers.wholesale.on ? '' : 'border-ink/25 text-ink/55'
                     }`}
                     style={
                       shippingTiers.wholesale.on
-                        ? { borderColor: '#B5904B99', color: '#B5904B', backgroundColor: 'rgba(181,144,75,0.10)' }
+                        ? {
+                            borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 60%, transparent)',
+                            color: 'var(--color-accent-gold-dark)',
+                            backgroundColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 10%, transparent)',
+                          }
                         : undefined
                     }
                   >
@@ -463,7 +467,7 @@ export function ClassificationFilter({
                       className={`inline-block h-[6px] w-[6px] rounded-full shrink-0 transition-colors ${
                         shippingTiers.wholesale.on ? '' : 'bg-ink/35'
                       }`}
-                      style={shippingTiers.wholesale.on ? { backgroundColor: '#B5904B' } : undefined}
+                      style={shippingTiers.wholesale.on ? { backgroundColor: 'var(--color-accent-gold-dark)' } : undefined}
                     />
                     {/* Word-only shine — the hover tooltip carries the full
                         B2B-to-all-industries story. */}

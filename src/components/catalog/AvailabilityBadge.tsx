@@ -37,13 +37,18 @@ export function AvailabilityBadge({ sku, dose, className = '' }: Props) {
   if (a.state === 'in_stock') {
     return (
       <span
-        className={`${pill} border-[#2E7D5B]/45 text-[#1F5A40] bg-[#2E7D5B]/[0.10] ${className}`}
+        className={`${pill} ${className}`}
+        style={{
+          borderColor: 'color-mix(in srgb, var(--color-status-success) 45%, transparent)',
+          color: 'var(--color-status-success)',
+          backgroundColor: 'var(--color-status-successMuted)',
+        }}
         title="Physically in stock — ships next business day"
       >
         <span
           aria-hidden="true"
           className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: '#2E7D5B' }}
+          style={{ backgroundColor: 'var(--color-status-success)' }}
         />
         24 Hour Shipping
       </span>

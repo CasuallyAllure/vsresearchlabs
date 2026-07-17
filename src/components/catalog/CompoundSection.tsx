@@ -23,7 +23,7 @@ const GRID_GAP =
 const REGULAR_GRID: Record<CatalogDensity, string> = {
   detail: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3',
   standard: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
-  compact: 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
+  compact: 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5',
 };
 const WHOLESALE_GRID: Record<CatalogDensity, string> = {
   detail: 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2',

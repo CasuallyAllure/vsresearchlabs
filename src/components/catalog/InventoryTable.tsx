@@ -184,7 +184,7 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                         : `Add ${product.name} to inquiry`
                     }
                     className={[
-                      'h-7 w-7 rounded-full border inline-flex items-center justify-center transition-colors',
+                      'h-10 w-10 rounded-full border inline-flex items-center justify-center transition-colors',
                       'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/50',
                       isAdded
                         ? 'bg-gold/15 border-gold/40 text-gold'
@@ -279,7 +279,7 @@ export function InventoryTableSkeleton({ rowCount = 8 }: { rowCount?: number }) 
                 <div className="h-3 bg-ink/[0.06] rounded animate-pulse w-16" />
               </td>
               <td className="px-[var(--space-4)] py-[var(--space-3)] text-right">
-                <div className="h-7 w-7 rounded-full bg-ink/[0.06] animate-pulse inline-block" />
+                <div className="h-10 w-10 rounded-full bg-ink/[0.06] animate-pulse inline-block" />
               </td>
             </tr>
           ))}

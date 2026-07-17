@@ -121,7 +121,7 @@ export function CompoundVideo({ url, title, description, thumbnail, author: auth
                   <a href={embed.watchUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-holo hover:text-holo-light">
                     Open ↗
                   </a>
-                  <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="p-1 text-ink/45 hover:text-ink rounded-sm">
+                  <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="h-10 w-10 -mr-2 flex items-center justify-center text-ink/45 hover:text-ink rounded-full">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>

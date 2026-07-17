@@ -43,13 +43,13 @@ export function QuantityStepper({
         type="button"
         onClick={dec}
         aria-label="Decrease quantity"
-        className="w-7 h-8 flex items-center justify-center text-ink/40 hover:text-ink/80 hover:bg-ink/[0.06] active:scale-[0.90] transition-colors focus:outline-none"
+        className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink/80 hover:bg-ink/[0.06] active:scale-[0.90] transition-colors focus:outline-none"
         style={{ fontSize: '16px', lineHeight: 1 }}
       >
         −
       </button>
       <span
-        className="w-8 h-8 flex items-center justify-center font-mono tabular-nums text-ink/70 select-none"
+        className="w-10 h-10 flex items-center justify-center font-mono tabular-nums text-ink/70 select-none"
         style={{ fontSize: '12px', borderLeft: '1px solid var(--color-border-subtle)', borderRight: '1px solid var(--color-border-subtle)' }}
       >
         {quantity}
@@ -58,7 +58,7 @@ export function QuantityStepper({
         type="button"
         onClick={inc}
         aria-label="Increase quantity"
-        className="w-7 h-8 flex items-center justify-center text-ink/40 hover:text-ink/80 hover:bg-ink/[0.06] active:scale-[0.90] transition-colors focus:outline-none"
+        className="w-10 h-10 flex items-center justify-center text-ink/40 hover:text-ink/80 hover:bg-ink/[0.06] active:scale-[0.90] transition-colors focus:outline-none"
         style={{ fontSize: '16px', lineHeight: 1 }}
       >
         +

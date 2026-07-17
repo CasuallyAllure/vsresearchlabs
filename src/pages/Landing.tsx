@@ -393,36 +393,12 @@ export function Landing() {
                   rel="noopener noreferrer"
                   aria-label="Contact us on WhatsApp"
                   title="Contact us on WhatsApp"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 bg-display text-ink/80 shadow-[0_1px_2px_rgba(26,23,20,0.06)] transition-colors hover:border-ink/35 hover:text-ink"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-ink/15 bg-display text-ink/80 shadow-[0_1px_2px_rgba(26,23,20,0.06)] transition-colors hover:border-ink/35 hover:text-ink"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.76.46 3.45 1.32 4.95l-1.44 5.27 5.4-1.42c1.45.8 3.08 1.22 4.72 1.22 5.52 0 10-4.48 10-10s-4.48-10-10-10zm0 18.16c-1.5 0-2.99-.42-4.27-1.21l-.3-.18-3.18.83.85-3.1-.2-.32c-.87-1.39-1.32-2.99-1.32-4.6 0-4.78 3.9-8.66 8.7-8.66 2.32 0 4.5.9 6.14 2.53 1.64 1.64 2.55 3.81 2.55 6.13 0 4.79-3.9 8.67-8.7 8.67zm4.97-6.5c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.6.14-.18.27-.7.88-.85 1.05-.16.18-.31.2-.58.07-.27-.14-1.14-.42-2.18-1.34-.81-.72-1.35-1.6-1.5-1.88-.16-.27-.02-.42.12-.55.12-.12.27-.31.4-.46.13-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.6-1.45-.82-1.98-.22-.53-.45-.45-.6-.45-.15-.01-.33-.01-.51-.01-.18 0-.46.07-.71.34-.25.27-.94.91-.94 2.22 0 1.31.96 2.58 1.09 2.75.14.18 1.9 2.91 4.62 4.07.64.28 1.16.45 1.55.58.65.2 1.25.18 1.72.11.52-.08 1.6-.65 1.83-1.28.22-.63.22-1.18.15-1.28-.07-.1-.25-.16-.51-.3z" />
                   </svg>
                 </a>
-                {/* TikTok — coming soon (grayed) */}
-                <span
-                  aria-label="TikTok — coming soon"
-                  title="TikTok — coming soon"
-                  aria-disabled="true"
-                  className="flex h-9 w-9 cursor-default items-center justify-center rounded-full border border-ink/10 text-ink/25"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.08-.14 1.62.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-                  </svg>
-                </span>
-                {/* Instagram — coming soon (grayed) */}
-                <span
-                  aria-label="Instagram — coming soon"
-                  title="Instagram — coming soon"
-                  aria-disabled="true"
-                  className="flex h-9 w-9 cursor-default items-center justify-center rounded-full border border-ink/10 text-ink/25"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <rect x="3" y="3" width="18" height="18" rx="5" />
-                    <circle cx="12" cy="12" r="4" />
-                    <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
-                  </svg>
-                </span>
               </div>
               </div>
 
@@ -580,7 +556,7 @@ export function Landing() {
                   positioned at the grid level above. */}
 
               <h1
-                className="op-reveal mt-[var(--space-4)] font-serif text-[clamp(1.45rem,2.8vw,2.0rem)] leading-[1.1] tracking-[-0.02em] text-ink"
+                className="op-reveal mt-[var(--space-4)] font-serif text-[clamp(1.75rem,4vw,3rem)] leading-[1.1] tracking-[-0.02em] text-ink"
                 style={{ ['--op-delay' as string]: '90ms' }}
               >
                 <span className="font-light text-ink/85">
@@ -638,7 +614,7 @@ export function Landing() {
                 style={{ ['--op-delay' as string]: '240ms' }}
               >
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-gold group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
+                  triggerClassName="hero-cta-gold group relative inline-flex min-h-[44px] items-center justify-center overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] font-medium uppercase tracking-[0.18em] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-900"
                   heading="Begin inquiry — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Peptide sciences', to: '/research-supplies/biopeptide' },
@@ -650,7 +626,7 @@ export function Landing() {
                   <span className="relative">Begin Inquiry</span>
                 </HeroSegmentMenu>
                 <HeroSegmentMenu
-                  triggerClassName="hero-cta-holo group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                  triggerClassName="hero-cta-holo group relative inline-flex min-h-[44px] items-center gap-1.5 overflow-hidden rounded-full px-[14px] py-[7px] text-[10px] uppercase tracking-[0.18em] text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                   heading="View research — choose a segment"
                   items={[
                     { label: 'Biopeptide', caption: 'Compound library', to: '/research' },

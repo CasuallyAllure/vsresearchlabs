@@ -70,7 +70,7 @@ export function CompoundVisualZone({
         {/* Bottom: vial — 240px band, centered */}
         <div
           className="shrink-0 flex items-center justify-center overflow-hidden"
-          style={{ height: '240px', backgroundColor: '#F4EFE6' }}
+          style={{ height: '240px', backgroundColor: 'var(--color-surface-base)' }}
         >
           {vialVisual ?? (
             <div style={{ width: '110px', height: '232px' }}>
@@ -100,7 +100,7 @@ export function CompoundVisualZone({
 
       <div
         className="shrink-0 flex items-center justify-center overflow-hidden w-[128px] lg:w-[300px]"
-        style={{ backgroundColor: '#F4EFE6' }}
+        style={{ backgroundColor: 'var(--color-surface-base)' }}
       >
         {vialVisual ?? (
           <div className="w-[66px] h-[138px] lg:w-[90px] lg:h-[188px]">

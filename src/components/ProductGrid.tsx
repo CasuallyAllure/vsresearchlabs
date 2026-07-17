@@ -35,7 +35,7 @@ interface ProductGridProps {
 const SKELETON_COUNT_DEFAULT = 6;
 const SKELETON_COUNT_COMPACT = 10;
 
-const COMPACT_GRID = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3';
+const COMPACT_GRID = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[var(--space-2)] sm:gap-[var(--space-3)]';
 const DEFAULT_GRID = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-[var(--space-6)] gap-y-[var(--space-10)]';
 
 export function ProductGrid({

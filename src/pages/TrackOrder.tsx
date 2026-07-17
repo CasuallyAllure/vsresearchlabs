@@ -111,11 +111,11 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
     return <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>;
   }
   if (state.kind === 'error') {
-    return <p role="alert" className="text-[13px] text-red-400">{state.message}</p>;
+    return <p role="alert" className="text-[13px] text-[color:var(--color-status-error)]">{state.message}</p>;
   }
   if (state.kind === 'missing') {
     return (
-      <div className="research-surface-solid p-[var(--space-5)]">
+      <div className="research-surface-solid p-6">
         <p className="text-[13px] text-ink/75">
           This invoice link is invalid or has expired. Check the link in your invoice email, or{' '}
           <a href="/contact" className="text-holo-light underline underline-offset-2">contact us</a>.
@@ -182,7 +182,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
       </header>
 
       {/* ── Status module — the tracking bar ─────────────────────────── */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-6 mb-[var(--space-4)]">
         <div className="mb-[var(--space-3)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35 mb-1">
             Status
@@ -206,7 +206,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
                     className={`h-[6px] rounded-full transition-colors ${
                       reached ? 'bg-holo' : 'bg-ink/[0.08]'
                     }`}
-                    style={isCurrent ? { boxShadow: '0 0 0 3px rgba(98,160,166,0.18)' } : undefined}
+                    style={isCurrent ? { boxShadow: '0 0 0 3px rgb(var(--c-teal) / 0.18)' } : undefined}
                     aria-current={isCurrent ? 'step' : undefined}
                   />
                   <span
@@ -234,7 +234,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
 
       {/* ── Tracking module — dedicated card, always present ─────────── */}
       {!isHandDelivered && (
-        <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+        <article className="research-surface-solid p-6 mb-[var(--space-4)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
             {inTransit ? 'In transit' : 'Carrier tracking'}
           </p>
@@ -258,7 +258,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors"
+                  className="inline-flex min-h-[40px] shrink-0 items-center justify-center rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors"
                 >
                   Track on {carrierLabel(o.carrier)} ↗
                 </a>
@@ -280,7 +280,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         </article>
       )}
       {isHandDelivered && (
-        <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+        <article className="research-surface-solid p-6 mb-[var(--space-4)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
             Delivery method
           </p>
@@ -298,7 +298,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
       )}
 
       {/* ── Order summary — secondary, collapsed to essentials ───────── */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-6 mb-[var(--space-4)]">
         <div className="flex items-baseline justify-between gap-[var(--space-3)] mb-[var(--space-3)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35">
             Order summary
@@ -323,7 +323,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
             return (
               <li
                 key={`${l.sku}-${i}`}
-                className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-2)]"
+                className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-3)]"
               >
                 <div className="min-w-0">
                   <p className="truncate text-[12px] text-ink/85">{l.product_name}</p>
@@ -360,7 +360,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
         <button
           type="button"
           onClick={() => setShowDoc(true)}
-          className="mt-[var(--space-4)] rounded-full border border-ink/25 bg-ink/[0.05] px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-ink/80 hover:border-ink/40 hover:bg-ink/[0.10] transition-colors"
+          className="mt-[var(--space-4)] inline-flex min-h-[40px] items-center justify-center rounded-full border border-ink/25 bg-ink/[0.05] px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.18em] text-ink/80 hover:border-ink/40 hover:bg-ink/[0.10] transition-colors"
         >
           View / print {docKind}
         </button>
@@ -471,7 +471,7 @@ function ConfirmAddressCard({
   /* Quiet confirmed state — address on record + reopener. */
   if (step === 'closed') {
     return (
-      <article id="confirm-address" className="research-surface-solid scroll-mt-24 p-[var(--space-5)] mb-[var(--space-4)]">
+      <article id="confirm-address" className="research-surface-solid scroll-mt-24 p-6 mb-[var(--space-4)]">
         <div className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-2 mb-[var(--space-3)]">
           <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35">
             Shipping address
@@ -504,7 +504,7 @@ function ConfirmAddressCard({
   /* Step 2 — verbatim review + disclaimer. Only this step calls the RPC. */
   if (step === 'review') {
     return (
-      <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-[var(--space-5)] mb-[var(--space-4)]">
+      <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-6 mb-[var(--space-4)]">
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-ink/35 mb-[var(--space-2)]">
           Confirm shipping address · Step 2 of 2
         </p>
@@ -523,7 +523,7 @@ function ConfirmAddressCard({
           <strong className="text-ink">not responsible</strong> for orders sent to a wrong or
           incomplete address you provided — no reships, no refunds for address errors.
         </p>
-        {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
+        {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-[color:var(--color-status-error)]">{error}</p>}
         <div className="flex flex-col-reverse gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" size="md" type="button" disabled={submitting} onClick={() => setStep('form')}>
             ← Edit
@@ -538,7 +538,7 @@ function ConfirmAddressCard({
 
   /* Step 1 — the address form (prominent "action needed" framing). */
   return (
-    <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-[var(--space-5)] mb-[var(--space-4)]">
+    <article id="confirm-address" className="research-surface-solid scroll-mt-24 border border-gold/40 p-6 mb-[var(--space-4)]">
       <p className="holo-text-caption text-[10px] uppercase tracking-[0.26em] text-gold mb-[var(--space-2)]">
         {confirmed ? 'Update shipping address' : 'Action needed'}
       </p>
@@ -562,7 +562,7 @@ function ConfirmAddressCard({
             placeholder="123 Main Street, Apt 4B"
             className={addressFieldCls}
           />
-          {touched && !streetOk && <p className="mt-1 text-[11px] text-red-400">Street address is required.</p>}
+          {touched && !streetOk && <p className="mt-1 text-[11px] text-[color:var(--color-status-error)]">Street address is required.</p>}
         </div>
         <div className="grid grid-cols-1 gap-[var(--space-3)] sm:grid-cols-[1fr_100px_140px]">
           <div>
@@ -576,7 +576,7 @@ function ConfirmAddressCard({
               placeholder="Sacramento"
               className={addressFieldCls}
             />
-            {touched && !cityOk && <p className="mt-1 text-[11px] text-red-400">City is required.</p>}
+            {touched && !cityOk && <p className="mt-1 text-[11px] text-[color:var(--color-status-error)]">City is required.</p>}
           </div>
           <div>
             <label htmlFor="confirm-state" className={addressLabelCls}>State</label>
@@ -603,7 +603,7 @@ function ConfirmAddressCard({
               placeholder="95814"
               className={addressFieldCls}
             />
-            {touched && !zipOk && <p className="mt-1 text-[11px] text-red-400">ZIP is required.</p>}
+            {touched && !zipOk && <p className="mt-1 text-[11px] text-[color:var(--color-status-error)]">ZIP is required.</p>}
           </div>
         </div>
         <div>
@@ -617,11 +617,11 @@ function ConfirmAddressCard({
             placeholder="US"
             className={addressFieldCls}
           />
-          {touched && !countryOk && <p className="mt-1 text-[11px] text-red-400">Country is required.</p>}
+          {touched && !countryOk && <p className="mt-1 text-[11px] text-[color:var(--color-status-error)]">Country is required.</p>}
         </div>
       </div>
 
-      {error && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
+      {error && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-[color:var(--color-status-error)]">{error}</p>}
 
       <div className="mt-[var(--space-5)] flex flex-col gap-[var(--space-3)] sm:flex-row sm:items-center sm:justify-end">
         {confirmed && (
@@ -676,7 +676,7 @@ function StatusLookup() {
         </p>
       </header>
 
-      <form onSubmit={onSubmit} className="research-surface-solid p-[var(--space-5)] mb-[var(--space-5)]">
+      <form onSubmit={onSubmit} className="research-surface-solid p-6 mb-[var(--space-5)]">
         <div className="grid gap-[var(--space-4)] sm:grid-cols-[1fr_140px]">
           <div>
             <label htmlFor="track-id" className="block text-[10px] uppercase tracking-[0.22em] text-ink/50 mb-[var(--space-1)]">Order number or email</label>
@@ -692,11 +692,11 @@ function StatusLookup() {
             {state.kind === 'loading' ? 'Searching…' : 'Track'}
           </Button>
         </div>
-        {state.kind === 'error' && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-red-400">{state.message}</p>}
+        {state.kind === 'error' && <p role="alert" className="mt-[var(--space-3)] text-[12px] text-[color:var(--color-status-error)]">{state.message}</p>}
       </form>
 
       {state.kind === 'done' && state.results.length === 0 && (
-        <div className="research-surface-solid p-[var(--space-5)]">
+        <div className="research-surface-solid p-6">
           <p className="text-[13px] text-ink/75">
             No order found with that order number/email and ZIP. Double-check the ZIP matches the
             shipping address, or <a href="/contact" className="text-holo-light underline underline-offset-2">contact us</a>.
@@ -717,7 +717,7 @@ function StatusCard({ order }: { order: OrderLookupResult }) {
   const delivered = formatDate(order.delivered_at);
 
   return (
-    <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+    <article className="research-surface-solid p-6 mb-[var(--space-4)]">
       <div className="flex items-start justify-between gap-[var(--space-4)] flex-wrap mb-[var(--space-4)]">
         <div>
           <p className="font-mono text-[11px] tracking-[0.06em] text-ink/55">{order.order_number}</p>
@@ -753,7 +753,7 @@ function StatusCard({ order }: { order: OrderLookupResult }) {
             {(shipped || delivered) && <p className="mt-1 text-[11px] text-ink/45">{delivered ? `Delivered ${delivered}` : shipped ? `Shipped ${shipped}` : null}</p>}
           </div>
           {url && (
-            <a href={url} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[40px] shrink-0 items-center justify-center rounded-full bg-holo/[0.15] border border-holo/40 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] font-medium text-holo-light hover:bg-holo/[0.22] transition-colors">
               Track on {carrierLabel(order.carrier)} ↗
             </a>
           )}

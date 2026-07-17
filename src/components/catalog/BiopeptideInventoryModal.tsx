@@ -140,7 +140,7 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
         onClick={handleAdd}
         aria-label={`Add ${product.name} ${activeDose} to inquiry`}
         className={[
-          'shrink-0 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+          'shrink-0 inline-flex items-center justify-center min-h-[40px] rounded-full border px-2.5 text-[10px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
           // Theme-bound teal-light token (was a hardcoded hex) — never
           // hardcode the near-black ink hex here or the label goes
           // invisible on dark.
@@ -236,8 +236,8 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
         className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 pointer-events-none"
       >
         <div
-          className="pointer-events-auto flex flex-col w-full max-w-[1080px] max-h-[90vh] overflow-hidden rounded-2xl border border-ink/[0.12] bg-base-800"
-          style={{ boxShadow: 'var(--elev-3)' }}
+          className="glass-panel pointer-events-auto flex flex-col w-full max-w-[1080px] max-h-[90vh] overflow-hidden rounded-[24px]"
+          style={{ boxShadow: 'var(--glass-highlight), var(--elev-3)' }}
         >
           {/* Header + filter */}
           <header className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] pt-[var(--space-5)] pb-[var(--space-4)] border-b border-ink/[0.08]">
@@ -259,7 +259,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
                 type="button"
                 onClick={onClose}
                 aria-label="Close inventory"
-                className="-mr-1 -mt-1 p-2 text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-full shrink-0"
+                className="-mr-1.5 -mt-1.5 h-10 w-10 flex items-center justify-center text-ink/55 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 rounded-full shrink-0"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18" />

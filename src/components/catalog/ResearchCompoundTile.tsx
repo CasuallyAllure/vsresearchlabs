@@ -95,9 +95,9 @@ export function ResearchCompoundTile({ product, onInspect }: ResearchCompoundTil
           </p>
           {product.nickname && (
             <span
-              className="shrink-0 rounded-[2px] border px-1.5 py-[1px] font-mono text-[10px] uppercase tracking-[0.16em]"
+              className="shrink-0 rounded-full border px-1.5 py-[1px] font-mono text-[10px] uppercase tracking-[0.16em]"
               style={{
-                color: '#7E8288',
+                color: 'var(--color-accent-gold-dark)',
                 borderColor: 'rgba(140,144,148,0.40)',
                 backgroundColor: 'rgba(140,144,148,0.10)',
               }}

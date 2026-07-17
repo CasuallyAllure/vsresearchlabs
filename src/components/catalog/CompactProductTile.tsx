@@ -124,7 +124,7 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             </p>
             {product.nickname && (
               <span
-                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-[2px] border"
+                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
                 style={{
                   color: 'var(--color-accent-gold-dark)',
                   borderColor: 'color-mix(in srgb, var(--color-accent-gold-dark) 40%, transparent)',

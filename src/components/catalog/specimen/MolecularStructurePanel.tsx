@@ -75,15 +75,15 @@ export function MolecularStructurePanel({ substance, abbreviation, bare = false,
       {/* Compound label overlay at bottom-left */}
       <div className="mol-structure-fade absolute bottom-0 left-0 right-0 px-3 py-2 flex items-end justify-between pointer-events-none">
         <div>
-          <p className="font-mono text-ink/22 uppercase" style={{ fontSize: '8px', letterSpacing: '0.22em' }}>
+          <p className="font-mono text-ink/22 uppercase" style={{ fontSize: '10px', letterSpacing: '0.22em' }}>
             Molecular Structure
           </p>
-          <p className="font-mono text-ink/35 mt-0.5" style={{ fontSize: '9px' }}>
+          <p className="font-mono text-ink/35 mt-0.5" style={{ fontSize: '10px' }}>
             {substance}
           </p>
         </div>
         {!failed && loaded && (
-          <p className="font-mono text-ink/16 uppercase" style={{ fontSize: '7.5px', letterSpacing: '0.16em' }}>
+          <p className="font-mono text-ink/16 uppercase" style={{ fontSize: '10px', letterSpacing: '0.16em' }}>
             PubChem
           </p>
         )}

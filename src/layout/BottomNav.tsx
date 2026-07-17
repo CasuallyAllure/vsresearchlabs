@@ -26,6 +26,15 @@ export type NavRole = 'guest' | 'owner';
 const ACCENT = 'rgb(var(--c-gold))';
 const GOLD = 'rgb(var(--c-gold))';
 
+/* One-time hint flag — the "Research Supplies" pointer bubble should stop
+   nagging once the visitor has seen it. */
+const BOTNAV_HINT_STORAGE_KEY = 'vsrl_botnav_hint_seen';
+
+function readBotNavHintSeen(): boolean {
+  if (typeof window === 'undefined') return true;
+  try { return window.localStorage.getItem(BOTNAV_HINT_STORAGE_KEY) === '1'; } catch { return false; }
+}
+
 /* ── prefers-reduced-motion hook ────────────────────────────────────────── */
 
 function useReducedMotion(): boolean {
@@ -224,6 +233,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [hintSeen] = useState(readBotNavHintSeen);
 
   const path = location.pathname;
   const isHome = path === '/';
@@ -247,8 +257,14 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
   }, [path]);
 
   // Persistent hint — show whenever the sheet is closed and the user isn't
-  // already on a research-supplies page.
-  const showHint = !sheetOpen && !isResearchSupplies;
+  // already on a research-supplies page, but only until the visitor has seen
+  // it once (one-time localStorage flag — stops nagging after first view).
+  const showHint = !sheetOpen && !isResearchSupplies && !hintSeen;
+
+  useEffect(() => {
+    if (!showHint) return;
+    try { window.localStorage.setItem(BOTNAV_HINT_STORAGE_KEY, '1'); } catch { /* storage unavailable — hint just won't persist as seen */ }
+  }, [showHint]);
 
   function handleSheetEntry(to: string) {
     setSheetOpen(false);
@@ -373,8 +389,7 @@ export function BottomNav({ role = 'guest' }: BottomNavProps) {
                 color: 'var(--color-content-inverse)',
                 background: 'rgb(var(--c-gold-dark) / 0.94)',
                 border: '0.5px solid rgb(var(--c-gold-light) / 0.4)',
-                boxShadow:
-                  '0 0 0 1px rgb(var(--c-gold-light) / 0.25), 0 0 7px 0 rgb(var(--c-gold) / 0.3), 0 1px 3px -1px rgba(26,23,20,0.28)',
+                boxShadow: '0 1px 3px -1px rgba(26,23,20,0.28)',
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
               }}
@@ -443,17 +458,25 @@ type NavSlotProps =
     };
 
 function NavSlot(props: NavSlotProps) {
-  const baseClass = [
-    'relative flex items-center justify-center h-[26px] w-12 rounded-full transition-colors duration-150',
+  // Hit area is the full 44px touch target; the visible pill inside it stays
+  // the compact 26px-tall chrome so the nav's silhouette doesn't change.
+  const hitClass = [
+    'relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full transition-colors duration-150',
     'focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40',
     props.isActive ? 'text-ink' : 'text-ink/50 hover:text-ink/90',
   ].join(' ');
-  const style = props.isActive
+  const pillStyle = props.isActive
     ? {
         backgroundColor: 'var(--color-interactive-secondary)',
         boxShadow: 'inset 0 0 0 0.5px rgba(255, 255, 255, 0.18)',
       }
     : undefined;
+
+  const pill = (
+    <span className="flex h-[26px] w-12 items-center justify-center rounded-full" style={pillStyle}>
+      {props.children}
+    </span>
+  );
 
   return (
     <li>
@@ -462,10 +485,9 @@ function NavSlot(props: NavSlotProps) {
           to={props.to}
           aria-label={props.ariaLabel}
           aria-current={props.isActive ? 'page' : undefined}
-          className={baseClass}
-          style={style}
+          className={hitClass}
         >
-          {props.children}
+          {pill}
         </Link>
       ) : (
         <button
@@ -474,10 +496,9 @@ function NavSlot(props: NavSlotProps) {
           aria-label={props.ariaLabel}
           aria-expanded={props.ariaExpanded}
           aria-haspopup="menu"
-          className={baseClass}
-          style={style}
+          className={hitClass}
         >
-          {props.children}
+          {pill}
         </button>
       )}
     </li>

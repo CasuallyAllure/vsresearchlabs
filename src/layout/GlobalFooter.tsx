@@ -48,14 +48,14 @@ export function GlobalFooter() {
               <Link
                 key={link.to}
                 to={link.to}
-                className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink/70 transition-colors"
+                className="inline-flex min-h-[40px] items-center px-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink/70 transition-colors"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
           <div className="flex flex-col items-center gap-0.5 sm:items-end">
-            <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink/45 tabular-nums">
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-ink/45 tabular-nums">
               © {new Date().getFullYear()} {siteConfig.brand.legalEntity} · All rights reserved
             </p>
             <p className="text-[10px] uppercase tracking-[0.26em] text-ink/30">

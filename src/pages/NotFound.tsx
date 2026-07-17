@@ -34,7 +34,7 @@ export function NotFound() {
             <Link
               key={l.to}
               to={l.to}
-              className="rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:text-ink hover:border-ink/30"
+              className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-ink/15 px-[var(--space-5)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:text-ink hover:border-ink/30"
             >
               {l.label}
             </Link>
