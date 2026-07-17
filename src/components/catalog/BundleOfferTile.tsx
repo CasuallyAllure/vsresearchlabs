@@ -27,12 +27,16 @@ export function BundleOfferTile() {
   // CompoundTile's override subscriptions.
   useProductOverrides((s) => s.bySku);
   useProductOverrides((s) => s.variantBySku);
-  // Render NOTHING until the admin overrides have actually loaded. Without
-  // this gate, effectiveTierPriceCents falls through to the placeholder
-  // formula in lib/pricing for the first paint (and forever if the fetch
-  // fails) — which advertised a fabricated "$960 → $768, save $192" bundle on
-  // production. A quiet tile beats a lying price.
+  // Render NOTHING until the admin overrides have actually loaded WITHOUT
+  // error. `loaded` alone flips true even on a failed fetch, so gating on it
+  // wasn't enough: when the override call failed (seen on Safari desktop),
+  // effectiveTierPriceCents fell through to the lib/pricing placeholder formula
+  // and the tile advertised a fabricated "$960 → $768, save $192" bundle. Gate
+  // on a clean load AND real per-dose price data for both SKUs — a quiet tile
+  // beats a lying price.
   const overridesLoaded = useProductOverrides((s) => s.loaded);
+  const overridesError = useProductOverrides((s) => s.error);
+  const variantBySku = useProductOverrides((s) => s.variantBySku);
 
   const { products } = useProducts('biopeptide-research-supplies');
   const productA = products.find((p) => p.sku === BUNDLE_PROMO.skuA);
@@ -43,12 +47,19 @@ export function BundleOfferTile() {
   const [added, setAdded] = useState(false);
   const flashTimer = useRef<number | null>(null);
 
-  if (!overridesLoaded) return null;
+  if (!overridesLoaded || overridesError) return null;
   if (!productA || !productB) return null;
   if (!isSkuVisible(productA.sku) || !isSkuVisible(productB.sku)) return null;
 
   const { doseA, doseB } = BUNDLE_FEATURED;
   if (!isVariantPublic(productA.sku, doseA) || !isVariantPublic(productB.sku, doseB)) return null;
+
+  // Require GENUINE per-dose price data for both featured doses — not the
+  // lib/pricing formula fallback. Without this, an empty/failed override load
+  // would still resolve a fabricated price and advertise a bogus bundle.
+  const hasRealPriceA = variantBySku[productA.sku]?.[doseA]?.price_cents != null;
+  const hasRealPriceB = variantBySku[productB.sku]?.[doseB]?.price_cents != null;
+  if (!hasRealPriceA || !hasRealPriceB) return null;
 
   const priceA = effectiveTierPriceCents(productA, doseA);
   const priceB = effectiveTierPriceCents(productB, doseB);
