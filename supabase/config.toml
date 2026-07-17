@@ -18,3 +18,9 @@ project_id = "ufaajzfuppohbxebftwp"
 # advances. Keep this false.
 [functions.mark-payment-claimed]
 verify_jwt = false
+
+# health is a PUBLIC uptime probe: an external monitor (docs/UPTIME.md) sends
+# no Supabase JWT, so platform JWT verification must be OFF. The function
+# exposes nothing but {ok, db, ts}. Keep this false.
+[functions.health]
+verify_jwt = false
