@@ -20,6 +20,7 @@ import { createPortal } from 'react-dom';
 import { Button } from '../ui/Button';
 import { Logo } from '../brand/Logo';
 import { useScrollLock } from '../../lib/useScrollLock';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface Perk {
   label: string;
@@ -147,6 +148,10 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
   // Ref-counted scroll lock — cooperates with the intro modal that follows.
   useScrollLock(render);
 
+  // Modality enforcement — the gate declares aria-modal, so Tab must stay
+  // inside it rather than reaching the landing page behind the scrim.
+  const panelRef = useFocusTrap<HTMLDivElement>(render);
+
   // ESC = continue as guest.
   useEffect(() => {
     if (!render) return;
@@ -161,6 +166,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
 
   return createPortal(
     <div
+      ref={panelRef}
       role="dialog"
       aria-modal="true"
       aria-label="Member access"

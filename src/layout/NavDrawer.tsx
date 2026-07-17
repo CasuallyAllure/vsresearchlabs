@@ -34,6 +34,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { siteConfig } from '../config';
 import { DnaVMark } from '../components/brand/DnaVMark';
@@ -364,6 +365,10 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
 
+  // Modality enforcement — matches CartDrawer; restores focus to the header
+  // menu button on close.
+  const panelRef = useFocusTrap<HTMLElement>(open);
+
   // Staggered reveal cascade — a running counter advanced in source order as
   // the sections render, so every label/row settles a beat after the one above.
   let order = 0;
@@ -386,9 +391,13 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           slide (Vaul/emil curve — settles, never bounces). Enter is slower than
           exit; reduced-motion zeroes both via the global !important override. */}
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Primary navigation"
+        // Closed, the panel stays mounted off-screen — `inert` keeps its links
+        // out of the tab order and the a11y tree. See CartDrawer.
+        inert={!open}
         className="glass-panel fixed top-0 left-0 z-[60] h-[100dvh] w-[300px] max-w-[86vw] sm:w-[324px] flex flex-col rounded-r-[22px] overflow-hidden"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(-100%)',

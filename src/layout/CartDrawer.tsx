@@ -340,7 +340,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="cart-first" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                  <label htmlFor="cart-first" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                     First name *
                   </label>
                   <input
@@ -355,7 +355,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="cart-last" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                  <label htmlFor="cart-last" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                     Last name *
                   </label>
                   <input
@@ -371,7 +371,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               </div>
               <div>
-                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                   Email *
                 </label>
                 <input
@@ -386,7 +386,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 />
               </div>
               <div>
-                <label htmlFor="cart-street" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                <label htmlFor="cart-street" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                   Shipping address *
                 </label>
                 <input
@@ -664,7 +664,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   <>
                     {/* Subtotal + account perk — quiet rows above the anchor total */}
                     <div className="mb-3 flex items-baseline justify-between">
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Subtotal</span>
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">Subtotal</span>
                       <span className="font-mono text-[13px] tabular-nums text-ink/70">
                         {formatUsd(subtotalCents)}
                       </span>
@@ -691,7 +691,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     )}
                     {hasAccountDisc && (
                       <div className="mb-3 flex items-baseline justify-between">
-                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">
                           {accountDiscount!.label}
                         </span>
                         <span className="font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
@@ -702,13 +702,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     {/* Shipping — members ship free; guests pay the flat fee and
                         get a one-tap path to waive it. */}
                     <div className="mb-3 flex items-baseline justify-between">
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Shipping</span>
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">Shipping</span>
                       <span className="font-mono text-[13px] tabular-nums text-ink/70">
                         {isMember ? 'Free — member' : formatUsd(shippingCents)}
                       </span>
                     </div>
                     {!isMember && (
-                      <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/45">
+                      <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/65">
                         <Link
                           to="/account?mode=signup"
                           onClick={onClose}
