@@ -83,6 +83,22 @@ export interface SkuOverrideRow {
   price_cents_override: number | null;
 }
 
+interface Span {
+  start: number;
+  end: number;
+}
+
+/** Every place `needle` occurs in `haystack`, including overlapping hits. */
+function spansOf(haystack: string, needle: string): Span[] {
+  const spans: Span[] = [];
+  for (let i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + 1)) {
+    spans.push({ start: i, end: i + needle.length });
+  }
+  return spans;
+}
+
+const overlaps = (a: Span, b: Span): boolean => a.start < b.end && b.start < a.end;
+
 /**
  * The variant row a line refers to: the LONGEST dose whose squashed text
  * appears in the line's squashed text, among the rows for this sku. Null when
@@ -107,24 +123,9 @@ export interface SkuOverrideRow {
  * dose ONCE, so every match overlaps the winner (a nested dose sits inside it).
  * Two matches on non-overlapping regions mean the text names two different
  * doses — that is never a line this cart builds. Verified against all 138 live
- * catalog variant lines: every one resolves to its own dose, none ambiguous.
+ * catalog variant lines: every one resolves to its own dose, none ambiguous
+ * (tests/unit/catalogDoseResolution.test.ts).
  */
-interface Span {
-  start: number;
-  end: number;
-}
-
-/** Every place `needle` occurs in `haystack`, including overlapping hits. */
-function spansOf(haystack: string, needle: string): Span[] {
-  const spans: Span[] = [];
-  for (let i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + 1)) {
-    spans.push({ start: i, end: i + needle.length });
-  }
-  return spans;
-}
-
-const overlaps = (a: Span, b: Span): boolean => a.start < b.end && b.start < a.end;
-
 export function resolveVariantRow<T extends VariantRow>(
   sku: string,
   lineText: string,
