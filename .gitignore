@@ -54,3 +54,4 @@ blob-report/
 # VILERAW/ = raw asset dumps.
 video/
 VILERAW/
+.env.bak-jwt-key
