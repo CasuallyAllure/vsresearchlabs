@@ -163,7 +163,11 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
                   aria-checked={isActive}
                   onClick={(e) => { e.stopPropagation(); setTierIndex(i); }}
                   title={isFast ? `${v.dose} · 24 hour shipping` : v.dose}
-                  className="font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+                  // min-h-[24px] — WCAG 2.2 SC 2.5.8 (AA). Chips are a few px
+                  // apart in a wrap row, so the hit area can't be expanded past
+                  // the box without neighbours overlapping and a stray tap
+                  // selecting the wrong dose (= the wrong price).
+                  className="inline-flex items-center justify-center min-h-[24px] font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
                   style={{
                     fontSize: '10px',
                     letterSpacing: '0.14em',
@@ -205,7 +209,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
             onClick={handleAdd}
             aria-label={`Add ${product.name} ${activeDose} to inquiry`}
             className={[
-              'shrink-0 rounded-full border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              // min-h-[44px]: the primary action, and isolated enough to carry a
+              // full 44px box — its only close neighbour is the (inert) price.
+              'shrink-0 inline-flex items-center justify-center min-h-[44px] rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.16em] font-normal leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               // Theme-bound teal-light token (was a hardcoded hex) — never
               // hardcode the near-black ink hex here or the label goes
               // invisible on dark.

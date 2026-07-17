@@ -153,8 +153,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                 {product.name}
               </h3>
               {product.nickname && (
+                // text-ink/65 — /45 composited to 2.86:1 on the spec plate,
+                // well under WCAG 1.4.3 AA (4.5:1) for text this small. /65 is
+                // the first step that clears it (5.28:1) on every light surface.
                 <span
-                  className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/45"
+                  className="shrink-0 font-mono text-[8.5px] uppercase tracking-[0.12em] px-1.5 py-[1px] rounded-full border border-ink/15 text-ink/65"
                 >
                   {product.nickname}
                 </span>
@@ -162,7 +165,9 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             </div>
             {product.shortDescription && (
               <p
-                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[10.5px] leading-relaxed text-ink/60 ${
+                // text-ink/65 — /60 landed at 4.49:1 on the spec plate, just
+                // under the 4.5:1 AA line. /65 → 5.28:1.
+                className={`mt-1.5 border-t border-ink/[0.07] pt-1.5 text-[10.5px] leading-relaxed text-ink/65 ${
                   detailed ? '' : 'line-clamp-4'
                 }`}
               >
