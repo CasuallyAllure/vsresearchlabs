@@ -11,11 +11,29 @@
  *   2. src/data/biopeptideCompounds.generated.json — full Product[] for the
  *      NEW canonical compounds, merged into the store seed by productStore.
  *
- * Deterministic: uses fixed timestamps and stable ordering so re-runs
- * produce byte-identical output (no git churn).
+ * Fixed timestamps and stable ordering keep re-runs free of incidental churn,
+ * but the output is NOT byte-identical to the committed artifacts: the
+ * generated JSON has been hand-edited since it was last generated, so a run
+ * reverts those edits. Diff before committing.
+ *
+ * Guard: the manifest is not the whole truth — records have been added to the
+ * generated JSON by hand, and records have been deliberately retired from it.
+ * A plain run silently reverts both (drops the hand-added, resurrects the
+ * retired), and the record count can stay identical while it happens. So the
+ * run refuses to write when the output would drop a slug that is currently
+ * committed, or re-add a TOMBSTONED one.
+ *
+ *   node scripts/buildInventory.mjs --check   report ADD/DROP/MODIFY, write
+ *                                             nothing, exit 1 if anything differs
+ *   node scripts/buildInventory.mjs           write, but abort before touching
+ *                                             any file if a drop/tombstone trips
+ *   node scripts/buildInventory.mjs --allow-drops
+ *                                             write anyway (tombstones still
+ *                                             block); use when a removal is
+ *                                             genuinely intended
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { META, LAYMAN, modelToKey, EXISTING } from './lib/compoundData.mjs';
@@ -30,6 +48,18 @@ const PRODUCTS = resolve(ROOT, 'src/data/products.json');
 const OUT = resolve(ROOT, 'src/data/biopeptideCompounds.generated.json');
 
 const STAMP = '2026-06-01T00:00:00.000Z';
+
+const CHECK_ONLY = process.argv.includes('--check');
+const ALLOW_DROPS = process.argv.includes('--allow-drops');
+
+// Slugs deliberately retired from the catalogue. The manifest still carries
+// rows for these, so every run tries to resurrect them — unpriced, which then
+// falls through to the price formula and publishes an absurd number. Removing
+// the manifest row is the real fix; until then this blocks the resurrection.
+// Never add a slug here to silence a diff — only to record a decision.
+const TOMBSTONED = new Set([
+  '10-amino-1mq',
+]);
 
 const CLASSIFICATION_LABELS = {
   'incretin-metabolic-agonists': 'Incretin & Metabolic Receptor Agonists',
@@ -98,6 +128,14 @@ const generated = [];
 const missingChem = [];
 const builtSlugs = new Set();
 
+// Every write is queued, not performed, so the guard below can abort the run
+// before a single file is touched. flushWrites() is the only writer.
+const pendingWrites = [];
+const queueWrite = (path, contents) => pendingWrites.push({ path, contents });
+const flushWrites = () => {
+  for (const { path, contents } of pendingWrites) writeFileSync(path, contents);
+};
+
 for (const key of keys) {
   const meta = META[key];
   if (!meta) { console.warn(`! No META for key "${key}" — skipping`); continue; }
@@ -132,7 +170,7 @@ for (const key of keys) {
     classLine: classLabel.toUpperCase(),
     liquid: isLiquid,
   });
-  writeFileSync(resolve(SPECIMENS_DIR, `${slug}.svg`), svg);
+  queueWrite(resolve(SPECIMENS_DIR, `${slug}.svg`), svg);
   builtSlugs.add(slug);
 
   // ── Product record ──
@@ -233,14 +271,76 @@ for (const p of products) {
     classLine: classLabel.toUpperCase(),
     liquid,
   });
-  writeFileSync(file, svg);
+  queueWrite(file, svg);
   regenExisting++;
 }
 
-// ── Write generated products + report ────────────────────────────────────
-writeFileSync(OUT, JSON.stringify(generated, null, 2) + '\n');
+const outJSON = JSON.stringify(generated, null, 2) + '\n';
+queueWrite(OUT, outJSON);
 
-console.log(`\n✓ Generated ${generated.length} new compound products → ${OUT.replace(ROOT + '/', '')}`);
+// ── Guard: compare against the committed artifact before writing ──────────
+const rel = (p) => p.replace(ROOT + '/', '');
+
+const committed = existsSync(OUT) ? readJSON(OUT) : [];
+const committedBySlug = new Map(committed.map((p) => [p.slug, p]));
+const generatedBySlug = new Map(generated.map((p) => [p.slug, p]));
+
+const drops = committed
+  .filter((p) => !generatedBySlug.has(p.slug))
+  .map((p) => `${p.slug} (${p.sku})`);
+const adds = generated
+  .filter((p) => !committedBySlug.has(p.slug))
+  .map((p) => `${p.slug} (${p.sku})`);
+const revives = generated.filter((p) => TOMBSTONED.has(p.slug)).map((p) => p.slug);
+// Name the fields that differ — "49 records changed" tells an operator nothing
+// about whether the change is churn or a lost hand-edit.
+const changedFields = (a, b) =>
+  [...new Set([...Object.keys(a), ...Object.keys(b)])]
+    .filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+
+const modified = generated
+  .filter((p) => committedBySlug.has(p.slug))
+  .map((p) => ({ slug: p.slug, fields: changedFields(committedBySlug.get(p.slug), p) }))
+  .filter((m) => m.fields.length)
+  .map((m) => `${m.slug} → ${m.fields.join(', ')}`);
+
+const report = (label, items) => {
+  if (items.length) console.log(`\n${label} (${items.length}):\n${items.map((i) => `   · ${i}`).join('\n')}`);
+};
+
+if (CHECK_ONLY) {
+  console.log(`\nDry run — nothing written. ${rel(OUT)}: ${committed.length} committed → ${generated.length} generated.`);
+  report('WOULD DROP', drops);
+  report('WOULD ADD', adds);
+  report('WOULD MODIFY', modified);
+  if (revives.length) report('WOULD REVIVE (tombstoned)', revives);
+  const differs = drops.length || adds.length || modified.length;
+  console.log(differs ? '\n✗ Output differs from the committed artifact.\n' : '\n✓ Output matches the committed artifact.\n');
+  process.exit(differs ? 1 : 0);
+}
+
+if (revives.length) {
+  console.error(`\n✗ Refusing to write: this run would resurrect ${revives.length} tombstoned compound(s):`);
+  revives.forEach((s) => console.error(`   · ${s}`));
+  console.error(`\nThese were retired on purpose. Remove the manifest rows that produce them,`);
+  console.error(`or drop the slug from TOMBSTONED in ${rel(fileURLToPath(import.meta.url))} if the decision changed.\n`);
+  process.exit(1);
+}
+
+if (drops.length && !ALLOW_DROPS) {
+  console.error(`\n✗ Refusing to write: this run would drop ${drops.length} compound(s) present in ${rel(OUT)}:`);
+  drops.forEach((d) => console.error(`   · ${d}`));
+  console.error(`\nThese exist in the committed artifact but not in the manifest — they were almost`);
+  console.error(`certainly added by hand, and this run would silently delete them (the record count`);
+  console.error(`can stay the same while it happens). Add the manifest row + META entry to keep them,`);
+  console.error(`or re-run with --allow-drops if the removal is intended.\n`);
+  process.exit(1);
+}
+
+flushWrites();
+
+console.log(`\n✓ Generated ${generated.length} new compound products → ${rel(OUT)}`);
+if (drops.length) console.log(`⚠ Dropped ${drops.length} compound(s) via --allow-drops: ${drops.join(', ')}`);
 console.log(`✓ Wrote ${builtSlugs.size} new specimen plates + regenerated ${regenExisting} existing vial plates`);
 if (unclassified.size) {
   console.log(`\n⚠ Unclassified manifest models (skipped):`);
