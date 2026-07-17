@@ -23,12 +23,13 @@ export default defineConfig({
       include: ['supabase/functions/place-order/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['supabase/functions/place-order/index.ts'],
       reporter: ['text-summary', 'text'],
-      // Measured floor on 2026-07-17 (PM, money-mirror suites landed):
-      // 38.52 L / 37.92 S / 38.03 B / 40.15 F — pricing/wholesale/coupons/
-      // lineDiscounts now 95-100%, productOverrides ~54% (reload() network
-      // branches untested), place-order modules ~100%. RATCHET: raise as
-      // coverage grows toward the 80% bar; never lower.
-      thresholds: { lines: 38, statements: 37, branches: 37, functions: 39 },
+      // Measured floor on 2026-07-17 (evening, launch pass): 40.42 L /
+      // 40.24 S / 40.76 B / 42.12 F — the three newly-extracted place-order
+      // modules (orderFormat/orderIdentifiers/sanitizeAttestation) at ~100%
+      // on top of the money mirrors; place-order modules ~100%,
+      // productOverrides ~54% (reload() network branches untested).
+      // RATCHET: raise as coverage grows toward the 80% bar; never lower.
+      thresholds: { lines: 40, statements: 40, branches: 40, functions: 42 },
     },
   },
 });

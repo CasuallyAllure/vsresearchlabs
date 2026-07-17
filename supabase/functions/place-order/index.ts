@@ -66,6 +66,9 @@ import {
 } from "./promoPlan.ts";
 import { buildBundlePlan, bundleLineKey } from "./bundlePlan.ts";
 import { claimRewardVoucher, rollbackRewardPricing } from "./rewardVoucher.ts";
+import { EMAIL_REGEX, UUID_REGEX, escapeHtml, clampQty, clampCents, usd } from "./orderFormat.ts";
+import { generateReferenceId, generateOrderNumber } from "./orderIdentifiers.ts";
+import { sanitizeAttestation } from "./sanitizeAttestation.ts";
 
 const TELEMETRY_FN = "place-order";
 
@@ -126,34 +129,6 @@ const BUNDLE_PROMO = {
   percent: 20,
 } as const;
 
-/** Declared-industry whitelist — must match INDUSTRY_OPTIONS in
- *  src/lib/researchAttestation.ts. Unknown values are stored as "other". */
-const ATTESTATION_INDUSTRIES = new Set([
-  "research_lab", "biotech_pharma", "academic", "b2b_distributor", "independent", "other",
-]);
-
-/** Sanitized attestation snapshot for the orders row, or null when the
- *  client sent nothing usable (older bundle / cleared storage) — NULL keeps
- *  the audit trail honest instead of fabricating an acceptance. */
-function sanitizeAttestation(raw: OrderPayload["research_attestation"]): Record<string, unknown> | null {
-  if (!raw || typeof raw !== "object") return null;
-  const acceptedAtMs = Date.parse(typeof raw.accepted_at === "string" ? raw.accepted_at : "");
-  if (Number.isNaN(acceptedAtMs)) return null;
-  if (raw.age_21_confirmed !== true || raw.research_use_confirmed !== true) return null;
-  const industryRaw = typeof raw.industry === "string" ? raw.industry.trim().slice(0, 40) : "";
-  const version = typeof raw.disclaimer_version === "number" && Number.isFinite(raw.disclaimer_version)
-    ? Math.max(1, Math.min(999, Math.round(raw.disclaimer_version)))
-    : 1;
-  return {
-    accepted_at: new Date(acceptedAtMs).toISOString(),
-    recorded_at: new Date().toISOString(),
-    disclaimer_version: version,
-    age_21_confirmed: true,
-    research_use_confirmed: true,
-    industry: ATTESTATION_INDUSTRIES.has(industryRaw) ? industryRaw : "other",
-  };
-}
-
 /** Shape returned by the validate_coupon RPC (migration 031). */
 interface CouponCheck {
   valid: boolean;
@@ -195,62 +170,15 @@ const CORS_HEADERS = buildCorsHeaders();
 
 const INTAKE_CHANNEL  = "VSR-WEB-PORTAL";
 const PROCESSING_NODE = "VSR-HQ-INTAKE";
-const MAX_LINE_CENTS  = 100_000_00; // $100k per line sanity cap
-
-// ---------------------------------------------------------------------------
-// Reference / order number — server-authoritative. VSR-REQ / VSR-ORD-YYMMDD-NNN
-// ---------------------------------------------------------------------------
-
-function stamp(prefix: string): string {
-  const now = new Date();
-  const yy  = String(now.getUTCFullYear()).slice(2);
-  const mm  = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const dd  = String(now.getUTCDate()).padStart(2, "0");
-  const seq = String(Math.floor(now.getTime() / 100) % 1000).padStart(3, "0");
-  return `${prefix}-${yy}${mm}${dd}-${seq}`;
-}
-
-// Order numbers are short, unguessable codes (VSR-XXXXXX). Alphabet excludes
-// ambiguous characters (O/0/I/1/L) so they read cleanly aloud. Matches the
-// DB-side gen_order_number() used by the admin path.
-const ORDER_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-function randomCode(len: number): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(len));
-  let s = "";
-  for (let i = 0; i < len; i++) s += ORDER_ALPHABET[bytes[i] % ORDER_ALPHABET.length];
-  return s;
-}
-const generateReferenceId = () => stamp("VSR-REQ");
-const generateOrderNumber = () => `VSR-${randomCode(6)}`;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const UUID_REGEX  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status, headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
-}
-function clampQty(raw: unknown): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return 1;
-  return Math.min(9999, Math.max(1, Math.floor(n)));
-}
-function clampCents(raw: unknown): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < 0) return 0;
-  return Math.min(MAX_LINE_CENTS, Math.floor(n));
-}
-function usd(cents: number): string {
-  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ---------------------------------------------------------------------------
