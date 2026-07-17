@@ -203,15 +203,18 @@ describe('resolveLinePrice — dose matching', () => {
     expect(priceOf(line({ name: 'BPC-157 — 15mg' }), rows)).toBe(15_500);
   });
 
-  test('matches a dose carried in the line note', () => {
+  test('the note is NOT an identity signal — a dose only in the note resolves nothing', () => {
+    // `note` is a free-text message to the seller. The dose lives in the name by
+    // construction (cartActions.variantProduct), which is also what the operator
+    // reads when picking the vial — so it is the only field where "billed for"
+    // and "shipped" are the same string.
     const rows = [variant({ dose: '10mg', price_cents: 11_000 })];
     const l = line({ name: 'BPC-157', note: 'dose: 10mg', unitPriceCents: 11_000 });
-    expect(priceOf(l, rows)).toBe(11_000);
+    expect(priceOf(l, rows)).toBeNull();
+    expect(verifyLinePrices([l], rows, []).failures[0].reason).toBe('dose_unresolved');
   });
 
-  test('a note cannot pull the price down to a cheaper dose — longest match still wins', () => {
-    // Both name and note are client-controlled; the resolver must not let the
-    // note steer a "20mg" line onto the 5mg row's price.
+  test('a note cannot pull the price down to a cheaper dose', () => {
     const rows = [
       variant({ dose: '5mg', price_cents: 6_000 }),
       variant({ dose: '20mg', price_cents: 20_000 }),
@@ -261,6 +264,76 @@ describe('resolveVariantRow — shared by the price check and the promo planner'
       { sku: 'VSR-RS-IGF', dose: '0.1mg' },
     ];
     expect(resolveVariantRow('VSR-RS-IGF', 'IGF-1 LR3 — 0.1mg', rows)).toEqual(rows[1]);
+  });
+
+  test('text naming TWO doses is ambiguous → unresolved, not longest-wins', () => {
+    // The exploit longest-match alone allows, on live data (VSR-RS-IGF):
+    // squashing removes the space, so "IGF-1 LR3 — 1mg 0.1mg" contains both
+    // "1mg" and "0.1mg"; the longer wins and an honest-looking 1mg line bills at
+    // the 0.1mg price, while the operator ships what the name says. The two
+    // matches sit on non-overlapping regions — a real line names its dose once.
+    const rows = [
+      { sku: 'VSR-RS-IGF', dose: '1mg' },
+      { sku: 'VSR-RS-IGF', dose: '0.1mg' },
+    ];
+    expect(resolveVariantRow('VSR-RS-IGF', 'IGF-1 LR3 — 1mg 0.1mg', rows)).toBeNull();
+    expect(resolveVariantRow('VSR-RS-IGF', 'IGF-1 LR3 — 0.1mg 1mg', rows)).toBeNull();
+  });
+
+  test('a nested dose is not a second dose — the honest line still resolves', () => {
+    // "1mg" matches INSIDE "0.1mg" (overlapping), which is the normal case and
+    // must not be mistaken for ambiguity.
+    const rows = [
+      { sku: 'VSR-RS-IGF', dose: '1mg' },
+      { sku: 'VSR-RS-IGF', dose: '0.1mg' },
+    ];
+    expect(resolveVariantRow('VSR-RS-IGF', 'IGF-1 LR3 — 0.1mg', rows)).toEqual(rows[1]);
+    expect(resolveVariantRow('VSR-RS-IGF', 'IGF-1 LR3 — 1mg', rows)).toEqual(rows[0]);
+  });
+});
+
+describe('dose substitution (the whole point of resolving server-side)', () => {
+  test('REFUSES a 1mg line billed at the 0.1mg price via the note', () => {
+    // The note is not read at all, so the name resolves honestly to the 1mg row
+    // and the tampered price is caught as a plain mismatch against the real $50.
+    const rows: VariantPriceRow[] = [
+      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
+      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
+    ];
+    const attack = line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', note: '0.1mg', unitPriceCents: 1_000 });
+
+    const verdict = verifyLinePrices([attack], rows, []);
+
+    expect(verdict.ok).toBe(false);
+    expect(verdict.failures[0]).toMatchObject({ reason: 'price_mismatch', serverCents: 5_000 });
+  });
+
+  test('REFUSES a 1mg line billed at the 0.1mg price via a second dose in the NAME', () => {
+    // Moving the token into the name is the same attack without the note. Here
+    // the text genuinely names two doses, so it resolves to neither.
+    const rows: VariantPriceRow[] = [
+      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
+      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
+    ];
+    const attack = line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg 0.1mg', unitPriceCents: 1_000 });
+
+    const verdict = verifyLinePrices([attack], rows, []);
+
+    expect(verdict.ok).toBe(false);
+    expect(verdict.failures[0].reason).toBe('dose_unresolved');
+  });
+
+  test('the honest 1mg and 0.1mg orders both still go through', () => {
+    const rows: VariantPriceRow[] = [
+      { sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 },
+      { sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 },
+    ];
+    expect(verifyLinePrices(
+      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg', unitPriceCents: 5_000 })], rows, [],
+    ).ok).toBe(true);
+    expect(verifyLinePrices(
+      [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 0.1mg', unitPriceCents: 1_000 })], rows, [],
+    ).ok).toBe(true);
   });
 });
 

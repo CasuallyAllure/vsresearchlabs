@@ -662,7 +662,6 @@ Deno.serve(async (req: Request) => {
   // Any failure — guest, anon-key bearer, bogus/expired token — is guest
   // semantics exactly as before.
   let stampedUserId: string | null = null;
-  let authedEmail = "";
   {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
@@ -674,7 +673,7 @@ Deno.serve(async (req: Request) => {
         const { data: userData, error: userErr } = await authClient.auth.getUser(bearer);
         if (!userErr && userData?.user) {
           stampedUserId = userData.user.id;
-          authedEmail = (userData.user.email ?? "").trim().toLowerCase();
+          const authedEmail = (userData.user.email ?? "").trim().toLowerCase();
           if (contactIsEmail && authedEmail && authedEmail !== contact.toLowerCase()) {
             // Not an error — the buyer may ship/notify anywhere they like. Worth
             // a line in the log because it used to silently change the price.

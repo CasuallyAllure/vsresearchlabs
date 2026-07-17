@@ -24,7 +24,7 @@
 // row that priced the line is the same row that decides its promos — the two
 // can never disagree about which dose a line is.
 
-import { resolveVariantRow, type VariantRow } from "./priceCheck.ts";
+import { lineText, resolveVariantRow, type VariantRow } from "./priceCheck.ts";
 
 /** Keep in sync with WHOLESALE_PACKS in src/lib/wholesale.ts. */
 export const WHOLESALE_CASE = { size: 10, percent: 40 } as const;
@@ -121,10 +121,12 @@ function offerFor(
   const qty = line.quantity;
   if (!sku || qty < B2G1_GROUP) return null;
 
-  // The line must resolve to a real dose row. Lines with no variant row at all
+  // The line must resolve to a real dose row, by the SAME rules and the SAME
+  // text the price check used (name only — `note` is free text and used to be
+  // able to flip B2G1 eligibility on its own). Lines with no variant row at all
   // (lab equipment prices per-sku on product_stock) get no automatic promo —
   // which is exactly the P0-3 rule, arrived at by the same door.
-  const row = resolveVariantRow(sku, `${line.name} ${line.note ?? ""}`, input.variantRows);
+  const row = resolveVariantRow(sku, lineText(line), input.variantRows);
   if (row == null) return null;
 
   // The pack/free value is computed from the ADMIN price, never the client's.

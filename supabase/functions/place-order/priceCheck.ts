@@ -86,33 +86,81 @@ export interface SkuOverrideRow {
 /**
  * The variant row a line refers to: the LONGEST dose whose squashed text
  * appears in the line's squashed text, among the rows for this sku. Null when
- * no dose matches. Rows with an empty dose never match (they would match every
- * line).
+ * no dose matches, or when the text names more than one dose (see below).
  *
  * Shared by the price check and the wholesale/B2G1 planner so the two can never
  * disagree about which dose a line is.
+ *
+ * LONGEST MATCH handles doses that nest by construction: on the live sku
+ * VSR-RS-IGF, squash("IGF-1 LR3 — 0.1mg") contains "1mg", so a first-match
+ * resolver would price the 0.1mg line off the 1mg row. "0.1mg" is longer, so it
+ * wins. Same reason "15mg" is never claimed by the "5mg" row.
+ *
+ * DISJOINT MATCHES ARE AMBIGUOUS, and ambiguous means unresolved (⇒ the caller
+ * refuses the order). Longest-match alone is exploitable: squashing removes the
+ * whitespace that separates tokens, so
+ *     name "IGF-1 LR3 — 1mg" + note "0.1mg"   → "igf-1lr3—1mg0.1mg"
+ * matches BOTH rows, and the longer one wins — billing an honest-looking 1mg
+ * line at the 0.1mg price. Putting the second token in the name reaches the same
+ * place, so ignoring `note` does not close it.
+ * The tell is POSITION, which squashing preserves: a real cart line names its
+ * dose ONCE, so every match overlaps the winner (a nested dose sits inside it).
+ * Two matches on non-overlapping regions mean the text names two different
+ * doses — that is never a line this cart builds. Verified against all 138 live
+ * catalog variant lines: every one resolves to its own dose, none ambiguous.
  */
+interface Span {
+  start: number;
+  end: number;
+}
+
+/** Every place `needle` occurs in `haystack`, including overlapping hits. */
+function spansOf(haystack: string, needle: string): Span[] {
+  const spans: Span[] = [];
+  for (let i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + 1)) {
+    spans.push({ start: i, end: i + needle.length });
+  }
+  return spans;
+}
+
+const overlaps = (a: Span, b: Span): boolean => a.start < b.end && b.start < a.end;
+
 export function resolveVariantRow<T extends VariantRow>(
   sku: string,
   lineText: string,
   rows: readonly T[],
 ): T | null {
   const haystack = squash(lineText);
-  let best: { doseLen: number; row: T } | null = null;
+  const found: { dose: string; row: T; spans: Span[] }[] = [];
   for (const row of rows) {
     if (row.sku !== sku) continue;
     const dose = squash(row.dose ?? "");
-    if (dose.length === 0 || !haystack.includes(dose)) continue;
-    if (best == null || dose.length > best.doseLen) best = { doseLen: dose.length, row };
+    if (dose.length === 0) continue;
+    const spans = spansOf(haystack, dose);
+    if (spans.length > 0) found.push({ dose, row, spans });
   }
-  return best?.row ?? null;
+  if (found.length === 0) return null;
+
+  const best = found.reduce((a, b) => (b.dose.length > a.dose.length ? b : a));
+  // Every occurrence of a DIFFERENT dose must sit inside the winner (a nested
+  // dose like "1mg" within "0.1mg"). One that stands on its own region means the
+  // text names a second dose.
+  const namesASecondDose = found.some((f) =>
+    f !== best && f.spans.some((span) => !best.spans.some((b) => overlaps(span, b)))
+  );
+  return namesASecondDose ? null : best.row;
 }
 
-/** The text a line is resolved against: the dose is baked into the name by
- *  cartActions.variantProduct; `note` is included because a line can carry the
- *  dose there. Both are client-controlled — which is precisely why the price
- *  they imply is VERIFIED below rather than trusted. */
-export const lineText = (line: PriceCheckLine): string => `${line.name} ${line.note ?? ""}`;
+/** The text a line is resolved against: ONLY the name.
+ *
+ *  cartActions.variantProduct bakes the dose into the name by construction
+ *  ("BPC-157 — 5mg"), and the name is also what the operator reads when picking
+ *  the vial to ship — so it is the one field where "what you're billed for" and
+ *  "what you're sent" are the same string. `note` is a free-text message to the
+ *  seller and must never be an identity signal: it used to be able to flip B2G1
+ *  eligibility (note "5mg" on a "X — 20mg" line) and to steer this resolver onto
+ *  a cheaper dose. */
+export const lineText = (line: PriceCheckLine): string => line.name;
 
 export type PriceResolution =
   /** An admin-set price exists and is authoritative. */

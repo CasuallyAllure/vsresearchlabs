@@ -100,6 +100,34 @@ describe('wholesale eligibility is a server fact (P0-3)', () => {
     expect(wholesalePlan).toEqual([{ idx: 0, units: 10, value: 24_000 }]);
   });
 
+  test('the note cannot flip B2G1 eligibility (P1-2 spoof)', () => {
+    // `note: "5mg"` on a fast-shipping "X — 20mg" line used to match the slow
+    // 5mg row and earn free vials. The planner resolves on the name only, by the
+    // same rules as the price check.
+    const { b2g1FreePlan } = plan({
+      lines: [line({ name: 'BPC-157 — 20mg', note: '5mg', quantity: 3 })],
+      variantRows: [
+        row({ dose: '20mg', on_hand: 8, lead_days: null }), // fast → no B2G1
+        row({ dose: '5mg' }), // slow
+      ],
+      promoLive: true,
+    });
+    expect(b2g1FreePlan).toEqual([]);
+  });
+
+  test('a line naming two doses is ambiguous → no promo', () => {
+    const { wholesalePlan, b2g1FreePlan } = plan({
+      lines: [line({ sku: 'VSR-RS-IGF', name: 'IGF-1 LR3 — 1mg 0.1mg', quantity: 10 })],
+      variantRows: [
+        row({ sku: 'VSR-RS-IGF', dose: '1mg', price_cents: 5_000 }),
+        row({ sku: 'VSR-RS-IGF', dose: '0.1mg', price_cents: 1_000 }),
+      ],
+      promoLive: true,
+    });
+    expect(wholesalePlan).toEqual([]);
+    expect(b2g1FreePlan).toEqual([]);
+  });
+
   test('a line that resolves to no dose row gets no promo', () => {
     const { wholesalePlan, b2g1FreePlan } = plan({
       lines: [line({ name: 'BPC-157 (peptide)' })], // no dose text → no match
