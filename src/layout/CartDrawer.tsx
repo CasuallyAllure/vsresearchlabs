@@ -33,7 +33,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
-import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { lineUnitCents, cartSubtotalCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
 import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
@@ -173,7 +173,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       return;
     }
 
-    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+    const subtotalCents = cartSubtotalCents(items);
     const payload = {
       name: `${firstName.trim()} ${lastName.trim()}`,
       contact: email.trim(),
@@ -638,7 +638,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               )}
               {items.length > 0 && (() => {
-                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const subtotalCents = cartSubtotalCents(items);
                 // Bundle promo — PREVIEW only (place-order bills it). It's a
                 // FINAL price: when it applies the server suppresses the
                 // account discount, so this preview does too.

@@ -37,7 +37,7 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR, FIELD_LABEL } from '../compo
 import { Button } from '../components/ui/Button';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
-import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { lineUnitCents, cartSubtotalCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
 import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
@@ -172,7 +172,7 @@ export function CartPage() {
     const notesTrim = notes.trim();
     const contactTrim = contact.trim();
 
-    const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+    const subtotalCents = cartSubtotalCents(items);
     const payload = {
       name:         name.trim(),
       contact:      contactTrim,
@@ -708,18 +708,18 @@ export function CartPage() {
               <div className="flex items-baseline justify-between gap-[var(--space-4)]">
                 <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">Subtotal</span>
                 <span className="text-sm font-mono tabular-nums text-ink">
-                  {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
+                  {formatUsd(cartSubtotalCents(items))}
                 </span>
               </div>
               <div className="mt-[var(--space-3)]">
                 <PromoCode
                   variant="page"
-                  subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
+                  subtotalCents={cartSubtotalCents(items)}
                 />
               </div>
               {/* Bundle promo — final price, so it stands alone. */}
               {bundle.pairs > 0 && (() => {
-                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const subtotalCents = cartSubtotalCents(items);
                 return (
                   <div className="mt-[var(--space-3)]">
                     <div className="flex items-baseline justify-between gap-[var(--space-4)]">
@@ -752,7 +752,7 @@ export function CartPage() {
                   server bills, so this preview matches the invoice. Suppressed
                   under the bundle, exactly as place-order does. */}
               {accountDiscount && bundle.pairs === 0 && (() => {
-                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const subtotalCents = cartSubtotalCents(items);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;
                 return (
@@ -804,7 +804,7 @@ export function CartPage() {
                   discounts, and shipping. Mirrors CartDrawer's Total row so
                   the two surfaces read the same figure before checkout. */}
               {(() => {
-                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                const subtotalCents = cartSubtotalCents(items);
                 const discBreakdown = accountDiscount && bundle.pairs === 0
                   ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
                   : null;

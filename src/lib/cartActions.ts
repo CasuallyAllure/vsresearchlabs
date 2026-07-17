@@ -118,6 +118,17 @@ export function lineUnitCents(item: { product: Product }): number {
 }
 
 /**
+ * The cart's display subtotal — Σ lineUnitCents × quantity. The single client
+ * source of truth (CartDrawer + CartPage both read this); place-order
+ * independently recomputes and verifies the real charge server-side.
+ */
+export function cartSubtotalCents(
+  items: Array<{ product: Product; quantity: number }>,
+): number {
+  return items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+}
+
+/**
  * Is this cart line a wholesale case? Wholesale is ACCOUNT-GATED: only a
  * signed-in buyer transacts at case pricing, and only at pack quantity. Mirrors
  * place-order's server gate (stampedUserId + qty ≥ smallest pack).
