@@ -97,4 +97,95 @@ describe('allocateLineDiscounts — free-line handling', () => {
     // entirely on the one remaining paid line (not smeared onto the zeroed one).
     expect(allocation).toEqual([2_000, 800]);
   });
+
+  test('a free_item coupon with no matching line and no zero discount leaves all lines untouched', () => {
+    // Arrange — target > 0 but every line's base is 0, so no fallback match exists.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'X' }];
+    const retail = [0];
+    const coupons: DiscountCoupon[] = [{ kind: 'free_item', discount_cents: 500, free_sku: 'X' }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert
+    expect(allocation).toEqual([0]);
+  });
+
+  test('a coupon with discount_cents <= 0 is skipped entirely', () => {
+    // Arrange
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'A' }];
+    const retail = [1_000];
+    const coupons: DiscountCoupon[] = [{ kind: 'percent', discount_cents: 0 }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert
+    expect(allocation).toEqual([0]);
+  });
+});
+
+describe('allocateLineDiscounts — reward fencing (source: "reward")', () => {
+  test('a reward coupon lands its full discount on the highest-unit-price line and fences it from a stacked percent coupon', () => {
+    // Arrange — two paid lines; the reward targets the pricier one and fences
+    // it, so the percent coupon's discount lands entirely on the other line.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'HI' }, { quantity: 1, sku: 'LO' }];
+    const retail = [5_000, 3_000];
+    const coupons: DiscountCoupon[] = [
+      { kind: 'percent', discount_cents: 1_000, source: 'reward' },
+      { kind: 'percent', discount_cents: 800 },
+    ];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert
+    expect(allocation).toEqual([1_000, 800]);
+  });
+
+  test('falls back to detecting the reward by code "REWARD" when source is absent', () => {
+    // Arrange
+    const lines: DiscountLine[] = [{ quantity: 1 }, { quantity: 1 }];
+    const retail = [5_000, 3_000];
+    const coupons: DiscountCoupon[] = [{ kind: 'percent', discount_cents: 1_000, code: 'REWARD' }];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — lands on the higher-priced line (index 0).
+    expect(allocation).toEqual([1_000, 0]);
+  });
+
+  test('a reward coupon of kind free_item is handled by the free_item pass instead, not double-applied', () => {
+    // Arrange — even though it looks like a reward (source: 'reward'), kind
+    // free_item routes through pass 1, not the reward pass.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'X' }, { quantity: 1, sku: 'Y' }];
+    const retail = [2_000, 6_000];
+    const coupons: DiscountCoupon[] = [
+      { kind: 'free_item', discount_cents: 2_000, free_sku: 'X', source: 'reward' },
+    ];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert
+    expect(allocation).toEqual([2_000, 0]);
+  });
+
+  test('when every line is zeroed or fenced, a percent coupon finds no paid lines and is skipped without error', () => {
+    // Arrange — the free_item zeroes line A entirely; the reward fences line B.
+    const lines: DiscountLine[] = [{ quantity: 1, sku: 'A' }, { quantity: 1, sku: 'B' }];
+    const retail = [2_000, 3_000];
+    const coupons: DiscountCoupon[] = [
+      { kind: 'free_item', discount_cents: 2_000, free_sku: 'A' },
+      { kind: 'percent', discount_cents: 3_000, source: 'reward' },
+      { kind: 'fixed', discount_cents: 500 },
+    ];
+
+    // Act
+    const allocation = allocateLineDiscounts(lines, retail, coupons);
+
+    // Assert — the fixed 500 has nowhere left to land; totals foot to 2000 + 3000.
+    expect(allocation).toEqual([2_000, 3_000]);
+  });
 });

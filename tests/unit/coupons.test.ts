@@ -6,10 +6,27 @@
  * provably in lockstep with the server-side compounding model
  * (recompute_order_totals / place-order).
  */
-import { describe, expect, test } from 'vitest';
-import { couponBreakdown, type AccountDiscountPreview } from '../../src/lib/coupons';
+import { describe, expect, test, vi, beforeEach } from 'vitest';
 import type { AppliedCoupon } from '../../src/hooks/useCart';
 import { makeCartItem } from '../fixtures/product';
+
+// checkCoupon() calls the module-level `supabase` singleton, which DOES get
+// initialized in this test env (.env carries real project creds — see
+// src/lib/supabase.ts). Mock the seam so the RPC branches are deterministic
+// and no test ever makes a real network call to production Supabase.
+const rpcMock = vi.fn();
+vi.mock('../../src/lib/supabase', () => ({
+  supabase: { rpc: (...args: unknown[]) => rpcMock(...args) },
+}));
+
+import {
+  couponBreakdown,
+  checkCoupon,
+  freeItemLineValue,
+  couponStillQualifies,
+  submittableCouponCodes,
+  type AccountDiscountPreview,
+} from '../../src/lib/coupons';
 
 function percentCoupon(code: string, percent: number): AppliedCoupon {
   return {
@@ -274,5 +291,334 @@ describe('couponBreakdown — account discount (pass 2a, blueprint worked exampl
     // Assert
     expect(result.accountCents).toBe(0);
     expect(result.perCode.SAVE10).toBe(1_000);
+  });
+});
+
+describe('checkCoupon — input validation (no network)', () => {
+  beforeEach(() => {
+    rpcMock.mockReset();
+  });
+
+  test('rejects a code shorter than 3 characters without calling the RPC', async () => {
+    // Arrange / Act
+    const result = await checkCoupon('AB', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'Enter a code.' });
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  test('rejects an empty code without calling the RPC', async () => {
+    // Arrange / Act
+    const result = await checkCoupon('', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'Enter a code.' });
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  test('trims whitespace before applying the minimum-length check', async () => {
+    // Arrange / Act — trims to "AB" (2 chars), still too short.
+    const result = await checkCoupon('  ab  ', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'Enter a code.' });
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('checkCoupon — RPC seam', () => {
+  beforeEach(() => {
+    rpcMock.mockReset();
+  });
+
+  test('returns ok:false with a generic reason when the RPC call errors', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: null, error: { message: 'network down' } });
+
+    // Act
+    const result = await checkCoupon('SAVE20', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'Could not check the code. Please try again.' });
+  });
+
+  test('returns ok:false with the server-supplied reason when the row is invalid', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: { valid: false, reason: 'Expired code' }, error: null });
+
+    // Act
+    const result = await checkCoupon('OLD10', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'Expired code' });
+  });
+
+  test('returns ok:false with a default reason when an invalid row omits a reason', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: { valid: false }, error: null });
+
+    // Act
+    const result = await checkCoupon('NOPE', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'This code is not valid.' });
+  });
+
+  test('returns ok:false with a default reason when the row is null', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: null, error: null });
+
+    // Act
+    const result = await checkCoupon('WHAT', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'This code is not valid.' });
+  });
+
+  test('returns ok:false when a "valid" row is missing code or kind', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: { valid: true }, error: null });
+
+    // Act
+    const result = await checkCoupon('WEIRD', 1_000);
+
+    // Assert
+    expect(result).toEqual({ ok: false, reason: 'This code is not valid.' });
+  });
+
+  test('returns ok:true with a fully populated coupon on a valid row', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({
+      data: {
+        valid: true,
+        code: 'SAVE20',
+        kind: 'percent',
+        percent: 20,
+        amount_cents: null,
+        free_sku: null,
+        free_dose: null,
+        free_label: null,
+        min_subtotal_cents: 5_000,
+        requires_account: false,
+      },
+      error: null,
+    });
+
+    // Act
+    const result = await checkCoupon('save20', 10_000);
+
+    // Assert
+    expect(result).toEqual({
+      ok: true,
+      coupon: {
+        code: 'SAVE20',
+        kind: 'percent',
+        percent: 20,
+        amountCents: null,
+        freeSku: null,
+        freeDose: null,
+        freeLabel: null,
+        minSubtotalCents: 5_000,
+        requiresAccount: false,
+      },
+    });
+  });
+
+  test('defaults optional fields to null/0/false when a valid row omits them', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({
+      data: { valid: true, code: 'BARE', kind: 'fixed' },
+      error: null,
+    });
+
+    // Act
+    const result = await checkCoupon('bare', 1_000);
+
+    // Assert
+    expect(result).toEqual({
+      ok: true,
+      coupon: {
+        code: 'BARE',
+        kind: 'fixed',
+        percent: null,
+        amountCents: null,
+        freeSku: null,
+        freeDose: null,
+        freeLabel: null,
+        minSubtotalCents: 0,
+        requiresAccount: false,
+      },
+    });
+  });
+
+  test('sends the trimmed/uppercased code, clamped subtotal, and self-filtered applied codes to the RPC', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: null, error: null });
+
+    // Act — the code being checked is also present (lowercase) in appliedCodes;
+    // it must be filtered out of what's sent so the server doesn't self-gate.
+    await checkCoupon('  save20 ', -50, {
+      appliedCodes: ['save20', 'OTHER'],
+      hasAccount: true,
+      hasReward: true,
+      hasPromo: true,
+    });
+
+    // Assert — negative subtotal clamps to 0.
+    expect(rpcMock).toHaveBeenCalledWith('validate_coupon', {
+      p_code: 'SAVE20',
+      p_subtotal_cents: 0,
+      p_applied_codes: ['OTHER'],
+      p_has_reward: true,
+      p_has_promo: true,
+      p_has_account: true,
+    });
+  });
+
+  test('rounds a fractional subtotal before sending it to the RPC', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: null, error: null });
+
+    // Act
+    await checkCoupon('SAVE20', 1_000.6);
+
+    // Assert
+    expect(rpcMock).toHaveBeenCalledWith(
+      'validate_coupon',
+      expect.objectContaining({ p_subtotal_cents: 1_001 }),
+    );
+  });
+
+  test('defaults the context flags to false/empty when no context is supplied', async () => {
+    // Arrange
+    rpcMock.mockResolvedValue({ data: null, error: null });
+
+    // Act
+    await checkCoupon('SAVE20', 1_000);
+
+    // Assert
+    expect(rpcMock).toHaveBeenCalledWith('validate_coupon', {
+      p_code: 'SAVE20',
+      p_subtotal_cents: 1_000,
+      p_applied_codes: [],
+      p_has_reward: false,
+      p_has_promo: false,
+      p_has_account: false,
+    });
+  });
+});
+
+describe('freeItemLineValue', () => {
+  test('returns 0 for a coupon that is not kind free_item', () => {
+    // Arrange
+    const coupon = percentCoupon('SAVE20', 20);
+    const items = [makeCartItem({ sku: 'BPC-157', priceCents: 3_000 })];
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, items)).toBe(0);
+  });
+
+  test('returns 0 for a free_item coupon with no freeSku set', () => {
+    // Arrange
+    const coupon = freeItemCoupon('FREEX', '');
+    const items = [makeCartItem({ sku: 'BPC-157', priceCents: 3_000 })];
+
+    // Act / Assert
+    expect(freeItemLineValue({ ...coupon, freeSku: null }, items)).toBe(0);
+  });
+
+  test('returns the matching line value when the SKU is in the cart and no dose is specified', () => {
+    // Arrange
+    const coupon = freeItemCoupon('FREEBPC', 'BPC-157');
+    const items = [makeCartItem({ sku: 'BPC-157', priceCents: 4_500 })];
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, items)).toBe(4_500);
+  });
+
+  test('matches on SKU and dose substring when the coupon names a dose', () => {
+    // Arrange
+    const coupon = { ...freeItemCoupon('FREEBPC', 'BPC-157'), freeDose: '10mg' };
+    const items = [makeCartItem({ sku: 'BPC-157', name: 'BPC-157 10mg Vial', priceCents: 4_500 })];
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, items)).toBe(4_500);
+  });
+
+  test('returns 0 when the SKU matches but the dose substring does not', () => {
+    // Arrange
+    const coupon = { ...freeItemCoupon('FREEBPC', 'BPC-157'), freeDose: '10mg' };
+    const items = [makeCartItem({ sku: 'BPC-157', name: 'BPC-157 5mg Vial', priceCents: 4_500 })];
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, items)).toBe(0);
+  });
+
+  test('returns 0 when no cart item matches the SKU at all', () => {
+    // Arrange
+    const coupon = freeItemCoupon('FREEBPC', 'BPC-157');
+    const items = [makeCartItem({ sku: 'OTHER-SKU', priceCents: 3_000 })];
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, items)).toBe(0);
+  });
+
+  test('returns 0 for an empty cart', () => {
+    // Arrange
+    const coupon = freeItemCoupon('FREEBPC', 'BPC-157');
+
+    // Act / Assert
+    expect(freeItemLineValue(coupon, [])).toBe(0);
+  });
+});
+
+describe('couponStillQualifies', () => {
+  test('returns true when the coupon is null', () => {
+    expect(couponStillQualifies(null, 0)).toBe(true);
+  });
+
+  test('returns true when the subtotal is above the minimum', () => {
+    const coupon = { ...percentCoupon('SAVE20', 20), minSubtotalCents: 5_000 };
+    expect(couponStillQualifies(coupon, 6_000)).toBe(true);
+  });
+
+  test('returns true when the subtotal exactly equals the minimum (boundary)', () => {
+    const coupon = { ...percentCoupon('SAVE20', 20), minSubtotalCents: 5_000 };
+    expect(couponStillQualifies(coupon, 5_000)).toBe(true);
+  });
+
+  test('returns false when the subtotal drops below the minimum', () => {
+    const coupon = { ...percentCoupon('SAVE20', 20), minSubtotalCents: 5_000 };
+    expect(couponStillQualifies(coupon, 4_999)).toBe(false);
+  });
+});
+
+describe('submittableCouponCodes', () => {
+  test('returns an empty array for no coupons', () => {
+    expect(submittableCouponCodes([], 10_000)).toEqual([]);
+  });
+
+  test('excludes coupons that no longer qualify for the current subtotal', () => {
+    // Arrange
+    const coupons = [
+      { ...percentCoupon('SAVE20', 20), minSubtotalCents: 5_000 },
+      { ...percentCoupon('BIG50', 50), minSubtotalCents: 50_000 },
+    ];
+
+    // Act / Assert
+    expect(submittableCouponCodes(coupons, 10_000)).toEqual(['SAVE20']);
+  });
+
+  test('dedupes repeated codes while preserving first-seen order', () => {
+    // Arrange
+    const coupons = [
+      percentCoupon('A10', 10),
+      percentCoupon('B10', 10),
+      percentCoupon('A10', 10),
+    ];
+
+    // Act / Assert
+    expect(submittableCouponCodes(coupons, 10_000)).toEqual(['A10', 'B10']);
   });
 });

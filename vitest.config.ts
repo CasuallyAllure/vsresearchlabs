@@ -23,9 +23,12 @@ export default defineConfig({
       include: ['supabase/functions/place-order/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['supabase/functions/place-order/index.ts'],
       reporter: ['text-summary', 'text'],
-      // Measured floor on 2026-07-17: 27.9 L / 26.73 S / 23.67 B / 27.27 F
-      // (place-order modules ~100%; src/lib client mirrors mostly untested).
-      thresholds: { lines: 27, statements: 26, branches: 23, functions: 27 },
+      // Measured floor on 2026-07-17 (PM, money-mirror suites landed):
+      // 38.52 L / 37.92 S / 38.03 B / 40.15 F — pricing/wholesale/coupons/
+      // lineDiscounts now 95-100%, productOverrides ~54% (reload() network
+      // branches untested), place-order modules ~100%. RATCHET: raise as
+      // coverage grows toward the 80% bar; never lower.
+      thresholds: { lines: 38, statements: 37, branches: 37, functions: 39 },
     },
   },
 });
