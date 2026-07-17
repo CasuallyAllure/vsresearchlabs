@@ -12,12 +12,13 @@
  * color accent and reads as a state chip.
  */
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useCart } from '../hooks/useCart';
 import { NavDrawer } from './NavDrawer';
-import { CartDrawer } from './CartDrawer';
 import { Logo } from '../components/brand/Logo';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+
+const CartDrawer = lazy(() => import('./CartDrawer').then((m) => ({ default: m.CartDrawer })));
 
 export type HeaderRole = 'guest' | 'owner';
 
@@ -29,6 +30,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
   const itemCount = useCart((s) => s.itemCount());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartEverOpened, setCartEverOpened] = useState(false);
 
   return (
     <>
@@ -37,7 +39,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
         data-role={role}
         style={{ backgroundColor: 'var(--header-bg)' }}
       >
-        <div className="relative z-10 h-[64px] sm:h-[60px] px-[var(--space-6)] flex items-center">
+        <div className="relative z-10 h-[56px] sm:h-[60px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}
           <button
             type="button"
@@ -85,7 +87,10 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
               so the bag reads as a raised control — the header's one action. */}
           <button
             type="button"
-            onClick={() => setCartOpen(true)}
+            onClick={() => {
+              setCartOpen(true);
+              setCartEverOpened(true);
+            }}
             aria-label="Open inquiry list"
             aria-expanded={cartOpen}
             aria-controls="inquiry-cart-drawer"
@@ -140,7 +145,11 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
 
       {/* Slide-out inquiry cart drawer */}
       <div id="inquiry-cart-drawer">
-        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+        {cartEverOpened && (
+          <Suspense fallback={null}>
+            <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+          </Suspense>
+        )}
       </div>
     </>
   );

@@ -2,8 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
-import { useProductOverrides } from './lib/productOverrides'
-import { usePromoSettings } from './lib/promoSettings'
 import { installGlobalErrorHandlers } from './lib/telemetry'
 
 // Error tracking. Two listener registrations, no network, no SDK — cheap
@@ -32,10 +30,10 @@ window.addEventListener('vite:preloadError', (event) => {
 // path; the 2s timeout bounds the delay so admin price overrides still land
 // before a buyer can meaningfully interact with the catalog.
 const scheduleBootLoads = () => {
-  useProductOverrides.getState().load();
+  import('./lib/productOverrides').then((m) => m.useProductOverrides.getState().load());
   // Promo governance (055) — drives the limited-time B2G1 messaging on
   // catalog shipping chips. Server stays authoritative for the discount.
-  usePromoSettings.getState().load();
+  import('./lib/promoSettings').then((m) => m.usePromoSettings.getState().load());
 };
 if ('requestIdleCallback' in window) {
   requestIdleCallback(scheduleBootLoads, { timeout: 2000 });

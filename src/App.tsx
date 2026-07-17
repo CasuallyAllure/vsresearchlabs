@@ -5,7 +5,6 @@ import { GlobalHeader } from './layout/GlobalHeader';
 import { AnimatedPortalShell } from './layout/AnimatedPortalShell';
 import { GlobalFooter } from './layout/GlobalFooter';
 import { BottomNav } from './layout/BottomNav';
-import { AdminGate } from './pages/admin/AdminGate';
 import { RouteTransitionLoader } from './components/brand/RouteTransitionLoader';
 import { DisclaimerGate } from './components/brand/DisclaimerGate';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -20,6 +19,11 @@ const lazyPage = <K extends string>(
   key: K,
 ) => lazy(() => loader().then((m) => ({ default: m[key] })));
 
+// AdminGate takes a `children` prop, so it can't go through lazyPage's
+// props-less ComponentType helper — load it directly instead.
+const AdminGate = lazy(() =>
+  import('./pages/admin/AdminGate').then((m) => ({ default: m.AdminGate })),
+);
 const Landing = lazyPage(() => import('./pages/Landing'), 'Landing');
 const ResearchSuppliesHub = lazyPage(() => import('./pages/ResearchSuppliesHub'), 'ResearchSuppliesHub');
 const BiopeptideResearchSupplies = lazyPage(() => import('./pages/BiopeptideResearchSupplies'), 'BiopeptideResearchSupplies');
