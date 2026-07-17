@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
 import { AbbreviationChip } from './AbbreviationChip';
 import { VialRender } from './specimen/VialRender';
@@ -89,7 +90,10 @@ export function CompoundIntelligenceOverlay({
   onNavigate,
   wholesale,
 }: CompoundIntelligenceOverlayProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  // Mounted only while open, so the trap is always active for this component's
+  // lifetime. Handles initial focus and returns focus to the catalog tile that
+  // opened the overlay on unmount.
+  const panelRef = useFocusTrap<HTMLDivElement>(true);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
   const setItemNote = useCart((s) => s.setItemNote);
@@ -203,10 +207,7 @@ export function CompoundIntelligenceOverlay({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prevProduct?.id, nextProduct?.id]);
 
-  useEffect(() => {
-    const el = panelRef.current?.querySelector<HTMLElement>('button, [href]');
-    el?.focus();
-  }, []);
+  // (Initial focus is handled by useFocusTrap above.)
 
   // ─── Derived values ─────────────────────────────────────────────────────────
 
