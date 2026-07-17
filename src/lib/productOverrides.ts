@@ -82,6 +82,45 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       return;
     }
     set({ loading: true, error: null });
+
+    // Retry the whole fetch a few times with backoff before giving up. On some
+    // clients (Safari desktop with tracking-prevention, flaky networks, a cold
+    // edge) the first cross-origin call to Supabase intermittently fails or
+    // times out; a single failure used to leave the catalog on formula prices
+    // with no stock, and advertised a fabricated bundle price. Read-only GETs,
+    // so retrying is safe.
+    const ATTEMPT_DELAYS_MS = [0, 500, 1200];
+    let lastError: string | null = null;
+    for (const delay of ATTEMPT_DELAYS_MS) {
+      if (delay > 0) await new Promise((r) => setTimeout(r, delay));
+      const result = await loadOverridesOnce(supabase);
+      if (result.ok) {
+        set({ bySku: result.bySku, variantBySku: result.variantBySku, loaded: true, loading: false, error: null });
+        return;
+      }
+      lastError = result.error;
+    }
+    // Every attempt failed. Flip `loaded` (so the catalog doesn't skeleton
+    // forever) but keep `error` set — data-dependent UI (24hr filter, the
+    // bundle tile) checks `error` and hides rather than showing fake prices.
+    set({ loading: false, loaded: true, error: lastError ?? 'Could not load inventory.' });
+  },
+
+  getOverride: (sku: string) => get().bySku[sku] ?? null,
+}));
+
+interface LoadResult {
+  ok: boolean;
+  bySku: Record<string, ProductOverride>;
+  variantBySku: Record<string, Record<string, VariantOverride>>;
+  error: string | null;
+}
+
+/** One full fetch of the per-sku + per-dose override tables. Returns ok:false
+ *  if EITHER table fails (after its own column-shedding fallbacks) so the
+ *  caller can retry the whole thing rather than commit a half-empty store. */
+async function loadOverridesOnce(supabase: NonNullable<typeof import('./supabase')['supabase']>): Promise<LoadResult> {
+  const empty = { bySku: {}, variantBySku: {} };
     // Prefer the full select (with the cited-clip fields from migration 007).
     // If those columns aren't live yet, fall back to the base columns so the
     // catalog never breaks on a deploy that lands before the migration.
@@ -92,12 +131,7 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       ({ data, error } = await supabase.from('public_product_overrides').select(BASE));
     }
     if (error) {
-      // `loaded` means "the first load attempt has resolved" (success OR
-      // failure) — callers gate a loading state on it, so a failed fetch
-      // must still flip it, or the catalog would show a loading skeleton
-      // forever whenever Supabase is unreachable.
-      set({ loading: false, loaded: true, error: error.message });
-      return;
+      return { ok: false, ...empty, error: error.message };
     }
     const next: Record<string, ProductOverride> = {};
     for (const row of (data ?? []) as Partial<ProductOverride>[]) {
@@ -121,6 +155,7 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
     // columns in reverse-migration order so the catalog keeps rendering on a
     // deploy that lands before its migration.
     let vData: Partial<VariantOverride>[] | null = null;
+    let vError: string | null = null;
     const { data: vHidden, error: vHiddenErr } = await supabase
       .from('public_variant_overrides')
       .select('sku, dose, on_hand, inbound_units, price_cents, lead_days, hidden');
@@ -133,11 +168,19 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       if (!vFullErr) {
         vData = vFull as Partial<VariantOverride>[];
       } else {
-        const { data: vBase } = await supabase
+        const { data: vBase, error: vBaseErr } = await supabase
           .from('public_variant_overrides')
           .select('sku, dose, on_hand, price_cents, lead_days');
-        vData = vBase as Partial<VariantOverride>[];
+        vData = vBase as Partial<VariantOverride>[] | null;
+        vError = vBaseErr?.message ?? null;
       }
+    }
+    // A failed variant fetch (not merely an empty result) means no per-dose
+    // prices or stock — which reads as "everything is formula-priced, nothing
+    // is 24hr". Treat it as a hard failure so reload() retries instead of
+    // committing that misleading half-empty state.
+    if (vError) {
+      return { ok: false, ...empty, error: vError };
     }
     for (const row of (vData ?? [])) {
       if (!row.sku || !row.dose) continue;
@@ -152,11 +195,8 @@ export const useProductOverrides = create<OverridesState>((set, get) => ({
       };
     }
 
-    set({ bySku: next, variantBySku, loaded: true, loading: false, error: null });
-  },
-
-  getOverride: (sku: string) => get().bySku[sku] ?? null,
-}));
+    return { ok: true, bySku: next, variantBySku, error: null };
+}
 
 /** Derived helpers — call from any component without subscribing. */
 

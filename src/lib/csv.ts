@@ -10,7 +10,7 @@
 
 /** Parse CSV text into a matrix of string cells. */
 export function parseCsv(input: string): string[][] {
-  const text = input.replace(/^﻿/, ''); // strip BOM
+  const text = input.replace(/^\uFEFF/, ''); // strip BOM
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';

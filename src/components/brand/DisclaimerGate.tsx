@@ -137,7 +137,7 @@ export function DisclaimerGate() {
           position: 'relative',
           width: '100%',
           maxWidth: 460,
-          maxHeight: 'calc(100vh - 40px)',
+          maxHeight: 'calc(100dvh - 40px)',
           overflowY: 'auto',
           overflowX: 'hidden',
           padding: `${CARD_PADDING_TOP}px 26px 24px`,

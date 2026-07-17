@@ -40,7 +40,7 @@ export function DocumentationPreview() {
 
   return (
     <section
-      className="-mx-[var(--space-6)] border-b border-ink/[0.06]"
+      className="-mx-[var(--page-gutter)] border-b border-ink/[0.06]"
       aria-label="Documentation preview"
     >
       <div className="mx-auto w-full max-w-[1100px] px-[var(--space-6)] py-[var(--space-16)] sm:py-[var(--space-20)]">

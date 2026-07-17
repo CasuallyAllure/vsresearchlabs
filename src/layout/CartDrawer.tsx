@@ -29,12 +29,15 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
+import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -92,6 +95,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  useAccountEmailPrefill(user?.email, setEmail);
   const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [stateRegion, setStateRegion] = useState('');
@@ -112,6 +116,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
+
+  // Modality enforcement — the panel declares aria-modal, so Tab must not walk
+  // out into the page behind the scrim. Also restores focus to the header cart
+  // button on close.
+  const panelRef = useFocusTrap<HTMLElement>(open);
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -234,9 +243,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           floating module, and a weighted decelerate slide (settles, never
           bounces). Enter slower than exit; reduced-motion zeroes both. */}
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Inquiry list"
+        // Closed, the panel stays mounted and merely slides off-screen — so
+        // without `inert` its buttons remain tabbable and a keyboard user
+        // walks into invisible controls. `inert` also drops it from the a11y
+        // tree, which `translateX` alone never did.
+        inert={!open}
         className="glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[344px] max-w-[90vw] sm:w-[388px] flex-col rounded-l-[22px] overflow-hidden"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -327,7 +342,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="cart-first" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                  <label htmlFor="cart-first" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                     First name *
                   </label>
                   <input
@@ -342,7 +357,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="cart-last" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                  <label htmlFor="cart-last" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                     Last name *
                   </label>
                   <input
@@ -358,7 +373,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 </div>
               </div>
               <div>
-                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                <label htmlFor="cart-email" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                   Email *
                 </label>
                 <input
@@ -373,7 +388,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 />
               </div>
               <div>
-                <label htmlFor="cart-street" className="block text-[10px] uppercase tracking-[0.2em] text-ink/50 mb-1.5">
+                <label htmlFor="cart-street" className="block text-[10px] uppercase tracking-[0.2em] text-ink/65 mb-1.5">
                   Shipping address *
                 </label>
                 <input
@@ -624,29 +639,61 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               )}
               {items.length > 0 && (() => {
                 const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
-                const breakdown = accountDiscount
+                // Bundle promo — PREVIEW only (place-order bills it). It's a
+                // FINAL price: when it applies the server suppresses the
+                // account discount, so this preview does too.
+                const bundle = bundleDiscount(
+                  items.map((i) => ({
+                    sku: i.product.sku,
+                    unitCents: lineUnitCents(i),
+                    quantity: i.quantity,
+                  })),
+                );
+                const breakdown = accountDiscount && bundle.pairs === 0
                   ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
                 // Shipping rides on top of the discounted subtotal — mirrors
                 // place-order, which recomputes it from the verified session.
                 const shippingCents = shippingCentsFor(isMember);
-                const totalCents = (hasAccountDisc
-                  ? Math.max(subtotalCents - breakdown!.total, 0)
-                  : subtotalCents) + shippingCents;
+                const discountedSubtotal = bundle.pairs > 0
+                  ? Math.max(subtotalCents - bundle.discountCents, 0)
+                  : hasAccountDisc
+                    ? Math.max(subtotalCents - breakdown!.total, 0)
+                    : subtotalCents;
+                const totalCents = discountedSubtotal + shippingCents;
                 return (
                   <>
                     {/* Subtotal + account perk — quiet rows above the anchor total */}
                     <div className="mb-3 flex items-baseline justify-between">
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Subtotal</span>
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">Subtotal</span>
                       <span className="font-mono text-[13px] tabular-nums text-ink/70">
                         {formatUsd(subtotalCents)}
                       </span>
                     </div>
                     <PromoCode variant="drawer" subtotalCents={subtotalCents} />
+                    {bundle.pairs > 0 && (
+                      <>
+                        <div className="mb-3 flex items-baseline justify-between gap-2">
+                          <span className="min-w-0 text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                            Bundle · {BUNDLE_PROMO.percent}% off
+                            {bundle.pairs > 1 ? ` ${bundle.pairs} pairs` : ''}
+                          </span>
+                          <span className="shrink-0 font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
+                            −{formatUsd(bundle.discountCents)}
+                          </span>
+                        </div>
+                        {coupons.length > 0 && (
+                          <p className="mb-3 text-[10.5px] leading-relaxed text-status-warning">
+                            Bundle pricing is final and can’t be combined with promo codes — remove
+                            the code (or a bundle item) to check out.
+                          </p>
+                        )}
+                      </>
+                    )}
                     {hasAccountDisc && (
                       <div className="mb-3 flex items-baseline justify-between">
-                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">
                           {accountDiscount!.label}
                         </span>
                         <span className="font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
@@ -657,13 +704,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     {/* Shipping — members ship free; guests pay the flat fee and
                         get a one-tap path to waive it. */}
                     <div className="mb-3 flex items-baseline justify-between">
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">Shipping</span>
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">Shipping</span>
                       <span className="font-mono text-[13px] tabular-nums text-ink/70">
                         {isMember ? 'Free — member' : formatUsd(shippingCents)}
                       </span>
                     </div>
                     {!isMember && (
-                      <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/45">
+                      <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/65">
                         <Link
                           to="/account?mode=signup"
                           onClick={onClose}

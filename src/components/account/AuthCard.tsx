@@ -63,7 +63,7 @@ export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialM
 
   return (
     <div className="mx-auto w-full max-w-[30rem]">
-      <div className={`holo-surface rounded-[var(--radius-card)] px-[var(--space-5)] sm:px-[var(--space-8)] ${flipped ? 'py-[var(--space-4)]' : 'py-[var(--space-7)]'}`}>
+      <div className={`floating-module px-[var(--space-5)] sm:px-[var(--space-8)] ${flipped ? 'py-[var(--space-4)]' : 'py-[var(--space-7)]'}`}>
         {/* Brand header — condensed on the taller sign-up face so the form fits. */}
         <div className={`flex flex-col items-center text-center ${flipped ? 'mb-[var(--space-4)]' : 'mb-[var(--space-8)]'}`}>
           <Logo variant="stacked" markSize={flipped ? 40 : 56} wordSize={flipped ? 11 : 13} circled to={null} />

@@ -120,7 +120,12 @@ classes are functional print fidelity — DO NOT TOUCH.
   Never `transition: all`, never `ease-in`, never animate layout props — transform/opacity only.
 - Hover states gated `@media (hover:hover)`. Everything gated by `prefers-reduced-motion`
   (the global reduce block already exists — keep it).
-- DnaVMark stays still (brand rule). No glows/neon/scanlines/sheens — retired stays retired.
+- DnaVMark stays still (brand rule). No glows/neon/scanlines/sheens on general surfaces —
+  EXCEPT the owner-approved **conversion-glow family** (2026-07): the same-day delivery
+  token, the Begin Inquiry hero CTA, and the nav Research Supplies pill may carry a
+  breathing palette-internal glow (keyframed box-shadow on `rgb(var(--c-gold|--c-teal))`,
+  ≤3s cycle, reduced-motion → static). Pattern of record: `.sdd-trigger` in
+  SameDayDeliveryBadge.tsx. Nothing else glows without owner sign-off.
 
 ## 4. PER-SURFACE PRESCRIPTIONS
 
@@ -163,8 +168,9 @@ classes are functional print fidelity — DO NOT TOUCH.
 Sharp <10px corners on cards/inputs · text below 10px · `transition: all` · `ease-in` ·
 animating width/height/top/left · backdrop-blur on scrolling content · glass without
 border+highlight · hardcoded hex outside print docs · `window.confirm/prompt` (iOS no-op) ·
-hover-only affordances · tap targets <40px on admin/mobile · new accent colors · neon/glow/
-scanline/sheen effects · `h-screen`/`100vh` (use `min-h-[100dvh]`) · removing focus rings ·
+hover-only affordances · tap targets <40px on admin/mobile · new accent colors · neon/
+scanline effects · glow/sheen outside the §3 conversion-glow family ·
+`h-screen`/`100vh` (use `min-h-[100dvh]`) · removing focus rings ·
 `user-scalable=no` · color-only status meaning (pair dot/label) · pure #000 backgrounds.
 
 ## 6. DO-NOT-TOUCH LIST (functional)

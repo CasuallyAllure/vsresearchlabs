@@ -48,3 +48,9 @@ walkthrough/frames/
 test-results/
 playwright-report/
 blob-report/
+
+# Heavy binary media — untracked 2026-07-16 (was 606MB of the repo). Files
+# stay on disk; keep them out of git. video/ = Remotion renders + sources,
+# VILERAW/ = raw asset dumps.
+video/
+VILERAW/

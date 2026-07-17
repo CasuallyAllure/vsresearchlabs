@@ -18,7 +18,7 @@ interface GlobalSurfaceProps {
 export function GlobalSurface({ children, className = '' }: GlobalSurfaceProps) {
   return (
     <div
-      className={`relative isolate min-h-screen w-full bg-base-900 text-text-primary ${className}`.trim()}
+      className={`relative isolate min-h-[100dvh] w-full bg-base-900 text-text-primary ${className}`.trim()}
     >
       {/* Top light-leaks — brand-colored shafts bleeding down behind all
           content, lifting modules off the background. Decorative only. */}

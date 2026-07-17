@@ -43,22 +43,35 @@ interface DoseChipProps {
   isActive: boolean;
   /** Radio-button behavior (dose picker). Omit for a static single-dose label. */
   interactive?: boolean;
+  /** Tighter padding/type for dense surfaces (catalog tile). */
+  compact?: boolean;
   onClick?: (e: React.MouseEvent) => void;
 }
 
 /** One dose pill — interactive (radio, part of the multi-dose picker) or
  *  static (single-dose products, which still need their dose visible). */
-export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChipProps) {
+export function DoseChip({ sku, dose, isActive, interactive, compact, onClick }: DoseChipProps) {
   const av = doseAvailability(sku, dose);
   const isFast = av.state === 'in_stock' && av.fast;
   const doseTxt = dose.replace(/\s+/g, '').toUpperCase();
+  const fontSize = compact ? '9px' : '10px';
   const style = {
-    fontSize: '10px',
-    letterSpacing: '0.14em',
+    fontSize,
+    letterSpacing: '0.12em',
     backgroundColor: isActive ? 'var(--color-content-primary)' : 'var(--color-interactive-secondary)',
     color: isActive ? 'var(--color-surface-base)' : 'var(--color-content-secondary)',
     borderColor: isActive ? 'var(--color-content-primary)' : 'rgb(var(--c-ink) / 0.12)',
   } as const;
+  // min-h-[24px] is the WCAG 2.2 SC 2.5.8 (AA) target floor. These chips sit in
+  // a wrap row a few px apart, so the hit area can NOT be widened past the
+  // painted box with a pseudo-element: neighbouring chips would overlap and a
+  // stray tap would silently select a different dose — i.e. a different price.
+  // The box has to be genuinely big enough. Matches CompoundTile's h-[27px].
+  // inline-flex so min-h applies to the static <span> branch too (min-height is
+  // inert on an inline box) and so both branches keep the label optically centred.
+  const box = compact
+    ? 'inline-flex items-center justify-center min-h-[24px] px-1.5 py-[2px]'
+    : 'inline-flex items-center justify-center min-h-[24px] px-2 py-1';
   const content = (
     <>
       {doseTxt}
@@ -67,8 +80,8 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
           className="ml-1 inline-flex items-center gap-0.5 align-middle"
           style={{
             color: isActive ? 'rgba(155,196,163,1)' : '#2E7D5B',
-            fontSize: '10px',
-            letterSpacing: '0.16em',
+            fontSize,
+            letterSpacing: '0.14em',
           }}
         >
           · 24 HR
@@ -81,7 +94,7 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
   if (!interactive) {
     return (
       <span
-        className="font-mono leading-none px-2 py-1 rounded-full border"
+        className={`font-mono leading-none rounded-full border ${box}`}
         style={style}
         title={isFast ? `${dose} · 24 hour shipping` : dose}
       >
@@ -97,7 +110,7 @@ export function DoseChip({ sku, dose, isActive, interactive, onClick }: DoseChip
       aria-checked={isActive}
       onClick={onClick}
       title={isFast ? `${dose} · 24 hour shipping` : dose}
-      className="font-mono leading-none px-2 py-1 rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35"
+      className={`font-mono leading-none rounded-full border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${box}`}
       style={style}
     >
       {content}
@@ -121,7 +134,10 @@ interface SourcedDoseSegmentProps {
 export function SourcedDoseSegment({ dose, isActive, interactive, hasDivider, onClick }: SourcedDoseSegmentProps) {
   const doseTxt = dose.replace(/\s+/g, '').toUpperCase();
   const className = [
-    'flex-1 font-mono leading-none text-center px-2 py-1.5 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 focus-visible:ring-inset',
+    // min-h-[24px] — WCAG 2.2 SC 2.5.8 (AA) target floor; segments sit flush
+    // against each other, so the painted box IS the hit area and has to carry
+    // the size itself. inline-flex keeps the static <span> branch honest.
+    'flex-1 inline-flex items-center justify-center min-h-[24px] font-mono leading-none text-center px-2 py-1.5 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 focus-visible:ring-inset',
     hasDivider ? 'border-l border-ink/12' : '',
   ].join(' ');
   const style = {

@@ -101,8 +101,50 @@ export function AdminStockHistory() {
         </div>
       )}
 
+      {/* Mobile: one card per movement — same data as the table row. */}
       {rows && rows.length > 0 && (
-        <div className="research-surface-solid overflow-x-auto">
+        <div className="md:hidden flex flex-col gap-[var(--space-3)]">
+          {rows.map((row) => (
+            <div key={row.id} className="floating-module p-4">
+              <div className="flex items-start justify-between gap-[var(--space-3)]">
+                <div className="min-w-0">
+                  <p className="font-mono text-[11px] text-holo-light/80">{row.sku}</p>
+                  <p className="font-mono text-[10px] tabular-nums text-ink/45 mt-0.5">{formatTs(row.created_at)}</p>
+                </div>
+                <span className="shrink-0 text-[11px] uppercase tracking-[0.18em] text-ink/65">{REASON_LABEL[row.reason]}</span>
+              </div>
+              <div className="mt-[var(--space-3)] flex items-end justify-between gap-[var(--space-3)] border-t border-ink/[0.06] pt-[var(--space-3)]">
+                <div className="flex items-center gap-[var(--space-4)]">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-ink/40">Δ</p>
+                    <p className={`font-mono tabular-nums text-[13px] ${row.delta < 0 ? 'text-[color:var(--color-status-error)]' : 'text-[color:var(--color-status-success)]'}`}>
+                      {row.delta > 0 ? '+' : ''}{row.delta}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-ink/40">After</p>
+                    <p className="font-mono tabular-nums text-[13px] text-ink">{row.on_hand_after}</p>
+                  </div>
+                </div>
+                <div className="text-right text-[11.5px] text-ink/60">
+                  {row.order_id && (
+                    <Link
+                      to={`/admin/orders/${row.order_id}`}
+                      className="block text-holo-light/80 hover:text-holo-light underline underline-offset-4 decoration-holo/20"
+                    >
+                      Order ↗
+                    </Link>
+                  )}
+                  {row.notes && <p className="mt-0.5 text-ink/45">{row.notes}</p>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {rows && rows.length > 0 && (
+        <div className="hidden md:block research-surface-solid overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse">
             <thead>
               <tr className="border-b border-ink/[0.08]">

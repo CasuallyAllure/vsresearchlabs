@@ -21,6 +21,7 @@ function percentCoupon(code: string, percent: number): AppliedCoupon {
     freeDose: null,
     freeLabel: null,
     minSubtotalCents: 0,
+    requiresAccount: false,
   };
 }
 
@@ -34,6 +35,7 @@ function fixedCoupon(code: string, amountCents: number): AppliedCoupon {
     freeDose: null,
     freeLabel: null,
     minSubtotalCents: 0,
+    requiresAccount: false,
   };
 }
 
@@ -47,6 +49,7 @@ function freeItemCoupon(code: string, freeSku: string): AppliedCoupon {
     freeDose: null,
     freeLabel: null,
     minSubtotalCents: 0,
+    requiresAccount: false,
   };
 }
 

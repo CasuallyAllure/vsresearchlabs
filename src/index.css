@@ -37,7 +37,7 @@ html {
 body {
   background: var(--color-bg);
   color: var(--color-text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ─── Scrollbar ─── */

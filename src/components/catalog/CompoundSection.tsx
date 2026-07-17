@@ -76,9 +76,9 @@ export function CompoundSection({ sectionKey, label, description, products, onIn
 
   return (
     <section aria-labelledby={`compound-section-${sectionKey}`} className="mb-[var(--space-8)] last:mb-0">
-      <header className="mb-[var(--space-4)]">
+      <header className="mb-[var(--space-5)] border-b border-ink/[0.06] pb-[var(--space-3)]">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex min-w-0 items-center gap-2.5">
             <FlaskIcon />
             <h2
               id={`compound-section-${sectionKey}`}
@@ -87,12 +87,12 @@ export function CompoundSection({ sectionKey, label, description, products, onIn
               {label}
             </h2>
           </div>
-          <span className="shrink-0 rounded-full border border-ink/15 bg-ink/[0.03] px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-ink/50">
+          <span className="shrink-0 rounded-full border border-ink/12 bg-ink/[0.03] px-2 py-[3px] font-mono text-[10px] uppercase tracking-[0.08em] text-ink/50">
             {products.length} {products.length === 1 ? 'compound' : 'compounds'}
           </span>
         </div>
         {description && (
-          <p className="mt-1 text-[11px] leading-snug text-ink/55 sm:text-[12px]">{description}</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ink/55">{description}</p>
         )}
       </header>
 

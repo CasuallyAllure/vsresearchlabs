@@ -37,8 +37,10 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Fiel
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
+import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -79,6 +81,18 @@ export function CartPage() {
   const clear = useCart((s) => s.clear);
   const coupons = useCart((s) => s.coupons);
 
+  // Bundle promo (Retatrutide + GHK-Cu) — PREVIEW only; place-order detects the
+  // pair and bills it authoritatively. It's a FINAL price: when it applies the
+  // server suppresses the account discount and rejects codes, so this preview
+  // hides the account block and warns about codes to match what gets billed.
+  const bundle = bundleDiscount(
+    items.map((i) => ({
+      sku: i.product.sku,
+      unitCents: lineUnitCents(i),
+      quantity: i.quantity,
+    })),
+  );
+
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
   const [accountDiscount, setAccountDiscount] = useState<AccountDiscountPreview | null>(null);
@@ -94,6 +108,7 @@ export function CartPage() {
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
+  useAccountEmailPrefill(user?.email, setContact);
   const [organization, setOrganization] = useState('');
   const [shipStreet, setShipStreet] = useState('');
   const [shipCity, setShipCity] = useState('');
@@ -627,7 +642,10 @@ export function CartPage() {
                   type="button"
                   onClick={() => remove(item.product.id)}
                   aria-label={`Remove ${item.product.name}`}
-                  className="ml-[var(--space-4)] text-ink/40 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                  // min-h-[44px]: bare text was a ~16px tap target. The row is
+                  // already 64px tall (the thumbnail), so this costs no layout,
+                  // and the 16px gap to the stepper keeps the boxes apart.
+                  className="ml-[var(--space-4)] inline-flex items-center min-h-[44px] text-ink/65 hover:text-ink text-xs uppercase tracking-widest focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                 >
                   Remove
                 </button>
@@ -640,7 +658,7 @@ export function CartPage() {
                   <button
                     type="button"
                     onClick={() => toggleNote(item.product.id)}
-                    className="text-[11px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                    className="inline-flex items-center min-h-[44px] text-[11px] uppercase tracking-[0.2em] text-ink/60 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                   >
                     + Add note
                   </button>
@@ -648,7 +666,7 @@ export function CartPage() {
                   <div>
                     <label
                       htmlFor={`note-${item.product.id}`}
-                      className="block text-[11px] uppercase tracking-[0.2em] text-ink/40 mb-[var(--space-2)]"
+                      className="block text-[11px] uppercase tracking-[0.2em] text-ink/65 mb-[var(--space-2)]"
                     >
                       Note
                     </label>
@@ -666,7 +684,7 @@ export function CartPage() {
                       <button
                         type="button"
                         onClick={() => toggleNote(item.product.id)}
-                        className="mt-[var(--space-2)] text-[11px] uppercase tracking-[0.2em] text-ink/40 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
+                        className="mt-[var(--space-2)] inline-flex items-center min-h-[44px] text-[11px] uppercase tracking-[0.2em] text-ink/60 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
                       >
                         Cancel
                       </button>
@@ -680,7 +698,7 @@ export function CartPage() {
             </ul>
             <div className="px-[var(--space-5)] py-[var(--space-4)] border-t border-ink/[0.1]">
               <div className="flex items-baseline justify-between gap-[var(--space-4)]">
-                <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Subtotal</span>
+                <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">Subtotal</span>
                 <span className="text-sm font-mono tabular-nums text-ink">
                   {formatUsd(items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0))}
                 </span>
@@ -691,16 +709,48 @@ export function CartPage() {
                   subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
                 />
               </div>
+              {/* Bundle promo — final price, so it stands alone. */}
+              {bundle.pairs > 0 && (() => {
+                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        {BUNDLE_PROMO.label} · {BUNDLE_PROMO.percent}% off
+                        {bundle.pairs > 1 ? ` ${bundle.pairs} pairs` : ''}
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(bundle.discountCents)}
+                      </span>
+                    </div>
+                    <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Total after discounts
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        {formatUsd(Math.max(subtotalCents - bundle.discountCents, 0))}
+                      </span>
+                    </div>
+                    {coupons.length > 0 && (
+                      <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-status-warning">
+                        Bundle pricing is final and can’t be combined with promo codes — remove the
+                        code (or a bundle item) to check out.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
               {/* Account discount (signed-in perk) — same pass-2a math the
-                  server bills, so this preview matches the invoice. */}
-              {accountDiscount && (() => {
+                  server bills, so this preview matches the invoice. Suppressed
+                  under the bundle, exactly as place-order does. */}
+              {accountDiscount && bundle.pairs === 0 && (() => {
                 const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;
                 return (
                   <div className="mt-[var(--space-3)]">
                     <div className="flex items-baseline justify-between gap-[var(--space-4)]">
-                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">
                         {accountDiscount.label}
                       </span>
                       <span className="text-sm font-mono tabular-nums text-ink">
@@ -708,7 +758,7 @@ export function CartPage() {
                       </span>
                     </div>
                     <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
-                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">
                         Total after discounts
                       </span>
                       <span className="text-sm font-mono tabular-nums text-ink">
@@ -724,13 +774,13 @@ export function CartPage() {
                   what's billed. */}
               <div className="mt-[var(--space-3)] border-t border-ink/[0.08] pt-[var(--space-3)]">
                 <div className="flex items-baseline justify-between gap-[var(--space-4)]">
-                  <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">Shipping</span>
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">Shipping</span>
                   <span className="text-sm font-mono tabular-nums text-ink">
                     {isMember ? 'Free — member' : formatUsd(GUEST_SHIPPING_CENTS)}
                   </span>
                 </div>
                 {!isMember && (
-                  <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-ink/45">
+                  <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-ink/65">
                     <Link
                       to="/account?mode=signup"
                       className="font-medium text-ink underline decoration-ink/30 underline-offset-2 transition-colors hover:decoration-ink"
@@ -746,8 +796,8 @@ export function CartPage() {
           </div>
           {cartHasMixedShipping(items, isMember) && (
             <div
-              className="mt-[var(--space-3)] flex items-start gap-2 rounded-[6px] px-[var(--space-4)] py-[var(--space-3)]"
-              style={{ backgroundColor: 'rgba(214,158,46,0.10)', border: '1px solid rgba(214,158,46,0.40)' }}
+              className="mt-[var(--space-3)] flex items-start gap-2 rounded-[var(--radius-field)] px-[var(--space-4)] py-[var(--space-3)]"
+              style={{ backgroundColor: 'var(--color-status-warningMuted)', border: '1px solid color-mix(in srgb, var(--color-status-warning) 40%, transparent)' }}
               role="note"
             >
               <span aria-hidden="true" className="text-[13px] leading-none mt-0.5">⚡</span>
@@ -774,7 +824,7 @@ export function CartPage() {
           <div className="research-surface-solid lg:sticky lg:top-[calc(56px+var(--space-4))] p-[var(--space-6)]">
             <form onSubmit={handleSubmit} noValidate>
         {/* Section 1 — Buyer Identification (required) */}
-        <h2 className="text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
+        <h2 className="text-[11px] uppercase tracking-[0.3em] text-ink/65 mb-[var(--space-6)]">
           Buyer Identification
         </h2>
 
@@ -782,9 +832,9 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-name"
-              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
             >
-              Name <span className="text-ink/55">*</span>
+              Name <span className="text-ink/65">*</span>
             </label>
             <input
               id="inquiry-name"
@@ -812,9 +862,9 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-contact"
-              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
             >
-              Email or Phone <span className="text-ink/55">*</span>
+              Email or Phone <span className="text-ink/65">*</span>
             </label>
             <input
               id="inquiry-contact"
@@ -845,7 +895,7 @@ export function CartPage() {
         {/* Section 2 — Organization or Lab (optional).
             Merges into `notes` on submit; supabase payload shape
             is unchanged. */}
-        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/65 mb-[var(--space-6)]">
           Organization or Lab
         </h2>
 
@@ -853,7 +903,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-organization"
-              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
             >
               Institution (optional)
             </label>
@@ -870,7 +920,7 @@ export function CartPage() {
         </div>
 
         {/* Section 3 — Shipping Address */}
-        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-3)]">
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/65 mb-[var(--space-3)]">
           Shipping Address
         </h2>
         <p className="text-[12px] text-ink/55 mb-[var(--space-5)] leading-relaxed">
@@ -882,7 +932,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="ship-street"
-              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
             >
               Street address
             </label>
@@ -901,7 +951,7 @@ export function CartPage() {
             <div>
               <label
                 htmlFor="ship-city"
-                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
               >
                 City
               </label>
@@ -918,7 +968,7 @@ export function CartPage() {
             <div className="sm:w-[100px]">
               <label
                 htmlFor="ship-state"
-                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
               >
                 State
               </label>
@@ -936,7 +986,7 @@ export function CartPage() {
             <div className="sm:w-[140px]">
               <label
                 htmlFor="ship-zip"
-                className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+                className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
               >
                 ZIP
               </label>
@@ -955,7 +1005,7 @@ export function CartPage() {
         </div>
 
         {/* Section 4 — Procurement Notes (optional) */}
-        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/55 mb-[var(--space-6)]">
+        <h2 className="mt-[var(--space-8)] text-[11px] uppercase tracking-[0.3em] text-ink/65 mb-[var(--space-6)]">
           Procurement Notes
         </h2>
 
@@ -963,7 +1013,7 @@ export function CartPage() {
           <div>
             <label
               htmlFor="inquiry-notes"
-              className="block text-xs uppercase tracking-widest text-ink/50 mb-[var(--space-2)]"
+              className="block text-xs uppercase tracking-widest text-ink/65 mb-[var(--space-2)]"
             >
               Notes (optional)
             </label>

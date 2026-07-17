@@ -8,6 +8,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { siteConfig } from '../config';
+import { captureError } from '../lib/telemetry';
 
 interface Props {
   children: ReactNode;
@@ -24,8 +25,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Surface to the console; a real telemetry sink can hook in here later.
-    console.error('App error boundary caught:', error, info.componentStack);
+    captureError(error, 'boundary', {
+      componentStack: info.componentStack ?? undefined,
+    });
   }
 
   handleReload = () => {
@@ -38,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           role="alert"
-          className="flex min-h-screen items-center justify-center px-6"
+          className="flex min-h-[100dvh] items-center justify-center px-6"
           style={{ background: 'var(--color-surface-base)', color: 'var(--color-content-primary)' }}
         >
           <div className="w-full max-w-[460px] text-center">

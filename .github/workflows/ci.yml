@@ -1,0 +1,63 @@
+# CI — lint, typecheck (frontend + edge functions), unit tests, build on every
+# push/PR.
+#
+# Two typecheckers, because this repo has two runtimes:
+#   • `tsc -b`      — the Vite app (tsconfig.app.json), vite.config.ts
+#     (tsconfig.node.json), and tests/ (tests/tsconfig.json, which also pins
+#     place-order/priceCheck.ts — the one Deno-free money-path module).
+#   • `deno check`  — supabase/functions/. These are Deno: Deno globals and
+#     https:/npm: imports, which tsc cannot resolve. Without this step the
+#     1,452-line place-order/index.ts that moves all the money is typechecked
+#     by nothing at all.
+# A directory argument is used rather than a `**` glob on purpose: bash runs
+# without globstar, so `supabase/functions/**/*.ts` silently collapses to one
+# level. `deno check <dir>` walks the tree itself.
+#
+# Deliberately excluded:
+#   • Playwright e2e — needs a running preview + Supabase env; stays local
+#     (`npm run test:e2e`).
+#   • RLS suite (tests/rls) — self-skips unless TEST_SUPABASE_* env vars are
+#     set, so it is a no-op here by design.
+#   • Deploys — ALL deploys are manual (wrangler / supabase CLI); git push
+#     deploys nothing. See README and docs/ROLLBACK.md.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: this workflow only reads the repo. It never needs to write
+# contents, packages, or deployments.
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # Third-party action, so pinned by commit SHA rather than a mutable tag
+      # (v2.0.5). The actions/* steps above are GitHub-maintained and stay on
+      # tags. Bump deliberately.
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      # Hard gates — must pass to merge.
+      - run: npx tsc -b
+      - run: deno check supabase/functions/
+      - run: npm run test
+      # Lint is a hard gate: zero errors enforced. React-Compiler-hazard rules
+      # (set-state-in-effect, refs, etc.) run as warnings — visible but not
+      # blocking, since this project doesn't run React Compiler.
+      - run: npm run lint
+      # Build last: slowest, and a green bundle is only meaningful once the
+      # cheaper gates pass. Runs without VITE_SUPABASE_* — the bundle builds
+      # fine without them (the app boots in "backend not configured" mode), so
+      # no secrets are needed here. CI never deploys this artifact.
+      - run: npm run build

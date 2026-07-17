@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
 import { AbbreviationChip } from './AbbreviationChip';
 import { VialRender } from './specimen/VialRender';
@@ -89,7 +90,10 @@ export function CompoundIntelligenceOverlay({
   onNavigate,
   wholesale,
 }: CompoundIntelligenceOverlayProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  // Mounted only while open, so the trap is always active for this component's
+  // lifetime. Handles initial focus and returns focus to the catalog tile that
+  // opened the overlay on unmount.
+  const panelRef = useFocusTrap<HTMLDivElement>(true);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
   const setItemNote = useCart((s) => s.setItemNote);
@@ -203,10 +207,7 @@ export function CompoundIntelligenceOverlay({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prevProduct?.id, nextProduct?.id]);
 
-  useEffect(() => {
-    const el = panelRef.current?.querySelector<HTMLElement>('button, [href]');
-    el?.focus();
-  }, []);
+  // (Initial focus is handled by useFocusTrap above.)
 
   // ─── Derived values ─────────────────────────────────────────────────────────
 
@@ -467,7 +468,7 @@ export function CompoundIntelligenceOverlay({
                       Select mg
                     </span>
                     <span
-                      className="font-mono text-[9.5px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
+                      className="font-mono text-[10px] uppercase tracking-[0.16em] px-1.5 py-[1px] rounded-full border"
                       style={{ color: GOLD, borderColor: 'rgba(181,144,75,0.45)', backgroundColor: 'rgba(181,144,75,0.10)' }}
                     >
                       Wholesale
@@ -497,7 +498,7 @@ export function CompoundIntelligenceOverlay({
                     ))}
                   </div>
                   <div className="border-t border-ink/12 py-1 text-center">
-                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                    <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[10px] uppercase tracking-[0.16em] text-ink/45">
                       Standard Shipping
                       <ShippingVan />
                     </span>
@@ -528,7 +529,7 @@ export function CompoundIntelligenceOverlay({
                         <span className={`block text-[11px] font-medium ${on ? 'text-ink' : 'text-ink/55'}`}>
                           {p.label}
                         </span>
-                        <span className={`block font-mono text-[9.5px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
+                        <span className={`block font-mono text-[10px] uppercase tracking-[0.08em] ${on ? 'text-ink/60' : 'text-ink/35'}`}>
                           {p.size} vials · −{p.percent}%
                         </span>
                       </button>
@@ -658,7 +659,7 @@ export function CompoundIntelligenceOverlay({
                             ))}
                           </div>
                           <div className="border-t border-ink/12 py-1 text-center">
-                            <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[9px] uppercase tracking-[0.16em] text-ink/45">
+                            <span className="inline-flex items-center justify-center gap-1 font-mono leading-none text-[10px] uppercase tracking-[0.16em] text-ink/45">
                               Standard Shipping
                               <ShippingVan />
                             </span>
