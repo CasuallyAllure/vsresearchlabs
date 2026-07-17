@@ -100,8 +100,8 @@ export async function placeOrder(payload: Record<string, unknown>): Promise<Plac
     // automatically whenever a customer session exists (and the anon key when
     // not) — verified against @supabase/supabase-js 2.110.2
     // (_getAccessToken() → session?.access_token ?? supabaseKey). place-order
-    // uses that bearer to stamp orders.user_id ONLY when the verified auth
-    // email matches the buyer contact; the guest flow is unchanged.
+    // resolves membership from that verified bearer alone (P0-5) — the typed
+    // contact is a delivery address, not identity; the guest flow is unchanged.
     const invocation = supabase.functions.invoke<PlaceOrderResponse>('place-order', {
       body: idempotencyKey ? { ...payload, idempotency_key: idempotencyKey } : payload,
     });

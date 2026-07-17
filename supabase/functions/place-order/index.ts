@@ -64,6 +64,7 @@ import {
   type B2G1PlanEntry,
   type WholesalePlanEntry,
 } from "./promoPlan.ts";
+import { buildBundlePlan, bundleLineKey } from "./bundlePlan.ts";
 
 const TELEMETRY_FN = "place-order";
 
@@ -879,44 +880,24 @@ const handleOrder = async (req: Request): Promise<Response> => {
   }
   // Bundle promo — 20% off every complete Retatrutide + GHK-Cu pair (any dose
   // of each). Computed here, BEFORE code validation, so the exclusivity gate
-  // below and validate_coupon's combinability context both see it.
-  //
-  // Pairs are capped by the lesser of the two SKUs' total quantities, and the
-  // discount is taken on the buyer's HIGHEST-priced qualifying units first
-  // (same "best unit" spirit as the reward voucher) — a mixed-dose cart never
-  // gets the discount computed off its cheapest vials. Keep BUNDLE_PROMO in
-  // sync with src/lib/bundle.ts (the client display mirror).
-  const bundlePlan: { pairs: number; value: number } = { pairs: 0, value: 0 };
-  {
-    // Qualifying units for a sku, grouped by unit price, dearest first. No
-    // per-unit expansion — quantities are clamped to 9999 per line.
-    const groupsFor = (sku: string) =>
-      items
-        .filter((i) => i.product.sku === sku && clampCents(i.unitPriceCents) > 0)
-        .map((i) => ({ unit: clampCents(i.unitPriceCents), qty: clampQty(i.quantity) }))
-        .sort((a, b) => b.unit - a.unit);
-    const totalQty = (gs: { qty: number }[]) => gs.reduce((s, g) => s + g.qty, 0);
-    /** Value of the top `n` units across the (dearest-first) groups. */
-    const topValue = (gs: { unit: number; qty: number }[], n: number) => {
-      let need = n;
-      let val = 0;
-      for (const g of gs) {
-        if (need <= 0) break;
-        const take = Math.min(need, g.qty);
-        val += take * g.unit;
-        need -= take;
-      }
-      return val;
-    };
-    const aGroups = groupsFor(BUNDLE_PROMO.skuA);
-    const bGroups = groupsFor(BUNDLE_PROMO.skuB);
-    const pairs = Math.min(totalQty(aGroups), totalQty(bGroups));
-    if (pairs > 0) {
-      const pairedValue = topValue(aGroups, pairs) + topValue(bGroups, pairs);
-      bundlePlan.pairs = pairs;
-      bundlePlan.value = Math.round((pairedValue * BUNDLE_PROMO.percent) / 100);
-    }
-  }
+  // below and validate_coupon's combinability context both see it. Pair math
+  // lives in bundlePlan.ts (pure, unit-tested); lines the price check only
+  // allowed through as UNVERIFIED never form pairs — a near-zero fake line on
+  // one bundle SKU must not manufacture 20% off a real line of the other.
+  // Keep BUNDLE_PROMO in sync with src/lib/bundle.ts (the client display
+  // mirror).
+  const bundlePlan = buildBundlePlan({
+    lines: items.map((i) => ({
+      sku: i.product.sku ?? "",
+      name: i.product.name,
+      quantity: clampQty(i.quantity),
+      unitPriceCents: clampCents(i.unitPriceCents),
+    })),
+    skuA: BUNDLE_PROMO.skuA,
+    skuB: BUNDLE_PROMO.skuB,
+    percent: BUNDLE_PROMO.percent,
+    unverifiedKeys: new Set(unverifiedLines.map((u) => bundleLineKey(u.sku, u.name))),
+  });
 
   // Wholesale is a FINAL price (owner's rule) — when it applies, nothing else
   // may discount the order: reject user-entered coupon codes and suppress the
