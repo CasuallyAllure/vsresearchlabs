@@ -77,7 +77,10 @@ import { shippingCentsFor } from "./orderShipping.ts";
 import {
   buildAppliedCouponLabel,
   computeOrderTotals,
+  flatContribution,
   normalizeCouponCodes,
+  repriceAfterFailedRedemptions,
+  sanitizeFixedDiscountCents,
 } from "./orderTotals.ts";
 
 const TELEMETRY_FN = "place-order";
@@ -851,7 +854,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
       );
       if (matchIdx >= 0) {
         const unit = clampCents(items[matchIdx].unitPriceCents);
-        const contribution = Math.max(Math.min(unit, grossSubtotalCents - flatCents), 0);
+        const contribution = flatContribution(unit, grossSubtotalCents, flatCents);
         flatCents += contribution;
         appliedList.push({
           code: appliedCode, kind: "free_item", contribution, freeSku: null, fullDiscount: 0,
@@ -874,9 +877,8 @@ const handleOrder = async (req: Request): Promise<Response> => {
       }
     } else {
       // fixed — flat dollars off, capped at the remaining subtotal.
-      const raw = Math.floor(Number(coupon.discount_cents ?? 0));
-      const safe = Math.max(Number.isFinite(raw) ? raw : 0, 0);
-      const contribution = Math.max(Math.min(safe, grossSubtotalCents - flatCents), 0);
+      const safe = sanitizeFixedDiscountCents(coupon.discount_cents);
+      const contribution = flatContribution(safe, grossSubtotalCents, flatCents);
       flatCents += contribution;
       appliedList.push({
         code: appliedCode, kind: "fixed", contribution, freeSku: null, fullDiscount: 0,
@@ -1244,6 +1246,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
   let redeemedList = appliedList; // codes that survive redemption (email itemization)
   if (appliedList.length > 0) {
     const failedCodes: string[] = [];
+    const failedContributions: number[] = [];
     for (const a of appliedList) {
       const { data: redeemData, error: redeemErr } = await supabase.rpc("redeem_coupon", {
         p_code: a.code,
@@ -1256,7 +1259,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
       if (redeemErr || !redeemed?.ok) {
         console.error("Coupon redemption failed — rolling back:", redeemErr ?? redeemed?.reason, a.code, orderRow.id);
         failedCodes.push(a.code);
-        discountCents -= a.contribution;
+        failedContributions.push(a.contribution);
         // Drop the server-added free line (DB + the in-memory items the emails render).
         if (a.freeSku) {
           await supabase.from("order_lines").delete()
@@ -1267,9 +1270,15 @@ const handleOrder = async (req: Request): Promise<Response> => {
       }
     }
     // Re-price the order keeping only the coupons that redeemed successfully.
+    // The pure math (remove exactly the failed contributions, floor at 0,
+    // shipping on top) lives in orderTotals.ts.
     if (failedCodes.length > 0) {
-      discountCents = Math.max(discountCents, 0);
-      totalCents = grossSubtotalCents - discountCents + shippingCents;
+      ({ discountCents, totalCents } = repriceAfterFailedRedemptions({
+        discountCents,
+        failedContributions,
+        grossSubtotalCents,
+        shippingCents,
+      }));
       const survivors = appliedList.filter((a) => !failedCodes.includes(a.code));
       redeemedList = survivors;
       // Mirror the original label build above: the synthetic reward/promo

@@ -13,7 +13,10 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   buildAppliedCouponLabel,
   computeOrderTotals,
+  flatContribution,
   normalizeCouponCodes,
+  repriceAfterFailedRedemptions,
+  sanitizeFixedDiscountCents,
   type CouponLabelParts,
   type OrderTotalsInput,
 } from '../../supabase/functions/place-order/orderTotals';
@@ -465,6 +468,135 @@ describe('computeOrderTotals — full stack integration', () => {
     // Assert — gross is the hard ceiling; the buyer still owes shipping.
     expect(result.discountCents).toBe(5_000);
     expect(result.totalCents).toBe(999);
+  });
+});
+
+describe('flatContribution — shared Pass-1 cap rule', () => {
+  test('returns the full value when the remaining subtotal has room', () => {
+    // Arrange / Act / Assert — 2000 requested, 10000 - 3000 = 7000 remains.
+    expect(flatContribution(2_000, 10_000, 3_000)).toBe(2_000);
+  });
+
+  test('caps at the remaining subtotal when the value overshoots it', () => {
+    // Arrange / Act / Assert — 5000 requested but only 10000 - 8000 = 2000 remains.
+    expect(flatContribution(5_000, 10_000, 8_000)).toBe(2_000);
+  });
+
+  test('an exact fit consumes precisely the remaining subtotal', () => {
+    // Arrange / Act / Assert — boundary: value === remaining.
+    expect(flatContribution(2_000, 10_000, 8_000)).toBe(2_000);
+  });
+
+  test('floors at zero when the flats so far already exceed gross', () => {
+    // Arrange / Act / Assert — remaining is negative; min() would go negative,
+    // the outer max() floors it.
+    expect(flatContribution(500, 1_000, 1_500)).toBe(0);
+  });
+
+  test('a negative value floors at zero, never inflating the subtotal', () => {
+    // Arrange / Act / Assert
+    expect(flatContribution(-300, 10_000, 0)).toBe(0);
+  });
+});
+
+describe('sanitizeFixedDiscountCents — RPC input hardening', () => {
+  test('passes an ordinary integer through unchanged', () => {
+    expect(sanitizeFixedDiscountCents(1_500)).toBe(1_500);
+  });
+
+  test('floors a fractional cent value', () => {
+    expect(sanitizeFixedDiscountCents(12.9)).toBe(12);
+  });
+
+  test('treats NaN as zero', () => {
+    expect(sanitizeFixedDiscountCents(NaN)).toBe(0);
+  });
+
+  test('treats Infinity as zero', () => {
+    expect(sanitizeFixedDiscountCents(Infinity)).toBe(0);
+  });
+
+  test('treats -Infinity as zero', () => {
+    expect(sanitizeFixedDiscountCents(-Infinity)).toBe(0);
+  });
+
+  test('clamps a negative value to zero (a discount can never be a surcharge)', () => {
+    expect(sanitizeFixedDiscountCents(-500)).toBe(0);
+  });
+
+  test('a small negative fraction floors to -1 then clamps to zero', () => {
+    expect(sanitizeFixedDiscountCents(-0.5)).toBe(0);
+  });
+
+  test('treats null as zero via the ?? guard', () => {
+    expect(sanitizeFixedDiscountCents(null)).toBe(0);
+  });
+
+  test('treats undefined as zero via the ?? guard', () => {
+    expect(sanitizeFixedDiscountCents(undefined)).toBe(0);
+  });
+
+  test('coerces a numeric string and floors it', () => {
+    expect(sanitizeFixedDiscountCents('1234.7')).toBe(1_234);
+  });
+
+  test('treats a non-numeric string as zero', () => {
+    expect(sanitizeFixedDiscountCents('not-a-number')).toBe(0);
+  });
+});
+
+describe('repriceAfterFailedRedemptions — redemption rollback', () => {
+  test('removes exactly the failed contributions from the discount', () => {
+    // Arrange / Act — a 5000 discount loses two failed codes worth 1200 + 800.
+    const result = repriceAfterFailedRedemptions({
+      discountCents: 5_000,
+      failedContributions: [1_200, 800],
+      grossSubtotalCents: 10_000,
+      shippingCents: 0,
+    });
+
+    // Assert
+    expect(result).toEqual({ discountCents: 3_000, totalCents: 7_000 });
+  });
+
+  test('floors the discount at zero when the failed contributions exceed it', () => {
+    // Arrange / Act — bookkeeping drift must never produce a negative discount.
+    const result = repriceAfterFailedRedemptions({
+      discountCents: 1_000,
+      failedContributions: [800, 700],
+      grossSubtotalCents: 10_000,
+      shippingCents: 0,
+    });
+
+    // Assert
+    expect(result).toEqual({ discountCents: 0, totalCents: 10_000 });
+  });
+
+  test('an empty failedContributions list is a no-op reprice', () => {
+    // Arrange / Act
+    const result = repriceAfterFailedRedemptions({
+      discountCents: 2_500,
+      failedContributions: [],
+      grossSubtotalCents: 10_000,
+      shippingCents: 0,
+    });
+
+    // Assert — same discount and total as before the rollback.
+    expect(result).toEqual({ discountCents: 2_500, totalCents: 7_500 });
+  });
+
+  test('rebuilds the total on the shipping-on-top rule computeOrderTotals uses', () => {
+    // Arrange / Act — shipping is never discounted, so it rides on the
+    // repriced subtotal exactly as in the initial totals.
+    const result = repriceAfterFailedRedemptions({
+      discountCents: 10_000,
+      failedContributions: [4_000],
+      grossSubtotalCents: 10_000,
+      shippingCents: 999,
+    });
+
+    // Assert — 10000 − 6000 + 999.
+    expect(result).toEqual({ discountCents: 6_000, totalCents: 4_999 });
   });
 });
 

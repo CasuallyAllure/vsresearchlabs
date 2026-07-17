@@ -74,6 +74,51 @@ export interface OrderTotalsResult {
   totalCents: number;
 }
 
+/**
+ * Cap a Pass-1 flat reduction at what remains of the subtotal after the flats
+ * already taken — the shared cap rule for free_item ("free one existing unit")
+ * and fixed-code reductions. Never negative.
+ */
+export function flatContribution(
+  valueCents: number,
+  grossSubtotalCents: number,
+  flatCentsSoFar: number,
+): number {
+  return Math.max(Math.min(valueCents, grossSubtotalCents - flatCentsSoFar), 0);
+}
+
+/**
+ * Normalize an RPC-supplied fixed discount into safe, non-negative integer
+ * cents: floor the numeric value, treat NaN/±Infinity/negatives as 0.
+ */
+export function sanitizeFixedDiscountCents(raw: unknown): number {
+  const n = Math.floor(Number(raw ?? 0));
+  return Math.max(Number.isFinite(n) ? n : 0, 0);
+}
+
+/**
+ * Re-price the order after coupon redemptions lose their race: remove exactly
+ * the failed codes' contributions from the discount (floored at 0) and rebuild
+ * the total on the same shipping-on-top rule computeOrderTotals uses. The
+ * caller persists the result and rebuilds the label via
+ * buildAppliedCouponLabel with the surviving codes.
+ */
+export function repriceAfterFailedRedemptions(input: {
+  discountCents: number;
+  failedContributions: readonly number[];
+  grossSubtotalCents: number;
+  shippingCents: number;
+}): { discountCents: number; totalCents: number } {
+  const discountCents = Math.max(
+    input.failedContributions.reduce((d, c) => d - c, input.discountCents),
+    0,
+  );
+  return {
+    discountCents,
+    totalCents: input.grossSubtotalCents - discountCents + input.shippingCents,
+  };
+}
+
 export function computeOrderTotals(input: OrderTotalsInput): OrderTotalsResult {
   const { grossSubtotalCents, shippingCents } = input;
   let flatCents = input.flatCentsFromCodes;
