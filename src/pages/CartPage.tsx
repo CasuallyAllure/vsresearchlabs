@@ -37,6 +37,7 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../components/ui/Fiel
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
@@ -78,6 +79,18 @@ export function CartPage() {
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
   const coupons = useCart((s) => s.coupons);
+
+  // Bundle promo (Retatrutide + GHK-Cu) — PREVIEW only; place-order detects the
+  // pair and bills it authoritatively. It's a FINAL price: when it applies the
+  // server suppresses the account discount and rejects codes, so this preview
+  // hides the account block and warns about codes to match what gets billed.
+  const bundle = bundleDiscount(
+    items.map((i) => ({
+      sku: i.product.sku,
+      unitCents: lineUnitCents(i),
+      quantity: i.quantity,
+    })),
+  );
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -691,9 +704,41 @@ export function CartPage() {
                   subtotalCents={items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0)}
                 />
               </div>
+              {/* Bundle promo — final price, so it stands alone. */}
+              {bundle.pairs > 0 && (() => {
+                const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        {BUNDLE_PROMO.label} · {BUNDLE_PROMO.percent}% off
+                        {bundle.pairs > 1 ? ` ${bundle.pairs} pairs` : ''}
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(bundle.discountCents)}
+                      </span>
+                    </div>
+                    <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Total after discounts
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        {formatUsd(Math.max(subtotalCents - bundle.discountCents, 0))}
+                      </span>
+                    </div>
+                    {coupons.length > 0 && (
+                      <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-status-warning">
+                        Bundle pricing is final and can’t be combined with promo codes — remove the
+                        code (or a bundle item) to check out.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
               {/* Account discount (signed-in perk) — same pass-2a math the
-                  server bills, so this preview matches the invoice. */}
-              {accountDiscount && (() => {
+                  server bills, so this preview matches the invoice. Suppressed
+                  under the bundle, exactly as place-order does. */}
+              {accountDiscount && bundle.pairs === 0 && (() => {
                 const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;

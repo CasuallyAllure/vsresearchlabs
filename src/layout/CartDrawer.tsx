@@ -29,10 +29,12 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { supabase } from '../lib/supabase';
 import { SKUCode } from '../components/ui/identifiers';
 import { lineUnitCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useProductOverrides } from '../lib/productOverrides';
@@ -112,6 +114,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   // Body scroll lock while open (ref-counted; overflow:hidden preserves position)
   useScrollLock(open);
+
+  // Modality enforcement — the panel declares aria-modal, so Tab must not walk
+  // out into the page behind the scrim. Also restores focus to the header cart
+  // button on close.
+  const panelRef = useFocusTrap<HTMLElement>(open);
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -234,9 +241,15 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           floating module, and a weighted decelerate slide (settles, never
           bounces). Enter slower than exit; reduced-motion zeroes both. */}
       <aside
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Inquiry list"
+        // Closed, the panel stays mounted and merely slides off-screen — so
+        // without `inert` its buttons remain tabbable and a keyboard user
+        // walks into invisible controls. `inert` also drops it from the a11y
+        // tree, which `translateX` alone never did.
+        inert={!open}
         className="glass-panel fixed top-0 right-0 z-[60] flex h-[100dvh] w-[344px] max-w-[90vw] sm:w-[388px] flex-col rounded-l-[22px] overflow-hidden"
         style={{
           transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -624,16 +637,29 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               )}
               {items.length > 0 && (() => {
                 const subtotalCents = items.reduce((sum, i) => sum + lineUnitCents(i) * i.quantity, 0);
-                const breakdown = accountDiscount
+                // Bundle promo — PREVIEW only (place-order bills it). It's a
+                // FINAL price: when it applies the server suppresses the
+                // account discount, so this preview does too.
+                const bundle = bundleDiscount(
+                  items.map((i) => ({
+                    sku: i.product.sku,
+                    unitCents: lineUnitCents(i),
+                    quantity: i.quantity,
+                  })),
+                );
+                const breakdown = accountDiscount && bundle.pairs === 0
                   ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
                 // Shipping rides on top of the discounted subtotal — mirrors
                 // place-order, which recomputes it from the verified session.
                 const shippingCents = shippingCentsFor(isMember);
-                const totalCents = (hasAccountDisc
-                  ? Math.max(subtotalCents - breakdown!.total, 0)
-                  : subtotalCents) + shippingCents;
+                const discountedSubtotal = bundle.pairs > 0
+                  ? Math.max(subtotalCents - bundle.discountCents, 0)
+                  : hasAccountDisc
+                    ? Math.max(subtotalCents - breakdown!.total, 0)
+                    : subtotalCents;
+                const totalCents = discountedSubtotal + shippingCents;
                 return (
                   <>
                     {/* Subtotal + account perk — quiet rows above the anchor total */}
@@ -644,6 +670,25 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                       </span>
                     </div>
                     <PromoCode variant="drawer" subtotalCents={subtotalCents} />
+                    {bundle.pairs > 0 && (
+                      <>
+                        <div className="mb-3 flex items-baseline justify-between gap-2">
+                          <span className="min-w-0 text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                            Bundle · {BUNDLE_PROMO.percent}% off
+                            {bundle.pairs > 1 ? ` ${bundle.pairs} pairs` : ''}
+                          </span>
+                          <span className="shrink-0 font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
+                            −{formatUsd(bundle.discountCents)}
+                          </span>
+                        </div>
+                        {coupons.length > 0 && (
+                          <p className="mb-3 text-[10.5px] leading-relaxed text-status-warning">
+                            Bundle pricing is final and can’t be combined with promo codes — remove
+                            the code (or a bundle item) to check out.
+                          </p>
+                        )}
+                      </>
+                    )}
                     {hasAccountDisc && (
                       <div className="mb-3 flex items-baseline justify-between">
                         <span className="text-[11px] uppercase tracking-[0.2em] text-ink/45">
