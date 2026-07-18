@@ -6,8 +6,8 @@
  * These pin the null-safety and cent→USD rules so no order ever shows a bare
  * number or a wrong decimal.
  */
-import { describe, expect, test } from 'vitest';
-import { formatUsd, PAYMENT_CONFIG } from '../../src/lib/payment';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import { formatUsd } from '../../src/lib/payment';
 
 describe('formatUsd', () => {
   test('formats whole-dollar cents with two decimals', () => {
@@ -36,12 +36,27 @@ describe('formatUsd', () => {
 });
 
 describe('PAYMENT_CONFIG', () => {
-  test('exposes zelle and paypal handle fields', () => {
-    // In the test env the real handles may or may not be set; the contract is
-    // that both keys always resolve to a non-empty string (real or placeholder).
-    expect(typeof PAYMENT_CONFIG.zelle).toBe('string');
-    expect(PAYMENT_CONFIG.zelle.length).toBeGreaterThan(0);
-    expect(typeof PAYMENT_CONFIG.paypal).toBe('string');
-    expect(PAYMENT_CONFIG.paypal.length).toBeGreaterThan(0);
+  // PAYMENT_CONFIG reads import.meta.env at module scope, so each case
+  // stubs the env then re-imports a fresh copy of the module.
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  test('the env var wins when set', async () => {
+    vi.stubEnv('VITE_ZELLE_HANDLE', 'owner@zelle.example');
+    vi.resetModules();
+    const { PAYMENT_CONFIG } = await import('../../src/lib/payment');
+    expect(PAYMENT_CONFIG.zelle).toBe('owner@zelle.example');
+  });
+
+  test('a build without VITE_ZELLE_HANDLE still shows the real handle — never a placeholder', async () => {
+    // The 2026-07-17/18 incident: an out-of-band build lane with no
+    // VITE_ZELLE_HANDLE shipped "[Set VITE_ZELLE_HANDLE]" to live buyers.
+    vi.stubEnv('VITE_ZELLE_HANDLE', '');
+    vi.resetModules();
+    const { PAYMENT_CONFIG } = await import('../../src/lib/payment');
+    expect(PAYMENT_CONFIG.zelle).toBe('info@velariss.co');
+    expect(PAYMENT_CONFIG.zelle).not.toContain('[Set');
   });
 });

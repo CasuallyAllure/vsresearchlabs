@@ -14,8 +14,13 @@
 
 const env = import.meta.env as Record<string, string | undefined>;
 
+// Fallback is the REAL handle, not a placeholder: on 2026-07-17/18 an
+// out-of-band build lane (push-triggered, no VITE_ZELLE_HANDLE in its env)
+// shipped "[Set VITE_ZELLE_HANDLE]" to live payment surfaces overnight.
+// Buyers must never see a placeholder where the payment address goes —
+// env still wins when set.
 export const PAYMENT_CONFIG = {
-  zelle: env.VITE_ZELLE_HANDLE || '[Set VITE_ZELLE_HANDLE]',
+  zelle: env.VITE_ZELLE_HANDLE || 'info@velariss.co',
   paypal: env.VITE_PAYPAL_HANDLE || '[Set VITE_PAYPAL_HANDLE]',
 };
 
