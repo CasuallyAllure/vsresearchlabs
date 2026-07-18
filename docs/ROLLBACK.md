@@ -160,15 +160,26 @@ Per PAR-F2's acceptance criteria, and while nothing is on fire:
 
 ## Operator: branch protection on `main`
 
-Not enabled today — `gh api repos/CasuallyAllure/vsresearchlabs/branches/main/protection`
-returns **404 "Branch not protected"**. This is a GitHub setting and must be
-toggled by the operator; it is documented here rather than applied.
+**ACTIVE since 2026-07-18.** Applied with the operator's standing authorization
+(the settings below, verbatim) and verified by reading the protection object
+back:
 
-⚠ **Enable only after `.github/workflows/ci.yml` is merged to `main`.** A
-required status check that has never run on `main` will block every PR
-indefinitely, because the check can never report.
+```json
+{"strict": true, "contexts": ["checks", "e2e"], "enforce_admins": false,
+ "conversation_resolution": true, "force_pushes": false, "deletions": false,
+ "approvals": 0}
+```
 
-Settings → Branches → Add branch ruleset / protection rule for `main`:
+`enforce_admins` is deliberately **false** — the solo operator keeps the
+direct-push hatch; the gate binds PRs (dependabot included), which now require
+both CI jobs green and up-to-date branches. To inspect or re-apply:
+`gh api repos/CasuallyAllure/vsresearchlabs/branches/main/protection`.
+
+⚠ If `ci.yml`'s job ids ever change, update the required contexts in the same
+PUT — a renamed job means the old required check never reports and every PR
+blocks indefinitely.
+
+The intended configuration of record (what is live today):
 
 | Setting | Value |
 |---|---|
@@ -182,19 +193,19 @@ Settings → Branches → Add branch ruleset / protection rule for `main`:
 | Allow force pushes | ⬜ |
 | Allow deletions | ⬜ |
 
-Equivalent via API (operator runs this — not the agent):
+Equivalent via API (how it was applied — a JSON body via `--input`, because
+`-f 'restrictions=null'` would send the string `"null"`, not JSON null):
 
 ```bash
 gh api -X PUT repos/CasuallyAllure/vsresearchlabs/branches/main/protection \
   -H "Accept: application/vnd.github+json" \
-  -f 'required_status_checks[strict]=true' \
-  -f 'required_status_checks[contexts][]=checks' \
-  -f 'enforce_admins=false' \
-  -f 'required_pull_request_reviews[required_approving_review_count]=0' \
-  -f 'restrictions=null'
+  --input protection.json   # required_status_checks {strict, contexts:[checks,e2e]},
+                            # enforce_admins false, reviews 0, restrictions null,
+                            # required_conversation_resolution true,
+                            # allow_force_pushes false, allow_deletions false
 ```
 
-Context: the repo is ~98% direct-to-main (272 commits / 5 merges), and CI has
-never run on `main`. That is also the root cause of the stalled dependabot
-queue — those PRs branch from `main`, which has no workflow, so they get zero
-checks and no signal to merge.
+Context: the repo is ~98% direct-to-main (272 commits / 5 merges). Before
+protection, the Workers Builds auto-lane twice deployed before/despite CI;
+direct pushes still deploy (the hatch is intentional), but every PR — including
+dependabot's — now has a real merge gate.
