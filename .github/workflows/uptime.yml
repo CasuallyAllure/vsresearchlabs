@@ -26,9 +26,40 @@ jobs:
           body=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 https://vsresearchlabs.com/)
           echo "$body" | grep -q "VS Research" || { echo "FRONTEND PROBE FAILED: keyword missing"; exit 1; }
 
+      # Correctness, not just liveness: the 2026-07-17/18 incident survived
+      # three green availability probes while every live payment surface
+      # showed "[Set VITE_ZELLE_HANDLE]". This walks the live asset graph to
+      # the payment chunk and asserts the REAL handle is baked and no
+      # "[Set …]" placeholder shipped. If the Zelle handle ever changes,
+      # update the grep below alongside VITE_ZELLE_HANDLE.
+      - name: Live payment surface shows the real Zelle handle, not a placeholder
+        run: |
+          html=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 https://vsresearchlabs.com/)
+          entry=$(echo "$html" | grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' | head -1)
+          [ -n "$entry" ] || { echo "PAYMENT PROBE FAILED: no entry chunk in HTML"; exit 1; }
+          entry_js=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 "https://vsresearchlabs.com/$entry")
+          payment=$(echo "$entry_js" | grep -oE 'assets/payment-[A-Za-z0-9_-]+\.js' | head -1)
+          [ -n "$payment" ] || { echo "PAYMENT PROBE FAILED: no payment chunk referenced by $entry"; exit 1; }
+          chunk=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 "https://vsresearchlabs.com/$payment")
+          echo "$chunk" | grep -q "velariss.co" || { echo "PAYMENT PROBE FAILED: real handle missing from $payment"; exit 1; }
+          echo "$chunk" | grep -q '\[Set ' && { echo "PAYMENT PROBE FAILED: placeholder found in $payment"; exit 1; }
+          echo "payment surface OK ($payment)"
+
       - name: Edge gateway + database answer the health endpoint
         run: |
           out=$(curl -sS --max-time 20 --retry 2 --retry-delay 5 \
             https://ufaajzfuppohbxebftwp.supabase.co/functions/v1/health)
           echo "$out"
           echo "$out" | grep -q '"ok":true' || { echo "HEALTH PROBE FAILED: $out"; exit 1; }
+
+      # Reward-voucher reconciliation (crash-window close, migration 067 +
+      # reconcile function): auto-repairs the deterministic mismatch state and
+      # FAILS this workflow when any mismatch needs a human — the failure
+      # email is the alert. Details are in the reconcile function's logs, not
+      # the response body.
+      - name: Reward reconciliation reports clean
+        run: |
+          out=$(curl -sS --max-time 25 --retry 2 --retry-delay 5 \
+            https://ufaajzfuppohbxebftwp.supabase.co/functions/v1/reconcile)
+          echo "$out"
+          echo "$out" | grep -q '"clean":true' || { echo "RECONCILIATION PROBE FAILED: $out"; exit 1; }

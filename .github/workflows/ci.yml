@@ -13,9 +13,12 @@
 # without globstar, so `supabase/functions/**/*.ts` silently collapses to one
 # level. `deno check <dir>` walks the tree itself.
 #
+# The e2e job runs the Playwright suite (tests/e2e) against the dev server in
+# backend-not-configured mode: fully offline and deterministic (formula
+# pricing, external gates route-aborted), asserting the actual checkout money
+# numbers. Kept as its own job so the browser install doesn't slow `checks`.
+#
 # Deliberately excluded:
-#   • Playwright e2e — needs a running preview + Supabase env; stays local
-#     (`npm run test:e2e`).
 #   • RLS suite (tests/rls) — self-skips unless TEST_SUPABASE_* env vars are
 #     set, so it is a no-op here by design.
 #   • Deploys — ALL deploys are manual (wrangler / supabase CLI); git push
@@ -67,7 +70,34 @@ jobs:
       # blocking, since this project doesn't run React Compiler.
       - run: npm run lint
       # Build last: slowest, and a green bundle is only meaningful once the
-      # cheaper gates pass. Runs without VITE_SUPABASE_* — the bundle builds
-      # fine without them (the app boots in "backend not configured" mode), so
-      # no secrets are needed here. CI never deploys this artifact.
+      # cheaper gates pass. The build now runs WITH the production frontend
+      # env (all three values are bundle-public by design — they are baked
+      # into every shipped artifact; see .env.example). Two reasons:
+      #   1. scripts/viteEnvGuard.ts hard-fails any build missing a required
+      #      VITE_* var or emitting a "[Set …]" placeholder (the 2026-07-17/18
+      #      auto-build-lane incident class) — CI exercises that gate on the
+      #      real contract.
+      #   2. The CI artifact becomes byte-reproducible against a canonical
+      #      repo-root build, so provenance checks can compare hashes.
+      # CI still never deploys this artifact.
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://ufaajzfuppohbxebftwp.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_OZqMGcP7YYh-SSdMn4iOQA_ttecPFiQ
+          VITE_ZELLE_HANDLE: info@velariss.co
+
+  # E2E checkout journey (tests/e2e) — offline and deterministic: no Supabase
+  # env, so the app runs backend-not-configured with formula pricing; the spec
+  # route-aborts Turnstile/REST/functions and asserts hard-coded dollar
+  # amounts (unit/line/subtotal/shipping/total). Hard gate like `checks`.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
