@@ -24,3 +24,10 @@ verify_jwt = false
 # exposes nothing but {ok, db, ts}. Keep this false.
 [functions.health]
 verify_jwt = false
+
+# reconcile is a PUBLIC reconciliation probe hit by the same uptime cron (no
+# JWT). Safe public: its repair path is idempotent, corroborated, and money-
+# invisible; the response is {ok, clean, repaired, ts} with no ids/amounts.
+# Keep this false.
+[functions.reconcile]
+verify_jwt = false
