@@ -357,3 +357,33 @@ end-to-end plus `tests/setup.ts`, `vitest.config.ts`, `ci.yml`,
 `lookup_order` call, no throttle probe. The HIGH finding was reported to the
 session coordinator immediately upon verification, mid-review. No tracked file
 modified except this report.*
+
+---
+
+## Post-review remediation addendum — written by the session coordinator, not the reviewer (2026-07-18, ~08:20Z)
+
+*Kept transparently separate: §1–§6 above stand as written by the independent
+reviewer on `04cf839`. Everything below was done and verified by the
+coordinator after the reviewer flagged the HIGH finding mid-review.*
+
+**The HIGH customer-facing defect is CLOSED on live.** `787056c` changes the
+`PAYMENT_CONFIG.zelle` fallback from the `[Set VITE_ZELLE_HANDLE]` placeholder
+to the real handle (`src/lib/payment.ts` — env still wins when set), and
+replaces the shape-only PAYMENT_CONFIG test the review called out with two
+behavioral pins (env wins; env-missing build still shows the real handle,
+never a placeholder — `tests/unit/payment.test.ts`). The auto-deploy lane
+itself then shipped the fix: its push-triggered build at **08:16:36Z** carries
+the hardened fallback, and the live payment chunk (`payment-CS-JRhgG.js`,
+reached from live entry `index-ByqYopos.js`) now contains `velariss.co` and
+zero placeholder strings, with the publishable key still baked
+(`sb_publishable_OZqMGcP7…`). Verified by direct curl of the live assets at
+~08:19Z. The lane that broke the site is now structurally incapable of
+re-breaking this surface — any build of `main` shows the real handle.
+
+**What remains open (unchanged from §6):** the lane's provenance/ownership
+(#1 — identify, then kill it or give it a full env; owner-side), the deploy
+model of record (#2), and the carried crash-window / winner-path / E2E items.
+A canonical `deploy.sh --frontend` run was NOT executed — this session's
+permission mode blocks `wrangler deploy`; live is the auto-lane's build of
+`fba4089`+`787056c` source, content-verified but still `Source: Unknown` in
+the deployment record. CI green on the remediation push (run 29637150115).
