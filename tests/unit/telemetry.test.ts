@@ -54,6 +54,30 @@ describe('describeError', () => {
     expect(d.message).toContain('42');
   });
 
+  test('falls back on an Error stripped of name, message and stack', () => {
+    // Arrange — some environments hand over hollow Error objects.
+    const err = new Error('');
+    err.name = '';
+    err.stack = undefined;
+
+    // Act
+    const d = describeError(err);
+
+    // Assert — defaults kick in; no stack key is fabricated.
+    expect(d.name).toBe('Error');
+    expect(d.message).toBe(String(err));
+    expect(d.stack).toBeUndefined();
+  });
+
+  test('falls back to String() when JSON.stringify yields nothing (undefined)', () => {
+    // Arrange — JSON.stringify(undefined) returns undefined, not a string.
+    const d = describeError(undefined);
+
+    // Assert
+    expect(d.name).toBe('undefined');
+    expect(d.message).toBe('undefined');
+  });
+
   test('does not throw on a circular object', () => {
     // Arrange — JSON.stringify would throw here.
     const circular: Record<string, unknown> = {};
@@ -204,5 +228,88 @@ describe('captureError — send path', () => {
 
     // Act + Assert — a telemetry failure must not surface to the caller.
     expect(() => telemetry.captureError(new Error('kaboom'), 'boundary')).not.toThrow();
+  });
+
+  test('never throws when fetch itself throws synchronously', () => {
+    // Arrange — e.g. an extension-broken fetch, or the offline test guard.
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    fetchMock.mockImplementation(() => {
+      throw new Error('fetch is broken');
+    });
+
+    // Act + Assert
+    expect(() => telemetry.captureError(new Error('kaboom'), 'boundary')).not.toThrow();
+    expect(warnSpy).toHaveBeenCalledWith('[telemetry] report threw:', expect.any(Error));
+  });
+
+  test('gives up silently when even describing the error throws', () => {
+    // Arrange — an Error whose message getter explodes; buildErrorEvent
+    // cannot produce an event, so there is nothing sensible to report.
+    class EvilError extends Error {
+      get message(): string {
+        throw new Error('gotcha');
+      }
+    }
+
+    // Act + Assert — no throw, no network.
+    expect(() => telemetry.captureError(new EvilError(), 'manual')).not.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The no-backend guard: without env, captureError must stay local-only —
+ * console visibility, zero network. Fresh import per case because the env is
+ * read once at module scope.
+ */
+describe('captureError — unconfigured env', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  async function importWithEnv(url: string, key: string) {
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL', url);
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', key);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchMock = vi.fn(() => Promise.resolve(new Response('{}', { status: 202 })));
+    vi.stubGlobal('fetch', fetchMock);
+    const mod = await import('../../src/lib/telemetry');
+    mod.__resetTelemetryForTests();
+    return mod;
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  test('no env at all: logs locally, never touches the network', async () => {
+    const mod = await importWithEnv('', '');
+
+    expect(() => mod.captureError(new Error('dev crash'), 'boundary')).not.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('a non-http placeholder url does not count as configured', async () => {
+    const mod = await importWithEnv('YOUR_SUPABASE_URL', 'anon-key');
+
+    mod.captureError(new Error('dev crash'), 'boundary');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('a url without a key does not count as configured', async () => {
+    const mod = await importWithEnv('https://example.supabase.co', '');
+
+    mod.captureError(new Error('dev crash'), 'boundary');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('installGlobalErrorHandlers — node env', () => {
+  test('is a no-op without a window (SSR/tests), and never throws', async () => {
+    vi.resetModules();
+    const mod = await import('../../src/lib/telemetry');
+
+    expect(() => mod.installGlobalErrorHandlers()).not.toThrow();
   });
 });

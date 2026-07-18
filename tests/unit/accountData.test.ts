@@ -1,0 +1,297 @@
+/**
+ * Unit tests for src/lib/accountData.ts — the customer-portal data wrappers
+ * (listMyOrders / getMyOrder / getMyRewardSummary / redeemReward /
+ * listMyDiscounts).
+ *
+ * The supabase seam is mocked (per tests/setup.ts the real client is
+ * live-capable, so hitting it from a unit test is forbidden). RLS scopes
+ * every query server-side, so these tests pin the client contract only:
+ * the null-supabase degradation (empty/null data + "Backend not configured."
+ * — never a throw), error passthrough as `error.message`, and the null-data
+ * fallbacks (empty lists, `{ found: false }`, the zeroed reward summary).
+ */
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  getMyOrder,
+  getMyRewardSummary,
+  listMyDiscounts,
+  listMyOrders,
+  redeemReward,
+} from '../../src/lib/accountData';
+
+// Mutable seam: tests swap `client` between a mock client and null
+// ("backend not configured") without re-importing the module under test.
+const seam = vi.hoisted(() => ({ client: null as unknown }));
+
+vi.mock('../../src/lib/supabase', () => ({
+  get supabase() {
+    return seam.client;
+  },
+}));
+
+interface QueryResult {
+  data: unknown;
+  error: { message: string } | null;
+}
+
+/** Mock client for the table queries: from(...).select(...).order(...) → result. */
+function makeTableClient(result: QueryResult) {
+  const order = vi.fn(async () => result);
+  const chain = { select: vi.fn(() => chain), order };
+  return { client: { from: vi.fn(() => chain) }, chain };
+}
+
+/** Mock client for the RPC wrappers: rpc(name, args?) → result. */
+function makeRpcClient(result: QueryResult) {
+  const rpc = vi.fn(async () => result);
+  return { client: { rpc }, rpc };
+}
+
+beforeEach(() => {
+  seam.client = null;
+});
+
+describe('listMyOrders', () => {
+  const ROW = {
+    order_number: 'VSR-ORD-260701-001',
+    status: 'shipped',
+    created_at: '2026-07-01T00:00:00Z',
+    invoice_amount_cents: 12999,
+    carrier: 'usps',
+    tracking_number: '9400111111',
+  };
+
+  test('degrades to an empty list when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(listMyOrders()).resolves.toEqual({
+      data: [],
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('returns the owned orders newest first (query shape pinned)', async () => {
+    const { client, chain } = makeTableClient({ data: [ROW], error: null });
+    seam.client = client;
+
+    const result = await listMyOrders();
+
+    expect(result).toEqual({ data: [ROW], error: null });
+    expect(client.from).toHaveBeenCalledWith('orders');
+    expect(chain.select).toHaveBeenCalledWith(
+      'order_number, status, created_at, invoice_amount_cents, carrier, tracking_number',
+    );
+    expect(chain.order).toHaveBeenCalledWith('created_at', { ascending: false });
+  });
+
+  test('surfaces a backend error as a string, not a throw', async () => {
+    const { client } = makeTableClient({ data: null, error: { message: 'permission denied' } });
+    seam.client = client;
+
+    await expect(listMyOrders()).resolves.toEqual({ data: [], error: 'permission denied' });
+  });
+
+  test('treats a null data payload as an empty history', async () => {
+    const { client } = makeTableClient({ data: null, error: null });
+    seam.client = client;
+
+    await expect(listMyOrders()).resolves.toEqual({ data: [], error: null });
+  });
+});
+
+describe('getMyOrder', () => {
+  test('degrades to null data when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(getMyOrder('VSR-ORD-260701-001')).resolves.toEqual({
+      data: null,
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('calls the get_my_order RPC with the order number', async () => {
+    const order = { found: true, order_number: 'VSR-ORD-260701-001', status: 'paid' };
+    const { client, rpc } = makeRpcClient({ data: order, error: null });
+    seam.client = client;
+
+    const result = await getMyOrder('VSR-ORD-260701-001');
+
+    expect(result).toEqual({ data: order, error: null });
+    expect(rpc).toHaveBeenCalledWith('get_my_order', { p_order_number: 'VSR-ORD-260701-001' });
+  });
+
+  test('surfaces a missing-RPC (migration not applied) error as a string', async () => {
+    const { client } = makeRpcClient({
+      data: null,
+      error: { message: 'function get_my_order does not exist' },
+    });
+    seam.client = client;
+
+    await expect(getMyOrder('VSR-ORD-260701-001')).resolves.toEqual({
+      data: null,
+      error: 'function get_my_order does not exist',
+    });
+  });
+
+  test('maps a null RPC payload to not-found rather than a crash', async () => {
+    const { client } = makeRpcClient({ data: null, error: null });
+    seam.client = client;
+
+    await expect(getMyOrder('VSR-ORD-000000-000')).resolves.toEqual({
+      data: { found: false },
+      error: null,
+    });
+  });
+});
+
+describe('getMyRewardSummary', () => {
+  test('degrades to null data when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(getMyRewardSummary()).resolves.toEqual({
+      data: null,
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('returns the summary from the get_my_reward_summary RPC', async () => {
+    const summary = {
+      balance: 120,
+      threshold: 300,
+      percent: 40,
+      reward_ready: false,
+      active_voucher: null,
+      entries: [],
+    };
+    const { client, rpc } = makeRpcClient({ data: summary, error: null });
+    seam.client = client;
+
+    const result = await getMyRewardSummary();
+
+    expect(result).toEqual({ data: summary, error: null });
+    expect(rpc).toHaveBeenCalledWith('get_my_reward_summary');
+  });
+
+  test('surfaces a backend error as a string', async () => {
+    const { client } = makeRpcClient({ data: null, error: { message: 'permission denied' } });
+    seam.client = client;
+
+    await expect(getMyRewardSummary()).resolves.toEqual({
+      data: null,
+      error: 'permission denied',
+    });
+  });
+
+  test('falls back to a zeroed summary when the RPC returns null', async () => {
+    const { client } = makeRpcClient({ data: null, error: null });
+    seam.client = client;
+
+    await expect(getMyRewardSummary()).resolves.toEqual({
+      data: {
+        balance: 0,
+        threshold: 300,
+        percent: 40,
+        reward_ready: false,
+        active_voucher: null,
+        entries: [],
+      },
+      error: null,
+    });
+  });
+});
+
+describe('redeemReward', () => {
+  test('degrades to null data when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(redeemReward()).resolves.toEqual({
+      data: null,
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('returns the redeem_reward RPC result', async () => {
+    const { client, rpc } = makeRpcClient({
+      data: { ok: true, voucher_id: 'v-1', percent: 40 },
+      error: null,
+    });
+    seam.client = client;
+
+    const result = await redeemReward();
+
+    expect(result).toEqual({ data: { ok: true, voucher_id: 'v-1', percent: 40 }, error: null });
+    expect(rpc).toHaveBeenCalledWith('redeem_reward');
+  });
+
+  test('surfaces a backend error as a string', async () => {
+    const { client } = makeRpcClient({ data: null, error: { message: 'insufficient points' } });
+    seam.client = client;
+
+    await expect(redeemReward()).resolves.toEqual({ data: null, error: 'insufficient points' });
+  });
+
+  test('maps a null RPC payload to a not-ok result rather than a crash', async () => {
+    const { client } = makeRpcClient({ data: null, error: null });
+    seam.client = client;
+
+    await expect(redeemReward()).resolves.toEqual({
+      data: { ok: false, reason: 'Unexpected response.' },
+      error: null,
+    });
+  });
+});
+
+describe('listMyDiscounts', () => {
+  const ROW = {
+    id: 'd-1',
+    scope: 'lifetime',
+    percent: 10,
+    label: 'Founding member',
+    active: true,
+    starts_at: null,
+    expires_at: null,
+  };
+
+  test('degrades to an empty list when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(listMyDiscounts()).resolves.toEqual({
+      data: [],
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('returns the discount rows newest-window first (query shape pinned)', async () => {
+    const { client, chain } = makeTableClient({ data: [ROW], error: null });
+    seam.client = client;
+
+    const result = await listMyDiscounts();
+
+    expect(result).toEqual({ data: [ROW], error: null });
+    expect(client.from).toHaveBeenCalledWith('customer_discounts');
+    expect(chain.select).toHaveBeenCalledWith(
+      'id, scope, percent, label, active, starts_at, expires_at',
+    );
+    expect(chain.order).toHaveBeenCalledWith('starts_at', { ascending: false });
+  });
+
+  test('surfaces a missing-table (migration not applied) error as a string', async () => {
+    const { client } = makeTableClient({
+      data: null,
+      error: { message: 'relation "customer_discounts" does not exist' },
+    });
+    seam.client = client;
+
+    await expect(listMyDiscounts()).resolves.toEqual({
+      data: [],
+      error: 'relation "customer_discounts" does not exist',
+    });
+  });
+
+  test('treats a null data payload as no discounts', async () => {
+    const { client } = makeTableClient({ data: null, error: null });
+    seam.client = client;
+
+    await expect(listMyDiscounts()).resolves.toEqual({ data: [], error: null });
+  });
+});
