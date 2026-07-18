@@ -86,12 +86,19 @@ jobs:
           VITE_SUPABASE_ANON_KEY: sb_publishable_OZqMGcP7YYh-SSdMn4iOQA_ttecPFiQ
           VITE_ZELLE_HANDLE: info@velariss.co
 
-  # E2E checkout journey (tests/e2e) — offline and deterministic: no Supabase
-  # env, so the app runs backend-not-configured with formula pricing; the spec
-  # route-aborts Turnstile/REST/functions and asserts hard-coded dollar
-  # amounts (unit/line/subtotal/shipping/total). Hard gate like `checks`.
+  # E2E suite (tests/e2e) — hard gate like `checks`. The dev server gets the
+  # same bundle-public env as the build job so the app runs in its real
+  # configured mode (the portal-smoke flip card requires it). Determinism is
+  # enforced at the spec level: the checkout journey route-aborts
+  # Turnstile/REST/functions traffic (forcing offline formula pricing) and
+  # asserts hard-coded dollar amounts (unit/line/subtotal/shipping/total);
+  # portal-smoke is logged-out, read-only renders.
   e2e:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: https://ufaajzfuppohbxebftwp.supabase.co
+      VITE_SUPABASE_ANON_KEY: sb_publishable_OZqMGcP7YYh-SSdMn4iOQA_ttecPFiQ
+      VITE_ZELLE_HANDLE: info@velariss.co
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
