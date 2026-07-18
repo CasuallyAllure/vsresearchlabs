@@ -19,6 +19,15 @@ const networkDisabled = (name: string) => () => {
 
 globalThis.fetch = networkDisabled('fetch') as unknown as typeof fetch;
 
+// The place-order orchestration suite imports handler.ts, which pulls the
+// shared email templates (_shared/emailBrand.ts / invoiceEmail.ts). Those read
+// Deno.env at module load — a Deno-only global. Provide the minimal shim so
+// the modules load under Node; every lookup misses, so each value falls back
+// to its documented default exactly as an unset env var would in production.
+(globalThis as Record<string, unknown>).Deno ??= {
+  env: { get: (_key: string) => undefined },
+};
+
 // supabase-js realtime would use WebSocket; block it too so nothing connects.
 (globalThis as Record<string, unknown>).WebSocket = new Proxy(function () {}, {
   construct: networkDisabled('WebSocket'),

@@ -14,10 +14,13 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.{ts,tsx}', 'tests/rls/**/*.test.ts', 'src/**/*.test.ts'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     // Coverage spans the whole logic surface: every src/lib module plus the
-    // Deno-free place-order modules the unit suite pins. place-order/index.ts
-    // is excluded: it is Deno (jsr:/npm: imports vitest cannot load) and is
-    // gated by `deno check` instead. Thresholds are a RATCHET: set just under
-    // the measured floor so CI fails on regression; never lowered.
+    // place-order modules INCLUDING handler.ts — the full checkout
+    // orchestration, extracted Deno-free on 2026-07-18 and driven directly by
+    // tests/unit/placeOrderHandler.*.test.ts. Only the thin Deno shim
+    // (place-order/index.ts: env reads + Deno.serve wiring, no decisions) is
+    // excluded — it is jsr:-importing Deno code vitest cannot load, gated by
+    // `deno check` instead. Thresholds are a RATCHET: set just under the
+    // measured floor so CI fails on regression; never lowered.
     coverage: {
       provider: 'v8',
       all: true,
@@ -28,15 +31,15 @@ export default defineConfig({
       ],
       exclude: ['supabase/functions/place-order/index.ts'],
       reporter: ['text-summary', 'text'],
-      // Measured floor on 2026-07-18 (whole-surface coverage wave): 99.11 L /
-      // 98.94 S / 95.65 B / 98.27 F across 879 tests — every src/lib module
-      // now ≥81%, the place-order money engine at ~100%, clearing the
-      // CLAUDE.md 80% bar on the WHOLE surface, not just the money path.
-      // Thresholds sit ~2 points under the measured floor so CI fails on real
-      // regression, not on one refactored file (the razor-thin-margin
-      // brittleness the A- review flagged).
+      // Measured floor on 2026-07-18 (checkout-orchestration wave): 99.86 L /
+      // 99.50 S / 94.70 B / 99.39 F across 1,018 tests — handler.ts itself at
+      // 100% lines / 100% functions / 88% branches (the residue is ??
+      // fallbacks on defensive defaults). Lines/statements/functions sit
+      // ~1.5-2 points under the floor; branches stay at 94 because the floor
+      // (94.70) is only 0.7 above it and a razor-thin margin is the
+      // brittleness the A- review flagged.
       // RATCHET: never lower.
-      thresholds: { lines: 97, statements: 97, branches: 94, functions: 96 },
+      thresholds: { lines: 98, statements: 97.5, branches: 94, functions: 97 },
     },
   },
 });
