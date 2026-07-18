@@ -1,9 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { buildEnvGuard } from './scripts/viteEnvGuard.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  // buildEnvGuard: production builds hard-fail when required VITE_* vars are
+  // missing/empty or a "[Set …]" placeholder reaches the output bundle — the
+  // defense against the 2026-07-17/18 auto-build-lane incident. Build-only;
+  // dev/test unaffected.
+  plugins: [react(), buildEnvGuard()],
   // Honor a harness-assigned port (PORT env) so the dev server can avoid a
   // busy 5173; falls back to Vite's default when PORT is unset.
   server: {
