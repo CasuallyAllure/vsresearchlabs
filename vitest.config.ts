@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
+    // Offline guard: kills fetch/WebSocket/XHR so no unit test can hit the
+    // real Supabase project whose keys live in .env (see tests/setup.ts).
+    setupFiles: ['tests/setup.ts'],
     include: ['tests/unit/**/*.test.ts', 'tests/rls/**/*.test.ts', 'src/**/*.test.ts'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     // Coverage is scoped to the money-path logic modules — the Deno-free
