@@ -175,7 +175,7 @@ Settings → Branches → Add branch ruleset / protection rule for `main`:
 | Require a pull request before merging | ✅ |
 | — Required approvals | `0` (solo operator; the CI gate is the point, not review) |
 | Require status checks to pass before merging | ✅ |
-| — Required check | **`checks`** (the job id in `ci.yml`; this is the name GitHub reports) |
+| — Required checks | **`checks`** and **`e2e`** (the job ids in `ci.yml`; these are the names GitHub reports) |
 | — Require branches to be up to date before merging | ✅ |
 | Require conversation resolution | ✅ |
 | Do not allow bypassing the above settings | ⬜ (leave off — a solo operator needs the hatch) |
