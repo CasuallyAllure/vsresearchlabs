@@ -55,3 +55,9 @@ blob-report/
 video/
 VILERAW/
 .env.bak-jwt-key
+
+# Print-ready NIIMBOT M2 label library (402 PNGs) + the generator's venv.
+# Regenerate with: scripts/labels/.venv/bin/python scripts/labels/build_library.py
+Product Labels/
+scripts/labels/.venv/
+scripts/labels/__pycache__/
