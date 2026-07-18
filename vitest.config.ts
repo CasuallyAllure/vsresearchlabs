@@ -11,7 +11,7 @@ export default defineConfig({
     // Offline guard: kills fetch/WebSocket/XHR so no unit test can hit the
     // real Supabase project whose keys live in .env (see tests/setup.ts).
     setupFiles: ['tests/setup.ts'],
-    include: ['tests/unit/**/*.test.ts', 'tests/rls/**/*.test.ts', 'src/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.{ts,tsx}', 'tests/rls/**/*.test.ts', 'src/**/*.test.ts'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     // Coverage spans the whole logic surface: every src/lib module plus the
     // Deno-free place-order modules the unit suite pins. place-order/index.ts
@@ -21,7 +21,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       all: true,
-      include: ['supabase/functions/place-order/**/*.ts', 'src/lib/**/*.ts'],
+      include: [
+        'supabase/functions/place-order/**/*.ts',
+        'supabase/functions/reconcile/reconcilePlan.ts',
+        'src/lib/**/*.ts',
+      ],
       exclude: ['supabase/functions/place-order/index.ts'],
       reporter: ['text-summary', 'text'],
       // Measured floor on 2026-07-18 (whole-surface coverage wave): 99.11 L /

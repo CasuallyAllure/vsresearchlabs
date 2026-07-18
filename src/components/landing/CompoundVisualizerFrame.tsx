@@ -16,11 +16,14 @@
  * variant so the chrome stays proportional in the larger box.
  */
 
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 
 const HeroHoloCarousel = lazy(() =>
   import('./HeroHoloCarousel').then((m) => ({ default: m.HeroHoloCarousel })),
 );
+
+/** Idle-gate fallback delay for browsers without requestIdleCallback (Safari). */
+const IDLE_FALLBACK_MS = 200;
 
 interface CompoundVisualizerFrameProps {
   /** Expanded (overlay) variant — fills its parent box instead of the hero 5:4 slot. */
@@ -36,6 +39,31 @@ export function CompoundVisualizerFrame({
   onExpand,
   onClose,
 }: CompoundVisualizerFrameProps) {
+  // Idle gate for the carousel's lazy chunk (~255KB gz of three.js): mounting
+  // <HeroHoloCarousel> fires its dynamic import, and doing that on first
+  // commit contends with the landing first paint. Wait for an idle slot
+  // before mounting; the expanded overlay is user-requested, so it never
+  // waits.
+  const [ready, setReady] = useState(expanded);
+
+  useEffect(() => {
+    if (ready) return;
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(() => setReady(true));
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timeoutId = window.setTimeout(() => setReady(true), IDLE_FALLBACK_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [ready]);
+
+  const loadingFallback = (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/30">
+        Initializing structure…
+      </span>
+    </div>
+  );
+
   return (
     <div
       className={`module-aura relative w-full overflow-hidden rounded-2xl ${
@@ -101,18 +129,16 @@ export function CompoundVisualizerFrame({
         <rect width="200" height="160" fill="url(#hero-glow)" />
       </svg>
 
-      {/* Holographic content — swipeable carousel (3D structure + slides). */}
-      <Suspense
-        fallback={
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink/30">
-              Initializing structure…
-            </span>
-          </div>
-        }
-      >
-        <HeroHoloCarousel vivid={expanded} />
-      </Suspense>
+      {/* Holographic content — swipeable carousel (3D structure + slides).
+          Pre-ready renders the same fallback the Suspense boundary shows, so
+          the idle gate is visually indistinguishable from the chunk loading. */}
+      {ready ? (
+        <Suspense fallback={loadingFallback}>
+          <HeroHoloCarousel vivid={expanded} />
+        </Suspense>
+      ) : (
+        loadingFallback
+      )}
 
       {/* Scanline overlay — period 90s holo cue */}
       <div
@@ -140,7 +166,12 @@ export function CompoundVisualizerFrame({
       {onExpand && (
         <button
           type="button"
-          onClick={onExpand}
+          onClick={() => {
+            // Expansion is an explicit ask for the visualizer — never make it
+            // wait on the idle gate.
+            setReady(true);
+            onExpand();
+          }}
           aria-label="Expand compound visualizer"
           title="Expand"
           className="hero-holo-expand absolute right-3 bottom-2.5 z-40 flex h-7 w-7 items-center justify-center rounded-md border border-ink/15 bg-base-800/80 text-ink/55 backdrop-blur transition-colors hover:border-ink/35 hover:text-ink focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
