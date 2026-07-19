@@ -12,6 +12,16 @@
 -- This migration redefines both lookup_order and get_order_by_token to add
 -- a payment_verifying public status. Nothing else changes; same arguments,
 -- same return shape, additive case branch.
+--
+-- REPLAY FIX (2026-07-18, no prod effect): migration 016 briefly widened
+-- lookup_order to 13 columns (the 016→018 exposure incident); in prod that
+-- version was dropped out-of-band during the hotfix, so this file's
+-- `create or replace` back to the 7-column shape applied cleanly. On a FRESH
+-- replay (local stack / CI integration tier) 016's version still exists and
+-- `create or replace` cannot change a return type → SQLSTATE 42P13. The
+-- explicit drop below makes the chain replayable; prod tracks migrations by
+-- version and never re-runs this file.
+drop function if exists lookup_order(text, text);
 
 create or replace function lookup_order(p_identifier text, p_zip text)
 returns table (
