@@ -49,8 +49,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -128,8 +128,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -204,8 +204,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -280,8 +280,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -316,7 +316,20 @@
         "doi": "10.1167/iovs.16-21291"
       }
     ],
-    "molecularFormula": "C51H84N16O21"
+    "molecularFormula": "C51H84N16O21",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT02039687, ARA 290 and corneal nerve fibre density in sarcoidosis",
+        "url": "https://clinicaltrials.gov/study/NCT02039687"
+      }
+    ],
+    "developmentCodes": [
+      "ARA 290",
+      "pHSBP",
+      "cibinetide"
+    ],
+    "originator": "Araim Pharmaceuticals"
   },
   {
     "id": "rs-bpc-tb-blend",
@@ -364,8 +377,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -430,8 +443,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -467,7 +480,15 @@
         "doi": "10.1056/NEJMoa2502081"
       }
     ],
-    "molecularFormula": "C194H312N54O59S2"
+    "molecularFormula": "C194H312N54O59S2",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT06065540, Phase 3 with a cagrilintide monotherapy arm",
+        "url": "https://clinicaltrials.gov/study/NCT06065540"
+      }
+    ],
+    "originator": "Novo Nordisk"
   },
   {
     "id": "rs-cagrisema",
@@ -515,8 +536,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -548,7 +569,15 @@
         "pmid": "40544432",
         "doi": "10.1056/NEJMoa2502082"
       }
-    ]
+    ],
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT05567796, Phase 3 CagriSema in obesity (REDEFINE 1)",
+        "url": "https://clinicaltrials.gov/study/NCT05567796"
+      }
+    ],
+    "originator": "Novo Nordisk"
   },
   {
     "id": "rs-cjc-1295-no-dac",
@@ -603,8 +632,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -663,8 +692,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -725,8 +754,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -797,8 +826,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -863,8 +892,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -950,8 +979,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1018,8 +1047,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1033,7 +1062,7 @@
     "mechanismSummary": "A synthetic hexapeptide GH secretagogue (pralmorelin) that mimics endogenous ghrelin. It binds the ghrelin/GHS receptor in the pituitary and hypothalamus to stimulate and amplify pulsatile GH release.",
     "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor; mildly stimulates ACTH/cortisol and prolactin at higher doses.",
     "pathwaySummary": "GHS-R1a coupling to Gq–PLC–IP3-calcium signalling in somatotrophs drives GH secretion.",
-    "fdaStatus": "Not FDA-approved; approved in Japan as a GH-deficiency diagnostic",
+    "fdaStatus": "Not FDA-approved; reported approved in Japan as a GH-deficiency diagnostic",
     "humanTrialsConfirmed": true,
     "molecularFormula": "C45H55N9O6"
   },
@@ -1087,8 +1116,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1149,8 +1178,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1207,8 +1236,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1272,8 +1301,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1337,8 +1366,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1402,8 +1431,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1417,9 +1446,16 @@
     "mechanismSummary": "Synthetic gonadotropin-releasing hormone (GnRH) — a decapeptide identical to the endogenous hypothalamic hormone. Pulsatile administration stimulates pituitary release of LH and FSH; continuous exposure paradoxically downregulates the axis.",
     "receptorActivity": "Agonist at the pituitary GnRH receptor.",
     "pathwaySummary": "Activates GnRH-receptor signalling in the anterior pituitary, driving secretion of LH and FSH.",
-    "fdaStatus": "Approved historically as a GnRH diagnostic/therapeutic agent (availability varies)",
+    "fdaStatus": "Formerly approved as a GnRH diagnostic/therapeutic agent (Factrel, Lutrepulse); both US products discontinued",
     "humanTrialsConfirmed": true,
-    "molecularFormula": "C55H75N17O13"
+    "molecularFormula": "C55H75N17O13",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT01976728, pulsatile gonadorelin acetate in hypogonadotropic hypogonadism",
+        "url": "https://clinicaltrials.gov/study/NCT01976728"
+      }
+    ]
   },
   {
     "id": "rs-hcg",
@@ -1477,8 +1513,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1491,8 +1527,25 @@
     "mechanismSummary": "Human chorionic gonadotropin — a placental heterodimeric glycoprotein hormone (shared α subunit, unique β subunit). It mimics LH activity, supporting the corpus luteum in pregnancy and stimulating gonadal steroidogenesis; used clinically for ovulation induction and hypogonadism.",
     "receptorActivity": "Agonist at the LH/hCG receptor (LHCGR), a Gs-coupled GPCR on ovarian and testicular cells.",
     "pathwaySummary": "Activates LHCGR–Gs–cAMP signalling, driving steroidogenesis (progesterone/testosterone) and, in females, ovulation and luteal support.",
-    "fdaStatus": "Approved — urinary hCG and recombinant choriogonadotropin alfa (Ovidrel) for ART",
-    "humanTrialsConfirmed": true
+    "fdaStatus": "Approved — choriogonadotropin alfa (Ovidrel) for ART and ovulation induction; urinary hCG for ovulation induction, cryptorchidism and male hypogonadotropic hypogonadism",
+    "humanTrialsConfirmed": true,
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Ovidrel (choriogonadotropin alfa), BLA 021149",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021149"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Ovidrel (choriogonadotropin alfa) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a683e58a-63ea-44b8-a326-1a99a537bcf2"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT03687606, hCG and hCG plus hMG in hypogonadotropic hypogonadism",
+        "url": "https://clinicaltrials.gov/study/NCT03687606"
+      }
+    ]
   },
   {
     "id": "rs-hexarelin-acetate",
@@ -1544,8 +1597,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1622,8 +1675,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1638,7 +1691,25 @@
     "receptorActivity": "Agonist of the growth-hormone receptor (GHR), a class-I cytokine receptor; receptor dimerisation activates the JAK2–STAT5 cascade.",
     "pathwaySummary": "GHR–JAK2–STAT5 signalling drives transcription of GH-responsive genes including IGF-1, with additional MAPK and PI3K activation.",
     "fdaStatus": "Approved — many brands (Genotropin, Norditropin, etc.) for GH deficiency and growth disorders",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Genotropin (somatropin), BLA 020280",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=020280"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Genotropin (somatropin) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ffebf88b-d257-4542-9808-74d9b7167765"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT01088399, somatropin in growth hormone deficiency (HypoCCS)",
+        "url": "https://clinicaltrials.gov/study/NCT01088399"
+      }
+    ],
+    "appearance": "Supplied as a sterile, white lyophilized powder for reconstitution (FDA prescribing information, Genotropin)."
   },
   {
     "id": "rs-hmg",
@@ -1687,8 +1758,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1700,8 +1771,26 @@
     "mechanismSummary": "Human menopausal gonadotropin (menotropin) — a purified preparation from the urine of postmenopausal women containing both FSH and LH activity (typically ~1:1), often with residual hCG. It stimulates follicular development and ovulation in assisted reproduction.",
     "receptorActivity": "Acts via the FSH receptor and the LH/hCG receptor on gonadal cells through its FSH and LH components, respectively.",
     "pathwaySummary": "Stimulates gonadotropin-receptor signalling driving folliculogenesis and steroidogenesis in the gonads.",
-    "fdaStatus": "Approved — menotropins (e.g. Menopur) for ovulation induction and ART",
-    "humanTrialsConfirmed": true
+    "fdaStatus": "Approved — menotropins (e.g. Menopur), indicated for use in an Assisted Reproductive Technology (ART) cycle",
+    "humanTrialsConfirmed": true,
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Menopur (menotropins), BLA 021663",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021663"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Menopur (menotropins) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=22c8db95-c3db-1770-8086-31356fbabe35"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT02554279, Menopur in a GnRH-antagonist IVF cycle",
+        "url": "https://clinicaltrials.gov/study/NCT02554279"
+      }
+    ],
+    "appearance": "Supplied as a sterile lyophilized powder for reconstitution (FDA prescribing information, Menopur)."
   },
   {
     "id": "rs-igf-1-lr3",
@@ -1753,8 +1842,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1820,8 +1909,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1882,8 +1971,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -1943,8 +2032,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "2–8°C, protect from light",
     "shelfLifeMonths": 18,
     "unitOfMeasure": "vial",
@@ -1959,7 +2048,25 @@
     "pathwaySummary": "Central to mitochondrial fatty-acid β-oxidation (the carnitine shuttle) supplying acetyl-CoA to the TCA cycle.",
     "fdaStatus": "Approved — levocarnitine (Carnitor) for carnitine deficiency; also a supplement",
     "humanTrialsConfirmed": true,
-    "molecularFormula": "C7H15NO3"
+    "molecularFormula": "C7H15NO3",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Carnitor (levocarnitine), NDA 018948",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018948"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Carnitor (levocarnitine) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d2133bc3-9c15-48bd-8b16-b8995a6a14cd"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT01665092, levocarnitine in severe sepsis (RACE)",
+        "url": "https://clinicaltrials.gov/study/NCT01665092"
+      }
+    ],
+    "appearance": "Levocarnitine is a white, crystalline, hygroscopic powder (FDA prescribing information, Carnitor)."
   },
   {
     "id": "rs-lemon-bottle",
@@ -2004,8 +2111,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "2–8°C, protect from light",
     "shelfLifeMonths": 18,
     "unitOfMeasure": "vial",
@@ -2062,8 +2169,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "2–8°C, protect from light",
     "shelfLifeMonths": 18,
     "unitOfMeasure": "vial",
@@ -2124,8 +2231,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2160,7 +2267,14 @@
         "nctId": "NCT02225366"
       }
     ],
-    "molecularFormula": "C205H340N60O53"
+    "molecularFormula": "C205H340N60O53",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT02225366, intratumoral LL-37 injection in melanoma",
+        "url": "https://clinicaltrials.gov/study/NCT02225366"
+      }
+    ]
   },
   {
     "id": "rs-mazdutide",
@@ -2212,8 +2326,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2226,7 +2340,7 @@
     "mechanismSummary": "Synthetic long-acting oxyntomodulin analogue acting as a dual GLP-1 and glucagon receptor agonist. GLP-1R agonism enhances glucose-dependent insulin secretion and suppresses appetite, while glucagon-receptor agonism raises energy expenditure and lipolysis.",
     "receptorActivity": "Balanced co-agonist at GLP-1R and the glucagon receptor (GCGR); a dual incretin–glucagon agonist rather than a single-receptor agent.",
     "pathwaySummary": "Both receptors are Gs-coupled GPCRs; agonism raises cAMP/PKA signalling in pancreatic β-cells, hepatocytes, adipocytes, and hypothalamic neurons.",
-    "fdaStatus": "Approved in China (2025); investigational elsewhere — not FDA-approved",
+    "fdaStatus": "Not FDA-approved; reported approved in China (2025), investigational elsewhere",
     "humanTrialsConfirmed": true,
     "knownStudies": [
       {
@@ -2247,7 +2361,18 @@
         "pmid": "36247927",
         "doi": "10.1016/j.eclinm.2022.101691"
       }
-    ]
+    ],
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT06184568, Phase 3 mazdutide versus semaglutide (DREAMS-3)",
+        "url": "https://clinicaltrials.gov/study/NCT06184568"
+      }
+    ],
+    "developmentCodes": [
+      "IBI362"
+    ],
+    "originator": "Innovent Biologics"
   },
   {
     "id": "rs-melanotan-1",
@@ -2296,8 +2421,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2324,7 +2449,26 @@
         "doi": "10.1056/NEJMoa1411481"
       }
     ],
-    "molecularFormula": "C78H111N21O19"
+    "molecularFormula": "C78H111N21O19",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Scenesse (afamelanotide), NDA 210797",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=210797"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Scenesse (afamelanotide) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=94f53286-11dd-7fbb-e053-2a95a90a7c48"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT01605136, Phase 3 afamelanotide in erythropoietic protoporphyria",
+        "url": "https://clinicaltrials.gov/study/NCT01605136"
+      }
+    ],
+    "solubility": "Freely soluble in water (FDA prescribing information, Scenesse).",
+    "appearance": "Afamelanotide is a white to off-white powder (FDA prescribing information, Scenesse)."
   },
   {
     "id": "rs-melanotan-2",
@@ -2373,8 +2517,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2439,8 +2583,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2522,8 +2666,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2604,8 +2748,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2687,8 +2831,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2755,8 +2899,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2772,7 +2916,24 @@
     "pathwaySummary": "Activates OXTR–Gq/PLC signalling, raising intracellular calcium to drive smooth-muscle contraction.",
     "fdaStatus": "Approved — Pitocin (labour induction/augmentation, postpartum bleeding)",
     "humanTrialsConfirmed": true,
-    "molecularFormula": "C43H66N12O12S2"
+    "molecularFormula": "C43H66N12O12S2",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Pitocin (oxytocin injection), NDA 018261",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018261"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Pitocin (oxytocin injection) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=6d4b2c25-2e5d-49b5-93bc-2ae8a20916d1"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT05782816, low- versus high-dose oxytocin for labour induction",
+        "url": "https://clinicaltrials.gov/study/NCT05782816"
+      }
+    ]
   },
   {
     "id": "rs-peg-mgf",
@@ -2821,8 +2982,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2884,8 +3045,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -2912,7 +3073,24 @@
         "doi": "10.1097/AOG.0000000000003500"
       }
     ],
-    "molecularFormula": "C50H68N14O10"
+    "molecularFormula": "C50H68N14O10",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Vyleesi (bremelanotide), NDA 210557",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=210557"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Vyleesi (bremelanotide) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8c9607a2-5b57-4a59-b159-cf196deebdd9"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT02333071, Phase 3 bremelanotide in premenopausal HSDD",
+        "url": "https://clinicaltrials.gov/study/NCT02333071"
+      }
+    ]
   },
   {
     "id": "rs-selank",
@@ -2964,8 +3142,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3033,8 +3211,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3048,7 +3226,7 @@
     "mechanismSummary": "A synthetic 29-amino-acid peptide corresponding to the active N-terminal fragment of human GHRH (GHRH 1-29 NH2), the shortest fully functional GHRH fragment. It binds pituitary GHRH receptors to stimulate synthesis and pulsatile secretion of endogenous growth hormone.",
     "receptorActivity": "Agonist at the GHRH receptor (GHRHR) on anterior-pituitary somatotrophs; selective for GHRHR.",
     "pathwaySummary": "Activates the GHRHR–Gs–cAMP–PKA pathway to trigger GH release, raising circulating IGF-1.",
-    "fdaStatus": "Formerly approved — Geref (withdrawn from US market 2002)",
+    "fdaStatus": "Formerly approved — Geref (sermorelin acetate); discontinued by the sponsor in 2008, FDA approval withdrawn 2009 (not for safety or effectiveness reasons)",
     "humanTrialsConfirmed": true,
     "molecularFormula": "C149H246N44O42S"
   },
@@ -3099,8 +3277,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3168,8 +3346,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3196,7 +3374,29 @@
         "doi": "10.1038/s41436-020-01006-8"
       }
     ],
-    "molecularFormula": "C32H49N9O5"
+    "molecularFormula": "C32H49N9O5",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Forzinity (elamipretide), NDA 215244",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215244"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Forzinity (elamipretide hydrochloride) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=146bf34c-76f2-48db-ac07-fb29cce2cd75"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT03098797, elamipretide in Barth syndrome",
+        "url": "https://clinicaltrials.gov/study/NCT03098797"
+      }
+    ],
+    "developmentCodes": [
+      "MTP-131",
+      "SS-31"
+    ],
+    "originator": "Stealth BioTherapeutics"
   },
   {
     "id": "rs-survodutide",
@@ -3245,8 +3445,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3281,7 +3481,18 @@
         "pmid": "42253238",
         "doi": "10.1056/NEJMoa2600751"
       }
-    ]
+    ],
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT06066515, Phase 3 survodutide in overweight or obesity",
+        "url": "https://clinicaltrials.gov/study/NCT06066515"
+      }
+    ],
+    "developmentCodes": [
+      "BI 456906"
+    ],
+    "originator": "Boehringer Ingelheim"
   },
   {
     "id": "rs-tesamorelin",
@@ -3339,8 +3550,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3367,7 +3578,28 @@
         "doi": "10.1210/jc.2010-0490"
       }
     ],
-    "molecularFormula": "C221H366N72O67S"
+    "molecularFormula": "C221H366N72O67S",
+    "fdaResources": [
+      {
+        "kind": "drugs-at-fda",
+        "label": "Drugs@FDA — Egrifta (tesamorelin), BLA 022505",
+        "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=022505"
+      },
+      {
+        "kind": "dailymed",
+        "label": "DailyMed — Egrifta SV (tesamorelin) prescribing information",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=3d783378-b02d-4f19-99dd-0fc91a042224"
+      },
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT02196831, tesamorelin effects on liver fat in HIV",
+        "url": "https://clinicaltrials.gov/study/NCT02196831"
+      }
+    ],
+    "appearance": "Supplied as a sterile, white to off-white, preservative-free lyophilized powder (FDA prescribing information, Egrifta SV).",
+    "developmentCodes": [
+      "TH9507"
+    ]
   },
   {
     "id": "rs-thymalin",
@@ -3416,8 +3648,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3482,8 +3714,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3497,9 +3729,16 @@
     "mechanismSummary": "A 28-amino-acid acetylated peptide (thymalfasin) originally isolated from thymic tissue. It is an immunomodulator that augments T-cell maturation and function and enhances both innate and adaptive immune responses.",
     "receptorActivity": "Acts in part through Toll-like receptor signalling (notably TLR9/TLR2) on dendritic and other immune cells; it has no single high-affinity receptor and works pleiotropically.",
     "pathwaySummary": "Stimulates Th1 cytokine production (IL-2, IFN-γ), promotes dendritic-cell and T-cell maturation, and increases NK-cell activity via TLR-mediated and NF-κB pathways.",
-    "fdaStatus": "Not FDA-approved; approved abroad as Zadaxin (chronic hepatitis B/C)",
+    "fdaStatus": "Not FDA-approved; reported approved in other jurisdictions as Zadaxin (chronic hepatitis B)",
     "humanTrialsConfirmed": true,
-    "molecularFormula": "C129H215N33O55"
+    "molecularFormula": "C129H215N33O55",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT04487444, thymalfasin (thymosin alpha-1) in COVID-19",
+        "url": "https://clinicaltrials.gov/study/NCT04487444"
+      }
+    ]
   },
   {
     "id": "rs-vip",
@@ -3548,8 +3787,8 @@
     "featured": false,
     "createdAt": "2026-06-01T00:00:00.000Z",
     "updatedAt": "2026-06-01T00:00:00.000Z",
-    "manufacturer": "Vetted global production partners",
-    "countryOfOrigin": "Global partner network",
+    "manufacturer": "Vetted international manufacturing partners",
+    "countryOfOrigin": "International partner network",
     "storageCondition": "−20°C, desiccated, light-protected",
     "shelfLifeMonths": 24,
     "unitOfMeasure": "vial",
@@ -3576,6 +3815,13 @@
         "doi": "10.1164/rccm.200909-1451OC"
       }
     ],
-    "molecularFormula": "C147H237N43O43S"
+    "molecularFormula": "C147H237N43O43S",
+    "fdaResources": [
+      {
+        "kind": "clinical-trial",
+        "label": "ClinicalTrials.gov — NCT04360096, inhaled aviptadil (VIP analogue) in severe COVID-19",
+        "url": "https://clinicaltrials.gov/study/NCT04360096"
+      }
+    ]
   }
 ]
