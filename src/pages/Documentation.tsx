@@ -25,6 +25,7 @@ import {
 import { PillTabs } from '../components/ui/PillTabs';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
 import { SampleArchiveNotice } from '../components/documents/SampleArchiveNotice';
+import { ArchivePreparationVeil } from '../components/documents/ArchivePreparationVeil';
 
 const TYPE_SHORT: Record<string, string> = {
   'Certificate of Analysis':  'COA',
@@ -62,6 +63,7 @@ export function Documentation() {
 
   const isFiltered    = activeType !== 'all' || activeIssuer !== 'all';
   const visibleCount  = documents.length;
+  const isSampleArchive = hasSamplePlaceholders(documents);
 
   return (
     <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
@@ -92,8 +94,8 @@ export function Documentation() {
         </p>
       </header>
 
-      {/* Honesty seal — shown whenever any visible record is a placeholder. */}
-      {hasSamplePlaceholders(documents) && <SampleArchiveNotice />}
+      {/* Honesty disclosure — the words behind the blur below. */}
+      {isSampleArchive && <SampleArchiveNotice />}
 
       {/* Archive filters — PillTabs only, two rows */}
       <div className="mb-[var(--space-8)] flex flex-col gap-[var(--space-3)]">
@@ -113,12 +115,17 @@ export function Documentation() {
         )}
       </div>
 
-      {/* Gallery — each card routes to its detail page */}
-      <DocumentGallery
-        documents={documents}
-        makeCardHref={(doc) => `/documentation/${doc.id}`}
-        emptyLabel="No documents match the active filters."
-      />
+      {/* Gallery — each card routes to its detail page. While the archive is
+          illustrative the cards render blurred behind the shared seal; they
+          stay reachable (`interactive`) because the detail route carries the
+          same veil and the same disclosure. */}
+      <ArchivePreparationVeil active={isSampleArchive} interactive>
+        <DocumentGallery
+          documents={documents}
+          makeCardHref={(doc) => `/documentation/${doc.id}`}
+          emptyLabel="No documents match the active filters."
+        />
+      </ArchivePreparationVeil>
     </section>
   );
 }
