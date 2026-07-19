@@ -83,7 +83,11 @@ describe.skipIf(!canRun)('validate_coupon (real DB, migrations 031/048/057)', ()
       { code: NOPROMO, kind: 'percent', percent: 5, combines_with_promos: false },
       { code: NOACC, kind: 'percent', percent: 5, combines_with_account: false },
       { code: PLAIN, kind: 'percent', percent: 5 },
-    ]);
+      // defaultToNull:false — PostgREST bulk inserts take the UNION of the
+      // rows' keys and fill the gaps with explicit NULLs, which violates the
+      // NOT NULL DEFAULT columns (once_per_contact, min_subtotal_cents).
+      // This makes missing keys use the column defaults instead.
+    ], { defaultToNull: false });
     if (inserted.error) throw new Error(`Failed to seed coupons: ${inserted.error.message}`);
 
     // Prior redemption for the once_per_contact check (no order needed —

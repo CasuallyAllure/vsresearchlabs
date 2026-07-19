@@ -78,7 +78,11 @@ describe.skipIf(!canRun)('redeem_coupon (real DB, migration 031)', () => {
         code: AFF, kind: 'percent', percent: 10,
         affiliate_id: affiliateId, commission_percent: 15,
       },
-    ]);
+      // defaultToNull:false — PostgREST bulk inserts take the UNION of the
+      // rows' keys and fill the gaps with explicit NULLs, which violates the
+      // NOT NULL DEFAULT columns (once_per_contact, min_subtotal_cents).
+      // This makes missing keys use the column defaults instead.
+    ], { defaultToNull: false });
     if (coupons.error) throw new Error(`Failed to seed coupons: ${coupons.error.message}`);
   }, 30_000);
 
