@@ -147,9 +147,11 @@ export interface Product {
 
   /** Lot traceability identifier (e.g. "LOT-2026-031-A"). */
   lotNumber?: string;
-  /** Manufacturer or synthesis origin (e.g. "VSR Synthesis · In-house"). */
+  /** Supply source — renders as "Supply source" (e.g. "Vetted international
+   *  manufacturing partners"). Not a claim of in-house manufacture. */
   manufacturer?: string;
-  /** Country or region of manufacture (e.g. "United States", "Germany"). */
+  /** Sourcing network — renders as "Sourcing network" (e.g. "International
+   *  partner network"). Not a claim of a single jurisdiction. */
   countryOfOrigin?: string;
   /** Precise storage requirement string. Distinct from specs[].value. */
   storageCondition?: string;
@@ -201,6 +203,103 @@ export interface Product {
   fdaStatus?: string;
   /** Whether at least one confirmed human clinical trial exists. */
   humanTrialsConfirmed?: boolean;
+  /**
+   * Verified regulatory / registry resources for this compound's active
+   * ingredient. Present ONLY where the linked record was fetched and confirmed
+   * to name the correct ingredient. A compound with no approved counterpart and
+   * no registered trial carries none — that absence is informative, not a gap.
+   */
+  fdaResources?: FdaResource[];
+  /**
+   * Reference list for the dossier. Seeded from `knownStudies` entries that
+   * already carry a resolved PMID or DOI. Every entry must carry at least one
+   * resolvable identifier (`pmid`, `doi`, or `url`) — a citation with no
+   * identifier is not admissible.
+   */
+  references?: CompoundReference[];
+
+  // ── Chemical properties (dossier) ───────────────────────────────────────
+  // Corroborated against PubChem or a manufacturer/technical source only.
+  // Omitted entirely where no source could be confirmed — never estimated.
+
+  /** Solubility / reconstitution guidance (e.g. "Soluble in water; …"). */
+  solubility?: string;
+  /** Stability and handling behaviour in solution and as lyophilate. */
+  stability?: string;
+  /** Physical appearance of the supplied material. */
+  appearance?: string;
+
+  // ── Research history (dossier) ──────────────────────────────────────────
+
+  /** Discovery / origin narrative. Corroborated only. */
+  discovery?: string;
+  /** Development / sponsor codes (e.g. "LY3437943", "BI 456906"). */
+  developmentCodes?: string[];
+  /** Originating institution or sponsor. */
+  originator?: string;
+}
+
+// ── Regulatory resources ────────────────────────────────────────────────────
+
+/**
+ * Kind of regulatory resource, which determines the expected host:
+ *   drugs-at-fda   → accessdata.fda.gov (approval record)
+ *   dailymed       → dailymed.nlm.nih.gov (current prescribing label)
+ *   clinical-trial → clinicaltrials.gov (registered study)
+ *   fda-guidance   → fda.gov (guidance / safety communication)
+ */
+export type FdaResourceKind =
+  | 'drugs-at-fda'
+  | 'dailymed'
+  | 'clinical-trial'
+  | 'fda-guidance';
+
+export interface FdaResource {
+  /** Human label, e.g. "Drugs@FDA — Ozempic (NDA 209637)". */
+  label: string;
+  /** Absolute URL. Must have been fetched and confirmed before being recorded. */
+  url: string;
+  kind: FdaResourceKind;
+}
+
+// ── Reference list ──────────────────────────────────────────────────────────
+
+export interface CompoundReference {
+  /** Rendered citation line (authors omitted where not verified). */
+  citation: string;
+  /** PubMed identifier — digits only. */
+  pmid?: string;
+  /** Bare DOI (`10.<registrant>/<suffix>`). */
+  doi?: string;
+  /** Fallback URL when neither a PMID nor a DOI exists. */
+  url?: string;
+}
+
+/**
+ * Canonical link for a reference, by permanence: PMID → DOI → explicit URL.
+ * Returns `null` when the reference carries no resolvable identifier, which the
+ * data model forbids — the guard exists so a malformed record renders as plain
+ * text rather than a broken link.
+ */
+export function referenceHref(ref: CompoundReference): string | null {
+  const pmid = ref.pmid?.trim();
+  if (pmid) return `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+  const doi = ref.doi?.trim();
+  if (doi) return `https://doi.org/${doi}`;
+  return ref.url?.trim() || null;
+}
+
+/**
+ * Extract a ClinicalTrials.gov identifier from free text (e.g. a study `source`
+ * string reading "ClinicalTrials.gov NCT02039687"). Returns the bare
+ * `NCT########` form, or `null` when the text carries none. Matches only the
+ * exact registry shape — 'NCT' followed by exactly eight digits — so partial or
+ * malformed identifiers are rejected rather than half-linked.
+ */
+export function extractNctId(text: string | undefined): string | null {
+  if (!text) return null;
+  const m = /\bNCT\s?(\d{8})\b/i.exec(text);
+  return m ? `NCT${m[1]}` : null;
 }
 
 // ── Research Study Reference ─────────────────────────────────────────────────

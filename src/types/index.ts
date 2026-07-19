@@ -8,8 +8,11 @@ export type {
   ProductVariant,
   ProductStudy,
   StudyModel,
+  FdaResource,
+  FdaResourceKind,
+  CompoundReference,
 } from './product';
-export { deriveProductDose } from './product';
+export { deriveProductDose, referenceHref, extractNctId } from './product';
 
 // ─── Document (Wave 9 — Documentation Library Foundation) ───
 export type { Document, DocumentTypeLabel } from './document';

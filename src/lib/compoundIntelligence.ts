@@ -14,12 +14,14 @@
  */
 
 import type {
+  CompoundReference,
+  FdaResource,
   Product,
   ProductStudy,
   ProductVariant,
   ResearchClassification,
 } from '../types';
-import { deriveProductDose } from '../types';
+import { deriveProductDose, extractNctId } from '../types';
 
 /** Canonical classification labels. The authoritative copy lives here;
  *  other surfaces should import this rather than re-declaring it. */
@@ -183,8 +185,89 @@ export interface CompoundIntelligence {
   /** Studies, newest first. */
   studies: ProductStudy[];
 
+  /** Verified regulatory / registry links. Empty when none were corroborated. */
+  fdaResources: FdaResource[];
+  /** Reference list, newest first. Empty when nothing verifiable exists. */
+  references: CompoundReference[];
+
+  /** Chemical properties, as authored. Undefined where uncorroborated. */
+  solubility?: string;
+  stability?: string;
+  appearance?: string;
+
+  /** Research history, as authored. Undefined where uncorroborated. */
+  discovery?: string;
+  developmentCodes: string[];
+  originator?: string;
+
   hasMolecularIntelligence: boolean;
   hasStudies: boolean;
+  hasChemicalProperties: boolean;
+  hasResearchHistory: boolean;
+}
+
+/**
+ * Backfill a structured `nctId` from a study's free-text `source`.
+ *
+ * Several records predate the structured field and carry the identifier inside
+ * prose such as "ClinicalTrials.gov NCT02039687". An explicit `nctId` always
+ * wins; extraction only fills a genuine absence, so hand-corrected data is
+ * never overwritten by a regex.
+ */
+function withExtractedNctId(study: ProductStudy): ProductStudy {
+  if (study.nctId) return study;
+  const nctId = extractNctId(study.source) ?? extractNctId(study.title);
+  return nctId ? { ...study, nctId } : study;
+}
+
+/**
+ * Derive the reference list from the study record.
+ *
+ * This is deliberately a derivation rather than a second hand-authored list.
+ * A reference can only exist here if the underlying study already carries a
+ * resolved `pmid` or `doi`, so the reference list cannot drift away from the
+ * verified evidence, and no citation can be introduced that was not checked
+ * against PubMed or a DOI registrar. Studies with no identifier contribute
+ * nothing — they still render under Known Studies, they just cannot be cited.
+ *
+ * An explicit `product.references` array overrides the derivation, for the
+ * case where a reference is not tied to a study record.
+ */
+export function deriveReferences(
+  product: Product,
+  studies: ProductStudy[],
+): CompoundReference[] {
+  if (product.references?.length) return product.references;
+  return studies
+    .filter((s) => s.pmid || s.doi)
+    .map((s) => ({
+      citation: `${s.title}. ${s.source}, ${s.year}.`,
+      pmid: s.pmid,
+      doi: s.doi,
+    }));
+}
+
+/**
+ * Rows for the Chemical Properties module. Only populated fields appear, so a
+ * compound with a verified appearance but no verified solubility renders one
+ * row rather than an empty placeholder next to a real value.
+ */
+export function chemicalPropertyRows(product: Product): AnalyticalRow[] {
+  const rows: AnalyticalRow[] = [];
+  if (product.appearance) rows.push({ label: 'Appearance', value: product.appearance });
+  if (product.solubility) rows.push({ label: 'Solubility / Reconstitution', value: product.solubility });
+  if (product.stability) rows.push({ label: 'Stability', value: product.stability });
+  return rows;
+}
+
+/** Rows for the Research History module. Same all-or-nothing-per-row rule. */
+export function researchHistoryRows(product: Product): AnalyticalRow[] {
+  const rows: AnalyticalRow[] = [];
+  if (product.discovery) rows.push({ label: 'Discovery / Origin', value: product.discovery });
+  if (product.developmentCodes?.length)
+    rows.push({ label: 'Development Codes', value: product.developmentCodes.join(' · ') });
+  if (product.originator) rows.push({ label: 'Originator', value: product.originator });
+  return rows;
 }
 
 const DASH_SPLIT = [' — ', ' – ', ' - '];
@@ -279,9 +362,9 @@ function derivePhysiologicalOutcome(studies: ProductStudy[]): string[] {
 export function getCompoundIntelligence(
   product: Product,
 ): CompoundIntelligence {
-  const studies = [...(product.knownStudies ?? [])].sort(
-    (a, b) => b.year - a.year,
-  );
+  const studies = [...(product.knownStudies ?? [])]
+    .sort((a, b) => b.year - a.year)
+    .map(withExtractedNctId);
   const classificationLabel = product.researchClassification
     ? CLASSIFICATION_LABELS[product.researchClassification] ?? product.family
     : product.family;
@@ -322,7 +405,20 @@ export function getCompoundIntelligence(
       studies.some((s) => s.model === 'human'),
     studies,
 
+    fdaResources: product.fdaResources ?? [],
+    references: deriveReferences(product, studies),
+
+    solubility: product.solubility,
+    stability: product.stability,
+    appearance: product.appearance,
+
+    discovery: product.discovery,
+    developmentCodes: product.developmentCodes ?? [],
+    originator: product.originator,
+
     hasMolecularIntelligence,
     hasStudies: studies.length > 0,
+    hasChemicalProperties: chemicalPropertyRows(product).length > 0,
+    hasResearchHistory: researchHistoryRows(product).length > 0,
   };
 }
