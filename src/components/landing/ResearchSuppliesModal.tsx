@@ -2,7 +2,7 @@
  * ResearchSuppliesModal
  *
  * The /research-supplies hub experience as a landing pop-up: the three
- * compound domains (Biopeptide / Nootropics / Skincare) as a picker. Each row
+ * compound domains (Biopeptide / Nootropics / Dermatological) as a picker. Each row
  * routes to its domain catalog. Lets the buyer choose a domain without leaving
  * the landing page. Centered modal, ESC / backdrop to close, body scroll-lock.
  */
@@ -38,8 +38,8 @@ const ROWS: DomainRow[] = [
   {
     to: '/research-supplies/skincare',
     eyebrow: '03',
-    title: 'Skincare',
-    body: 'Topical and dermatological research compounds for barrier, repair, and pigmentation models.',
+    title: 'Dermatological',
+    body: 'Topical and dermal-tissue research compounds for barrier, repair, and pigmentation research models.',
     category: 'skincare-research-supplies',
   },
 ];

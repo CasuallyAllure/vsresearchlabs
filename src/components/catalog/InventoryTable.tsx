@@ -50,7 +50,7 @@ const ADDED_MS = 1400;
 const CATEGORY_LABEL: Record<ProductCategory, string> = {
   'biopeptide-research-supplies': 'Biopeptide',
   'nootropics-research-supplies': 'Nootropics',
-  'skincare-research-supplies': 'Skincare',
+  'skincare-research-supplies': 'Dermatological',
   'laboratory-equipment': 'Equipment',
 };
 

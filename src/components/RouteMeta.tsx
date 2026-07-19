@@ -22,7 +22,7 @@ const TITLES: Array<[RegExp, string]> = [
   [/^\/$/, siteConfig.seo.defaultTitle],
   [/^\/research-supplies\/biopeptide/, `Biopeptide Research Supplies — ${BRAND}`],
   [/^\/research-supplies\/nootropics/, `Nootropics Research Supplies — ${BRAND}`],
-  [/^\/research-supplies\/skincare/, `Skincare Research Supplies — ${BRAND}`],
+  [/^\/research-supplies\/skincare/, `Dermatological Research Compounds — ${BRAND}`],
   [/^\/research-supplies/, `Research Supplies — ${BRAND}`],
   [/^\/laboratory-equipment/, `Laboratory Equipment — ${BRAND}`],
   [/^\/research\b/, `Research Library — ${BRAND}`],
