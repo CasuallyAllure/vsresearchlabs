@@ -36,6 +36,7 @@ import { ResearchSuppliesModal } from '../components/landing/ResearchSuppliesMod
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
+import { ArchivePreparationVeil } from '../components/documents/ArchivePreparationVeil';
 import { CompoundIntelligenceHero } from '../components/landing/CompoundIntelligenceHero';
 // Heavy (three.js + R3F + drei) — split into its own chunk so it streams in
 // after the page paints instead of blocking the initial bundle.
@@ -866,28 +867,14 @@ export function Landing() {
         </p>
 
         {/* Placeholder archive — blurred behind a "to be updated" seal so we
-            never present filler certificates as real records. */}
-        <div className="mt-[var(--space-10)] relative">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none select-none blur-[7px] opacity-45 saturate-[0.6]"
-          >
-            <DocumentGallery
-              documents={documents.slice(0, 3)}
-              cardHref="/documentation"
-            />
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center px-[var(--space-4)]">
-            <div className="rounded-full border border-ink/15 bg-base-800/85 px-[var(--space-6)] py-[var(--space-3)] backdrop-blur-sm text-center">
-              <span className="block font-mono text-[10px] uppercase tracking-[0.28em] text-ink/60">
-                Archive in preparation
-              </span>
-              <span className="mt-1 block text-[11px] text-ink/40">
-                Live certificates &amp; batch records — to be updated.
-              </span>
-            </div>
-          </div>
-        </div>
+            never present filler certificates as real records. Shared with
+            /documentation and the product-page slots. */}
+        <ArchivePreparationVeil className="mt-[var(--space-10)]">
+          <DocumentGallery
+            documents={documents.slice(0, 3)}
+            cardHref="/documentation"
+          />
+        </ArchivePreparationVeil>
       </Module>
 
       {/* ── 03 · OPERATIONAL SEQUENCE ────────────────────────────────────── */}

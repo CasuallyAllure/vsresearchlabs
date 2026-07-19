@@ -16,15 +16,20 @@
  * is empty, it renders as "Awaiting Upload" — a structural placeholder
  * that names the future action without faking content.
  *
+ * A slot whose only candidate is an illustrative placeholder renders that
+ * record behind `ArchivePreparationVeil`: blurred, inert, and labelled as
+ * not issued. Nothing fabricated is ever presented as a filed certificate.
+ *
  * Future upload action wiring belongs in admin/auth work (not this pass).
  * The button is structural-only here.
  *
- * No backend, no auth, no fabricated data.
+ * No backend, no auth.
  */
 
 import { Link } from 'react-router-dom';
 import type { Document, DocumentTypeLabel } from '../../types';
 import { DateStamp } from '../ui/identifiers';
+import { ArchivePreparationVeil } from './ArchivePreparationVeil';
 
 /**
  * Canonical four-slot manifest. Order is fixed: COA → HPLC → Mass Spec
@@ -72,20 +77,26 @@ export function DocumentSlot({ documents }: DocumentSlotProps) {
   return (
     <ul className="space-y-[var(--space-3)]" aria-label="Product documentation slots">
       {SLOTS.map((slot) => {
-        // Illustrative placeholders do not fill a slot. Rendering one as a
-        // FilledSlot would present invented issuer/date metadata as a filed
-        // certificate — the exact claim this component was built to avoid.
-        // An unfilled slot is the honest state, and "Awaiting Upload" is
-        // already the right words for it.
-        const match = documents.find(
-          (d) =>
-            !d.isSamplePlaceholder &&
-            slot.documentTypes.includes(d.documentType as DocumentTypeLabel),
-        );
+        const inSlot = (d: Document) =>
+          slot.documentTypes.includes(d.documentType as DocumentTypeLabel);
+
+        const match = documents.find((d) => !d.isSamplePlaceholder && inSlot(d));
+        // An illustrative placeholder never fills a slot as if it were a
+        // filed certificate. It renders blurred behind the shared archive
+        // seal — inert, unopenable, and labelled as not issued — matching
+        // /documentation and the landing preview.
+        const placeholder = !match
+          ? documents.find((d) => d.isSamplePlaceholder && inSlot(d))
+          : undefined;
+
         return (
           <li key={slot.abbreviation}>
             {match ? (
               <FilledSlot slot={slot} document={match} />
+            ) : placeholder ? (
+              <ArchivePreparationVeil compact note="Not an issued record.">
+                <FilledSlot slot={slot} document={placeholder} />
+              </ArchivePreparationVeil>
             ) : (
               <EmptySlot slot={slot} />
             )}

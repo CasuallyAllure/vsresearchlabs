@@ -26,12 +26,14 @@ import {
   useDocumentsByBatch,
   useDocumentsByProduct,
   getDocumentStatus,
+  hasSamplePlaceholders,
 } from '../hooks/useDocuments';
 import { useProducts } from '../hooks/useProducts';
 import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
 import { BatchCode, DateStamp, SKUCode } from '../components/ui/identifiers';
 import { DocumentCard } from '../components/documents/DocumentCard';
 import { SampleArchiveNotice } from '../components/documents/SampleArchiveNotice';
+import { ArchivePreparationVeil } from '../components/documents/ArchivePreparationVeil';
 import { ErrorState } from '../components/system/ErrorState';
 
 export function DocumentDetail() {
@@ -144,7 +146,9 @@ export function DocumentDetail() {
         {doc.documentType}
       </p>
 
-      {/* Main grid */}
+      {/* Main grid — while the record is illustrative, its fabricated
+          provenance renders blurred behind the shared archive seal. */}
+      <ArchivePreparationVeil active={doc.isSamplePlaceholder}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-[var(--space-10)] gap-y-[var(--space-8)]">
 
         {/* Preview column — archival reference thumbnail, not hero */}
@@ -266,6 +270,7 @@ export function DocumentDetail() {
 
         </div>
       </div>
+      </ArchivePreparationVeil>
 
       {/* Associated Inventory — deep-link to the product detail route */}
       {associatedProduct && (
@@ -306,13 +311,15 @@ export function DocumentDetail() {
           <p className="text-[11px] uppercase tracking-[0.3em] text-ink/40 mb-[var(--space-6)]">
             {relatedLabel}
           </p>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--space-3)] sm:gap-[var(--space-4)]">
-            {relatedDocs.map((d) => (
-              <li key={d.id}>
-                <DocumentCard document={d} href={`/documentation/${d.id}`} />
-              </li>
-            ))}
-          </ul>
+          <ArchivePreparationVeil active={hasSamplePlaceholders(relatedDocs)} interactive>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[var(--space-3)] sm:gap-[var(--space-4)]">
+              {relatedDocs.map((d) => (
+                <li key={d.id}>
+                  <DocumentCard document={d} href={`/documentation/${d.id}`} />
+                </li>
+              ))}
+            </ul>
+          </ArchivePreparationVeil>
         </section>
       )}
     </article>
