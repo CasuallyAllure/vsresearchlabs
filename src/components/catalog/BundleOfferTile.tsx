@@ -22,7 +22,13 @@ import { BUNDLE_PROMO, BUNDLE_FEATURED, bundleDiscount } from '../../lib/bundle'
 import { Button } from '../ui/Button';
 import type { Product } from '../../types';
 
-export function BundleOfferTile() {
+interface BundleOfferTileProps {
+  /** Layout classes from the parent (width / snap / flex / spacing). The tile
+   *  owns no outer margin so it composes into a row or stands alone. */
+  className?: string;
+}
+
+export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
   // Subscribe so an admin price/visibility edit propagates live, same as
   // CompoundTile's override subscriptions.
   useProductOverrides((s) => s.bySku);
@@ -96,11 +102,14 @@ export function BundleOfferTile() {
   return (
     <section
       aria-label="Paired compound supply"
-      className="floating-module mb-[var(--space-4)] overflow-hidden"
+      className={`floating-module overflow-hidden ${className}`}
     >
-      <div className="flex flex-col gap-[var(--space-4)] p-[var(--space-4)] sm:flex-row sm:items-center sm:gap-[var(--space-5)] sm:p-[var(--space-5)]">
+      {/* The internal row only unfolds at lg — below that the tile may be
+          sharing a two-up row with the spotlight module, where a side-by-side
+          thumbnail/copy split would be cramped. */}
+      <div className="flex flex-col gap-[var(--space-4)] p-[var(--space-4)] lg:flex-row lg:items-center lg:gap-[var(--space-5)] lg:p-[var(--space-5)]">
         {/* Vial pairing — the "+" between the two thumbnails reads as the pair. */}
-        <div className="flex shrink-0 items-center justify-center gap-2 self-center sm:self-auto">
+        <div className="flex shrink-0 items-center justify-center gap-2 self-center lg:self-auto">
           <BundleThumb src={imageA} alt={productA.name} />
           <span aria-hidden="true" className="shrink-0 font-mono text-[15px] text-ink/30">
             +
@@ -110,11 +119,9 @@ export function BundleOfferTile() {
 
         {/* Copy + price + CTA */}
         <div className="min-w-0 flex-1">
+          {/* One label, not two: the status chip IS the section heading. */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-ink/10 bg-[color:var(--color-status-successMuted)] px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-status-success)]">
-              Paired supply
-            </span>
-            <h2 className="text-[10.5px] uppercase tracking-[0.24em] text-ink/45">
+            <h2 className="rounded-full border border-ink/10 bg-[color:var(--color-status-successMuted)] px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-status-success)]">
               Paired supply
             </h2>
           </div>
