@@ -58,7 +58,9 @@ export function GlobalFooter() {
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-ink/45 tabular-nums">
               © {new Date().getFullYear()} {siteConfig.brand.legalEntity} · All rights reserved
             </p>
-            <p className="text-[10px] uppercase tracking-[0.26em] text-ink/30">
+            {/* Compliance notices must stay legible — matched to the
+                copyright line above (text-ink/45), was text-ink/30. */}
+            <p className="text-[10px] uppercase tracking-[0.26em] text-ink/45">
               {siteConfig.compliance.footerLine}
             </p>
           </div>

@@ -10,7 +10,7 @@
 //
 // Keep ALL invoice presentation here so the two callers can never drift.
 
-import { EMAIL_BRAND } from "./emailBrand.ts";
+import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "./emailBrand.ts";
 
 const ZELLE_EMAIL = Deno.env.get("ZELLE_HANDLE") ?? "info@velariss.co";
 const SITE_URL = EMAIL_BRAND.siteUrl;
@@ -422,7 +422,7 @@ export function buildInvoiceHtml(args: { order: OrderRow; lines: OrderLine[]; no
       <div style="height:1px;background:#B5904B;width:120px;margin:0 auto 18px;font-size:0;line-height:0;">&nbsp;</div>
       <div style="font-family:Georgia,'Times New Roman',serif;font-size:14px;letter-spacing:0.02em;color:#1A1714;margin-bottom:6px;">${escapeHtml(EMAIL_BRAND.name)}</div>
       <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A0937E;font-weight:600;margin-bottom:8px;">${escapeHtml(EMAIL_BRAND.tagline)} · ${escapeHtml(EMAIL_BRAND.siteHost)}</div>
-      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">${RESEARCH_USE_DISCLAIMER}</div>
       <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(order.order_number)}</div>
     </div>
   </div>

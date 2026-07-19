@@ -122,7 +122,7 @@ export function Contact() {
         </div>
 
         <p className="holo-text-caption text-[10px] uppercase tracking-[0.25em] text-ink/40">
-          For Research Purposes Only — Not for Human or Veterinary Use
+          {siteConfig.compliance.fullLine}
         </p>
       </section>
     );
@@ -308,7 +308,7 @@ export function Contact() {
       </div>
 
       <p className="holo-text-caption mt-[var(--space-10)] text-[10px] uppercase tracking-[0.25em] text-ink/40">
-        For Research Purposes Only — Not for Human or Veterinary Use
+        {siteConfig.compliance.fullLine}
       </p>
     </section>
   );

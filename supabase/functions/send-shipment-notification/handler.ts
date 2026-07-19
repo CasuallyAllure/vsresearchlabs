@@ -15,7 +15,7 @@
 // Admin-only: requires a valid session JWT for an active admin (see
 // ../_shared/adminGate.ts — injected, so the tests can script the gate).
 
-import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
+import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "../_shared/emailBrand.ts";
 
 // ---------------------------------------------------------------------------
 // Config + injected dependencies (index.ts supplies the real ones)
@@ -204,7 +204,7 @@ function buildShipmentEmailHtml(args: {
         Reference: <span style="font-family:monospace;">${escapeHtml(args.orderNumber)}</span>
       </p>
       <p style="margin-top:12px;color:#888;font-size:11px;">
-        For Research Purposes Only — Not for Human Use.
+        ${RESEARCH_USE_DISCLAIMER}.
       </p>
     </div>`;
 }

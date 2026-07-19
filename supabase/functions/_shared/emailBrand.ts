@@ -48,3 +48,14 @@ export const EMAIL_BRAND = {
   siteUrl: SITE_URL_RAW,
   siteHost: hostOf(SITE_URL_RAW),
 };
+
+/**
+ * Canonical buyer-facing research-use disclaimer.
+ *
+ * Every outbound buyer email footer renders THIS constant — do not re-type
+ * the literal. Templates previously drifted into short forms that dropped
+ * "Not for Human Use" (send-inquiry) or "or Veterinary"
+ * (shipment/processing/delivered notifications).
+ */
+export const RESEARCH_USE_DISCLAIMER =
+  "For Research Purposes Only — Not for Human or Veterinary Use";

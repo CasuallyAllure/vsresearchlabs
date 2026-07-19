@@ -25,6 +25,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { siteConfig } from '../../config';
 
 const mediaSrc = (id: string, ext: 'mp4' | 'jpg') => `/media/intro/${id}.${ext}`;
 
@@ -73,10 +74,7 @@ const TABS: VideoTab[] = [
     id: 'b2b-only',
     title: 'For research only',
     subtitle: 'Research and B2B partners only.',
-    body:
-      'Every compound in our catalog is sold strictly for research and laboratory ' +
-      'use. We work primarily with research labs, biotechs, and academic partners. ' +
-      'Nothing on this site is for human or veterinary consumption.',
+    body: siteConfig.compliance.researchOnlyParagraph,
   },
 ];
 

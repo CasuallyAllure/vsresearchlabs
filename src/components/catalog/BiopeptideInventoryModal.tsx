@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useProducts } from '../../hooks/useProducts';
+import { siteConfig } from '../../config';
 import { useCart } from '../../hooks/useCart';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
@@ -301,7 +302,7 @@ export function BiopeptideInventoryModal({ open, onClose }: BiopeptideInventoryM
           {/* Footer */}
           <footer className="shrink-0 px-[var(--space-5)] sm:px-[var(--space-6)] py-[var(--space-3)] border-t border-ink/[0.08] flex items-center justify-between gap-[var(--space-3)] flex-wrap">
             <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">
-              For Research Purposes Only — Not for Human Use
+              {siteConfig.compliance.fullLine}
             </p>
             <div className="flex items-center gap-[var(--space-4)] text-[10px] uppercase tracking-[0.2em] text-ink/45">
               <span className="flex items-center gap-1.5">

@@ -846,6 +846,11 @@ export function CartPage() {
             Final pricing is confirmed on the invoice we email you — you can
             adjust the order before paying.
           </p>
+          {/* Compliance: /cart submits the stored research attestation, so the
+              claim the buyer is standing behind has to be visible here. */}
+          <p className="mt-[var(--space-4)] border-t border-ink/[0.08] pt-[var(--space-3)] text-[10px] uppercase tracking-[0.25em] text-ink/50">
+            {siteConfig.compliance.fullLine}
+          </p>
         </div>
 
         {/* Inquiry form column — Level 1 solid surface module.
@@ -1075,6 +1080,10 @@ export function CartPage() {
         <div className="mt-[var(--space-4)] overflow-hidden">
           <Turnstile onToken={setTsToken} className="w-full" />
         </div>
+
+        <p className="mt-[var(--space-6)] text-[11px] leading-relaxed text-ink/55">
+          {siteConfig.compliance.attestationRestatement}
+        </p>
 
         <Button
           type="submit"

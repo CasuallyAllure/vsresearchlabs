@@ -47,6 +47,7 @@ import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode'
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
 import { FIELD_DEFAULT } from '../components/ui/Field';
+import { siteConfig } from '../config';
 
 const MAX_QTY = 999;
 
@@ -441,7 +442,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[color:var(--color-accent-gold)]"
                 />
                 <span className="text-[11px] leading-relaxed text-ink/55">
-                  I confirm I'm a real person acquiring these materials for legitimate research use.
+                  {siteConfig.compliance.attestationLine}
                 </span>
               </label>
             </div>

@@ -230,7 +230,7 @@ export function AdminLayout({ children, backTo, backLabel = 'Back' }: AdminLayou
       <div>{children}</div>
 
       <footer className="mt-[var(--space-16)] pt-[var(--space-6)] border-t border-ink/[0.06] flex items-center justify-between gap-[var(--space-3)] text-[10px] uppercase tracking-[0.22em]">
-        <p className="holo-text-caption">For Research Purposes Only — Internal Operations</p>
+        <p className="holo-text-caption">{siteConfig.compliance.internalLine}</p>
         <Link to="/" className="text-ink/45 hover:text-ink/80 transition-colors">
           ← Back to site
         </Link>

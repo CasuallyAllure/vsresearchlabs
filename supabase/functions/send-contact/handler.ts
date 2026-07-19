@@ -11,7 +11,7 @@
 // Persists the message to contact_messages, sends a notification to
 // INQUIRY_TO_EMAIL, and sends a branded confirmation back to the sender.
 
-import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
+import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "../_shared/emailBrand.ts";
 
 // ---------------------------------------------------------------------------
 // Config + injected dependencies (index.ts supplies the real ones)
@@ -134,7 +134,7 @@ function buildBusinessEmailHtml(p: ContactPayload, refId: string): string {
       <div style="padding:14px 16px;background:#f6f6f6;border-radius:6px;font-size:14px;color:#333;white-space:pre-wrap;">${escapeHtml(p.message)}</div>
       <p style="margin-top:24px;color:#888;font-size:12px;">
         ${escapeHtml(EMAIL_BRAND.name)} · ${escapeHtml(EMAIL_BRAND.tagline)}<br/>
-        For Research Purposes Only — Not for Human or Veterinary Use.
+        ${RESEARCH_USE_DISCLAIMER}.
       </p>
     </div>`;
 }
@@ -168,7 +168,7 @@ function buildBuyerEmailHtml(p: ContactPayload, refId: string): string {
         Warehouses: Sacramento, CA · Vallejo, CA
       </p>
       <p style="margin-top:18px;color:#888;font-size:11px;">
-        For Research Purposes Only — Not for Human or Veterinary Use.
+        ${RESEARCH_USE_DISCLAIMER}.
       </p>
     </div>`;
 }

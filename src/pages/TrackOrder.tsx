@@ -70,6 +70,11 @@ export function TrackOrder() {
   return (
     <section className="py-[var(--space-8)] max-w-[760px] mx-auto px-[var(--space-4)]">
       {token ? <InvoiceByToken token={token} justClaimed={params.get('claimed') === '1'} /> : <StatusLookup />}
+      {/* Compliance: /track is the highest-traffic post-purchase surface and
+          carried no research-use notice. Rendered for both modes. */}
+      <p className="mt-[var(--space-8)] border-t border-ink/[0.08] pt-[var(--space-4)] text-[10px] uppercase tracking-[0.25em] text-ink/50">
+        {siteConfig.compliance.fullLine}
+      </p>
     </section>
   );
 }

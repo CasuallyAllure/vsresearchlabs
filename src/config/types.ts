@@ -54,6 +54,31 @@ export interface SiteConfig {
     documentLine: string;
     /** Short header tag on the tracking document. */
     shortLine: string;
+    /**
+     * Full buyer-facing disclaimer. The canonical long form — use this on any
+     * standalone compliance notice that has room for it (contact, catalog
+     * modal, checkout, tracking).
+     */
+    fullLine: string;
+    /**
+     * Restatement of the entry-gate attestation, for surfaces that rely on an
+     * acceptance the buyer already gave (checkout confirm, order summary).
+     * MUST NOT claim more than DisclaimerGate actually collected: 21+,
+     * research-use-only, not for human or veterinary use.
+     */
+    attestationLine: string;
+    /**
+     * Second-person restatement for surfaces that submit the stored
+     * attestation without re-collecting a checkbox (CartPage submit).
+     * Same substance as attestationLine — it must not add new claims.
+     */
+    attestationRestatement: string;
+    /** Internal/admin chrome variant — no buyer-facing claim. */
+    internalLine: string;
+    /** Two stacked micro-lines etched on the specimen vial artwork. */
+    specimenLines: readonly [string, string];
+    /** B2B "research only" paragraph on the landing intro module. */
+    researchOnlyParagraph: string;
   };
 
   order: {

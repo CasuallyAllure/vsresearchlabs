@@ -28,7 +28,7 @@
 // preview:true rendering the full HTML in the response is fine — the caller
 // is a verified admin.
 
-import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
+import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "../_shared/emailBrand.ts";
 
 // ---------------------------------------------------------------------------
 // Config + injected dependencies (index.ts supplies the real ones)
@@ -268,7 +268,7 @@ function buildReceiptHtml(order: OrderRow, lines: OrderLine[]): string {
 
     <div style="border-top:1px solid rgba(26,23,20,0.10);padding-top:14px;margin-top:20px;text-align:center;">
       <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:#6F665C;margin-bottom:4px;">${escapeHtml(EMAIL_BRAND.name)} · ${escapeHtml(EMAIL_BRAND.tagline)}</div>
-      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">For Research Purposes Only — Not for Human or Veterinary Use</div>
+      <div style="font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:#A09689;">${RESEARCH_USE_DISCLAIMER}</div>
       <div style="font-family:'JetBrains Mono','SF Mono',monospace;font-size:10.5px;color:#A09689;margin-top:10px;letter-spacing:0.08em;">Reference ${escapeHtml(order.order_number)}</div>
     </div>
   </div>

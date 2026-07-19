@@ -38,6 +38,17 @@ export const vsResearchLabsConfig: SiteConfig = {
     documentLine:
       'All products are sold for laboratory research use only and are not for human consumption.',
     shortLine: 'For Research Purposes Only',
+    fullLine: 'For Research Purposes Only — Not for Human or Veterinary Use',
+    attestationLine:
+      'I confirm I am 21 or older and acquiring these materials for laboratory research only — not for human or veterinary use.',
+    attestationRestatement:
+      'Placing this order reaffirms the research-use attestation you accepted on entry: you are 21 or older and acquiring these materials for laboratory research only — not for human or veterinary use.',
+    internalLine: 'For Research Purposes Only — Internal Operations',
+    specimenLines: ['FOR RESEARCH USE ONLY', 'NOT FOR HUMAN USE'],
+    researchOnlyParagraph:
+      'Every compound in our catalog is sold strictly for research and laboratory ' +
+      'use. We work primarily with research labs, biotechs, and academic partners. ' +
+      'Nothing on this site is for human or veterinary consumption.',
   },
 
   order: {

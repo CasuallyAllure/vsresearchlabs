@@ -22,7 +22,7 @@
 //   7. Send buyer confirmation email (best-effort; email contacts only)
 //   8. Return server-authoritative intake metadata to client
 
-import { EMAIL_BRAND } from "../_shared/emailBrand.ts";
+import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "../_shared/emailBrand.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -227,7 +227,7 @@ function buildBusinessEmailHtml(
         <tbody>${itemRows}</tbody>
       </table>
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        For Research Purposes Only — Not for Human Use
+        ${RESEARCH_USE_DISCLAIMER}
       </p>
     </div>`;
 }
@@ -265,7 +265,7 @@ function buildUserEmailHtml(
         <tbody>${itemRows}</tbody>
       </table>
       <p style="margin-top:24px;color:#888;font-size:12px;">
-        ${escapeHtml(EMAIL_BRAND.name)} — For Research Purposes Only
+        ${escapeHtml(EMAIL_BRAND.name)} — ${RESEARCH_USE_DISCLAIMER}
       </p>
     </div>`;
 }

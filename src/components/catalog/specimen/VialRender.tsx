@@ -15,6 +15,8 @@
  * Visuals are frozen. Adjustments require a system-wide design pass.
  */
 
+import { siteConfig } from '../../../config';
+
 interface VialRenderProps {
   substance: string;
   dose: string;
@@ -122,8 +124,8 @@ export function VialRender({ substance, dose, abbreviation, sku }: VialRenderPro
         {sku.slice(0, 16)}
       </text>
 
-      <text x="50" y={nameLine2 ? 126 : 120} textAnchor="middle" fontFamily="'Courier New',monospace" fontSize="3" fill="rgba(26,23,20,0.20)" letterSpacing="0.06em">FOR RESEARCH USE ONLY</text>
-      <text x="50" y={nameLine2 ? 131 : 125} textAnchor="middle" fontFamily="'Courier New',monospace" fontSize="2.8" fill="rgba(26,23,20,0.14)" letterSpacing="0.04em">NOT FOR HUMAN USE</text>
+      <text x="50" y={nameLine2 ? 126 : 120} textAnchor="middle" fontFamily="'Courier New',monospace" fontSize="3" fill="rgba(26,23,20,0.20)" letterSpacing="0.06em">{siteConfig.compliance.specimenLines[0]}</text>
+      <text x="50" y={nameLine2 ? 131 : 125} textAnchor="middle" fontFamily="'Courier New',monospace" fontSize="2.8" fill="rgba(26,23,20,0.14)" letterSpacing="0.04em">{siteConfig.compliance.specimenLines[1]}</text>
 
       {/* ── SURFACE SHADOW + REFLECTION ── */}
       <ellipse cx="50" cy="191" rx="32" ry="4" fill="rgba(26,23,20,0.20)" />
