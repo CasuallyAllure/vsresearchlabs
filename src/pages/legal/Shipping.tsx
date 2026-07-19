@@ -60,8 +60,10 @@ export function Shipping() {
 
       <LegalSection title="Packaging">
         <p>
-          Shipments are packed discreetly in research-appropriate
-          packaging. Outer packaging does not disclose contents.
+          Shipments are packed in protective, research-appropriate
+          packaging suited to each compound's storage requirements.
+          Contents, batch references, and handling requirements are
+          identified on the enclosed documentation.
         </p>
       </LegalSection>
 

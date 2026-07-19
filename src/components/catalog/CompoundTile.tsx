@@ -8,7 +8,7 @@
  * badge and a one-line description.
  *
  *   ┌────────────────────────┐
- *   │ [Certified · ≥98%]     │  ← purity badge, overlaid top-left
+ *   │ [HPLC · ≥98%]          │  ← purity badge, overlaid top-left
  *   │        thumbnail        │
  *   ├────────────────────────┤
  *   │ FAMILY · ABBR           │  ← eyebrow
@@ -135,9 +135,9 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
                   backgroundColor: 'rgba(20,20,20,0.5)',
                   backdropFilter: 'blur(2px)',
                 }}
-                title={`Purity (HPLC): ${puritySpec.value}`}
+                title={`Stated purity specification (HPLC): ${puritySpec.value}`}
               >
-                Certified · {puritySpec.value}
+                HPLC · {puritySpec.value}
               </span>
             )}
           </div>
