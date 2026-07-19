@@ -73,7 +73,7 @@
  },
  {
   "id": "rs-bpc157-5mg",
-  "laymanSummary": "BPC-157 is a **body-protection peptide** first found in stomach fluid, and it's the headliner of *tissue-repair research*. It promotes **new blood-vessel growth** and ~speeds healing of tendon, muscle, and gut tissue~ in animal models. Unusually for a peptide it stays *stable in stomach acid*, which is why it's so widely studied for gut and injury-recovery applications.",
+  "laymanSummary": "BPC-157 is a **body-protection peptide** first isolated from gastric juice, and it is the headliner of *tissue-repair research*. Animal models report **new blood-vessel formation** and ~accelerated repair of tendon, muscle, and gut tissue~. Unusually for a peptide it is *stable in gastric acid*, which is why it is so widely studied in gut and injury-recovery models.",
   "slug": "bpc157-5mg",
   "name": "BPC-157",
   "category": "biopeptide-research-supplies",
@@ -190,7 +190,7 @@
  },
  {
   "id": "rs-cjc1295-dac-2mg",
-  "laymanSummary": "CJC-1295 with **DAC** is a long-acting **GHRH** analogue — it tells the pituitary to release growth hormone, and a clever albumin-binding tag keeps it working for *6–8 days* per dose. It ~raises baseline GH and IGF-1~ steadily rather than in spikes, and in research it's often paired with a GHRP like ipamorelin so the two *amplify each other*.",
+  "laymanSummary": "CJC-1295 with **DAC** is a long-acting **GHRH** analogue — it signals the pituitary to release growth hormone, and an albumin-binding tag extends its action to roughly *6–8 days*. Studies report ~sustained baseline GH and IGF-1 elevation~ rather than sharp spikes, and it is commonly investigated alongside a GHRP such as ipamorelin for additive signaling.",
   "slug": "cjc1295-dac-2mg",
   "name": "CJC-1295 DAC",
   "category": "biopeptide-research-supplies",
@@ -334,7 +334,7 @@
  },
  {
   "id": "rs-ipamorelin-5mg",
-  "laymanSummary": "Ipamorelin is a **growth-hormone-releasing** peptide that nudges the pituitary to put out its own *natural GH pulse*. What makes it a research favorite is its **clean selectivity** — it ~raises growth hormone~ without the cortisol, prolactin, or hunger spikes that older peptides like GHRP-6 cause. It's short-acting, so it mimics the body's own rhythmic GH bursts rather than flooding the system.",
+  "laymanSummary": "Ipamorelin is a **growth-hormone-releasing** peptide that acts on the pituitary to prompt an *endogenous GH pulse*. What makes it a research favorite is its **selectivity** — studies report ~GH release~ without the cortisol, prolactin, or appetite signaling seen with older peptides such as GHRP-6. It is short-acting, so it is used to model the *pulsatile* GH rhythm rather than continuous exposure.",
   "slug": "ipamorelin-5mg",
   "name": "Ipamorelin",
   "category": "biopeptide-research-supplies",
@@ -443,7 +443,7 @@
  },
  {
   "id": "rs-kpv-10mg",
-  "laymanSummary": "KPV is a tiny three-amino-acid tail of the **α-MSH** hormone with an outsized **anti-inflammatory** punch. It ~calms overactive immune signaling~ (NF-κB and STAT3) and is studied in *gut inflammation, IBD, and wound-healing* models — delivering melanocortin's calming effects without affecting skin pigment.",
+  "laymanSummary": "KPV is a three-amino-acid tail of the **α-MSH** hormone with outsized **anti-inflammatory** activity in research models. It is reported to ~downregulate NF-κB and STAT3 signaling~ and is studied in *gut inflammation, IBD, and wound-healing* models — carrying melanocortin's anti-inflammatory signaling without the pigmentation effects.",
   "slug": "kpv-10mg",
   "name": "KPV",
   "category": "biopeptide-research-supplies",
@@ -727,7 +727,7 @@
  },
  {
   "id": "rs-semaglutide-5mg",
-  "laymanSummary": "Semaglutide is a **GLP-1 receptor agonist** — the peptide studied under the brand names *Ozempic* and *Wegovy*. It mimics a gut hormone released after eating, and is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. Phase 3 clinical trials reported a mean body-weight reduction of approximately ~15%~. A fatty-acid chain extends its half-life to about a week, supporting *once-weekly* research dosing.",
+  "laymanSummary": "Semaglutide is a **GLP-1 receptor agonist** that mimics a gut hormone released after eating. It is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. In published *Phase 3 clinical trials*, a mean body-weight reduction of approximately ~15%~ was reported. A fatty-acid chain gives it a half-life of about a week.",
   "slug": "semaglutide-5mg",
   "name": "Semaglutide",
   "category": "biopeptide-research-supplies",
@@ -851,7 +851,7 @@
  },
  {
   "id": "rs-semax-30mg",
-  "laymanSummary": "Semax is a Russian-developed **nootropic** peptide built from a fragment of ACTH. It ~boosts BDNF and NGF~ — the brain's own growth factors — which is why it's studied for *focus, memory, and neuroprotection*. It's also protective in stroke models and is taken intranasally so it reaches the brain quickly.",
+  "laymanSummary": "Semax is a Russian-developed **nootropic** peptide built from a fragment of ACTH. Research models report ~elevated BDNF and NGF~ — the brain's own growth factors — which is why it is studied against *attention, memory, and neuroprotection* endpoints. It is also investigated in stroke models, where its small size and *intranasal* route are studied for CNS access.",
   "slug": "semax-30mg",
   "name": "Semax",
   "category": "biopeptide-research-supplies",
@@ -923,7 +923,7 @@
  },
  {
   "id": "rs-tb500-5mg",
-  "laymanSummary": "TB-500 is a synthetic version of **thymosin β4**, a healing protein found throughout the body. It works on the cell's internal scaffolding (**actin**) to help cells ~migrate to injury sites~, ~build new blood vessels~, and ~reduce scar tissue~. It's a staple of *regeneration and recovery research*, often studied alongside BPC-157 for combined tissue repair.",
+  "laymanSummary": "TB-500 is a synthetic form of **thymosin β4**, a repair-associated protein distributed widely through tissue. It acts on the cell's internal scaffolding (**actin**), and research models report ~cell migration toward injury sites~, ~new blood-vessel formation~, and ~reduced scar formation~. A staple of *regeneration and recovery research*, often studied alongside BPC-157.",
   "slug": "tb500-5mg",
   "name": "TB-500",
   "category": "biopeptide-research-supplies",
@@ -995,7 +995,7 @@
  },
  {
   "id": "rs-tirzepatide-10mg",
-  "laymanSummary": "Tirzepatide is a **dual GIP + GLP-1 receptor agonist** — the peptide studied under the brand names *Mounjaro* and *Zepbound*. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. In head-to-head Phase 3 trials it reported a mean body-weight reduction of up to ~22%~, greater than semaglutide in the study population. Like its class, it is a *once-weekly* research compound.",
+  "laymanSummary": "Tirzepatide is a **dual GIP + GLP-1 receptor agonist**. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. In head-to-head *Phase 3 clinical trials*, a mean body-weight reduction of up to ~22%~ was reported, greater than semaglutide in the study population. A half-life of about a week places it in the long-acting class.",
   "slug": "tirzepatide-10mg",
   "name": "Tirzepatide",
   "category": "biopeptide-research-supplies",
