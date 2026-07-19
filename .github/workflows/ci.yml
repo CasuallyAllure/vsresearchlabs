@@ -18,9 +18,14 @@
 # pricing, external gates route-aborted), asserting the actual checkout money
 # numbers. Kept as its own job so the browser install doesn't slow `checks`.
 #
+# The integration job runs the real-database tier: `supabase start` on the
+# runner (ubuntu-latest ships Docker) applies every migration to a fresh local
+# Postgres, then tests/integration (money-path RPCs) and tests/rls (RLS
+# isolation) run against it via the TEST_SUPABASE_* env vars. Those suites
+# self-skip without that env, so inside the `checks` job they remain a no-op
+# by design — only this job provides the stack. See docs/INTEGRATION_TESTS.md.
+#
 # Deliberately excluded:
-#   • RLS suite (tests/rls) — self-skips unless TEST_SUPABASE_* env vars are
-#     set, so it is a no-op here by design.
 #   • Deploys — ALL deploys are manual (wrangler / supabase CLI); git push
 #     deploys nothing. See README and docs/ROLLBACK.md.
 name: CI
@@ -108,3 +113,61 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  # Real-database tier — hard gate like `checks`. `supabase start` boots the
+  # full local stack in Docker (available on ubuntu-latest) and applies every
+  # migration in supabase/migrations/ to a fresh Postgres; the money-path
+  # integration suites (tests/integration) and the RLS isolation suites
+  # (tests/rls) then run against it through PostgREST with real anon /
+  # authenticated / service-role credentials. No coverage flags: coverage is
+  # the `checks` job's ratchet; this job proves DB semantics (constraints,
+  # atomicity, RLS, grants) that mocks cannot. Enable locally with Docker +
+  # `supabase start`; see docs/INTEGRATION_TESTS.md.
+  integration:
+    runs-on: ubuntu-latest
+    # `supabase start` pulls ~10 container images on a cold runner; the suites
+    # themselves take ~1 minute. Generous cap so an image-registry slow day
+    # fails loudly at the pull, not silently at a stingy timeout.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Third-party action, so pinned by commit SHA rather than a mutable tag
+      # (v3.0.0), matching the denoland pin above. The CLI itself is pinned
+      # too: supabase start behavior (service set, status output) must not
+      # drift under this job's feet. Bump both deliberately.
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520
+        with:
+          version: 2.109.1
+      # Plain `supabase start` — no -x service exclusions. The tests need db +
+      # auth + rest + the gateway; excluding the rest would save ~a minute but
+      # ties this job to the pinned CLI's internal service names. Reliability
+      # beats speed here.
+      - run: supabase start
+      # `supabase status -o env` emits KEY="value" lines (API_URL, ANON_KEY,
+      # SERVICE_ROLE_KEY, …). eval them, then fail loudly if any expected key
+      # is missing — a CLI that renamed its keys should break THIS step, not
+      # let the suites silently self-skip and go green. PUBLISHABLE_KEY /
+      # SECRET_KEY are the newer CLI names, accepted as fallbacks.
+      - name: Export TEST_SUPABASE_* from the local stack
+        run: |
+          eval "$(supabase status -o env)"
+          TEST_URL="${API_URL:-}"
+          TEST_ANON="${ANON_KEY:-${PUBLISHABLE_KEY:-}}"
+          TEST_SERVICE="${SERVICE_ROLE_KEY:-${SECRET_KEY:-}}"
+          : "${TEST_URL:?supabase status did not report API_URL}"
+          : "${TEST_ANON:?supabase status did not report ANON_KEY/PUBLISHABLE_KEY}"
+          : "${TEST_SERVICE:?supabase status did not report SERVICE_ROLE_KEY/SECRET_KEY}"
+          {
+            echo "TEST_SUPABASE_URL=$TEST_URL"
+            echo "TEST_SUPABASE_ANON_KEY=$TEST_ANON"
+            echo "TEST_SUPABASE_SERVICE_ROLE_KEY=$TEST_SERVICE"
+          } >> "$GITHUB_ENV"
+      # The :? guards above are what keep this from becoming an expensive
+      # always-green no-op: if the env derivation had failed, the job dies
+      # there instead of letting the suites silently self-skip here.
+      - run: npx vitest run tests/integration tests/rls

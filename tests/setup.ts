@@ -17,7 +17,37 @@ const networkDisabled = (name: string) => () => {
   );
 };
 
-globalThis.fetch = networkDisabled('fetch') as unknown as typeof fetch;
+// The real-database tiers (tests/rls + tests/integration) are the ONE
+// legitimate network consumer under vitest: they talk to a LOCAL
+// `supabase start` stack and self-skip unless TEST_SUPABASE_URL /
+// TEST_SUPABASE_ANON_KEY / TEST_SUPABASE_SERVICE_ROLE_KEY are set (and the
+// URL is loopback). When that env is present, allow fetch to LOOPBACK hosts
+// only — every non-loopback request (i.e. anything that could be prod) still
+// throws exactly as before. When the env is absent, nothing changes: fetch
+// throws unconditionally.
+const isLoopbackHost = (hostname: string): boolean =>
+  hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+
+const isLoopbackUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  try {
+    return isLoopbackHost(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+};
+
+const realFetch = globalThis.fetch;
+const allowLoopback = isLoopbackUrl(process.env.TEST_SUPABASE_URL) && typeof realFetch === 'function';
+
+globalThis.fetch = (allowLoopback
+  ? (input: RequestInfo | URL, init?: RequestInit) => {
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (isLoopbackUrl(url)) return realFetch(input, init);
+      return networkDisabled('fetch (non-loopback host)')();
+    }
+  : networkDisabled('fetch')) as unknown as typeof fetch;
 
 // The place-order orchestration suite imports handler.ts, which pulls the
 // shared email templates (_shared/emailBrand.ts / invoiceEmail.ts). Those read
