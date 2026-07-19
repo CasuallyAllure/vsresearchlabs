@@ -147,7 +147,35 @@ jobs:
       # auth + rest + the gateway; excluding the rest would save ~a minute but
       # ties this job to the pinned CLI's internal service names. Reliability
       # beats speed here.
-      - run: supabase start
+      #
+      # HOSTED-PARITY BOOTSTRAP: the production project (created 2025) has the
+      # hosted platform's legacy default privileges — every new table/function/
+      # sequence in public is granted to anon/authenticated/service_role at
+      # creation, and the migrations' explicit `revoke` statements carve
+      # security back from that baseline. The pinned CLI's local image ships
+      # WITHOUT those defaults (probed 2026-07-18: even service_role got
+      # `permission denied for table orders`), which would make the suites
+      # test a stricter world than prod. So: boot the stack with migrations
+      # stashed, install the same default privileges hosted had from project
+      # creation, then apply the migrations on top — same order as prod lived.
+      - name: Start stack, install hosted default privileges, apply migrations
+        run: |
+          mv supabase/migrations /tmp/vsr-migrations
+          mkdir supabase/migrations
+          supabase start
+          eval "$(supabase status -o env)"
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            grant usage on schema public to anon, authenticated, service_role;
+            alter default privileges for role postgres in schema public
+              grant all on tables to anon, authenticated, service_role;
+            alter default privileges for role postgres in schema public
+              grant all on functions to anon, authenticated, service_role;
+            alter default privileges for role postgres in schema public
+              grant all on sequences to anon, authenticated, service_role;
+          SQL
+          rmdir supabase/migrations
+          mv /tmp/vsr-migrations supabase/migrations
+          supabase migration up
       # `supabase status -o env` emits KEY="value" lines (API_URL, ANON_KEY,
       # SERVICE_ROLE_KEY, …). eval them, then fail loudly if any expected key
       # is missing — a CLI that renamed its keys should break THIS step, not
