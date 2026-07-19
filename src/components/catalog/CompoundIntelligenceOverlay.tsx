@@ -21,7 +21,11 @@ import { createPortal } from 'react-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
-import { getCompoundIntelligence } from '../../lib/compoundIntelligence';
+import {
+  getCompoundIntelligence,
+  chemicalPropertyRows,
+  researchHistoryRows,
+} from '../../lib/compoundIntelligence';
 import { AbbreviationChip } from './AbbreviationChip';
 import { VialRender } from './specimen/VialRender';
 import {
@@ -37,6 +41,8 @@ import { SummaryText } from './intelligence/SummaryText';
 import { CompoundVideo } from './intelligence/CompoundVideo';
 import { getCompoundVideo, type CompoundVideoMeta } from '../../lib/compoundVideo';
 import { RegulatoryChipCluster } from './intelligence/RegulatoryChipCluster';
+import { ReferenceList } from './intelligence/ReferenceList';
+import { FdaResourceList } from './intelligence/FdaResourceList';
 import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
@@ -275,6 +281,8 @@ export function CompoundIntelligenceOverlay({
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'procurement' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'studies' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'video'; video: CompoundVideoMeta }
+      | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'fda' }
+      | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'references' }
       | { key: string; title: string; defaultOpen?: boolean; reserved?: boolean; kind: 'reserved' };
 
     // Compact module: everything below the buy controls is a collapsed
@@ -293,6 +301,20 @@ export function CompoundIntelligenceOverlay({
     // placeholder keeps the same visibility rule it always had.
     if (video) defs.push({ key: 'media', title: 'Research Media', kind: 'video', video });
     else if (ci.hasMolecularIntelligence && !ci.hasStudies) defs.push({ key: 'media', title: 'Research Media', kind: 'reserved', reserved: true });
+
+    // Reference-half sections. Appended after the established stack so every
+    // module above keeps the index it has always had — these add to the
+    // dossier without renumbering it. Each renders only when its data exists;
+    // References additionally declares its own gap with the "Planned"
+    // placeholder, matching how Research Media has always handled absence.
+    const chemistryRows = chemicalPropertyRows(product);
+    if (chemistryRows.length > 0) defs.push({ key: 'chemistry', title: 'Chemical Properties', kind: 'datagrid', rows: chemistryRows });
+    const historyRows = researchHistoryRows(product);
+    if (historyRows.length > 0) defs.push({ key: 'history', title: 'Research History', kind: 'datagrid', rows: historyRows });
+    if (ci.references.length > 0) defs.push({ key: 'references', title: 'References', kind: 'references' });
+    else if (ci.hasMolecularIntelligence) defs.push({ key: 'references', title: 'References', kind: 'reserved', reserved: true });
+    if (ci.fdaResources.length > 0) defs.push({ key: 'fda', title: 'FDA Resources', kind: 'fda' });
+
     return defs.map((m, i) => ({ ...m, index: i + 1 }));
   }, [ci, allSpecs, product, video]);
 
@@ -698,6 +720,12 @@ export function CompoundIntelligenceOverlay({
                 )}
                 {mod.kind === 'video' && (
                   <ModuleBody><CompoundVideo url={mod.video.url} title={mod.video.title} description={mod.video.description} /></ModuleBody>
+                )}
+                {mod.kind === 'references' && (
+                  <ModuleBody><ReferenceList references={ci.references} /></ModuleBody>
+                )}
+                {mod.kind === 'fda' && (
+                  <ModuleBody><FdaResourceList resources={ci.fdaResources} /></ModuleBody>
                 )}
                 {mod.kind === 'studies' && (
                   <ModuleBody>
