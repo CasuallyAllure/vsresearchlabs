@@ -152,6 +152,36 @@ describe('unverifiable lines refuse with the generic message', () => {
     expectNoRowsAndNoEmails(h);
   });
 
+  test('a line with NO sku at all is a 409 and skips the catalog queries entirely', async () => {
+    // With no queryable sku the handler takes the no-query branch (empty
+    // results, no .in() filter) and verifyLinePrices refuses on missing_sku.
+    const h = withCatalog(makeHarness());
+    const payload = basePayload();
+    delete payload.items[0].product.sku;
+
+    const { status, body } = await placeOrder(h, payload);
+
+    expect(status).toBe(409);
+    expect(body.error).toBe(GENERIC_REFUSAL_MESSAGE);
+    expect(h.db.of('product_variant_stock', 'select')).toHaveLength(0);
+    expect(h.db.of('product_stock', 'select')).toHaveLength(0);
+    expectNoRowsAndNoEmails(h);
+  });
+
+  test('catalog reads resolving null data (no error) are treated as empty and refuse with 409', async () => {
+    // A null result set is coalesced to [] — the sku then has no rows anywhere,
+    // which is unknown_sku, not a silent pass.
+    const h = makeHarness();
+    h.db.on('product_variant_stock', 'select', { data: null });
+    h.db.on('product_stock', 'select', { data: null });
+
+    const { status, body } = await placeOrder(h, basePayload());
+
+    expect(status).toBe(409);
+    expect(body.error).toBe(GENERIC_REFUSAL_MESSAGE);
+    expectNoRowsAndNoEmails(h);
+  });
+
   test('a catalog sku whose line text names no real dose is a 409 (dose_unresolved)', async () => {
     const h = withCatalog(makeHarness());
     const payload = basePayload();

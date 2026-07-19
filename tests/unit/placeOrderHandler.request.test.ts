@@ -151,6 +151,32 @@ describe('idempotency short-circuit', () => {
     expect(body.amountCents).toBe(0);
   });
 
+  test('a duplicate whose original inquiry row carries a null reference_id returns an empty referenceId', async () => {
+    const h = makeHarness();
+    h.db.on(
+      'orders',
+      'select',
+      {
+        data: {
+          order_number: 'VSR-ORD-260701-003',
+          created_at: '2026-07-01T00:00:00.000Z',
+          invoice_amount_cents: 5998,
+          inquiry_id: 'inq-orig',
+        },
+      },
+      (q) => queryHas(q, 'eq', 'idempotency_key', KEY),
+    );
+    h.db.on(
+      'inquiries',
+      'select',
+      { data: { reference_id: null } },
+      (q) => queryHas(q, 'eq', 'id', 'inq-orig'),
+    );
+    const { body } = await placeOrder(h, basePayload({ idempotency_key: KEY }));
+    expect(body.duplicate).toBe(true);
+    expect(body.referenceId).toBe('');
+  });
+
   test('a malformed idempotency key is ignored — checkout proceeds and the key is not stored', async () => {
     const h = withCatalog(makeHarness());
     const { status, body } = await placeOrder(
@@ -180,6 +206,14 @@ describe('rate limit', () => {
       'Too many orders from this contact. Please wait before trying again.',
     );
     expect(h.db.of('inquiries', 'insert')).toHaveLength(0);
+  });
+
+  test('a null count from the rate-limit read is treated as zero — checkout proceeds', async () => {
+    const h = withCatalog(makeHarness());
+    h.db.on('inquiries', 'select', { data: null, count: null }, (q) => q.isCount);
+    const { status, body } = await placeOrder(h, basePayload());
+    expect(status).toBe(200);
+    expect(body.success).toBe(true);
   });
 
   test('the contact bucket is matched case-insensitively with LIKE metacharacters escaped', async () => {

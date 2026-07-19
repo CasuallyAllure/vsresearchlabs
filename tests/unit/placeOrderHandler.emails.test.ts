@@ -123,6 +123,47 @@ describe('ship-to block', () => {
     expect(order.ship_city).toBeNull();
   });
 
+  test('a city-only address (blank street/state/zip/country) renders just the city line and stores NULLs', async () => {
+    const h = withCatalog(makeHarness());
+    // Explicit empty strings: blank country survives as empty (only an ABSENT
+    // country defaults to US), so the block renders city alone.
+    const payload = basePayload({
+      ship_street: '',
+      ship_state: '',
+      ship_zip: '',
+      ship_country: '',
+    });
+
+    const { status } = await placeOrder(h, payload);
+
+    expect(status).toBe(200);
+    const biz = h.emails[1];
+    expect(biz.html).toContain('Ship to');
+    expect(biz.html).toContain('Lab City');
+    expect(biz.html).not.toContain('1 Research Way');
+    expect(biz.html).not.toMatch(/US\s*<\/div>/); // no country line
+    const order = h.db.of('orders', 'insert')[0].payload as Record<string, unknown>;
+    expect(order.ship_street).toBeNull();
+    expect(order.ship_country).toBeNull();
+  });
+
+  test('a street-only address (blank city/state/zip) renders street + defaulted country, no city line', async () => {
+    const h = withCatalog(makeHarness());
+    const payload = basePayload({ ship_city: '', ship_state: '', ship_zip: '' });
+
+    const { status } = await placeOrder(h, payload);
+
+    expect(status).toBe(200);
+    const biz = h.emails[1];
+    expect(biz.html).toContain('Ship to');
+    expect(biz.html).toContain('1 Research Way');
+    expect(biz.html).not.toContain('Lab City');
+    expect(biz.html).toMatch(/US\s*<\/div>/); // absent country defaulted to US
+    const order = h.db.of('orders', 'insert')[0].payload as Record<string, unknown>;
+    expect(order.ship_city).toBeNull();
+    expect(order.ship_country).toBe('US');
+  });
+
   test('a full address renders the verify-before-paying ship-to block', async () => {
     const h = withCatalog(makeHarness());
     await placeOrder(h, basePayload());
