@@ -1,29 +1,37 @@
 /**
- * ProductPage — E3 Persistent Operational Intelligence Surface
+ * ProductPage — Laboratory Specification Sheet
  *
- * Canonical inherited surface. The Overlay is the reference interaction
- * model; ProductPage is its persistent equivalent. Same primitives, same
- * intelligence selector, same module grammar — different layout shell:
+ * This page states what is supplied; it does not discuss what the
+ * compound is studied for. All scientific content — mechanism of action,
+ * receptor/target activity, signaling pathway, and the published study
+ * record — lives in exactly one place, the shared
+ * CompoundIntelligenceOverlay (the research dossier), which this page
+ * mounts on demand from the ResearchDossierBand. The overlay is reused
+ * verbatim, never forked.
  *
- *   - Sticky left intelligence/reference column: compound visual zone
- *     (molecular + vial, stacked variant), identifier band, regulatory
- *     chip cluster, interactive tier strip, quantity + Add to Inquiry,
- *     compact procurement strip. Image gallery on mobile only.
+ * Layout shell:
  *
- *   - Scrollable right module stack: Summary, Mechanism, Receptor
- *     Activity, Signaling Pathway, Known Studies, Procurement,
- *     Documentation. Each rendered via IntelModule.
+ *   - Sticky left reference column: compound visual zone (molecular +
+ *     vial, stacked variant), identifier band (name / abbreviation / SKU
+ *     / CAS / MW), a compact research-use + FDA-status chip row,
+ *     interactive tier strip, quantity + Add to Inquiry, price. Image
+ *     gallery on mobile only.
+ *
+ *   - Scrollable right column: the dossier band, then the spec-sheet
+ *     module stack — Description, Analytical Specifications, Procurement
+ *     & Handling, Documentation. Each rendered via IntelModule.
  *
  * URL contracts:
  *   - `?tier=<dose>`  → drives initial selected tier on mount and is
  *     updated on user selection (replace, no history pollution).
  *   - `#<module-key>` → opens the matching module on mount and smooth-
- *     scrolls it into view. Valid keys: summary, mechanism, receptor,
- *     pathway, studies, procurement, documentation.
+ *     scrolls it into view. Valid keys: summary, specifications,
+ *     procurement, documentation.
  *
  * No intelligence-data field is accessed directly off `product`. All
  * compound knowledge routes through `getCompoundIntelligence(product)`.
- * Procurement field reads are encapsulated by `ProcurementSheet`.
+ * Procurement field reads are encapsulated by `ProcurementSheet`;
+ * analytical spec reads by `SpecificationSheet`.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -41,10 +49,13 @@ import {
   IntelModule,
   IntelModuleStyles,
   ModuleBody,
-  ModuleText,
 } from '../components/catalog/intelligence/IntelModule';
-import { StudyCard } from '../components/catalog/intelligence/StudyCard';
-import { SummaryText } from '../components/catalog/intelligence/SummaryText';
+import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
+import { ResearchDossierBand } from '../components/product/ResearchDossierBand';
+import {
+  SpecificationSheet,
+  selectSpecificationRows,
+} from '../components/product/SpecificationSheet';
 import { RegulatoryChipCluster } from '../components/catalog/intelligence/RegulatoryChipCluster';
 import { TierStrip } from '../components/catalog/intelligence/TierStrip';
 import {
@@ -61,10 +72,7 @@ import { ErrorState } from '../components/system/ErrorState';
 
 const MODULE_KEYS = [
   'summary',
-  'mechanism',
-  'receptor',
-  'pathway',
-  'studies',
+  'specifications',
   'procurement',
   'documentation',
 ] as const;
@@ -131,6 +139,9 @@ export function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  // The research dossier is the shared CompoundIntelligenceOverlay, mounted
+  // on demand. Same component the catalog and /research mount — not a fork.
+  const [dossierOpen, setDossierOpen] = useState(false);
 
   // Reset gallery selection when route changes.
   useEffect(() => { setActiveImageIndex(0); }, [product?.id]);
@@ -202,75 +213,50 @@ export function ProductPage() {
   const categoryHref = `/${product.category}`;
   const outOfStock = product.stock === 0;
   const procurementRowCount = selectProcurementRows(product).length;
+  const specificationRowCount = selectSpecificationRows(product).length;
 
   // ─── Module definitions ───────────────────────────────────────────────────
 
   const modules: ModuleDef[] = [];
 
-  modules.push({
-    key: 'summary',
-    title: 'Summary',
-    defaultOpen: true,
-    render: () => (
-      <ModuleBody>
-        {product.laymanSummary ? (
-          <SummaryText
-            text={product.laymanSummary}
-            className="text-[13px] leading-relaxed text-ink/75 mb-[var(--space-3)]"
-          />
-        ) : (
-          product.shortDescription && (
-            <p className="text-ink/55 leading-relaxed mb-[var(--space-3)]" style={{ fontSize: '13px', maxWidth: '60ch' }}>
-              {product.shortDescription}
-            </p>
-          )
-        )}
-        {product.longDescription && (
-          <p className="text-ink/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '13px', maxWidth: '65ch' }}>
-            {product.longDescription}
-          </p>
-        )}
-      </ModuleBody>
-    ),
-  });
-
-  if (ci.mechanismSummary) {
+  // Description — the supplied product's own description. `laymanSummary`
+  // and every scientific module moved to the dossier. The long and short
+  // descriptions are mutually exclusive here so the same prose can never
+  // render twice on one page.
+  const description = product.longDescription || product.shortDescription;
+  if (description) {
     modules.push({
-      key: 'mechanism',
-      title: 'Mechanism of Action',
-      render: () => (<ModuleBody><ModuleText>{ci.mechanismSummary!}</ModuleText></ModuleBody>),
-    });
-  }
-  if (ci.receptorActivity) {
-    modules.push({
-      key: 'receptor',
-      title: 'Receptor / Target Activity',
-      render: () => (<ModuleBody><ModuleText>{ci.receptorActivity!}</ModuleText></ModuleBody>),
-    });
-  }
-  if (ci.pathwaySummary) {
-    modules.push({
-      key: 'pathway',
-      title: 'Signaling Pathway',
-      render: () => (<ModuleBody><ModuleText>{ci.pathwaySummary!}</ModuleText></ModuleBody>),
-    });
-  }
-  if (ci.hasStudies) {
-    modules.push({
-      key: 'studies',
-      title: 'Known Studies',
+      key: 'summary',
+      title: 'Description',
+      defaultOpen: true,
       render: () => (
         <ModuleBody>
-          <RegulatoryChipCluster humanTrials={ci.humanTrials} fdaStatus={ci.fdaStatus} />
-          {ci.studies.map((s, i) => <StudyCard key={`${s.source}-${s.year}-${i}`} study={s} index={i} />)}
+          <p className="text-ink/65 leading-[1.65] whitespace-pre-line" style={{ fontSize: '13px', maxWidth: '65ch' }}>
+            {description}
+          </p>
         </ModuleBody>
       ),
     });
   }
+
+  if (specificationRowCount > 0) {
+    modules.push({
+      key: 'specifications',
+      title: 'Analytical Specifications',
+      defaultOpen: true,
+      render: () => (
+        <div className="px-[var(--space-4)] py-[var(--space-5)]">
+          <SpecificationSheet product={product} />
+        </div>
+      ),
+    });
+  }
+
   if (procurementRowCount > 0) {
     modules.push({
       key: 'procurement',
-      title: 'Procurement',
+      title: 'Procurement & Handling',
+      defaultOpen: true,
       render: () => (
         <div className="px-[var(--space-4)] py-[var(--space-5)]">
           <ProcurementSheet product={product} variant="full" />
@@ -313,7 +299,7 @@ export function ProductPage() {
 
         {/* ─── STICKY LEFT — Operational reference column ──────────────── */}
         <aside
-          className="floating-module overflow-hidden lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
+          className="floating-module overflow-hidden [&>*:last-child]:border-b-0 lg:w-[440px] lg:shrink-0 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100dvh-4rem)] lg:overflow-y-auto lg:overflow-x-hidden mb-[var(--space-6)] lg:mb-0"
           aria-label="Compound reference and inquiry"
         >
           {/* Desktop visual identity zone */}
@@ -452,28 +438,11 @@ export function ProductPage() {
             )}
           </div>
 
-          {/* Compact procurement strip — top 4 fields */}
-          {procurementRowCount > 0 && (
-            <div className="px-[var(--space-4)] py-[var(--space-5)]">
-              <p className="text-ink/30 uppercase mb-[var(--space-2)]" style={{ fontSize: '11px', letterSpacing: '0.22em' }}>
-                Procurement
-              </p>
-              <ProcurementSheet product={product} variant="passport" maxRows={4} />
-              {procurementRowCount > 4 && (
-                <a
-                  href="#procurement"
-                  className="mt-[var(--space-3)] inline-flex items-center gap-1 text-ink/30 hover:text-ink/70 transition-colors"
-                  style={{ fontSize: '10px', letterSpacing: '0.05em' }}
-                >
-                  {procurementRowCount - 4} more in Procurement →
-                </a>
-              )}
-            </div>
-          )}
         </aside>
 
         {/* ─── SCROLLABLE RIGHT — Module stack ───────────────────────────── */}
         <div className="flex-1 min-w-0 lg:max-w-[680px] lg:overflow-visible">
+          <ResearchDossierBand substance={ci.substance} onOpen={() => setDossierOpen(true)} />
           <div className="floating-module overflow-hidden">
             {modules.map((mod, i) => (
               <div key={mod.key} id={`module-${mod.key}`}>
@@ -516,6 +485,11 @@ export function ProductPage() {
           </Button>
         </div>
       </div>
+
+      {/* Research dossier — the shared overlay, mounted on demand. */}
+      {dossierOpen && (
+        <CompoundIntelligenceOverlay product={product} onClose={() => setDossierOpen(false)} />
+      )}
 
       <IntelModuleStyles />
     </article>
