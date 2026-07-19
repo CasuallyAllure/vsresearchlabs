@@ -65,6 +65,28 @@ describe('studyCitationHref', () => {
     expect(href).toBe('https://pubmed.ncbi.nlm.nih.gov/37366315/');
   });
 
+  test('builds a ClinicalTrials.gov link from an NCT identifier', () => {
+    // Arrange
+    const study = makeStudy({ nctId: 'NCT02039687' });
+
+    // Act
+    const href = studyCitationHref(study);
+
+    // Assert
+    expect(href).toBe('https://clinicaltrials.gov/study/NCT02039687');
+  });
+
+  test('prefers a published identifier over a trial registration', () => {
+    // Arrange
+    const study = makeStudy({ pmid: '28475703', nctId: 'NCT02039687' });
+
+    // Act
+    const href = studyCitationHref(study);
+
+    // Assert
+    expect(href).toBe('https://pubmed.ncbi.nlm.nih.gov/28475703/');
+  });
+
   test('returns null when the study carries no identifier or url', () => {
     // Arrange
     const study = makeStudy();
@@ -111,8 +133,19 @@ describe('StudyCard citation link', () => {
     expect(link?.getAttribute('href')).toBe('https://www.nejm.org/doi/10.1056/NEJMoa2032183');
   });
 
+  test('renders a ClinicalTrials.gov link for a trial registration', () => {
+    // Arrange
+    const study = makeStudy({ nctId: 'NCT02225366' });
+
+    // Act
+    const link = renderCard(study);
+
+    // Assert
+    expect(link?.getAttribute('href')).toBe('https://clinicaltrials.gov/study/NCT02225366');
+  });
+
   test('renders no link at all for an unresolved study', () => {
-    // Arrange — trial-registry records with no publication stay link-free.
+    // Arrange — a record with no identifier of any kind stays link-free.
     const study = makeStudy();
 
     // Act

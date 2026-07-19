@@ -72,7 +72,7 @@ export const META = {
     name: 'Mazdutide', abbr: 'MZD', family: 'GLP-1 / Glucagon Agonist',
     eyebrow: 'GLP-1 / GLUCAGON DUAL AGONIST',
     lead: 'Dual GLP-1 and glucagon receptor agonist studied in metabolic research models.',
-    cas: '2259884-03-0', mw: '4563.14 g/mol',
+    cas: '2259884-03-0',
   },
   survodutide: {
     name: 'Survodutide', abbr: 'SVD', family: 'GLP-1 / Glucagon Agonist',
@@ -133,7 +133,7 @@ export const META = {
     name: '5-Amino-1MQ', abbr: '5AMQ', family: 'NNMT Inhibitor',
     eyebrow: 'NNMT ENZYME INHIBITOR',
     lead: 'Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism.',
-    cas: '42464-96-0', mw: '286.11 g/mol',
+    cas: '42464-96-0', mw: '286.11 g/mol (iodide salt)',
   },
   '10-amino-1mq': {
     name: '10-Amino-1MQ', abbr: '10MQ', family: 'NNMT Inhibitor',
@@ -234,7 +234,7 @@ export const META = {
     name: 'MK-677', abbr: 'MK', family: 'GH Secretagogue',
     eyebrow: 'ORALLY-ACTIVE GHS-R AGONIST',
     lead: 'Orally-active non-peptide ghrelin-mimetic (ibutamoren) GHS-R agonist studied for sustained GH/IGF-1 elevation.',
-    cas: '159752-10-0', mw: '528.66 g/mol',
+    cas: '159752-10-0', mw: '624.77 g/mol (mesylate)',
   },
 
   // ── nootropic-neuroactive ────────────────────────────────────────────
@@ -334,7 +334,7 @@ export const META = {
     name: 'IGF-1 LR3', abbr: 'IGF', family: 'Growth Factor',
     eyebrow: 'LONG R3 IGF-1 ANALOGUE',
     lead: 'Long R3 insulin-like growth factor-1 analogue with reduced IGFBP binding, for anabolic-signaling research.',
-    cas: '946870-92-4', mw: '9117.65 g/mol',
+    mw: '9117.65 g/mol',
   },
   mgf: {
     name: 'MGF', abbr: 'MGF', family: 'Growth Factor',
@@ -352,7 +352,7 @@ export const META = {
     name: 'FOXO4-DRI', abbr: 'FOXO', family: 'Senolytic Peptide',
     eyebrow: 'FOXO4 D-RETRO-INVERSO PEPTIDE',
     lead: 'FOXO4 D-retro-inverso peptide that disrupts the FOXO4–p53 interaction in senescence research.',
-    cas: '2460055-10-9', mw: '2957.2 g/mol',
+    cas: '2460055-10-9',
   },
 
   // ── reproductive-hormonal ────────────────────────────────────────────

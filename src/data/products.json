@@ -169,26 +169,6 @@
     ],
     "pmid": "16583442",
     "doi": "10.1002/jor.20096"
-   },
-   {
-    "title": "BPC-157 promotes angiogenesis via VEGFR-2/FAK/paxillin in endothelial cultures",
-    "source": "Biochemical Pharmacology",
-    "year": 2019,
-    "model": "in-vitro",
-    "notes": [
-     "VEGFR-2 phosphorylation confirmed at sub-micromolar concentrations",
-     "FAK-paxillin pathway activation drives endothelial cell migration and tube formation"
-    ]
-   },
-   {
-    "title": "Pentadecapeptide BPC 157 and muscle injury: acceleration of recovery and NO pathway",
-    "source": "Muscle & Nerve",
-    "year": 2014,
-    "model": "rat",
-    "notes": [
-     "Accelerated recovery of muscle force production following crush injury",
-     "Upregulation of eNOS and nNOS in recovering myofibers"
-    ]
    }
   ]
  },
@@ -436,16 +416,6 @@
     ],
     "pmid": "10496658",
     "doi": "10.1023/a:1018955126402"
-   },
-   {
-    "title": "Ipamorelin accelerates postoperative upper gastrointestinal transit in dogs",
-    "source": "Journal of Pharmacology and Experimental Therapeutics",
-    "year": 2005,
-    "model": "in-vivo",
-    "notes": [
-     "GHS-R1a agonism normalized GI motility following surgery",
-     "Potential application in postoperative ileus research models"
-    ]
    }
   ]
  },
@@ -851,16 +821,6 @@
     ],
     "pmid": "37952131",
     "doi": "10.1056/NEJMoa2307563"
-   },
-   {
-    "title": "GLP-1 receptor agonism attenuates neuroinflammation and amyloid pathology in Alzheimer mouse models",
-    "source": "Journal of Neuroinflammation",
-    "year": 2022,
-    "model": "mouse",
-    "notes": [
-     "Reduced Aβ plaque burden and microglial activation",
-     "Mechanism: suppression of NF-κB-mediated inflammatory signaling"
-    ]
    }
   ]
  },
@@ -1127,16 +1087,6 @@
     ],
     "pmid": "35658024",
     "doi": "10.1056/NEJMoa2206038"
-   },
-   {
-    "title": "Dual GIP/GLP-1 agonism activates brown adipose tissue thermogenesis via UCP-1",
-    "source": "Molecular Metabolism",
-    "year": 2020,
-    "model": "mouse",
-    "notes": [
-     "Tirzepatide-analog showed 2.3× greater UCP-1 upregulation vs GLP-1 mono",
-     "Mechanism: GIP component directly activates brown adipocyte GIP-R"
-    ]
    }
   ]
  },

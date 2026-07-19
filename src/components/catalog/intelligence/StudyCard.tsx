@@ -43,9 +43,10 @@ function ExternalLinkIcon() {
  * verifiable identifier.
  *
  * Precedence is by permanence: a PMID resolves to a PubMed permalink, a DOI
- * to the doi.org resolver, and an explicit `url` is the last resort. Nothing
- * is synthesized — a study with no identifier renders no link, which is the
- * honest outcome and the one the audit found for every generated compound.
+ * to the doi.org resolver, an NCT identifier to its ClinicalTrials.gov record,
+ * and an explicit `url` is the last resort. Nothing is synthesized — a study
+ * with no identifier renders no link, which is the honest outcome and the one
+ * the audit found for every generated compound.
  */
 export function studyCitationHref(study: ProductStudy): string | null {
   const pmid = study.pmid?.trim();
@@ -53,6 +54,9 @@ export function studyCitationHref(study: ProductStudy): string | null {
 
   const doi = study.doi?.trim();
   if (doi) return `https://doi.org/${doi}`;
+
+  const nctId = study.nctId?.trim();
+  if (nctId) return `https://clinicaltrials.gov/study/${nctId}`;
 
   return study.url?.trim() || null;
 }

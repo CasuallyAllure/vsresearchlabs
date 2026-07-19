@@ -59,7 +59,7 @@
     "shippingCondition": "Dry ice required",
     "researchClassification": "metabolic-cofactor",
     "casNumber": "42464-96-0",
-    "molecularWeight": "286.11 g/mol",
+    "molecularWeight": "286.11 g/mol (iodide salt)",
     "mechanismSummary": "A small-molecule, substrate-site-directed inhibitor of nicotinamide N-methyltransferase (NNMT). By blocking NNMT-mediated methylation of nicotinamide (which consumes S-adenosylmethionine), it is proposed to raise cellular NAD+ salvage and SAM levels and reduce adipocyte lipogenesis.",
     "receptorActivity": "Selective enzyme inhibitor of NNMT (reported IC50 ~1.2 µM); an enzyme inhibitor, not a receptor ligand.",
     "pathwaySummary": "Inhibition of NNMT perturbs nicotinamide/NAD+ salvage and SAM-dependent methylation balance, influencing adipocyte energy metabolism.",
@@ -298,11 +298,12 @@
     "humanTrialsConfirmed": true,
     "knownStudies": [
       {
-        "title": "Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy",
-        "source": "ClinicalTrials.gov · NCT02039687",
+        "title": "Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy — trial registration, no publication",
+        "source": "ClinicalTrials.gov trial registration",
         "year": 2017,
         "model": "human",
-        "phase": "Phase 2b"
+        "phase": "Phase 2b",
+        "nctId": "NCT02039687"
       },
       {
         "title": "Cibinetide Improves Corneal Nerve Fiber Abundance in Patients With Sarcoidosis-Associated Small Nerve Fiber Loss and Neuropathic Pain",
@@ -872,7 +873,6 @@
     "researchClassification": "bioregulator",
     "productType": "peptide",
     "casNumber": "2460055-10-9",
-    "molecularWeight": "2957.2 g/mol",
     "mechanismSummary": "A synthetic D-retro-inverso (all-D, reversed-sequence) peptide based on the FOXO4 region that binds p53. As a senolytic, it disrupts the FOXO4–p53 interaction in senescent cells, releasing p53 to the mitochondria and triggering targeted apoptosis of senescent (\"zombie\") cells.",
     "receptorActivity": "Not a receptor ligand; an intracellular protein–protein-interaction inhibitor that competitively blocks FOXO4 binding to p53.",
     "pathwaySummary": "By freeing p53 from FOXO4 sequestration, it activates p53-dependent mitochondrial (intrinsic) apoptosis selectively in senescent cells.",
@@ -1762,7 +1762,6 @@
     "shippingCondition": "Dry ice required",
     "researchClassification": "growth-factor-anabolic",
     "productType": "peptide",
-    "casNumber": "946870-92-4",
     "molecularWeight": "9117.65 g/mol",
     "mechanismSummary": "A synthetic 83-amino-acid analogue of human IGF-1 with a 13-residue N-terminal extension and an Arg-for-Glu substitution at position 3. These changes markedly reduce IGF-binding-protein binding, increasing free bioactivity and half-life. It activates the IGF-1 receptor to drive proliferation, protein synthesis, and anti-apoptotic signalling.",
     "receptorActivity": "Agonist of the type-1 IGF receptor (IGF-1R), a receptor tyrosine kinase; very low IGFBP affinity increases its free active fraction; cross-reacts with the insulin receptor at high concentrations.",
@@ -2152,11 +2151,12 @@
         "doi": "10.1111/wrr.12211"
       },
       {
-        "title": "Intratumoral LL-37 in Patients with Melanoma (first-in-human)",
-        "source": "ClinicalTrials.gov · NCT02225366",
+        "title": "Intratumoral LL-37 in Patients with Melanoma (first-in-human) — trial registration, no publication",
+        "source": "ClinicalTrials.gov trial registration",
         "year": 2015,
         "model": "human",
-        "phase": "Phase 1"
+        "phase": "Phase 1",
+        "nctId": "NCT02225366"
       }
     ],
     "molecularFormula": "C205H340N60O53"
@@ -2222,7 +2222,6 @@
     "researchClassification": "incretin-metabolic-agonists",
     "productType": "peptide",
     "casNumber": "2259884-03-0",
-    "molecularWeight": "4563.14 g/mol",
     "mechanismSummary": "Synthetic long-acting oxyntomodulin analogue acting as a dual GLP-1 and glucagon receptor agonist. GLP-1R agonism enhances glucose-dependent insulin secretion and suppresses appetite, while glucagon-receptor agonism raises energy expenditure and lipolysis.",
     "receptorActivity": "Balanced co-agonist at GLP-1R and the glucagon receptor (GCGR); a dual incretin–glucagon agonist rather than a single-receptor agent.",
     "pathwaySummary": "Both receptors are Gs-coupled GPCRs; agonism raises cAMP/PKA signalling in pancreatic β-cells, hepatocytes, adipocytes, and hypothalamic neurons.",
@@ -2532,7 +2531,7 @@
     "shippingCondition": "Dry ice required",
     "researchClassification": "gh-secretagogue",
     "casNumber": "159752-10-0",
-    "molecularWeight": "528.66 g/mol",
+    "molecularWeight": "624.77 g/mol (mesylate)",
     "mechanismSummary": "A non-peptide, orally active, long-acting ghrelin-receptor agonist (ibutamoren) built on a spiro-indoline-piperidine scaffold. It mimics ghrelin at the GHS receptor to produce sustained increases in GH and IGF-1 without raising cortisol, owing to oral bioavailability and a long half-life.",
     "receptorActivity": "Selective non-peptide agonist of the GHS-R1a (ghrelin) receptor; does not appreciably activate cortisol pathways.",
     "pathwaySummary": "GHS-R1a engages Gq–PLC–IP3-calcium signalling in pituitary somatotrophs, stimulating GH release and downstream hepatic IGF-1.",
@@ -3498,15 +3497,6 @@
     "pathwaySummary": "Stimulates Th1 cytokine production (IL-2, IFN-γ), promotes dendritic-cell and T-cell maturation, and increases NK-cell activity via TLR-mediated and NF-κB pathways.",
     "fdaStatus": "Not FDA-approved; approved abroad as Zadaxin (chronic hepatitis B/C)",
     "humanTrialsConfirmed": true,
-    "knownStudies": [
-      {
-        "title": "Thymosin α-1 plus Interferon-α for Chronic Hepatitis B (meta-analysis)",
-        "source": "Antiviral Therapy",
-        "year": 2009,
-        "model": "human",
-        "phase": "Phase 3"
-      }
-    ],
     "molecularFormula": "C129H215N33O55"
   },
   {
