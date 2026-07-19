@@ -151,12 +151,13 @@ export function AccountDashboard() {
           </h1>
           <p className="mt-[var(--space-2)] text-[13px] text-ink/55">{user?.email}</p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-[var(--space-2)]">
-          <span className="inline-flex items-center rounded-full border border-gold/40 bg-gold/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.2em] text-gold-dark">
+        {/* Account standing — stated on hairline rules, not worn as badges. */}
+        <div className="flex shrink-0 flex-col items-end gap-[var(--space-1)] border-l border-ink/[0.09] pl-[var(--space-4)]">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/55">
             {profile.tier === 'pro' ? 'Pro member' : 'Member'}
           </span>
           {isBusiness && (
-            <span className="inline-flex items-center rounded-full border border-teal/40 bg-teal/[0.08] px-[var(--space-3)] py-[var(--space-1)] text-[10px] uppercase tracking-[0.2em] text-teal">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/35">
               {profile.business_name?.trim() || 'Business account'}
             </span>
           )}
@@ -184,12 +185,12 @@ export function AccountDashboard() {
             </>
           ) : rewardsError ? (
             <div className="research-surface-solid p-[var(--space-5)]">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Order credit</p>
               <p className="text-[12.5px] text-ink/50">Rewards aren't available right now.</p>
             </div>
           ) : (
             <div className="research-surface-solid p-[var(--space-5)]">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Reward balance</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Order credit</p>
               <p className="text-[12.5px] text-ink/50">Loading…</p>
             </div>
           )}

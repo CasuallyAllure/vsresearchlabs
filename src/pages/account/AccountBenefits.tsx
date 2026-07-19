@@ -44,14 +44,14 @@ function DiscountCard({ discount: d }: { discount: CustomerDiscountRow }) {
           <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">{SCOPE_LABEL[d.scope]}</p>
           <p className="mt-1 text-[15px] text-ink">{d.label}</p>
           {(starts || expires) && (
-            <p className="mt-1 text-[11px] text-ink/45">
+            <p className="mt-1 font-mono text-[11px] tabular-nums text-ink/40">
               {starts ? `From ${starts}` : ''}
               {starts && expires ? ' · ' : ''}
               {expires ? `Expires ${expires}` : ''}
             </p>
           )}
         </div>
-        <p className="shrink-0 font-mono text-[1.4rem] font-light tabular-nums text-gold-dark">{d.percent}%</p>
+        <p className="shrink-0 font-mono text-[1.4rem] font-light tabular-nums text-ink">{d.percent}%</p>
       </div>
     </article>
   );

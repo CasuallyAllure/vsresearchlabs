@@ -26,13 +26,6 @@ const KIND_LABEL: Record<RewardEntryKind, string> = {
   redemption: 'Redeemed',
 };
 
-const KIND_CLASS: Record<RewardEntryKind, string> = {
-  earn: 'border-ink/10 text-[color:var(--color-status-success)] bg-[color:var(--color-status-successMuted)]',
-  reversal: 'border-ink/10 text-[color:var(--color-status-error)] bg-[color:var(--color-status-errorMuted)]',
-  adjustment: 'border-ink/10 text-[color:var(--color-status-warning)] bg-[color:var(--color-status-warningMuted)]',
-  redemption: 'border-ink/10 text-[color:var(--color-status-info)] bg-[color:var(--color-status-infoMuted)]',
-};
-
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -90,32 +83,44 @@ function AccountRewardsContent() {
         <RewardTracker summary={state.summary} onChanged={reload} />
       </div>
 
-      <h2 className="mb-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/45">History</h2>
+      <h2 className="mb-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Statement</h2>
 
       {entries.length === 0 ? (
-        <EmptyState label="No reward activity yet." meta="Points post automatically once a paid order is on file." />
+        <EmptyState label="No credit activity yet." meta="Units post automatically once a paid order is on file." />
       ) : (
-        <ul className="space-y-[var(--space-3)]">
+        /* Ledger, not a feed: one module, hairline-ruled rows, quiet labels,
+           and signed tabular figures. No status pills, no colour coding —
+           the sign carries the direction. */
+        <ul className="floating-module divide-y divide-ink/[0.06] px-[var(--space-4)]">
           {entries.map((e) => (
-            <li key={e.id} className="research-surface-solid p-[var(--space-4)] flex items-center justify-between gap-[var(--space-4)]">
+            <li
+              key={e.id}
+              className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]"
+            >
               <div className="min-w-0">
-                <div className="flex items-center gap-[var(--space-2)]">
-                  <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] ${KIND_CLASS[e.kind]}`}>
+                <div className="flex flex-wrap items-baseline gap-x-[var(--space-2)] gap-y-1">
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-ink/45">
                     {KIND_LABEL[e.kind]}
                   </span>
                   {e.order_number && (
                     <Link
                       to={`/account/orders/${encodeURIComponent(e.order_number)}`}
-                      className="truncate font-mono text-[11px] text-teal hover:text-teal-dark transition-colors"
+                      className="truncate font-mono text-[11px] tabular-nums text-ink/60 underline decoration-ink/20 underline-offset-2 transition-colors hover:text-ink"
                     >
                       {e.order_number}
                     </Link>
                   )}
                 </div>
-                {e.note && <p className="mt-1 truncate text-[12px] text-ink/60">{e.note}</p>}
-                <p className="mt-0.5 text-[11px] text-ink/40">{formatDate(e.created_at)}</p>
+                {e.note && <p className="mt-1 truncate text-[12px] text-ink/55">{e.note}</p>}
+                <p className="mt-0.5 font-mono text-[11px] tabular-nums text-ink/35">
+                  {formatDate(e.created_at)}
+                </p>
               </div>
-              <p className={`shrink-0 font-mono text-[15px] tabular-nums ${e.points >= 0 ? 'text-[color:var(--color-status-success)]' : 'text-[color:var(--color-status-error)]'}`}>
+              <p
+                className={`shrink-0 font-mono text-[14px] tabular-nums ${
+                  e.points >= 0 ? 'text-ink/80' : 'text-ink/45'
+                }`}
+              >
                 {formatPoints(e.points)}
               </p>
             </li>
