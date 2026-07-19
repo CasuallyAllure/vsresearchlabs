@@ -23,12 +23,15 @@
 import { useMemo, useState } from 'react';
 import { ResearchCompoundGrid } from '../components/catalog/ResearchCompoundGrid';
 import { CompoundIntelligenceOverlay } from '../components/catalog/CompoundIntelligenceOverlay';
-import { ClassificationFilter } from '../components/catalog/ClassificationFilter';
+import { ClassificationFilter, type CatalogDensity } from '../components/catalog/ClassificationFilter';
+import { ResearchDomainFilter, ALL_DOMAINS } from '../components/catalog/ResearchDomainFilter';
 import { useProducts } from '../hooks/useProducts';
 import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
+import { researchDomainFor, RESEARCH_DOMAIN_ORDER, type ResearchDomain } from '../lib/researchDomain';
 
 const ALL_TAB = '__all__';
 const MAX_CLASS_TABS = 8;
+const DENSITY_KEY = 'vsr.researchDensity';
 
 export function Research() {
   const { products: allProducts, loading, error } = useProducts();
@@ -42,7 +45,36 @@ export function Research() {
 
   const [query, setQuery] = useState('');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
+  const [domainFilter, setDomainFilter] = useState<string>(ALL_DOMAINS);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
+
+  // Layout density — same control, vocabulary and persistence mechanism as
+  // the store catalog, remembered per session so browsing keeps the layout.
+  const [density, setDensity] = useState<CatalogDensity>(() => {
+    try {
+      const saved = sessionStorage.getItem(DENSITY_KEY);
+      return saved === 'standard' || saved === 'compact' ? saved : 'detail';
+    } catch {
+      return 'detail';
+    }
+  });
+  function changeDensity(d: CatalogDensity) {
+    setDensity(d);
+    try { sessionStorage.setItem(DENSITY_KEY, d); } catch { /* private mode */ }
+  }
+
+  // Biological systems present in the dataset, with their record counts.
+  const { domains, domainCounts } = useMemo(() => {
+    const counts = {} as Partial<Record<ResearchDomain, number>>;
+    for (const p of compounds) {
+      const d = researchDomainFor(p.researchClassification);
+      counts[d] = (counts[d] ?? 0) + 1;
+    }
+    return {
+      domains: RESEARCH_DOMAIN_ORDER.filter((d) => (counts[d] ?? 0) > 0),
+      domainCounts: counts,
+    };
+  }, [compounds]);
 
   // Pharmacological classification tabs — the only filter dimension the
   // library exposes. Type tabs are unnecessary (everything here is a
@@ -68,11 +100,12 @@ export function Research() {
     const q = query.trim().toLowerCase();
     return compounds.filter((p) => {
       if (classFilter !== ALL_TAB && p.researchClassification !== classFilter) return false;
+      if (domainFilter !== ALL_DOMAINS && researchDomainFor(p.researchClassification) !== domainFilter) return false;
       if (q.length === 0) return true;
       const hay = `${p.name} ${p.sku} ${p.shortDescription ?? ''} ${p.family ?? ''}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [compounds, query, classFilter]);
+  }, [compounds, query, classFilter, domainFilter]);
 
   const suggestions = useMemo(
     () => compounds.map((p) => ({ id: p.id, label: p.name })),
@@ -106,7 +139,16 @@ export function Research() {
         </p>
       </header>
 
-      {/* Smart search + classification filter (one compact bar) */}
+      {/* Biological system studied — the "which part of the body is this
+          research in" dimension, derived from the classification. */}
+      <ResearchDomainFilter
+        domains={domains}
+        value={domainFilter}
+        onChange={setDomainFilter}
+        counts={domainCounts}
+      />
+
+      {/* Smart search + classification filter + layout picker (one compact bar) */}
       <ClassificationFilter
         tabs={classificationTabs}
         value={classFilter}
@@ -116,6 +158,7 @@ export function Research() {
         onSearch={setQuery}
         suggestions={suggestions}
         searchPlaceholder="Search compounds, abbreviation, family…"
+        density={{ value: density, onChange: changeDensity }}
       />
 
       <p
@@ -136,6 +179,7 @@ export function Research() {
             : 'No compounds match the active filters.'
         }
         onInspect={setInspectedId}
+        density={density}
       />
 
       {inspectedProduct && (
