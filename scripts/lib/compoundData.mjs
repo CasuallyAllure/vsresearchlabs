@@ -134,6 +134,7 @@ export const META = {
     eyebrow: 'NNMT ENZYME INHIBITOR',
     lead: 'Small-molecule inhibitor of nicotinamide N-methyltransferase (NNMT) studied in adipocyte metabolism.',
     cas: '42464-96-0', mw: '286.11 g/mol (iodide salt)',
+    formula: 'C10H11IN2',
   },
   '10-amino-1mq': {
     name: '10-Amino-1MQ', abbr: '10MQ', family: 'NNMT Inhibitor',
@@ -235,6 +236,7 @@ export const META = {
     eyebrow: 'ORALLY-ACTIVE GHS-R AGONIST',
     lead: 'Orally-active non-peptide ghrelin-mimetic (ibutamoren) GHS-R agonist studied for sustained GH/IGF-1 elevation.',
     cas: '159752-10-0', mw: '624.77 g/mol (mesylate)',
+    formula: 'C28H40N4O8S2',
   },
 
   // ── nootropic-neuroactive ────────────────────────────────────────────
