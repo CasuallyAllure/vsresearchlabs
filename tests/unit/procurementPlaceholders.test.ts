@@ -1,16 +1,19 @@
 /**
- * Procurement spec-sheet honesty.
+ * Procurement spec-sheet honesty — sourcing rows.
  *
- * Audit finding (docs/RESEARCH_CONTENT_SEPARATION_BLUEPRINT.md §5): all 50
- * generated compounds carry `manufacturer: "Vetted global production
- * partners"` and `countryOfOrigin: "Global partner network"`. Neither names a
- * manufacturer nor a country, and a procurement-grade specification sheet
- * cannot carry them as-is.
+ * The catalog sources through a network of vetted international partners
+ * rather than manufacturing in-house, so `manufacturer` and
+ * `countryOfOrigin` carry network-level answers. Those answers are true;
+ * what was wrong was the labels. A row labelled "Manufacturer" whose value
+ * is a partner network implies a manufacturer identity we do not have, and
+ * a row labelled "Country of Origin" whose value is a network is not a
+ * country.
  *
- * The JSON keys stay in place so real per-compound values can be filled in
- * later — the renderer, not the data, is what suppresses them. These tests
- * pin both halves of that contract: the placeholder is omitted, and a real
- * value supplied in its place renders automatically with no code change.
+ * These tests pin the contract the renderer now holds:
+ *   • the sourcing rows render, under sourcing labels
+ *   • no row is labelled "Manufacturer", "Origin", or "Country of Origin"
+ *   • genuinely blank values are still suppressed
+ *   • a real per-compound value supplied later renders with no code change
  */
 import { describe, expect, test } from 'vitest';
 
@@ -20,28 +23,22 @@ import {
 } from '../../src/components/catalog/intelligence/ProcurementSheet';
 import { makeProduct } from '../fixtures/product';
 
-const PLACEHOLDER_MANUFACTURER = 'Vetted global production partners';
-const PLACEHOLDER_ORIGIN = 'Global partner network';
+const SUPPLY_SOURCE = 'Vetted international manufacturing partners';
+const SOURCING_NETWORK = 'International partner network';
 
 function labelsFor(overrides: Parameters<typeof makeProduct>[0]): string[] {
   return selectProcurementRows(makeProduct(overrides)).map((row) => row.label);
 }
 
 describe('isRealProcurementValue', () => {
-  test('rejects the catalog-wide manufacturer placeholder', () => {
-    expect(isRealProcurementValue(PLACEHOLDER_MANUFACTURER)).toBe(false);
-  });
-
-  test('rejects the catalog-wide origin placeholder', () => {
-    expect(isRealProcurementValue(PLACEHOLDER_ORIGIN)).toBe(false);
-  });
-
-  test('rejects a placeholder regardless of casing or surrounding whitespace', () => {
-    expect(isRealProcurementValue('  GLOBAL PARTNER NETWORK  ')).toBe(false);
+  test('accepts the catalog-wide sourcing values', () => {
+    expect(isRealProcurementValue(SUPPLY_SOURCE)).toBe(true);
+    expect(isRealProcurementValue(SOURCING_NETWORK)).toBe(true);
   });
 
   test('rejects an absent or blank value', () => {
     expect(isRealProcurementValue(undefined)).toBe(false);
+    expect(isRealProcurementValue('')).toBe(false);
     expect(isRealProcurementValue('   ')).toBe(false);
   });
 
@@ -52,40 +49,55 @@ describe('isRealProcurementValue', () => {
 });
 
 describe('selectProcurementRows', () => {
-  test('omits the Manufacturer row when the value is the placeholder', () => {
+  test('renders the sourcing values under sourcing labels', () => {
+    // Arrange / Act
+    const rows = selectProcurementRows(
+      makeProduct({ manufacturer: SUPPLY_SOURCE, countryOfOrigin: SOURCING_NETWORK }),
+    );
+
+    // Assert
+    expect(rows).toEqual([
+      { label: 'Supply source', value: SUPPLY_SOURCE },
+      { label: 'Sourcing network', value: SOURCING_NETWORK },
+    ]);
+  });
+
+  test('never labels a sourcing row as a manufacturer or a country', () => {
     const labels = labelsFor({
-      manufacturer: PLACEHOLDER_MANUFACTURER,
-      storageCondition: '-20°C',
+      manufacturer: SUPPLY_SOURCE,
+      countryOfOrigin: SOURCING_NETWORK,
     });
 
     expect(labels).not.toContain('Manufacturer');
-    expect(labels).toContain('Storage');
+    expect(labels).not.toContain('Origin');
+    expect(labels).not.toContain('Country of Origin');
   });
 
-  test('omits the Origin row when the value is the placeholder', () => {
+  test('omits the sourcing rows when the values are blank', () => {
     const labels = labelsFor({
-      countryOfOrigin: PLACEHOLDER_ORIGIN,
+      manufacturer: '   ',
+      countryOfOrigin: undefined,
       storageCondition: '-20°C',
     });
 
-    expect(labels).not.toContain('Origin');
+    expect(labels).toEqual(['Storage']);
   });
 
-  test('renders Manufacturer and Origin once real values are supplied', () => {
+  test('renders a real per-compound value with no code change', () => {
     const rows = selectProcurementRows(
       makeProduct({ manufacturer: 'Bachem AG', countryOfOrigin: 'Switzerland' }),
     );
 
     expect(rows).toEqual([
-      { label: 'Manufacturer', value: 'Bachem AG' },
-      { label: 'Origin', value: 'Switzerland' },
+      { label: 'Supply source', value: 'Bachem AG' },
+      { label: 'Sourcing network', value: 'Switzerland' },
     ]);
   });
 
   test('leaves the remaining procurement rows intact', () => {
     const labels = labelsFor({
-      manufacturer: PLACEHOLDER_MANUFACTURER,
-      countryOfOrigin: PLACEHOLDER_ORIGIN,
+      manufacturer: SUPPLY_SOURCE,
+      countryOfOrigin: SOURCING_NETWORK,
       storageCondition: '-20°C',
       shippingCondition: 'Ambient',
       lotNumber: 'LOT-001',
@@ -96,6 +108,8 @@ describe('selectProcurementRows', () => {
     });
 
     expect(labels).toEqual([
+      'Supply source',
+      'Sourcing network',
       'Storage',
       'Shipping',
       'Lot',
@@ -106,14 +120,7 @@ describe('selectProcurementRows', () => {
     ]);
   });
 
-  test('returns no rows when a product carries only placeholder procurement data', () => {
-    const rows = selectProcurementRows(
-      makeProduct({
-        manufacturer: PLACEHOLDER_MANUFACTURER,
-        countryOfOrigin: PLACEHOLDER_ORIGIN,
-      }),
-    );
-
-    expect(rows).toEqual([]);
+  test('returns no rows when a product carries no procurement data at all', () => {
+    expect(selectProcurementRows(makeProduct({}))).toEqual([]);
   });
 });

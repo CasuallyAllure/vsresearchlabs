@@ -37,7 +37,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { META, LAYMAN, modelToKey, EXISTING } from './lib/compoundData.mjs';
-import { INTELLIGENCE } from './lib/compoundIntelligence.mjs';
+import { INTELLIGENCE, REGULATORY } from './lib/compoundIntelligence.mjs';
 import { renderSpecimen } from './lib/specimenTemplate.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -207,8 +207,10 @@ for (const key of keys) {
     featured: false,
     createdAt: STAMP,
     updatedAt: STAMP,
-    manufacturer: 'VSR Synthesis · In-house',
-    countryOfOrigin: 'United States',
+    // Sourcing, not manufacturing: material is procured through vetted
+    // international partners. Never regenerate an in-house synthesis claim.
+    manufacturer: 'Vetted international manufacturing partners',
+    countryOfOrigin: 'International partner network',
     storageCondition: isLiquid ? '2–8°C, protect from light' : '−20°C, desiccated, light-protected',
     shelfLifeMonths: isLiquid ? 18 : 24,
     unitOfMeasure: 'vial',
@@ -233,6 +235,21 @@ for (const key of keys) {
     if (Array.isArray(intel.knownStudies) && intel.knownStudies.length) product.knownStudies = intel.knownStudies;
   } else {
     console.warn(`! No INTELLIGENCE for key "${key}" — compound shipped without mechanism/studies`);
+  }
+
+  // ── Verified regulatory resources + chemical/history fields ──────────────
+  // Absent by design for most compounds: no approved counterpart and no
+  // registered trial means no links, which is the accurate statement. Nothing
+  // is synthesized to fill the gap.
+  const reg = REGULATORY[key];
+  if (reg) {
+    if (Array.isArray(reg.fdaResources) && reg.fdaResources.length) product.fdaResources = reg.fdaResources;
+    if (reg.solubility) product.solubility = reg.solubility;
+    if (reg.stability) product.stability = reg.stability;
+    if (reg.appearance) product.appearance = reg.appearance;
+    if (reg.discovery) product.discovery = reg.discovery;
+    if (Array.isArray(reg.developmentCodes) && reg.developmentCodes.length) product.developmentCodes = reg.developmentCodes;
+    if (reg.originator) product.originator = reg.originator;
   }
 
   generated.push(product);
