@@ -341,10 +341,23 @@ export function ClassificationFilter({
             </ul>
           )}
         </div>
+
+        {/* Layout picker sits inline with the category dropdown on surfaces
+            with no shipping chips (the research library). On procurement
+            surfaces it rides the second row instead, after the chips, so the
+            two controls read as one group. */}
+        {density && !shippingTiers && (
+          <DensityCycleButton value={density.value} onChange={density.onChange} />
+        )}
       </div>
 
+      {/* Second row: shipping-tier chips (procurement surfaces only), followed
+          by the layout picker. Only rendered where shipping chips exist —
+          otherwise the picker lives inline above. */}
       {shippingTiers && (
-        <div className="mt-2 flex flex-nowrap items-center gap-1.5">
+        <div className="mt-2 flex flex-nowrap items-center justify-end gap-1.5">
+          {shippingTiers && (
+          <>
           <svg
             aria-hidden="true"
             width="14"
@@ -477,10 +490,12 @@ export function ClassificationFilter({
               </>
             )}
           </div>
+          </>
+          )}
 
           {density && (
             <>
-              <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />
+              {shippingTiers && <span aria-hidden="true" className="h-[16px] w-px shrink-0 bg-ink/15" />}
               <DensityCycleButton value={density.value} onChange={density.onChange} />
             </>
           )}
