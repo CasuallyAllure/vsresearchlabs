@@ -34,14 +34,36 @@ interface ProcurementRow {
 }
 
 /**
+ * Non-answers that must never render on a laboratory specification sheet.
+ * These sit in the data as blanket defaults across the whole catalog and
+ * name neither a manufacturer nor a country. The keys stay in the JSON so
+ * real per-compound values can simply be filled in later — at which point
+ * the row renders automatically with no code change.
+ */
+const PLACEHOLDER_VALUES = new Set([
+  'vetted global production partners',
+  'global partner network',
+]);
+
+/** A procurement value is renderable only when it is present, non-blank,
+ *  and not one of the catalog-wide placeholder strings. */
+export function isRealProcurementValue(value?: string): boolean {
+  const trimmed = value?.trim();
+  if (!trimmed) return false;
+  return !PLACEHOLDER_VALUES.has(trimmed.toLowerCase());
+}
+
+/**
  * Canonical procurement row order. Higher-priority fields lead so
  * `maxRows` truncates from the tail (manufacturer/origin first when
  * present; batch and shipping last).
  */
 export function selectProcurementRows(product: Product): ProcurementRow[] {
   const rows: ProcurementRow[] = [];
-  if (product.manufacturer) rows.push({ label: 'Manufacturer', value: product.manufacturer });
-  if (product.countryOfOrigin) rows.push({ label: 'Origin', value: product.countryOfOrigin });
+  if (isRealProcurementValue(product.manufacturer))
+    rows.push({ label: 'Manufacturer', value: product.manufacturer! });
+  if (isRealProcurementValue(product.countryOfOrigin))
+    rows.push({ label: 'Origin', value: product.countryOfOrigin! });
   if (product.storageCondition) rows.push({ label: 'Storage', value: product.storageCondition });
   if (product.shippingCondition) rows.push({ label: 'Shipping', value: product.shippingCondition });
   if (product.lotNumber) rows.push({ label: 'Lot', value: product.lotNumber });

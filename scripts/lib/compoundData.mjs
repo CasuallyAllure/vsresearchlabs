@@ -364,8 +364,11 @@ export const META = {
 
 /**
  * LAYMAN — curated, engaging plain-English summaries for the well-known
- * compounds (Retatrutide-style). Uses SummaryText highlight markup:
- *   **key term** (cyan) · ~good outcome~ (mint) · *emphasis* (white).
+ * compounds (Retatrutide-style). Research register: describe what the
+ * compound IS and what it is STUDIED FOR — never an outcome in a person.
+ * No consumer drug-brand anchors, no human dosing/route language, no
+ * second-person framing. Uses SummaryText highlight markup:
+ *   **key term** (cyan) · ~reported finding~ (mint) · *emphasis* (white).
  * Keyed by canonical slug. Compounds without an entry fall back to
  * `META[key].lead` (a plain functional one-liner). Kept factual — the
  * obscure blends/extracts are intentionally left on the plain line.
@@ -383,15 +386,15 @@ export const LAYMAN = {
 
   // metabolic-cofactor
   'nad-plus':
-    "NAD+ is a central **energy and repair** coenzyme — it drives mitochondrial redox reactions and is a required substrate for the *sirtuin* enzymes. Cellular levels *decline with age*, which is why it anchors much *cellular-aging and metabolic* research.",
+    "NAD+ is a central **energy and repair** coenzyme — it drives mitochondrial redox reactions and is a required substrate for the *sirtuin* enzymes. Cellular levels are ~reported to decline with age~ in published models, which is why it anchors much *cellular-aging and metabolic* research.",
   'ss-31':
-    "SS-31 is a **mitochondria-targeting** peptide that homes in on *cardiolipin*, a lipid inside the cell's power plants. By ~stabilizing failing mitochondria~ and ~cutting oxidative stress~ it's studied for heart, muscle, and *age-related energy* decline.",
+    "SS-31 is a **mitochondria-targeting** peptide that binds *cardiolipin*, a lipid inside the cell's power plants. Research models report ~stabilized mitochondrial function~ and ~reduced oxidative stress~, so it is studied in cardiac, muscle, and *age-related bioenergetics* work.",
   'mots-c':
-    "MOTS-c is a rare **mitochondrial-derived peptide** — encoded by the mitochondria themselves. It switches on **AMPK**, the body's metabolic master-sensor, and is studied as an *exercise-mimetic* that ~improves insulin sensitivity~.",
+    "MOTS-c is a rare **mitochondrial-derived peptide** — encoded by the mitochondria themselves. It activates **AMPK**, the cell's metabolic master-sensor, and is investigated as an *exercise-mimetic*, with ~improved insulin sensitivity~ reported in animal models.",
   'l-carnitine':
     "L-Carnitine is the **carnitine shuttle** that transports long-chain fatty acids into mitochondria for β-oxidation. A staple of *fat-metabolism and exercise-physiology* research.",
   aicar:
-    "AICAR is an **AMPK activator** — it flips the cell into 'energy-burning' mode as if it had just exercised. Famous as an *exercise-mimetic*, it's studied for ~endurance~ and ~glucose metabolism~.",
+    "AICAR is an **AMPK activator** — it shifts the cell into 'energy-burning' mode as though it had just exercised. Studied as an *exercise-mimetic*, with effects on ~endurance capacity~ and ~glucose metabolism~ reported in animal models.",
   adipotide:
     "Adipotide is an experimental **pro-apoptotic peptidomimetic** that homes to the vasculature of adipose tissue. A pre-clinical *metabolic-research* tool with a distinct vascular-targeting mechanism.",
   '5-amino-1mq':
@@ -399,47 +402,47 @@ export const LAYMAN = {
 
   // regenerative
   'bpc-tb-blend':
-    "A combined **BPC-157 + TB-500** stack — the two flagship *regeneration* peptides together, studied for ~broad tissue repair~ spanning gut, tendon, muscle, and blood vessels.",
+    "A combined **BPC-157 + TB-500** stack — the two flagship *regeneration* peptides together, studied for ~tissue-repair signaling~ across gut, tendon, muscle, and vascular models.",
 
   // immunomodulatory
   'ara-290':
-    "ARA-290 (cibinetide) is an **EPO-derived** peptide that hits the *innate repair receptor* without affecting red blood cells. It's studied for ~calming nerve inflammation~ and *neuropathic pain*.",
+    "ARA-290 (cibinetide) is an **EPO-derived** peptide that engages the *innate repair receptor* without acting on red-blood-cell production. It is investigated in *neuroinflammation and neuropathic-pain* models, where ~reduced nerve inflammation~ has been reported.",
   'thymosin-alpha-1':
-    "Thymosin α-1 is a thymus-derived **immune-tuning** peptide. It ~sharpens T-cell responses~ and helps balance the immune system — studied in *infection, vaccine, and immune-recovery* research.",
+    "Thymosin α-1 is a thymus-derived **immune-modulating** peptide. It is investigated for effects on ~T-cell maturation and immune balance~ — a standing tool in *infection, vaccine-adjuvant, and immune-recovery* research.",
   'll-37':
-    "LL-37 is the body's own **antimicrobial peptide** — a frontline host-defense molecule that disrupts microbes and ~supports wound healing~. A core tool in *innate-immunity and infection* research.",
+    "LL-37 is an **endogenous antimicrobial peptide** — a frontline host-defense molecule that disrupts microbial membranes. Research models also report ~wound-repair signaling~ alongside its direct antimicrobial action; a core tool in *innate-immunity and infection* work.",
   vip:
     "VIP (Vasoactive Intestinal Peptide) is a signaling peptide with broad **anti-inflammatory** and vessel-relaxing roles. It's studied for *immune balance, gut, and chronic-inflammatory* research.",
 
   // gh-secretagogue
   'cjc-1295-no-dac':
-    "CJC-1295 without DAC (Mod GRF 1-29) is the **short-acting GHRH** peptide — it sparks a clean, *natural-style* growth-hormone pulse that clears within hours. It's the classic partner for a GHRP like ipamorelin, the two *amplifying each other*.",
+    "CJC-1295 without DAC (Mod GRF 1-29) is the **short-acting GHRH** peptide — proposed to drive a *pulsatile* growth-hormone release that clears within hours. It is the classic study partner for a GHRP such as ipamorelin, the two *investigated together* for additive signaling.",
   'cjc-ipamorelin-blend':
-    "The classic **CJC-1295 (No DAC) + Ipamorelin** stack — a GHRH paired with a GHRP. Together they ~produce a larger, cleaner growth-hormone pulse~ than either peptide alone.",
+    "The classic **CJC-1295 (No DAC) + Ipamorelin** stack — a GHRH paired with a GHRP. The combination is studied for a ~larger, more selective growth-hormone pulse~ than either peptide produces alone in research models.",
   tesamorelin:
-    "Tesamorelin is a stabilized **GHRH** analogue studied in research for ~reduction of visceral adipose tissue~. It stimulates endogenous GH and IGF-1 and has the most *human-trial* backing among the GHRH peptides.",
+    "Tesamorelin is a stabilized **GHRH** analogue. In published clinical trials, ~reduction of visceral adipose tissue~ was reported; proposed mechanisms involve stimulation of endogenous GH and IGF-1. It carries the most *human-trial* data among the GHRH peptides.",
   sermorelin:
-    "Sermorelin is the classic **GHRH** peptide — the first 29 amino acids of the natural releasing hormone. It gently prompts the pituitary to ~release its own growth hormone~ in a *natural rhythm*.",
+    "Sermorelin is the classic **GHRH** peptide — the first 29 amino acids of the natural releasing hormone. It is studied as a pituitary-level stimulus for ~endogenous growth-hormone release~ in a *pulsatile* pattern.",
   'hexarelin-acetate':
-    "Hexarelin is one of the **strongest growth-hormone-releasing peptides**. Beyond a big ~GH pulse~, it's studied for *cardioprotective* effects through the CD36 receptor — unusual among the GHRPs.",
+    "Hexarelin is among the **most potent growth-hormone-releasing peptides**. Beyond the pronounced ~GH pulse~ reported in research models, it is studied for *cardioprotective* signaling through the CD36 receptor — unusual among the GHRPs.",
   'ghrp-2-acetate':
-    "GHRP-2 is a potent **growth-hormone-releasing peptide** that triggers a strong, clean ~GH pulse~ with only mild appetite stimulation. Often stacked with a GHRH like CJC-1295 so the two *amplify each other*.",
+    "GHRP-2 is a potent **growth-hormone-releasing peptide**. Research models report a strong, selective ~GH pulse~ with comparatively mild appetite signaling. Frequently studied alongside a GHRH such as CJC-1295 for *additive* effect.",
   'ghrp-6-acetate':
-    "GHRP-6 is the original **growth-hormone-releasing peptide** and a strong ~appetite stimulant~ — it powerfully activates the *ghrelin* (hunger) receptor while driving GH release.",
+    "GHRP-6 is the original **growth-hormone-releasing peptide** and a strong agonist at the *ghrelin* (hunger) receptor — research models report both ~GH release~ and ~pronounced appetite signaling~, making it a standard comparator in feeding-behavior work.",
   'mk-677':
-    "MK-677 (ibutamoren) is an **oral, non-peptide** ghrelin-mimetic that raises growth hormone and IGF-1 for a *full 24 hours* per dose. Its convenience makes it one of the most-studied GH secretagogues for ~sustained GH/IGF-1 elevation~.",
+    "MK-677 (ibutamoren) is an **oral, non-peptide** ghrelin-mimetic. Published studies report ~sustained GH and IGF-1 elevation~ across roughly a *24-hour* window, which is why it is one of the most-studied GH secretagogues in the class.",
 
   // nootropic-neuroactive
   selank:
-    "Selank is a Russian **anti-anxiety nootropic** peptide derived from the immune molecule tuftsin. It's studied for ~calm without sedation~ and ~steadier focus~ via the brain's BDNF and GABA systems — a research cousin of *Semax*.",
+    "Selank is a Russian **anxiolytic nootropic** peptide derived from the immune molecule tuftsin. Research models report ~anxiolytic activity without sedation~ and ~altered attention measures~, with proposed mechanisms involving BDNF and GABAergic signaling — a research cousin of *Semax*.",
   dsip:
-    "DSIP (Delta Sleep-Inducing Peptide) is a natural brain peptide tied to **deep sleep** rhythms. It's studied for ~promoting restful sleep~ and *stress resilience*.",
+    "DSIP (Delta Sleep-Inducing Peptide) is a natural brain peptide tied to **deep-sleep** rhythms. It is investigated in *sleep-architecture and stress-response* models, where ~changes in slow-wave sleep~ have been reported.",
   dermorphin:
     "Dermorphin is a naturally occurring heptapeptide and a potent, selective **µ-opioid receptor** agonist. Studied in *analgesia and opioid-pharmacology* research.",
 
   // antioxidant-beauty
   'ghk-cu':
-    "GHK-Cu is the famous **copper peptide** of skin science. It ~signals collagen and elastin repair~, ~drives new blood vessels~, and acts as an antioxidant — the backbone of *skin-remodeling, hair, and wound-healing* research.",
+    "GHK-Cu is the **copper-binding tripeptide** at the center of dermatological research. Studies report ~upregulated collagen and elastin signaling~ and ~angiogenic activity~, alongside antioxidant behavior — the backbone of *skin-remodeling, hair-follicle, and wound-healing* research.",
   'pt-141':
     "PT-141 (bremelanotide) is a **melanocortin receptor** agonist that acts centrally through the **brain** rather than the vascular system. Studied in *CNS and behavioral* research.",
   'melanotan-1':
@@ -449,7 +452,7 @@ export const LAYMAN = {
   glutathione:
     "Glutathione is a key intracellular **antioxidant** — a tripeptide (γ-Glu-Cys-Gly) that neutralizes reactive oxygen species and serves as a cofactor in redox and detoxification enzymes. Studied in *oxidative-stress and redox* research.",
   'snap-8':
-    "SNAP-8 is a topical cosmetic peptide (acetyl octapeptide-3) studied for **SNARE-complex modulation** — investigated in *topical cosmetic* research for effects on expression-related muscle signaling.",
+    "SNAP-8 is a topical **dermatological research peptide** (acetyl octapeptide-3) studied for **SNARE-complex modulation** — investigated in *topical dermatological* research for effects on expression-related muscle signaling.",
 
   // growth-factor-anabolic
   hgh:
@@ -469,13 +472,13 @@ export const LAYMAN = {
   hmg:
     "HMG (menotropin) is a **gonadotropin** preparation carrying both FSH and LH activity, used in *fertility and reproductive-axis* research to ~stimulate gonadal function~.",
   gonadorelin:
-    "Gonadorelin is **GnRH** — the master hormone that tells the pituitary to release LH and FSH. Used in *reproductive-axis* research to ~stimulate the body's own hormone production~ in natural pulses.",
+    "Gonadorelin is **GnRH** — the master hormone that signals the pituitary to release LH and FSH. Used in *reproductive-axis* research to probe ~endogenous gonadotropin release~ under pulsatile stimulation.",
   'kisspeptin-10':
-    "Kisspeptin-10 sits at the **top of the reproductive cascade**, switching on the GnRH neurons that drive the whole hormone axis. A key tool for ~jump-starting natural LH/FSH release~ and fertility research.",
+    "Kisspeptin-10 sits at the **top of the reproductive cascade**, acting on the GnRH neurons that drive the whole hormone axis. A key research tool for studying ~endogenous LH and FSH release~ and fertility signaling.",
   'oxytocin-acetate':
-    "Oxytocin is the **'bonding' hormone** — a nine-amino-acid peptide central to *social connection, trust, and lactation*. Widely studied for ~social behavior~ and neuropsychiatric research.",
+    "Oxytocin is a nine-amino-acid **neuropeptide hormone** central to *social bonding, trust, and lactation* physiology. Widely investigated in ~social-behavior~ and neuropsychiatric research models.",
   hcg:
-    "HCG is a **gonadotropin** that mimics LH, signaling the gonads to make sex hormones. In research it's used to ~stimulate natural testosterone or progesterone production~, dosed in international units.",
+    "HCG is a **gonadotropin** that mimics LH, signaling the gonads to produce sex hormones. In research it is used to probe ~endogenous testosterone or progesterone production~, and is supplied on an international-unit basis.",
 };
 
 /**
