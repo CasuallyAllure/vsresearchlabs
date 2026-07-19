@@ -36,10 +36,18 @@ const RELOCATED_SPEC_LABELS: ReadonlySet<string> = new Set(['Storage']);
  * as an empty or "undefined" row.
  */
 export function selectSpecificationRows(product: Product): SpecificationRow[] {
-  return (product.specs ?? [])
+  const specRows = (product.specs ?? [])
     .filter((s) => Boolean(s?.label?.trim()) && Boolean(s?.value?.trim()))
     .filter((s) => !RELOCATED_SPEC_LABELS.has(s.label.trim()))
     .map((s) => ({ label: s.label.trim(), value: s.value.trim() }));
+
+  // Molecular formula is a first-class specification field rather than a
+  // free-form `specs` entry. Absent for blends and heterogeneous biologics by
+  // design — no formula, no row.
+  const formula = product.molecularFormula?.trim();
+  const formulaRows = formula ? [{ label: 'Molecular Formula', value: formula }] : [];
+
+  return [...formulaRows, ...specRows];
 }
 
 export function SpecificationSheet({ product }: { product: Product }) {

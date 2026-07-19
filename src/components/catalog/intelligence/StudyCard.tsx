@@ -38,6 +38,25 @@ function ExternalLinkIcon() {
   );
 }
 
+/**
+ * Canonical citation link for a study, or `null` when the study carries no
+ * verifiable identifier.
+ *
+ * Precedence is by permanence: a PMID resolves to a PubMed permalink, a DOI
+ * to the doi.org resolver, and an explicit `url` is the last resort. Nothing
+ * is synthesized — a study with no identifier renders no link, which is the
+ * honest outcome and the one the audit found for every generated compound.
+ */
+export function studyCitationHref(study: ProductStudy): string | null {
+  const pmid = study.pmid?.trim();
+  if (pmid) return `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+
+  const doi = study.doi?.trim();
+  if (doi) return `https://doi.org/${doi}`;
+
+  return study.url?.trim() || null;
+}
+
 interface StudyCardProps {
   study: ProductStudy;
   /** Zero-based index; rendered as `01`, `02`. */
@@ -46,6 +65,7 @@ interface StudyCardProps {
 
 export function StudyCard({ study, index }: StudyCardProps) {
   const isHumanTrial = study.model === 'human';
+  const citationHref = studyCitationHref(study);
   return (
     <div className="py-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       {/* Index + title + link */}
@@ -56,8 +76,8 @@ export function StudyCard({ study, index }: StudyCardProps) {
         <p className="text-ink/68 flex-1 min-w-0 leading-snug" style={{ fontSize: '11.5px' }}>
           {study.title}
         </p>
-        {study.url && (
-          <a href={study.url} target="_blank" rel="noopener noreferrer"
+        {citationHref && (
+          <a href={citationHref} target="_blank" rel="noopener noreferrer"
             className="text-ink/22 hover:text-ink/65 transition-colors shrink-0 mt-0.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 rounded-sm"
             aria-label="Open study source">
             <ExternalLinkIcon />

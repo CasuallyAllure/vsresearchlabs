@@ -169,6 +169,14 @@ export interface Product {
   casNumber?: string;
   /** Molecular weight with unit (e.g. "4113.58 g/mol"). Peptides/chemicals. */
   molecularWeight?: string;
+  /**
+   * Hill-notation molecular formula (e.g. "C187H291N45O59"). Present only for
+   * single, structurally defined substances corroborated against a verified
+   * PubChem record — blends, heterogeneous biologic preparations, and
+   * variable-length PEGylated derivatives have no single formula and carry
+   * none.
+   */
+  molecularFormula?: string;
 
   // ── Research Intelligence (E3) ──────────────────────────────────────────
   // Compound-level intelligence fields. Populated for peptides; omitted for
@@ -219,6 +227,17 @@ export interface ProductStudy {
   phase?: string;
   /** External URL (PubMed, journal DOI, etc.). Optional. */
   url?: string;
+  /**
+   * PubMed identifier — digits only, no "PMID:" prefix. Present only when the
+   * exact paper was resolved against PubMed (title, journal, and year all
+   * corroborating). Never inferred, never approximated.
+   */
+  pmid?: string;
+  /**
+   * DOI in bare form (`10.<registrant>/<suffix>`), no `https://doi.org/`
+   * prefix. Same evidentiary bar as `pmid`.
+   */
+  doi?: string;
   /** Observed findings / result bullets. Rendered under "Observed:" label. */
   notes?: string[];
 }

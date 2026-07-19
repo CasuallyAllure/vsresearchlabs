@@ -220,6 +220,7 @@ for (const key of keys) {
   if (!NON_PEPTIDE.has(key) && !meta.blend) product.productType = 'peptide';
   if (meta.cas) product.casNumber = meta.cas;
   if (meta.mw) product.molecularWeight = meta.mw;
+  if (meta.formula) product.molecularFormula = meta.formula;
 
   // ── Compound intelligence (source-verified mechanism + studies) ──
   const intel = INTELLIGENCE[key];

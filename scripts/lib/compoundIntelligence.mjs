@@ -31,8 +31,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Investigational — Phase 3 (standalone and as the amylin arm of CagriSema)',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Development of Cagrilintide, a Long-Acting Amylin Analogue', source: 'J. Med. Chem. (ACS)', year: 2021, model: 'in-vitro', phase: 'Preclinical' },
-      { title: 'REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3' },
+      { title: 'Development of Cagrilintide, a Long-Acting Amylin Analogue', source: 'J. Med. Chem. (ACS)', year: 2021, model: 'in-vitro', phase: 'Preclinical', pmid: '34288673', doi: '10.1021/acs.jmedchem.1c00565' },
+      { title: 'REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3', pmid: '40544433', doi: '10.1056/NEJMoa2502081' },
     ],
   },
   cagrisema: {
@@ -45,8 +45,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Investigational — Phase 3 (regulatory filing submitted; not yet approved)',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3' },
-      { title: 'REDEFINE 2: Cagrilintide–Semaglutide in Overweight or Obesity and Type 2 Diabetes', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3' },
+      { title: 'REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3', pmid: '40544433', doi: '10.1056/NEJMoa2502081' },
+      { title: 'REDEFINE 2: Cagrilintide–Semaglutide in Overweight or Obesity and Type 2 Diabetes', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3', pmid: '40544432', doi: '10.1056/NEJMoa2502082' },
     ],
   },
   mazdutide: {
@@ -59,8 +59,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Approved in China (2025); investigational elsewhere — not FDA-approved',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Once-Weekly Mazdutide in Chinese Adults with Obesity or Overweight (GLORY-1)', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3' },
-      { title: 'GLP-1/Glucagon Dual Agonist Mazdutide (IBI362) in Chinese Adults with Overweight or Obesity', source: 'eClinicalMedicine (Lancet)', year: 2022, model: 'human', phase: 'Phase 1b' },
+      { title: 'Once-Weekly Mazdutide in Chinese Adults with Obesity or Overweight (GLORY-1)', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3', pmid: '40421736', doi: '10.1056/NEJMoa2411528' },
+      { title: 'GLP-1/Glucagon Dual Agonist Mazdutide (IBI362) in Chinese Adults with Overweight or Obesity', source: 'eClinicalMedicine (Lancet)', year: 2022, model: 'human', phase: 'Phase 1b', pmid: '36247927', doi: '10.1016/j.eclinm.2022.101691' },
     ],
   },
   survodutide: {
@@ -73,8 +73,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Investigational — Phase 3 (FDA Breakthrough Therapy designation for MASH)',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Survodutide (BI 456906) in Adults with NASH and Fibrosis (F1–F3)', source: 'ClinicalTrials.gov · NCT04771273', year: 2021, model: 'human', phase: 'Phase 2' },
-      { title: 'SYNCHRONIZE-1 — Phase 3 obesity trial of survodutide', source: 'ClinicalTrials.gov · NCT06066515', year: 2023, model: 'human', phase: 'Phase 3' },
+      { title: 'A Phase 2 Randomized Trial of Survodutide in MASH and Fibrosis', source: 'NEJM', year: 2024, model: 'human', phase: 'Phase 2', pmid: '38847460', doi: '10.1056/NEJMoa2401755' },
+      { title: 'Survodutide Once Weekly for the Treatment of Adults with Obesity (SYNCHRONIZE-1)', source: 'NEJM', year: 2026, model: 'human', phase: 'Phase 3', pmid: '42253238', doi: '10.1056/NEJMoa2600751' },
     ],
   },
 
@@ -100,7 +100,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Approved — Forzinity (elamipretide HCl), FDA accelerated approval 2025 for Barth syndrome',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Phase 2/3 Trial of Elamipretide in Barth Syndrome (with open-label extension)', source: 'Genetics in Medicine', year: 2021, model: 'human', phase: 'Phase 2/3' },
+      { title: 'Phase 2/3 Trial of Elamipretide in Barth Syndrome (with open-label extension)', source: 'Genetics in Medicine', year: 2021, model: 'human', phase: 'Phase 2/3', pmid: '33077895', doi: '10.1038/s41436-020-01006-8' },
     ],
   },
   'mots-c': {
@@ -113,7 +113,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Preclinical / research only',
     humanTrialsConfirmed: false,
     knownStudies: [
-      { title: 'The Mitochondrial-Derived Peptide MOTS-c Promotes Metabolic Homeostasis and Reduces Obesity and Insulin Resistance', source: 'Cell Metabolism', year: 2015, model: 'in-vivo', phase: 'Preclinical' },
+      { title: 'The Mitochondrial-Derived Peptide MOTS-c Promotes Metabolic Homeostasis and Reduces Obesity and Insulin Resistance', source: 'Cell Metabolism', year: 2015, model: 'in-vivo', phase: 'Preclinical', pmid: '25738459', doi: '10.1016/j.cmet.2015.02.009' },
     ],
   },
   'lipo-c': {
@@ -148,7 +148,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not approved — Phase 1 oncology trial terminated; development discontinued',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Reversal of Obesity by Targeted Ablation of Blood Supply to Fat', source: 'Nature Medicine', year: 2004, model: 'in-vivo', phase: 'Preclinical' },
+      { title: 'Reversal of obesity by targeted ablation of adipose tissue', source: 'Nature Medicine', year: 2004, model: 'in-vivo', phase: 'Preclinical', pmid: '15133506', doi: '10.1038/nm1048' },
     ],
   },
   aicar: {
@@ -161,7 +161,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not approved — acadesine reached Phase 3 (cardioprotection); WADA-prohibited',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Acadesine and Morbidity/Mortality in CABG: The RED-CABG Randomized Controlled Trial', source: 'JAMA', year: 2012, model: 'human', phase: 'Phase 3' },
+      { title: 'Acadesine and Morbidity/Mortality in CABG: The RED-CABG Randomized Controlled Trial', source: 'JAMA', year: 2012, model: 'human', phase: 'Phase 3', pmid: '22782417', doi: '10.1001/jama.2012.7633' },
     ],
   },
   '5-amino-1mq': {
@@ -174,7 +174,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Preclinical / research only',
     humanTrialsConfirmed: false,
     knownStudies: [
-      { title: 'A Small-Molecule Inhibitor of NNMT for the Treatment of Metabolic Disorders', source: 'Scientific Reports', year: 2018, model: 'in-vivo', phase: 'Preclinical' },
+      { title: 'A Small-Molecule Inhibitor of NNMT for the Treatment of Metabolic Disorders', source: 'Scientific Reports', year: 2018, model: 'in-vivo', phase: 'Preclinical', pmid: '29483571', doi: '10.1038/s41598-018-22081-7' },
     ],
   },
   '10-amino-1mq': {
@@ -214,7 +214,7 @@ export const INTELLIGENCE = {
     humanTrialsConfirmed: true,
     knownStudies: [
       { title: 'Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy', source: 'ClinicalTrials.gov · NCT02039687', year: 2017, model: 'human', phase: 'Phase 2b' },
-      { title: 'Cibinetide Improves Corneal Nerve Fibre Abundance in Sarcoidosis Neuropathy', source: 'Invest. Ophthalmol. Vis. Sci.', year: 2017, model: 'human', phase: 'Phase 2' },
+      { title: 'Cibinetide Improves Corneal Nerve Fiber Abundance in Patients With Sarcoidosis-Associated Small Nerve Fiber Loss and Neuropathic Pain', source: 'Invest. Ophthalmol. Vis. Sci.', year: 2017, model: 'human', phase: 'Phase 2', pmid: '28475703', doi: '10.1167/iovs.16-21291' },
     ],
   },
   'thymosin-alpha-1': {
@@ -251,7 +251,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not FDA-approved — investigational',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'LL-37 Enhances Healing of Hard-to-Heal Venous Leg Ulcers: A Randomized, Placebo-Controlled Trial', source: 'Wound Repair and Regeneration', year: 2014, model: 'human', phase: 'Phase 1/2a' },
+      { title: 'Treatment with LL-37 is safe and effective in enhancing healing of hard-to-heal venous leg ulcers: a randomized, placebo-controlled clinical trial', source: 'Wound Repair and Regeneration', year: 2014, model: 'human', phase: 'Phase 1/2a', pmid: '25041740', doi: '10.1111/wrr.12211' },
       { title: 'Intratumoral LL-37 in Patients with Melanoma (first-in-human)', source: 'ClinicalTrials.gov · NCT02225366', year: 2015, model: 'human', phase: 'Phase 1' },
     ],
   },
@@ -265,7 +265,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Native VIP not approved; analogue aviptadil holds Orphan Drug designation',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Inhaled Vasoactive Intestinal Peptide Exerts Immunoregulatory Effects in Sarcoidosis', source: 'Am. J. Respir. Crit. Care Med.', year: 2010, model: 'human', phase: 'Phase 2' },
+      { title: 'Inhaled Vasoactive Intestinal Peptide Exerts Immunoregulatory Effects in Sarcoidosis', source: 'Am. J. Respir. Crit. Care Med.', year: 2010, model: 'human', phase: 'Phase 2', pmid: '20442436', doi: '10.1164/rccm.200909-1451OC' },
     ],
   },
 
@@ -302,7 +302,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Approved — Egrifta / Egrifta SV (excess abdominal fat in HIV lipodystrophy)',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Effects of Tesamorelin (TH9507) in HIV-Infected Patients with Excess Abdominal Fat', source: 'J. Clin. Endocrinol. Metab.', year: 2010, model: 'human', phase: 'Phase 3' },
+      { title: 'Effects of Tesamorelin (TH9507) in HIV-Infected Patients with Excess Abdominal Fat', source: 'J. Clin. Endocrinol. Metab.', year: 2010, model: 'human', phase: 'Phase 3', pmid: '20554713', doi: '10.1210/jc.2010-0490' },
     ],
   },
   sermorelin: {
@@ -359,7 +359,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not approved — investigational (discontinued); WADA-prohibited',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Oral Ghrelin Mimetic (MK-677) on Body Composition in Healthy Older Adults: A Randomized Trial', source: 'Annals of Internal Medicine', year: 2008, model: 'human', phase: 'Phase 2' },
+      { title: 'Oral Ghrelin Mimetic (MK-677) on Body Composition in Healthy Older Adults: A Randomized Trial', source: 'Annals of Internal Medicine', year: 2008, model: 'human', phase: 'Phase 2', pmid: '18981485', doi: '10.7326/0003-4819-149-9-200811040-00003' },
     ],
   },
 
@@ -420,7 +420,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Approved — Vyleesi (2019), hypoactive sexual desire disorder in premenopausal women',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Bremelanotide for Hypoactive Sexual Desire Disorder: Two Randomized Phase 3 Trials (RECONNECT)', source: 'Obstetrics & Gynecology', year: 2019, model: 'human', phase: 'Phase 3' },
+      { title: 'Bremelanotide for Hypoactive Sexual Desire Disorder: Two Randomized Phase 3 Trials (RECONNECT)', source: 'Obstetrics & Gynecology', year: 2019, model: 'human', phase: 'Phase 3', pmid: '31599840', doi: '10.1097/AOG.0000000000003500' },
     ],
   },
   'melanotan-1': {
@@ -433,7 +433,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Approved — Scenesse (2019), erythropoietic protoporphyria',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Afamelanotide for Erythropoietic Protoporphyria', source: 'NEJM', year: 2015, model: 'human', phase: 'Phase 3' },
+      { title: 'Afamelanotide for Erythropoietic Protoporphyria', source: 'NEJM', year: 2015, model: 'human', phase: 'Phase 3', pmid: '26132941', doi: '10.1056/NEJMoa1411481' },
     ],
   },
   'melanotan-2': {
@@ -547,8 +547,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not approved — research / preclinical only',
     humanTrialsConfirmed: false,
     knownStudies: [
-      { title: 'IGF-1Ec / Mechano Growth Factor — a Splice Variant of IGF-1 within the Growth Plate', source: 'PLOS ONE', year: 2013, model: 'in-vitro', phase: 'Preclinical' },
-      { title: 'Mechano Growth Factor Promotes Neurogenesis in the Aging Mouse Brain', source: 'Molecular Brain', year: 2017, model: 'in-vivo', phase: 'Preclinical' },
+      { title: 'IGF-1Ec / Mechano Growth Factor — a Splice Variant of IGF-1 within the Growth Plate', source: 'PLOS ONE', year: 2013, model: 'in-vitro', phase: 'Preclinical', pmid: '24146828', doi: '10.1371/journal.pone.0076133' },
+      { title: 'Mechano Growth Factor Promotes Neurogenesis in the Aging Mouse Brain', source: 'Molecular Brain', year: 2017, model: 'in-vivo', phase: 'Preclinical', pmid: '28683812', doi: '10.1186/s13041-017-0304-0' },
     ],
   },
   'peg-mgf': {
@@ -574,8 +574,8 @@ export const INTELLIGENCE = {
     fdaStatus: 'Not approved — preclinical only',
     humanTrialsConfirmed: false,
     knownStudies: [
-      { title: 'Targeted Apoptosis of Senescent Cells Restores Tissue Homeostasis in Response to Chemotoxicity and Aging', source: 'Cell', year: 2017, model: 'in-vivo', phase: 'Preclinical' },
-      { title: 'Senolytic Peptide FOXO4-DRI Selectively Removes Senescent Cells from Expanded Human Chondrocytes', source: 'Front. Bioeng. Biotechnol.', year: 2021, model: 'in-vitro', phase: 'Preclinical' },
+      { title: 'Targeted Apoptosis of Senescent Cells Restores Tissue Homeostasis in Response to Chemotoxicity and Aging', source: 'Cell', year: 2017, model: 'in-vivo', phase: 'Preclinical', pmid: '28340339', doi: '10.1016/j.cell.2017.02.031' },
+      { title: 'Senolytic Peptide FOXO4-DRI Selectively Removes Senescent Cells From in vitro Expanded Human Chondrocytes', source: 'Front. Bioeng. Biotechnol.', year: 2021, model: 'in-vitro', phase: 'Preclinical', pmid: '33996787', doi: '10.3389/fbioe.2021.677576' },
     ],
   },
 
