@@ -72,6 +72,12 @@ npm ci && npm run build && npx wrangler deploy    # from the repo ROOT
 (Worktrees lack `.env.local` → Supabase keys not baked in → prod outage.
 This has happened before; see README.)
 
+**Release provenance:** the build emits `dist/version.json` identifying the
+built commit; after any deploy, `curl -s https://vsresearchlabs.com/version.json`
+confirms which commit is live (see `docs/ROLLBACK.md` § "Release provenance").
+Manual wrangler deploys may optionally add
+`npx wrangler versions upload --message "<sha>"` to label the Worker version.
+
 ## 4. Post-deploy verification (5 min)
 
 1. **Price authority live:** POST an order with `unitPriceCents: 1` on a

@@ -63,6 +63,23 @@ into the bundle and production boots into "backend not configured" — a
 self-inflicted outage on top of the one you're fixing. `dist/` is gitignored,
 so there is no prebuilt artifact to fall back to; it is always a rebuild.
 
+### Release provenance — which commit is live?
+
+Every build stamps `dist/version.json` (via `scripts/viteVersionStamp.ts`,
+outside the hashed bundles so `dist/assets` stays byte-reproducible), and the
+Worker serves `dist/` as-is — so the live origin identifies its own commit:
+
+```bash
+curl -s https://vsresearchlabs.com/version.json
+# {"commit":"<full sha>","shortCommit":"…","branch":"…","source":"git|env|unknown","buildTime":"…"}
+```
+
+Check it **before and after** a rollback or redeploy to confirm what actually
+changed (index.html also carries `<meta name="release" content="<sha>">`).
+Manual `wrangler` deploys can additionally label the Worker version itself:
+`npx wrangler versions upload --message "<sha>"` — optional; the message then
+shows in `wrangler versions list`.
+
 ---
 
 ## 2. Edge functions (Supabase)
