@@ -182,14 +182,18 @@ Per PAR-F2's acceptance criteria, and while nothing is on fire:
 back:
 
 ```json
-{"strict": true, "contexts": ["checks", "e2e"], "enforce_admins": false,
+{"strict": true, "contexts": ["checks", "e2e", "integration"], "enforce_admins": false,
  "conversation_resolution": true, "force_pushes": false, "deletions": false,
  "approvals": 0}
 ```
 
+(`integration` — the real-Postgres money-RPC + RLS tier, see
+docs/INTEGRATION_TESTS.md — was added to the required contexts on 2026-07-18
+after proving green on PR #12.)
+
 `enforce_admins` is deliberately **false** — the solo operator keeps the
 direct-push hatch; the gate binds PRs (dependabot included), which now require
-both CI jobs green and up-to-date branches. To inspect or re-apply:
+all three CI jobs green and up-to-date branches. To inspect or re-apply:
 `gh api repos/CasuallyAllure/vsresearchlabs/branches/main/protection`.
 
 ⚠ If `ci.yml`'s job ids ever change, update the required contexts in the same
@@ -203,7 +207,7 @@ The intended configuration of record (what is live today):
 | Require a pull request before merging | ✅ |
 | — Required approvals | `0` (solo operator; the CI gate is the point, not review) |
 | Require status checks to pass before merging | ✅ |
-| — Required checks | **`checks`** and **`e2e`** (the job ids in `ci.yml`; these are the names GitHub reports) |
+| — Required checks | **`checks`**, **`e2e`**, and **`integration`** (the job ids in `ci.yml`; these are the names GitHub reports) |
 | — Require branches to be up to date before merging | ✅ |
 | Require conversation resolution | ✅ |
 | Do not allow bypassing the above settings | ⬜ (leave off — a solo operator needs the hatch) |
@@ -216,7 +220,7 @@ Equivalent via API (how it was applied — a JSON body via `--input`, because
 ```bash
 gh api -X PUT repos/CasuallyAllure/vsresearchlabs/branches/main/protection \
   -H "Accept: application/vnd.github+json" \
-  --input protection.json   # required_status_checks {strict, contexts:[checks,e2e]},
+  --input protection.json   # required_status_checks {strict, contexts:[checks,e2e,integration]},
                             # enforce_admins false, reviews 0, restrictions null,
                             # required_conversation_resolution true,
                             # allow_force_pushes false, allow_deletions false
