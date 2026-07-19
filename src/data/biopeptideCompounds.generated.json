@@ -71,7 +71,9 @@
         "source": "Scientific Reports",
         "year": 2018,
         "model": "in-vivo",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "29483571",
+        "doi": "10.1038/s41598-018-22081-7"
       }
     ]
   },
@@ -142,13 +144,17 @@
     "humanTrialsConfirmed": true,
     "knownStudies": [
       {
-        "title": "Reversal of Obesity by Targeted Ablation of Blood Supply to Fat",
+        "title": "Reversal of obesity by targeted ablation of adipose tissue",
         "source": "Nature Medicine",
         "year": 2004,
         "model": "in-vivo",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "15133506",
+        "doi": "10.1038/nm1048"
       }
-    ]
+    ],
+    "molecularFormula": "C111H206N36O28S2",
+    "molecularWeight": "2557.20 g/mol"
   },
   {
     "id": "rs-aicar",
@@ -219,9 +225,12 @@
         "source": "JAMA",
         "year": 2012,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "22782417",
+        "doi": "10.1001/jama.2012.7633"
       }
-    ]
+    ],
+    "molecularFormula": "C9H14N4O5"
   },
   {
     "id": "rs-ara-290",
@@ -296,13 +305,16 @@
         "phase": "Phase 2b"
       },
       {
-        "title": "Cibinetide Improves Corneal Nerve Fibre Abundance in Sarcoidosis Neuropathy",
+        "title": "Cibinetide Improves Corneal Nerve Fiber Abundance in Patients With Sarcoidosis-Associated Small Nerve Fiber Loss and Neuropathic Pain",
         "source": "Invest. Ophthalmol. Vis. Sci.",
         "year": 2017,
         "model": "human",
-        "phase": "Phase 2"
+        "phase": "Phase 2",
+        "pmid": "28475703",
+        "doi": "10.1167/iovs.16-21291"
       }
-    ]
+    ],
+    "molecularFormula": "C51H84N16O21"
   },
   {
     "id": "rs-bpc-tb-blend",
@@ -439,16 +451,21 @@
         "source": "J. Med. Chem. (ACS)",
         "year": 2021,
         "model": "in-vitro",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "34288673",
+        "doi": "10.1021/acs.jmedchem.1c00565"
       },
       {
         "title": "REDEFINE 1: Coadministered Cagrilintide and Semaglutide in Overweight or Obesity",
         "source": "NEJM",
         "year": 2025,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "40544433",
+        "doi": "10.1056/NEJMoa2502081"
       }
-    ]
+    ],
+    "molecularFormula": "C194H312N54O59S2"
   },
   {
     "id": "rs-cagrisema",
@@ -516,14 +533,18 @@
         "source": "NEJM",
         "year": 2025,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "40544433",
+        "doi": "10.1056/NEJMoa2502081"
       },
       {
         "title": "REDEFINE 2: Cagrilintide–Semaglutide in Overweight or Obesity and Type 2 Diabetes",
         "source": "NEJM",
         "year": 2025,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "40544432",
+        "doi": "10.1056/NEJMoa2502082"
       }
     ]
   },
@@ -718,7 +739,8 @@
     "receptorActivity": "High-potency, high-selectivity agonist at the µ-opioid receptor (MOR).",
     "pathwaySummary": "Activates µ-opioid-receptor Gi/Go signalling, inhibiting adenylate cyclase and modulating neuronal excitability to produce analgesia.",
     "fdaStatus": "Not approved — no human therapeutic use",
-    "humanTrialsConfirmed": false
+    "humanTrialsConfirmed": false,
+    "molecularFormula": "C40H50N8O10"
   },
   {
     "id": "rs-dsip",
@@ -789,7 +811,8 @@
     "receptorActivity": "No well-characterised receptor has been identified; proposed actions are diffuse and not attributable to a defined high-affinity receptor.",
     "pathwaySummary": "Proposed involvement in sleep regulation and hypothalamic-pituitary stress-hormone modulation, but pathways remain speculative.",
     "fdaStatus": "Not approved — no approved therapeutic indication",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C35H48N10O15"
   },
   {
     "id": "rs-foxo4-dri",
@@ -861,14 +884,18 @@
         "source": "Cell",
         "year": 2017,
         "model": "in-vivo",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "28340339",
+        "doi": "10.1016/j.cell.2017.02.031"
       },
       {
-        "title": "Senolytic Peptide FOXO4-DRI Selectively Removes Senescent Cells from Expanded Human Chondrocytes",
+        "title": "Senolytic Peptide FOXO4-DRI Selectively Removes Senescent Cells From in vitro Expanded Human Chondrocytes",
         "source": "Front. Bioeng. Biotechnol.",
         "year": 2021,
         "model": "in-vitro",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "33996787",
+        "doi": "10.3389/fbioe.2021.677576"
       }
     ]
   },
@@ -1006,7 +1033,8 @@
     "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor; mildly stimulates ACTH/cortisol and prolactin at higher doses.",
     "pathwaySummary": "GHS-R1a coupling to Gq–PLC–IP3-calcium signalling in somatotrophs drives GH secretion.",
     "fdaStatus": "Not FDA-approved; approved in Japan as a GH-deficiency diagnostic",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C45H55N9O6"
   },
   {
     "id": "rs-ghrp-6-acetate",
@@ -1074,7 +1102,8 @@
     "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor in the pituitary and hypothalamus.",
     "pathwaySummary": "GHS-R1a activates Gq–PLC–IP3-calcium signalling to trigger GH secretion from somatotrophs.",
     "fdaStatus": "Not approved — research / investigational only",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C46H56N12O6"
   },
   {
     "id": "rs-glow-blend-cu",
@@ -1257,7 +1286,8 @@
     "receptorActivity": "Not a receptor ligand; an enzyme substrate/cofactor (glutathione peroxidases, S-transferases) and a direct reducing agent.",
     "pathwaySummary": "Central to cellular redox homeostasis, the glutathione/glutathione-disulfide cycle, and phase-II detoxification pathways.",
     "fdaStatus": "OTC supplement / compounded injectable — skin-lightening use not FDA-approved",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C10H17N3O6S"
   },
   {
     "id": "rs-korean-glutathione",
@@ -1321,7 +1351,8 @@
     "receptorActivity": "Not a receptor ligand; an enzyme substrate/cofactor (glutathione peroxidases, S-transferases) and a direct reducing agent.",
     "pathwaySummary": "Central to cellular redox homeostasis, the glutathione/glutathione-disulfide cycle, and phase-II detoxification pathways.",
     "fdaStatus": "OTC supplement / compounded injectable — skin-lightening use not FDA-approved",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C10H17N3O6S"
   },
   {
     "id": "rs-gonadorelin",
@@ -1386,7 +1417,8 @@
     "receptorActivity": "Agonist at the pituitary GnRH receptor.",
     "pathwaySummary": "Activates GnRH-receptor signalling in the anterior pituitary, driving secretion of LH and FSH.",
     "fdaStatus": "Approved historically as a GnRH diagnostic/therapeutic agent (availability varies)",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C55H75N17O13"
   },
   {
     "id": "rs-hcg",
@@ -1527,7 +1559,8 @@
     "receptorActivity": "Agonist at the GHS-R1a (ghrelin) receptor; also binds CD36 in cardiac and vascular tissue. Among GHRPs it produces the most potent acute GH release in humans.",
     "pathwaySummary": "GHS-R1a activation signals through Gq–PLC–IP3, raising intracellular calcium in somatotrophs to drive GH secretion.",
     "fdaStatus": "Not approved — investigational / research only",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C47H58N12O6"
   },
   {
     "id": "rs-hgh",
@@ -1803,7 +1836,8 @@
     "receptorActivity": "Agonist at the kisspeptin receptor KISS1R (GPR54), a GPCR on GnRH neurons.",
     "pathwaySummary": "Activates KISS1R–Gq/PLC signalling on GnRH neurons, stimulating the hypothalamic-pituitary-gonadal axis.",
     "fdaStatus": "Not FDA-approved — investigational (research and clinical trials)",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C63H83N17O14"
   },
   {
     "id": "rs-klow-blend",
@@ -1924,7 +1958,8 @@
     "receptorActivity": "Not a receptor ligand; the substrate/cofactor of the carnitine acyltransferases (CPT1, CPT2) and carnitine-acylcarnitine translocase.",
     "pathwaySummary": "Central to mitochondrial fatty-acid β-oxidation (the carnitine shuttle) supplying acetyl-CoA to the TCA cycle.",
     "fdaStatus": "Approved — levocarnitine (Carnitor) for carnitine deficiency; also a supplement",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C7H15NO3"
   },
   {
     "id": "rs-lemon-bottle",
@@ -2108,11 +2143,13 @@
     "humanTrialsConfirmed": true,
     "knownStudies": [
       {
-        "title": "LL-37 Enhances Healing of Hard-to-Heal Venous Leg Ulcers: A Randomized, Placebo-Controlled Trial",
+        "title": "Treatment with LL-37 is safe and effective in enhancing healing of hard-to-heal venous leg ulcers: a randomized, placebo-controlled clinical trial",
         "source": "Wound Repair and Regeneration",
         "year": 2014,
         "model": "human",
-        "phase": "Phase 1/2a"
+        "phase": "Phase 1/2a",
+        "pmid": "25041740",
+        "doi": "10.1111/wrr.12211"
       },
       {
         "title": "Intratumoral LL-37 in Patients with Melanoma (first-in-human)",
@@ -2121,7 +2158,8 @@
         "model": "human",
         "phase": "Phase 1"
       }
-    ]
+    ],
+    "molecularFormula": "C205H340N60O53"
   },
   {
     "id": "rs-mazdutide",
@@ -2196,14 +2234,18 @@
         "source": "NEJM",
         "year": 2025,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "40421736",
+        "doi": "10.1056/NEJMoa2411528"
       },
       {
         "title": "GLP-1/Glucagon Dual Agonist Mazdutide (IBI362) in Chinese Adults with Overweight or Obesity",
         "source": "eClinicalMedicine (Lancet)",
         "year": 2022,
         "model": "human",
-        "phase": "Phase 1b"
+        "phase": "Phase 1b",
+        "pmid": "36247927",
+        "doi": "10.1016/j.eclinm.2022.101691"
       }
     ]
   },
@@ -2277,9 +2319,12 @@
         "source": "NEJM",
         "year": 2015,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "26132941",
+        "doi": "10.1056/NEJMoa1411481"
       }
-    ]
+    ],
+    "molecularFormula": "C78H111N21O19"
   },
   {
     "id": "rs-melanotan-2",
@@ -2344,7 +2389,8 @@
     "receptorActivity": "Non-selective agonist across melanocortin receptors (MC1R, MC3R, MC4R, MC5R); MC1R activity drives pigmentation and MC4R activity underlies sexual/appetite effects.",
     "pathwaySummary": "Activates melanocortin-receptor cAMP signalling, driving both peripheral melanogenesis (MC1R) and central MC4R-mediated effects.",
     "fdaStatus": "Not approved — regulatory warnings issued against unapproved use",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C50H69N15O9"
   },
   {
     "id": "rs-mgf",
@@ -2414,14 +2460,18 @@
         "source": "PLOS ONE",
         "year": 2013,
         "model": "in-vitro",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "24146828",
+        "doi": "10.1371/journal.pone.0076133"
       },
       {
         "title": "Mechano Growth Factor Promotes Neurogenesis in the Aging Mouse Brain",
         "source": "Molecular Brain",
         "year": 2017,
         "model": "in-vivo",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "28683812",
+        "doi": "10.1186/s13041-017-0304-0"
       }
     ]
   },
@@ -2494,7 +2544,9 @@
         "source": "Annals of Internal Medicine",
         "year": 2008,
         "model": "human",
-        "phase": "Phase 2"
+        "phase": "Phase 2",
+        "pmid": "18981485",
+        "doi": "10.7326/0003-4819-149-9-200811040-00003"
       }
     ]
   },
@@ -2574,9 +2626,12 @@
         "source": "Cell Metabolism",
         "year": 2015,
         "model": "in-vivo",
-        "phase": "Preclinical"
+        "phase": "Preclinical",
+        "pmid": "25738459",
+        "doi": "10.1016/j.cmet.2015.02.009"
       }
-    ]
+    ],
+    "molecularFormula": "C101H152N28O22S2"
   },
   {
     "id": "rs-nad-plus",
@@ -2646,7 +2701,8 @@
     "receptorActivity": "Not a receptor ligand; an enzyme cofactor/substrate for oxidoreductases, sirtuins (SIRT1–7), PARP enzymes, and CD38/CD157.",
     "pathwaySummary": "Central to cellular energy metabolism and to sirtuin- and PARP-dependent signalling governing metabolism, stress response, and DNA repair.",
     "fdaStatus": "Not an approved drug — endogenous coenzyme / research compound",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C21H27N7O14P2"
   },
   {
     "id": "rs-oxytocin-acetate",
@@ -2714,7 +2770,8 @@
     "receptorActivity": "Agonist at the oxytocin receptor (OXTR), a Gq-coupled GPCR; also has weak activity at vasopressin receptors.",
     "pathwaySummary": "Activates OXTR–Gq/PLC signalling, raising intracellular calcium to drive smooth-muscle contraction.",
     "fdaStatus": "Approved — Pitocin (labour induction/augmentation, postpartum bleeding)",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C43H66N12O12S2"
   },
   {
     "id": "rs-peg-mgf",
@@ -2849,9 +2906,12 @@
         "source": "Obstetrics & Gynecology",
         "year": 2019,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "31599840",
+        "doi": "10.1097/AOG.0000000000003500"
       }
-    ]
+    ],
+    "molecularFormula": "C50H68N14O10"
   },
   {
     "id": "rs-selank",
@@ -2919,7 +2979,8 @@
     "receptorActivity": "Not a classic single-receptor ligand; reported effects include modulation of GABAergic transmission and influence on serotonin/dopamine metabolism rather than direct high-affinity agonism.",
     "pathwaySummary": "Implicated in enkephalin-degrading-enzyme inhibition, monoamine metabolism, and BDNF/neurotrophic and immune (interleukin) signalling.",
     "fdaStatus": "Not FDA-approved; registered as a pharmaceutical in Russia",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C33H57N11O9"
   },
   {
     "id": "rs-sermorelin",
@@ -2987,7 +3048,8 @@
     "receptorActivity": "Agonist at the GHRH receptor (GHRHR) on anterior-pituitary somatotrophs; selective for GHRHR.",
     "pathwaySummary": "Activates the GHRHR–Gs–cAMP–PKA pathway to trigger GH release, raising circulating IGF-1.",
     "fdaStatus": "Formerly approved — Geref (withdrawn from US market 2002)",
-    "humanTrialsConfirmed": true
+    "humanTrialsConfirmed": true,
+    "molecularFormula": "C149H246N44O42S"
   },
   {
     "id": "rs-snap-8",
@@ -3052,7 +3114,8 @@
     "receptorActivity": "Not a receptor agonist; competes with SNAP-25 in the SNARE complex to reduce vesicle docking and neurotransmitter release at the neuromuscular junction (proposed mechanism).",
     "pathwaySummary": "Proposed inhibition of SNARE-complex-mediated neurotransmitter exocytosis, reducing facial-muscle contraction.",
     "fdaStatus": "Not an approved drug — topical cosmetic ingredient",
-    "humanTrialsConfirmed": false
+    "humanTrialsConfirmed": false,
+    "molecularFormula": "C41H70N16O16S"
   },
   {
     "id": "rs-ss-31",
@@ -3127,9 +3190,12 @@
         "source": "Genetics in Medicine",
         "year": 2021,
         "model": "human",
-        "phase": "Phase 2/3"
+        "phase": "Phase 2/3",
+        "pmid": "33077895",
+        "doi": "10.1038/s41436-020-01006-8"
       }
-    ]
+    ],
+    "molecularFormula": "C32H49N9O5"
   },
   {
     "id": "rs-survodutide",
@@ -3197,18 +3263,22 @@
     "humanTrialsConfirmed": true,
     "knownStudies": [
       {
-        "title": "Survodutide (BI 456906) in Adults with NASH and Fibrosis (F1–F3)",
-        "source": "ClinicalTrials.gov · NCT04771273",
-        "year": 2021,
+        "title": "A Phase 2 Randomized Trial of Survodutide in MASH and Fibrosis",
+        "source": "NEJM",
+        "year": 2024,
         "model": "human",
-        "phase": "Phase 2"
+        "phase": "Phase 2",
+        "pmid": "38847460",
+        "doi": "10.1056/NEJMoa2401755"
       },
       {
-        "title": "SYNCHRONIZE-1 — Phase 3 obesity trial of survodutide",
-        "source": "ClinicalTrials.gov · NCT06066515",
-        "year": 2023,
+        "title": "Survodutide Once Weekly for the Treatment of Adults with Obesity (SYNCHRONIZE-1)",
+        "source": "NEJM",
+        "year": 2026,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "42253238",
+        "doi": "10.1056/NEJMoa2600751"
       }
     ]
   },
@@ -3291,9 +3361,12 @@
         "source": "J. Clin. Endocrinol. Metab.",
         "year": 2010,
         "model": "human",
-        "phase": "Phase 3"
+        "phase": "Phase 3",
+        "pmid": "20554713",
+        "doi": "10.1210/jc.2010-0490"
       }
-    ]
+    ],
+    "molecularFormula": "C221H366N72O67S"
   },
   {
     "id": "rs-thymalin",
@@ -3433,7 +3506,8 @@
         "model": "human",
         "phase": "Phase 3"
       }
-    ]
+    ],
+    "molecularFormula": "C129H215N33O55"
   },
   {
     "id": "rs-vip",
@@ -3505,8 +3579,11 @@
         "source": "Am. J. Respir. Crit. Care Med.",
         "year": 2010,
         "model": "human",
-        "phase": "Phase 2"
+        "phase": "Phase 2",
+        "pmid": "20442436",
+        "doi": "10.1164/rccm.200909-1451OC"
       }
-    ]
+    ],
+    "molecularFormula": "C147H237N43O43S"
   }
 ]

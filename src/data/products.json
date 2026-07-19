@@ -146,25 +146,29 @@
   "humanTrialsConfirmed": false,
   "knownStudies": [
    {
-    "title": "Stable gastric pentadecapeptide BPC 157: novel therapy of the gastrointestinal tract",
+    "title": "Stable gastric pentadecapeptide BPC 157: novel therapy in gastrointestinal tract",
     "source": "Current Pharmaceutical Design",
-    "year": 2018,
+    "year": 2011,
     "model": "rat",
     "notes": [
      "Comprehensive review of 25+ years of BPC-157 preclinical research",
      "Gastric ulcer healing, IBD models, gut-brain axis modulation documented",
      "Stable in gastric acid — unique among peptide therapeutics"
-    ]
+    ],
+    "pmid": "21548867",
+    "doi": "10.2174/138161211796196954"
    },
    {
-    "title": "BPC-157 counteracts tendon-to-bone healing deficits — mechanical and histological analysis",
+    "title": "Achilles detachment in rat and stable gastric pentadecapeptide BPC 157: promoted tendon-to-bone healing and opposed corticosteroid aggravation",
     "source": "Journal of Orthopaedic Research",
     "year": 2006,
     "model": "rat",
     "notes": [
      "Superior tendon insertion strength vs control at 4 and 8 weeks post-surgery",
      "Enhanced collagen fiber alignment and reduced scar tissue at repair site"
-    ]
+    ],
+    "pmid": "16583442",
+    "doi": "10.1002/jor.20096"
    },
    {
     "title": "BPC-157 promotes angiogenesis via VEGFR-2/FAK/paxillin in endothelial cultures",
@@ -407,7 +411,7 @@
   "humanTrialsConfirmed": true,
   "knownStudies": [
    {
-    "title": "Ipamorelin — characterization of a novel selective growth hormone secretagogue",
+    "title": "Ipamorelin, the first selective growth hormone secretagogue",
     "source": "European Journal of Endocrinology",
     "year": 1998,
     "model": "rat",
@@ -415,11 +419,13 @@
      "Full GHS-R1a agonist profile characterized",
      "No ACTH, cortisol, or prolactin elevation at GH-stimulating doses",
      "Distinct selectivity vs GHRP-2 and GHRP-6 analogs"
-    ]
+    ],
+    "pmid": "9849822",
+    "doi": "10.1530/eje.0.1390552"
    },
    {
-    "title": "Safety and tolerability of ipamorelin in healthy adult volunteers — PK/PD study",
-    "source": "Growth Hormone & IGF Research",
+    "title": "Pharmacokinetic-pharmacodynamic modeling of ipamorelin, a growth hormone releasing peptide, in human volunteers",
+    "source": "Pharmaceutical Research",
     "year": 1999,
     "model": "human",
     "phase": "Phase 1",
@@ -427,7 +433,9 @@
      "Confirmed dose-dependent GH secretion in humans",
      "No HPA axis activation confirmed at all doses tested",
      "Favorable safety profile with no dose-limiting toxicity"
-    ]
+    ],
+    "pmid": "10496658",
+    "doi": "10.1023/a:1018955126402"
    },
    {
     "title": "Ipamorelin accelerates postoperative upper gastrointestinal transit in dogs",
@@ -676,26 +684,28 @@
     "year": 2023,
     "model": "human",
     "phase": "Phase 2",
-    "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+obesity+phase+2+Jastreboff+New+England+Journal+of+Medicine+2023",
     "notes": [
      "−24.2% mean body weight at 12 mg dose, 48 weeks (vs −2.1% placebo)",
      "−17.5% at 4 mg and −22.8% at 8 mg, 48 weeks",
      "100% of 12 mg cohort achieved ≥5% weight loss; 83% ≥15%; 63% ≥20%",
      "Appetite suppression and reduced caloric intake observed"
-    ]
+    ],
+    "pmid": "37366315",
+    "doi": "10.1056/NEJMoa2301972"
    },
    {
-    "title": "Retatrutide in Patients with Type 2 Diabetes: A Phase 2 Trial",
+    "title": "Retatrutide, a GIP, GLP-1 and glucagon receptor agonist, for people with type 2 diabetes: a randomised, double-blind, placebo and active-controlled, parallel-group, phase 2 trial conducted in the USA",
     "source": "The Lancet",
     "year": 2023,
     "model": "human",
     "phase": "Phase 2",
-    "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+type+2+diabetes+phase+2+Rosenstock+Lancet+2023",
     "notes": [
      "−16.94% mean body weight at 12 mg dose, 36 weeks",
      "−2.02% HbA1c at 12 mg vs −0.01% placebo",
      "27% of 12 mg cohort reached HbA1c <5.7% (non-diabetic range)"
-    ]
+    ],
+    "pmid": "37385280",
+    "doi": "10.1016/S0140-6736(23)01053-X"
    },
    {
     "title": "LY3437943, a Novel Triple Glucagon, GIP, and GLP-1 Receptor Agonist",
@@ -703,12 +713,13 @@
     "year": 2022,
     "model": "mouse",
     "phase": "Preclinical",
-    "url": "https://pubmed.ncbi.nlm.nih.gov/?term=LY3437943+triple+agonist+Coskun+Cell+Metabolism+2022",
     "notes": [
      "~17% body weight reduction in diet-induced obese mice",
      "Increased energy expenditure and improved glucose tolerance",
      "Balanced triple-receptor agonism characterized in vitro"
-    ]
+    ],
+    "pmid": "35985340",
+    "doi": "10.1016/j.cmet.2022.07.013"
    },
    {
     "title": "Retatrutide (LY3437943), a Triple GIP/GLP-1/Glucagon Receptor Agonist, in Type 2 Diabetes: Phase 1b",
@@ -716,12 +727,13 @@
     "year": 2022,
     "model": "human",
     "phase": "Phase 1b",
-    "url": "https://pubmed.ncbi.nlm.nih.gov/?term=Retatrutide+LY3437943+phase+1b+Urva+Lancet+2022",
     "notes": [
      "−8.96% mean body weight and −1.42% HbA1c at 12 mg, 12 weeks",
      "Dose-dependent glucose lowering",
      "Acceptable safety and tolerability profile"
-    ]
+    ],
+    "pmid": "36354040",
+    "doi": "10.1016/S0140-6736(22)02033-5"
    }
   ]
  },
@@ -804,12 +816,13 @@
     "year": 2021,
     "model": "human",
     "phase": "Phase 3",
-    "url": "https://www.nejm.org/doi/10.1056/NEJMoa2032183",
     "notes": [
      "n=1,961 adults, 68-week trial",
      "14.9% mean body weight reduction vs 2.4% placebo",
      "50.5% of participants lost ≥15% body weight at max dose"
-    ]
+    ],
+    "pmid": "33567185",
+    "doi": "10.1056/NEJMoa2032183"
    },
    {
     "title": "Semaglutide and Cardiovascular Outcomes in Type 2 Diabetes (SUSTAIN-6)",
@@ -817,12 +830,13 @@
     "year": 2016,
     "model": "human",
     "phase": "Phase 3b",
-    "url": "https://www.nejm.org/doi/10.1056/NEJMoa1607141",
     "notes": [
      "n=3,297 participants, 104-week trial",
      "26% reduction in composite MACE endpoint vs placebo",
      "Non-fatal stroke RRR: 39%"
-    ]
+    ],
+    "pmid": "27633186",
+    "doi": "10.1056/NEJMoa1607141"
    },
    {
     "title": "Semaglutide and Cardiovascular Outcomes in Obesity Without Diabetes (SELECT)",
@@ -830,12 +844,13 @@
     "year": 2023,
     "model": "human",
     "phase": "Phase 3",
-    "url": "https://www.nejm.org/doi/10.1056/NEJMoa2307563",
     "notes": [
      "n=17,604 non-diabetic patients with established CVD",
      "20% reduction in major adverse cardiovascular events",
      "First trial to show CV benefit in non-diabetic obesity population"
-    ]
+    ],
+    "pmid": "37952131",
+    "doi": "10.1056/NEJMoa2307563"
    },
    {
     "title": "GLP-1 receptor agonism attenuates neuroinflammation and amyloid pathology in Alzheimer mouse models",
@@ -1091,12 +1106,13 @@
     "year": 2021,
     "model": "human",
     "phase": "Phase 3",
-    "url": "https://www.nejm.org/doi/10.1056/NEJMoa2107519",
     "notes": [
      "n=1,879 participants, 40-week trial",
      "All tirzepatide doses statistically superior to semaglutide 1mg for HbA1c",
      "Up to 2.4% HbA1c reduction at 15mg dose"
-    ]
+    ],
+    "pmid": "34170647",
+    "doi": "10.1056/NEJMoa2107519"
    },
    {
     "title": "Tirzepatide Once Weekly for the Treatment of Obesity (SURMOUNT-1)",
@@ -1104,12 +1120,13 @@
     "year": 2022,
     "model": "human",
     "phase": "Phase 3",
-    "url": "https://www.nejm.org/doi/10.1056/NEJMoa2206038",
     "notes": [
      "n=2,539 adults, 72-week trial",
      "22.5% mean body weight reduction at 15mg vs 2.4% placebo",
      "63.3% of participants achieved ≥20% body weight loss at 15mg"
-    ]
+    ],
+    "pmid": "35658024",
+    "doi": "10.1056/NEJMoa2206038"
    },
    {
     "title": "Dual GIP/GLP-1 agonism activates brown adipose tissue thermogenesis via UCP-1",

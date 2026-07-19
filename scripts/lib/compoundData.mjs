@@ -61,6 +61,7 @@ export const META = {
     eyebrow: 'LONG-ACTING AMYLIN ANALOGUE',
     lead: 'Long-acting amylin receptor agonist investigated in appetite-regulation research models.',
     cas: '1415456-99-3', mw: '4409.01 g/mol',
+    formula: 'C194H312N54O59S2',
   },
   'cagrisema': {
     name: 'Cagrilintide + Semaglutide', abbr: 'CGS', family: 'Amylin / GLP-1 Blend',
@@ -86,18 +87,21 @@ export const META = {
     eyebrow: 'NICOTINAMIDE ADENINE DINUCLEOTIDE',
     lead: 'Nicotinamide adenine dinucleotide — a central redox cofactor in cellular energy metabolism.',
     cas: '53-84-9', mw: '663.43 g/mol',
+    formula: 'C21H27N7O14P2',
   },
   'ss-31': {
     name: 'SS-31', abbr: 'SS31', family: 'Mitochondrial Peptide',
     eyebrow: 'CARDIOLIPIN-TARGETING PEPTIDE',
     lead: 'Mitochondria-targeting tetrapeptide (elamipretide) that associates with cardiolipin on the inner mitochondrial membrane.',
     cas: '736992-21-5', mw: '639.79 g/mol',
+    formula: 'C32H49N9O5',
   },
   'mots-c': {
     name: 'MOTS-c', abbr: 'MOTS', family: 'Mitochondrial Peptide',
     eyebrow: 'MITOCHONDRIAL-DERIVED PEPTIDE',
     lead: 'Mitochondrial-derived peptide investigated in metabolic homeostasis and AMPK-pathway research.',
     cas: '1627580-64-7', mw: '2174.62 g/mol',
+    formula: 'C101H152N28O22S2',
   },
   'lipo-c': {
     name: 'Lipo-C', abbr: 'LIPC', family: 'Lipotropic Blend',
@@ -109,17 +113,21 @@ export const META = {
     eyebrow: 'FATTY-ACID TRANSPORT COFACTOR',
     lead: 'Quaternary ammonium compound that shuttles long-chain fatty acids into mitochondria for β-oxidation.',
     cas: '541-15-1', mw: '161.20 g/mol',
+    formula: 'C7H15NO3',
   },
   adipotide: {
     name: 'Adipotide', abbr: 'ADP', family: 'Pro-Apoptotic Peptide',
     eyebrow: 'ADIPOSE-TARGETING PEPTIDE',
     lead: 'Pro-apoptotic peptidomimetic (FTPP) targeting the adipose vasculature in research models.',
+    formula: 'C111H206N36O28S2',
+    mw: '2557.20 g/mol',
   },
   aicar: {
     name: 'AICAR', abbr: 'AICR', family: 'AMPK Activator',
     eyebrow: 'AMPK ACTIVATOR · ACADESINE',
     lead: 'AMP-activated protein kinase activator (acadesine) used in cellular energy-sensing research.',
     cas: '2627-69-2', mw: '258.23 g/mol',
+    formula: 'C9H14N4O5',
   },
   '5-amino-1mq': {
     name: '5-Amino-1MQ', abbr: '5AMQ', family: 'NNMT Inhibitor',
@@ -146,12 +154,14 @@ export const META = {
     eyebrow: 'INNATE REPAIR RECEPTOR AGONIST',
     lead: 'Erythropoietin-derived peptide (cibinetide) targeting the innate repair receptor in inflammation research.',
     cas: '1208243-50-8', mw: '1258.40 g/mol',
+    formula: 'C51H84N16O21',
   },
   'thymosin-alpha-1': {
     name: 'Thymosin α-1', abbr: 'TA1', family: 'Immunomodulatory Peptide',
     eyebrow: 'THYMIC IMMUNOMODULATORY PEPTIDE',
     lead: 'Thymus-derived 28-amino-acid peptide (thymalfasin) studied in immune-modulation research.',
     cas: '62304-98-7', mw: '3108.30 g/mol',
+    formula: 'C129H215N33O55',
   },
   thymalin: {
     name: 'Thymalin', abbr: 'TYM', family: 'Thymic Peptide',
@@ -163,12 +173,14 @@ export const META = {
     eyebrow: 'CATHELICIDIN HOST-DEFENCE PEPTIDE',
     lead: 'Human cathelicidin-derived 37-residue antimicrobial host-defence peptide.',
     cas: '154947-66-7', mw: '4493.33 g/mol',
+    formula: 'C205H340N60O53',
   },
   vip: {
     name: 'VIP', abbr: 'VIP', family: 'Neuropeptide',
     eyebrow: 'VASOACTIVE INTESTINAL PEPTIDE',
     lead: 'Vasoactive intestinal peptide — a 28-residue neuropeptide studied in immune and vascular research.',
     cas: '37221-79-7', mw: '3326.80 g/mol',
+    formula: 'C147H237N43O43S',
   },
 
   // ── gh-secretagogue ──────────────────────────────────────────────────
@@ -188,30 +200,35 @@ export const META = {
     eyebrow: 'STABILIZED GHRH ANALOGUE',
     lead: 'Stabilized GHRH(1-44) analogue investigated for GH-axis and visceral-adipose research.',
     cas: '218949-48-5', mw: '5135.86 g/mol',
+    formula: 'C221H366N72O67S',
   },
   sermorelin: {
     name: 'Sermorelin', abbr: 'SMO', family: 'GHRH Analogue',
     eyebrow: 'GHRH (1-29) ANALOGUE',
     lead: 'GHRH(1-29) analogue that stimulates endogenous pulsatile growth-hormone release.',
     cas: '86168-78-7', mw: '3357.93 g/mol',
+    formula: 'C149H246N44O42S',
   },
   'hexarelin-acetate': {
     name: 'Hexarelin Acetate', abbr: 'HEX', family: 'GH Secretagogue',
     eyebrow: 'GROWTH HORMONE-RELEASING PEPTIDE',
     lead: 'Synthetic hexapeptide GHS-R agonist (growth hormone-releasing peptide) studied for potent GH secretion.',
     cas: '140703-51-1', mw: '887.04 g/mol',
+    formula: 'C47H58N12O6',
   },
   'ghrp-2-acetate': {
     name: 'GHRP-2 Acetate', abbr: 'GRP2', family: 'GH Secretagogue',
     eyebrow: 'GROWTH HORMONE-RELEASING PEPTIDE 2',
     lead: 'Growth hormone-releasing peptide-2 — a synthetic GHS-R agonist driving pulsatile GH release.',
     cas: '158861-67-7', mw: '817.97 g/mol',
+    formula: 'C45H55N9O6',
   },
   'ghrp-6-acetate': {
     name: 'GHRP-6 Acetate', abbr: 'GRP6', family: 'GH Secretagogue',
     eyebrow: 'GROWTH HORMONE-RELEASING PEPTIDE 6',
     lead: 'Growth hormone-releasing peptide-6 — a hexapeptide GHS-R agonist studied for GH and appetite signaling.',
     cas: '87616-84-0', mw: '873.01 g/mol',
+    formula: 'C46H56N12O6',
   },
   'mk-677': {
     name: 'MK-677', abbr: 'MK', family: 'GH Secretagogue',
@@ -226,18 +243,21 @@ export const META = {
     eyebrow: 'TUFTSIN-DERIVED ANXIOLYTIC PEPTIDE',
     lead: 'Synthetic tuftsin-derived heptapeptide studied for anxiolytic and cognitive-modulation research.',
     cas: '129954-34-3', mw: '751.91 g/mol',
+    formula: 'C33H57N11O9',
   },
   dsip: {
     name: 'DSIP', abbr: 'DSIP', family: 'Neuropeptide',
     eyebrow: 'DELTA SLEEP-INDUCING PEPTIDE',
     lead: 'Delta sleep-inducing peptide — a nonapeptide investigated in sleep-architecture and stress research.',
     cas: '62568-57-4', mw: '848.81 g/mol',
+    formula: 'C35H48N10O15',
   },
   dermorphin: {
     name: 'Dermorphin', abbr: 'DRM', family: 'Opioid Peptide',
     eyebrow: 'MU-OPIOID HEPTAPEPTIDE',
     lead: 'Naturally-occurring heptapeptide with high-affinity mu-opioid receptor activity, for analgesia research.',
     cas: '77614-16-5', mw: '803.92 g/mol',
+    formula: 'C40H50N8O10',
   },
 
   // ── antioxidant-beauty ───────────────────────────────────────────────
@@ -252,18 +272,21 @@ export const META = {
     eyebrow: 'MELANOCORTIN RECEPTOR AGONIST',
     lead: 'Melanocortin receptor agonist (bremelanotide) investigated for sexual-function and CNS research.',
     cas: '189691-06-3', mw: '1025.16 g/mol',
+    formula: 'C50H68N14O10',
   },
   'melanotan-1': {
     name: 'Melanotan I', abbr: 'MT1', family: 'Melanocortin Agonist',
     eyebrow: 'α-MSH ANALOGUE · MELANOGENESIS',
     lead: 'Linear α-MSH analogue (afamelanotide) studied for melanogenesis and photoprotection research.',
     cas: '75921-69-6', mw: '1646.85 g/mol',
+    formula: 'C78H111N21O19',
   },
   'melanotan-2': {
     name: 'Melanotan II', abbr: 'MT2', family: 'Melanocortin Agonist',
     eyebrow: 'CYCLIC α-MSH ANALOGUE',
     lead: 'Cyclic α-MSH analogue studied for melanogenesis and broad melanocortin-receptor research.',
     cas: '121062-08-6', mw: '1024.18 g/mol',
+    formula: 'C50H69N15O9',
   },
   'lemon-bottle': {
     name: 'Lemon Bottle', abbr: 'LMB', family: 'Lipolytic Solution',
@@ -275,12 +298,14 @@ export const META = {
     eyebrow: 'ENDOGENOUS ANTIOXIDANT TRIPEPTIDE',
     lead: 'Endogenous thiol tripeptide (γ-Glu-Cys-Gly) central to cellular redox defence and detoxification.',
     cas: '70-18-8', mw: '307.32 g/mol',
+    formula: 'C10H17N3O6S',
   },
   'snap-8': {
     name: 'SNAP-8', abbr: 'SNP8', family: 'Cosmetic Peptide',
     eyebrow: 'ACETYL OCTAPEPTIDE-3',
     lead: 'Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research.',
     cas: '868844-74-0', mw: '1075.25 g/mol',
+    formula: 'C41H70N16O16S',
   },
   'glow-blend-ghk': {
     name: 'GLOW Blend (TB-500 · BPC-157 · GHK)', abbr: 'GLOW', family: 'Regenerative Blend',
@@ -341,18 +366,21 @@ export const META = {
     eyebrow: 'GONADOTROPIN-RELEASING HORMONE',
     lead: 'Synthetic gonadotropin-releasing hormone (GnRH) decapeptide that stimulates pituitary LH/FSH release.',
     cas: '33515-09-2', mw: '1182.31 g/mol',
+    formula: 'C55H75N17O13',
   },
   'kisspeptin-10': {
     name: 'Kisspeptin-10', abbr: 'KISS', family: 'Reproductive Peptide',
     eyebrow: 'KISS1-DERIVED DECAPEPTIDE',
     lead: 'KISS1-derived decapeptide that activates GPR54 to drive GnRH release in reproductive-axis research.',
     cas: '374675-21-5', mw: '1302.50 g/mol',
+    formula: 'C63H83N17O14',
   },
   'oxytocin-acetate': {
     name: 'Oxytocin Acetate', abbr: 'OXT', family: 'Neurohypophysial Peptide',
     eyebrow: 'NONAPEPTIDE HORMONE',
     lead: 'Cyclic nonapeptide hormone studied for social-behaviour, parturition and lactation research.',
     cas: '50-56-6', mw: '1007.19 g/mol',
+    formula: 'C43H66N12O12S2',
   },
   hcg: {
     name: 'HCG', abbr: 'HCG', family: 'Gonadotropin',
