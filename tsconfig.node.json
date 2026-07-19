@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts", "scripts/viteEnvGuard.ts"]
+  "include": ["vite.config.ts", "scripts/viteEnvGuard.ts", "scripts/viteVersionStamp.ts"]
 }

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { buildEnvGuard } from './scripts/viteEnvGuard.ts'
+import { versionStamp } from './scripts/viteVersionStamp.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,7 +9,11 @@ export default defineConfig({
   // missing/empty or a "[Set …]" placeholder reaches the output bundle — the
   // defense against the 2026-07-17/18 auto-build-lane incident. Build-only;
   // dev/test unaffected.
-  plugins: [react(), buildEnvGuard()],
+  // versionStamp: release provenance — emits dist/version.json (+ a
+  // <meta name="release"> in index.html) identifying the built commit.
+  // Soft-fail, and deliberately OUTSIDE the hashed bundles so dist/assets
+  // stays byte-reproducible for a given source tree.
+  plugins: [react(), buildEnvGuard(), versionStamp()],
   // Honor a harness-assigned port (PORT env) so the dev server can avoid a
   // busy 5173; falls back to Vite's default when PORT is unset.
   server: {
