@@ -217,8 +217,8 @@ const RESEARCH_SUPPLIES_SHEET: SheetEntry[] = [
   },
   {
     to: '/research-supplies/skincare',
-    label: 'Skincare',
-    caption: 'Barrier · Repair · Pigmentation',
+    label: 'Dermatological',
+    caption: 'Barrier · Repair · Pigmentation research models',
   },
 ];
 

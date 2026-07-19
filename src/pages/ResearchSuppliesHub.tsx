@@ -38,9 +38,9 @@ const ROWS: HubRow[] = [
   {
     to: '/research-supplies/skincare',
     eyebrow: '03',
-    title: 'Skincare',
+    title: 'Dermatological',
     body:
-      'Topical and dermatological research compounds for barrier, repair, and pigmentation models.',
+      'Topical and dermal-tissue research compounds for barrier, repair, and pigmentation research models.',
     countCategory: 'skincare-research-supplies',
   },
 ];

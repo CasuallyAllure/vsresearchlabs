@@ -116,7 +116,7 @@ const NeuronIcon = (
   </svg>
 );
 
-// Skincare — a droplet with a shine arc (dermal / topical).
+// Dermatological — a droplet with a shine arc (dermal / topical).
 const DropletIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M12 3.3c3.1 4.1 5.2 6.5 5.2 9.3a5.2 5.2 0 0 1-10.4 0c0-2.8 2.1-5.2 5.2-9.3z" />
@@ -194,7 +194,7 @@ const TOP_NAV: NavLinkDef[] = [
 const RESEARCH_SUPPLIES_CHILDREN: NavLinkDef[] = [
   { to: '/research-supplies/biopeptide', label: 'Biopeptide', caption: 'Peptide sciences', icon: HelixIcon, match: (p) => p.startsWith('/research-supplies/biopeptide') },
   { to: '/research-supplies/nootropics', label: 'Nootropics', caption: 'Cognitive', icon: NeuronIcon, match: (p) => p.startsWith('/research-supplies/nootropics') },
-  { to: '/research-supplies/skincare', label: 'Skincare', caption: 'Dermal', icon: DropletIcon, match: (p) => p.startsWith('/research-supplies/skincare') },
+  { to: '/research-supplies/skincare', label: 'Dermatological', caption: 'Dermal research', icon: DropletIcon, match: (p) => p.startsWith('/research-supplies/skincare') },
 ];
 
 // Full catalog — sits with the Research Supplies group since it's the

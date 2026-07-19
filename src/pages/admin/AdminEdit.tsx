@@ -22,7 +22,7 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR } from '../../components/ui/F
 const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: 'biopeptide-research-supplies', label: 'Biopeptide Research Supplies' },
   { value: 'nootropics-research-supplies', label: 'Nootropics Research Supplies' },
-  { value: 'skincare-research-supplies', label: 'Skincare Research Supplies' },
+  { value: 'skincare-research-supplies', label: 'Dermatological Research Compounds' },
   { value: 'laboratory-equipment', label: 'Laboratory Equipment' },
 ];
 

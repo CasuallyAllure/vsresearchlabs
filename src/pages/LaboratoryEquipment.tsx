@@ -2,7 +2,7 @@
  * LaboratoryEquipment
  *
  * Equipment catalog. PillTabs filter on `equipmentClassification`
- * (General / Biopeptide Sciences / Nootropics Research / Skincare
+ * (General / Biopeptide Sciences / Nootropics Research / Dermatological
  * Research) — internal classification within a single domain rather
  * than separate routes.
  *
@@ -22,14 +22,14 @@ const CLASSIFICATION_LABELS: Record<EquipmentClassification, string> = {
   'general': 'General',
   'biopeptide-sciences': 'Biopeptide Sciences',
   'nootropics-research': 'Nootropics Research',
-  'skincare-research': 'Skincare Research',
+  'skincare-research': 'Dermatological Research',
 };
 
 const EQUIPMENT_DESC: Record<string, string> = {
   'general': 'General lab gear used across every workflow — handling tools, basics, and consumables.',
   'biopeptide-sciences': 'Tools for reconstituting, storing, and dosing peptides — vials, syringes, water handling, cold storage.',
   'nootropics-research': 'Tooling for nootropic compound prep, measurement, and handling.',
-  'skincare-research': 'Equipment for topical / skincare formulation and testing.',
+  'skincare-research': 'Equipment for topical and dermal-tissue research preparation and testing.',
 };
 
 const CLASSIFICATION_ORDER: EquipmentClassification[] = [

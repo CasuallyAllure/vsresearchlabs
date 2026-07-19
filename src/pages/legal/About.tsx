@@ -29,8 +29,8 @@ export function About() {
         <p>
           VS Research Labs operates under Velari Systems LLC, based in
           Northern California. We supply peptides, nootropics,
-          skincare-grade compounds, and laboratory equipment for research
-          use.
+          dermatological research compounds, and laboratory equipment for
+          research use.
         </p>
       </LegalSection>
 

@@ -54,15 +54,15 @@ export function SkincareResearchSupplies() {
     <section className="pt-[var(--space-4)] pb-[var(--space-8)]">
       <header className="mb-[var(--space-3)]">
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.3em]">
-          Research Supplies · Skincare
+          Research Supplies · Dermatological
         </p>
         <h1 className="font-serif text-[clamp(1.5rem,2.8vw,2rem)] leading-[1.1] tracking-[-0.02em] text-ink">
-          <span className="font-light text-ink/85">Skincare </span>
-          <span className="font-light text-ink">research supplies.</span>
+          <span className="font-light text-ink/85">Dermatological </span>
+          <span className="font-light text-ink">research compounds.</span>
         </h1>
         <p className="holo-text-body mt-[var(--space-2)] max-w-[52ch] text-[13px] leading-relaxed">
-          Topical and dermatological research compounds for barrier,
-          repair, and pigmentation models. Catalog expanding.
+          Topical and dermal-tissue research compounds supplied for barrier,
+          repair, and pigmentation research models. Catalog expanding.
         </p>
       </header>
 
@@ -71,11 +71,11 @@ export function SkincareResearchSupplies() {
           tabs={classificationTabs}
           value={classFilter}
           onChange={setClassFilter}
-          allLayman="The full skincare catalog — tap a category to filter the list and read what it does in plain terms. Swipe right for the technical detail."
+          allLayman="The full dermatological research catalog — tap a category to filter the list and read what each compound is studied for in plain terms. Swipe right for the technical detail."
           search={search}
           onSearch={setSearch}
           suggestions={suggestions}
-          searchPlaceholder="Search skincare…"
+          searchPlaceholder="Search dermatological compounds…"
         />
       )}
 
@@ -83,7 +83,7 @@ export function SkincareResearchSupplies() {
         products={filtered}
         loading={loading}
         error={error}
-        emptyLabel="No skincare research supplies in the active catalog. Cataloging in progress."
+        emptyLabel="No dermatological research compounds in the active catalog. Cataloging in progress."
         onInspect={setInspectedId}
         compact
       />

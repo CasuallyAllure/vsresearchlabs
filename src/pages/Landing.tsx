@@ -586,7 +586,7 @@ export function Landing() {
                 </Link>
                 ,{' '}
                 <Link to="/research-supplies/skincare" className="font-medium text-ink underline-offset-2 hover:underline">
-                  skincare-grade compounds
+                  dermatological research compounds
                 </Link>
                 , and{' '}
                 <Link to="/laboratory-equipment" className="font-medium underline-offset-2 hover:underline">
@@ -619,7 +619,7 @@ export function Landing() {
                   items={[
                     { label: 'Biopeptide', caption: 'Peptide sciences', to: '/research-supplies/biopeptide' },
                     { label: 'Nootropics', caption: 'Cognitive', to: '/research-supplies/nootropics' },
-                    { label: 'Skin-Care', caption: 'Dermal', to: '/research-supplies/skincare' },
+                    { label: 'Dermatological', caption: 'Dermal research', to: '/research-supplies/skincare' },
                   ]}
                 >
                   <span aria-hidden="true" className="hero-cta-gold-sheen pointer-events-none absolute inset-0" />
@@ -826,7 +826,7 @@ export function Landing() {
             onClick={() => setSuppliesOpen(true)}
             index="RS"
             title="Research Supplies"
-            scope="Compounds organized by research domain: biopeptide, nootropics, skincare."
+            scope="Compounds organized by research domain: biopeptide, nootropics, dermatological."
             readout="3 DOMAINS · LEAD 3–10D"
             specimen="/specimens/semaglutide-5mg.svg"
             specimenAlt="Lyophilized semaglutide specimen vial, technical plate"
