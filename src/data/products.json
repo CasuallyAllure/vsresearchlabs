@@ -933,12 +933,12 @@
  },
  {
   "id": "rs-tb500-5mg",
-  "laymanSummary": "TB-500 is a synthetic form of **thymosin β4**, a repair-associated protein distributed widely through tissue. It acts on the cell's internal scaffolding (**actin**), and research models report ~cell migration toward injury sites~, ~new blood-vessel formation~, and ~reduced scar formation~. A staple of *regeneration and recovery research*, often studied alongside BPC-157.",
+  "laymanSummary": "TB-500 is a **synthetic peptide** related to *thymosin β4*, a repair-associated protein distributed widely through tissue. In research-supply channels it is most often the short **actin-binding fragment** (Ac-LKKTETQ) rather than the full 43-residue protein — chemically distinct substances, so identity is established per lot by the accompanying analysis. It acts on the cell's internal scaffolding (**actin**), and research models report ~cell migration toward injury sites~, ~new blood-vessel formation~, and ~reduced scar formation~. A staple of *regeneration and recovery research*, often studied alongside BPC-157.",
   "slug": "tb500-5mg",
   "name": "TB-500",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "Synthetic thymosin β4 analogue. Actin polymerization, tissue repair research. Lyophilized, 5mg vial.",
-  "longDescription": "TB-500 is a synthetic analogue of the naturally occurring peptide thymosin β4. Research applications span musculoskeletal repair models, cardiac tissue studies, and directed cell migration assays. Acts via G-actin sequestration and activation of PI3K/Akt survival pathways. Supplied as a lyophilized powder in a 5mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
+  "shortDescription": "Thymosin β4-related peptide. Actin polymerization, tissue repair research. Lyophilized, 5mg vial.",
+  "longDescription": "TB-500 is a synthetic peptide related to the naturally occurring protein thymosin β4. Research-supply TB-500 is commonly the actin-binding fragment (Ac-LKKTETQ) rather than the full 43-residue sequence; molecular identity is established per lot by the accompanying analysis. Research applications span musculoskeletal repair models, cardiac tissue studies, and directed cell migration assays. Acts via G-actin sequestration and activation of PI3K/Akt survival pathways. Supplied as a lyophilized powder in a 5mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/tb500-5mg.webp"
   ],
@@ -995,11 +995,9 @@
   "batchReference": "TB4-BATCH-2026-052",
   "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
   "shippingCondition": "Dry ice required",
-  "casNumber": "77591-33-4",
-  "molecularWeight": "4963.50 g/mol",
   "productType": "peptide",
   "researchClassification": "regenerative",
-  "mechanismSummary": "Synthetic peptide analogue of thymosin β4. Upregulates the actin-sequestering G-actin pool, promotes endothelial and smooth muscle cell migration, and activates PI3K/Akt survival pathways. Investigated in cardiac and musculoskeletal repair models. Acts primarily via cytoskeletal reorganization rather than classical receptor-ligand binding.",
+  "mechanismSummary": "Synthetic peptide carrying the actin-binding motif of thymosin β4. Upregulates the actin-sequestering G-actin pool, promotes endothelial and smooth muscle cell migration, and activates PI3K/Akt survival pathways. Investigated in cardiac and musculoskeletal repair models. Acts primarily via cytoskeletal reorganization rather than classical receptor-ligand binding.",
   "receptorActivity": "Acts via G-actin sequestration rather than classical receptor–ligand binding. Reported in preclinical models to activate Akt/protein kinase B and ILK (integrin-linked kinase) and to upregulate matrix metalloproteinase-2 for extracellular matrix remodeling. Primary effect is cytoskeletal.",
   "pathwaySummary": "PI3K/Akt/ILK → inhibition of apoptosis, activation of cell survival. G-actin sequestration promotes lamellipodia formation and directed cell migration. MMP-2 upregulation for basement membrane remodeling in tissue repair contexts."
  },
