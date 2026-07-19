@@ -3110,13 +3110,13 @@
     "researchClassification": "antioxidant-beauty",
     "productType": "peptide",
     "casNumber": "868844-74-0",
-    "molecularWeight": "1075.25 g/mol",
+    "molecularWeight": "1073.20 g/mol",
     "mechanismSummary": "A synthetic octapeptide (acetyl octapeptide-3), an elongated derivative of acetyl hexapeptide-3 (Argireline). It is a cosmetic \"anti-wrinkle\" peptide designed to reduce muscle contraction by interfering with the SNARE complex involved in neurotransmitter release.",
     "receptorActivity": "Not a receptor agonist; competes with SNAP-25 in the SNARE complex to reduce vesicle docking and neurotransmitter release at the neuromuscular junction (proposed mechanism).",
     "pathwaySummary": "Proposed inhibition of SNARE-complex-mediated neurotransmitter exocytosis, reducing facial-muscle contraction.",
     "fdaStatus": "Not an approved drug — topical cosmetic ingredient",
     "humanTrialsConfirmed": false,
-    "molecularFormula": "C41H70N16O16S"
+    "molecularFormula": "C42H72N16O15S"
   },
   {
     "id": "rs-ss-31",
