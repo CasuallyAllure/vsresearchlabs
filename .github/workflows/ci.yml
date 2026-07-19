@@ -195,20 +195,7 @@ jobs:
             echo "TEST_SUPABASE_ANON_KEY=$TEST_ANON"
             echo "TEST_SUPABASE_SERVICE_ROLE_KEY=$TEST_SERVICE"
           } >> "$GITHUB_ENV"
-      # TEMPORARY DEBUG (remove before merge): reveal which key formats the
-      # pinned CLI emits (names + 12-char prefixes only) and probe REST
-      # directly with each derived key so Kong/PostgREST/grant failures are
-      # distinguishable in the job log.
-      - name: Debug key formats and REST probes
-        run: |
-          echo "--- status var names + prefixes ---"
-          supabase status -o env | sed -E 's/(=.{0,12}).*/\1.../'
-          probe () {
-            code=$(curl -s -o /tmp/probe_body -w '%{http_code}' \
-              "$TEST_SUPABASE_URL/rest/v1/orders?select=id&limit=1" \
-              -H "apikey: $2" -H "Authorization: Bearer $2")
-            echo "$1: HTTP $code body=$(head -c 200 /tmp/probe_body)"
-          }
-          probe anon "$TEST_SUPABASE_ANON_KEY"
-          probe service "$TEST_SUPABASE_SERVICE_ROLE_KEY"
+      # The :? guards above are what keep this from becoming an expensive
+      # always-green no-op: if the env derivation had failed, the job dies
+      # there instead of letting the suites silently self-skip here.
       - run: npx vitest run tests/integration tests/rls
