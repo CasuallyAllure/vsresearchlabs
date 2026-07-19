@@ -34,36 +34,35 @@ interface ProcurementRow {
 }
 
 /**
- * Non-answers that must never render on a laboratory specification sheet.
- * These sit in the data as blanket defaults across the whole catalog and
- * name neither a manufacturer nor a country. The keys stay in the JSON so
- * real per-compound values can simply be filled in later — at which point
- * the row renders automatically with no code change.
+ * A procurement value is renderable when it is present and non-blank.
+ *
+ * These fields describe how a compound is sourced, and the catalog-wide
+ * answer is a network rather than a single named plant: material is
+ * procured through vetted international manufacturing partners, not
+ * synthesised in-house. That statement is accurate, so it renders — under
+ * sourcing labels ("Supply source" / "Sourcing network") rather than
+ * "Manufacturer" / "Country of Origin", which would imply a manufacturer
+ * identity and a single jurisdiction that we do not claim.
+ *
+ * Blank values still drop out: a row with nothing behind it is noise on a
+ * specification sheet, and a per-compound value filled in later renders
+ * automatically with no code change.
  */
-const PLACEHOLDER_VALUES = new Set([
-  'vetted global production partners',
-  'global partner network',
-]);
-
-/** A procurement value is renderable only when it is present, non-blank,
- *  and not one of the catalog-wide placeholder strings. */
 export function isRealProcurementValue(value?: string): boolean {
-  const trimmed = value?.trim();
-  if (!trimmed) return false;
-  return !PLACEHOLDER_VALUES.has(trimmed.toLowerCase());
+  return Boolean(value?.trim());
 }
 
 /**
  * Canonical procurement row order. Higher-priority fields lead so
- * `maxRows` truncates from the tail (manufacturer/origin first when
- * present; batch and shipping last).
+ * `maxRows` truncates from the tail (sourcing first when present;
+ * batch and shipping last).
  */
 export function selectProcurementRows(product: Product): ProcurementRow[] {
   const rows: ProcurementRow[] = [];
   if (isRealProcurementValue(product.manufacturer))
-    rows.push({ label: 'Manufacturer', value: product.manufacturer! });
+    rows.push({ label: 'Supply source', value: product.manufacturer! });
   if (isRealProcurementValue(product.countryOfOrigin))
-    rows.push({ label: 'Origin', value: product.countryOfOrigin! });
+    rows.push({ label: 'Sourcing network', value: product.countryOfOrigin! });
   if (product.storageCondition) rows.push({ label: 'Storage', value: product.storageCondition });
   if (product.shippingCondition) rows.push({ label: 'Shipping', value: product.shippingCondition });
   if (product.lotNumber) rows.push({ label: 'Lot', value: product.lotNumber });
