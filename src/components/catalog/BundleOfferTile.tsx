@@ -2,7 +2,7 @@
  * BundleOfferTile — the standing "Retatrutide + GHK-Cu" pairing offer,
  * merchandised at the top of the biopeptide catalog.
  *
- * Pure marketing + a fast add. The 20% discount itself is computed and
+ * Copy + a fast add. The 20% reduction itself is computed and
  * applied server-side (place-order detects the pair automatically); this
  * tile only PREVIEWS that math via the shared `bundleDiscount` helper from
  * `lib/bundle.ts` — it never sends a discounted price of its own.
@@ -95,7 +95,7 @@ export function BundleOfferTile() {
 
   return (
     <section
-      aria-label="Bundle offer"
+      aria-label="Paired compound supply"
       className="floating-module mb-[var(--space-4)] overflow-hidden"
     >
       <div className="flex flex-col gap-[var(--space-4)] p-[var(--space-4)] sm:flex-row sm:items-center sm:gap-[var(--space-5)] sm:p-[var(--space-5)]">
@@ -112,10 +112,10 @@ export function BundleOfferTile() {
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-ink/10 bg-[color:var(--color-status-successMuted)] px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-status-success)]">
-              {BUNDLE_PROMO.percent}% off
+              Paired supply
             </span>
             <h2 className="text-[10.5px] uppercase tracking-[0.24em] text-ink/45">
-              Bundle offer
+              Paired supply
             </h2>
           </div>
 
@@ -132,14 +132,14 @@ export function BundleOfferTile() {
             <span className="font-mono text-[19px] font-semibold tabular-nums text-ink leading-none">
               {formatPrice(bundleCents)}
             </span>
-            <span className="font-mono text-[11px] tabular-nums text-[color:var(--color-status-success)]">
-              Save {formatPrice(discountCents)}
+            <span className="font-mono text-[11px] tabular-nums text-ink/50">
+              {BUNDLE_PROMO.percent}% pairing reduction ({formatPrice(discountCents)})
             </span>
           </div>
 
           <p className="mt-2 max-w-[48ch] text-[10.5px] leading-relaxed text-ink/45">
-            Applied automatically at checkout when both are in your cart — final price, can't
-            combine with promo codes.
+            Applied automatically when both compounds are on the same requisition. Final price —
+            not combinable with discount codes.
           </p>
 
           <Button
@@ -150,7 +150,7 @@ export function BundleOfferTile() {
             className="mt-3"
             aria-label={`Add ${productA.name} ${doseA} and ${productB.name} ${doseB} to inquiry`}
           >
-            {added ? '✓ Added' : 'Add bundle'}
+            {added ? '✓ Added' : 'Add pair to inquiry'}
           </Button>
         </div>
       </div>

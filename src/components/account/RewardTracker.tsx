@@ -2,7 +2,7 @@
  * RewardTracker — shared reward-progress + redeem module.
  *
  * Renders progress toward the reward threshold from `get_my_reward_summary()`
- * (migration 050: 300 points → 40% off one item, auto-applied to the
+ * (migration 050: 300 credit units → 40% reduction on one item, auto-applied to the
  * customer's highest-priced item at their next checkout). Pure presentation
  * over a caller-supplied `RewardSummary` — the caller (AccountRewards,
  * AccountDashboard) owns fetching/loading/error states; this component only
@@ -36,8 +36,8 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
 
   async function handleRedeem() {
     const ok = await confirm(
-      `Redeem ${threshold.toLocaleString()} points for ${percent}% off one item? This spends the points immediately and can't be undone.`,
-      { confirmLabel: 'Redeem', cancelLabel: 'Not yet' },
+      `Apply ${threshold.toLocaleString()} credit units as a ${percent}% reduction on one item? This spends the units immediately and can't be undone.`,
+      { confirmLabel: 'Apply', cancelLabel: 'Not yet' },
     );
     if (!ok) return;
 
@@ -76,7 +76,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
       />
 
       <div className="relative">
-        <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Reward balance</p>
+        <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Order credit balance</p>
 
         <p className={`font-light tabular-nums text-gold-dark ${compact ? 'text-[1.6rem]' : 'text-[2rem]'}`}>
           {balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">points</span>
@@ -84,8 +84,8 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
 
         {active_voucher ? (
           <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
-            Reward ready — {active_voucher.percent}% off your single highest-priced item, applied automatically at
-            your next checkout. One-time use. Not valid on wholesale orders.
+            Credit available — a {active_voucher.percent}% reduction on the single highest-priced line, applied
+            automatically to the next order. One-time use. Does not apply to volume orders.
           </p>
         ) : (
           <>
@@ -97,21 +97,21 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
             </div>
             <p className="mt-[var(--space-2)] text-[11px] text-ink/50">
               {reward_ready
-                ? 'Reward ready'
-                : `${pointsRemaining.toLocaleString()} points to your ${percent}%-off reward`}
+                ? 'Credit available'
+                : `${pointsRemaining.toLocaleString()} to a ${percent}% credit`}
             </p>
 
             {!compact && (
               <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/60">
-                Earn 1 point per $1. At {threshold.toLocaleString()} points, redeem {percent}% off any one item.
-                Points and rewards don’t apply to wholesale orders.
+                Accrues 1 unit per $1 ordered. At {threshold.toLocaleString()} units the credit applies a{' '}
+                {percent}% reduction to one item. Credit does not apply to volume orders.
               </p>
             )}
 
             {reward_ready && (
               <div className="mt-[var(--space-4)]">
                 <Button variant="primary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
-                  {redeeming ? 'Redeeming…' : `Redeem ${percent}% off an item`}
+                  {redeeming ? 'Applying…' : `Apply ${percent}% credit to an item`}
                 </Button>
                 {redeemError && (
                   <p className="mt-[var(--space-2)] text-[12px] text-[color:var(--color-status-error)]">

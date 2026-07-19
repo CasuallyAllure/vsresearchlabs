@@ -75,18 +75,21 @@ export function isB2G1Active(sku?: string | null): boolean {
   return true;
 }
 
-/** "ends Jul 20" style suffix for the LTO line, or '' when there's no end date. */
+/** "effective through Jul 20" suffix stating the term boundary, or '' when
+ *  the term has no end date. Display only — `isB2G1Active` is what actually
+ *  gates eligibility on `b2g1EndsAt`. */
 export function b2g1EndsLabel(): string {
   const endsAt = usePromoSettings.getState().b2g1EndsAt;
   if (!endsAt) return '';
   const d = new Date(endsAt);
   if (Number.isNaN(d.getTime())) return '';
-  return ` — ends ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  return ` Effective through ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.`;
 }
 
-/** The full promo blurb for the 7–10-day chip tooltip when the promo is live
- *  for `sku`, or null when it isn't (caller shows the plain shipping copy). */
+/** The full pricing-term blurb for the 7–10-day chip tooltip when the term is
+ *  live for `sku`, or null when it isn't (caller shows the plain shipping
+ *  copy). Stated as a supply term, not a countdown. */
 export function b2g1TooltipContent(sku?: string | null): string | null {
   if (!isB2G1Active(sku)) return null;
-  return `Buy 2, Get 1 Free — limited-time offer${b2g1EndsLabel()}. Add 3 of a standard-shipping item to your cart and the 3rd is free at checkout.`;
+  return `Standard-shipping volume term: order 3 units of an item and the third is supplied at no charge, applied at checkout.${b2g1EndsLabel()}`;
 }

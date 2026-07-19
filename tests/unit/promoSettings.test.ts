@@ -234,12 +234,12 @@ describe('b2g1EndsLabel', () => {
     expect(b2g1EndsLabel()).toBe('');
   });
 
-  test('formats a valid end date as an "ends Mon D" suffix', () => {
+  test('formats a valid end date as an "effective through Mon D" suffix', () => {
     // Arrange — midday UTC so the local calendar day matches in US zones + UTC.
     usePromoSettings.setState({ b2g1EndsAt: '2026-07-20T12:00:00Z' });
 
     // Act / Assert
-    expect(b2g1EndsLabel()).toBe(' — ends Jul 20');
+    expect(b2g1EndsLabel()).toBe(' Effective through Jul 20.');
   });
 });
 
@@ -251,7 +251,7 @@ describe('b2g1TooltipContent', () => {
     expect(b2g1TooltipContent('reta-10')).toBeNull();
   });
 
-  test('returns the full blurb with the ends-label when the promo is live', () => {
+  test('returns the full term blurb with the end-date label when the term is live', () => {
     // Arrange
     usePromoSettings.setState({ b2g1Enabled: true, b2g1EndsAt: '2026-07-20T12:00:00Z' });
 
@@ -260,7 +260,7 @@ describe('b2g1TooltipContent', () => {
 
     // Assert
     expect(tooltip).toBe(
-      'Buy 2, Get 1 Free — limited-time offer — ends Jul 20. Add 3 of a standard-shipping item to your cart and the 3rd is free at checkout.',
+      'Standard-shipping volume term: order 3 units of an item and the third is supplied at no charge, applied at checkout. Effective through Jul 20.',
     );
   });
 });

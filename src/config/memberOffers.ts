@@ -1,5 +1,5 @@
 /**
- * memberOffers — limited-time member-only promo(s) advertised on the
+ * memberOffers — account-holder pricing term(s) advertised on the
  * customer portal (Benefits page + Overview dashboard) regardless of whether
  * the customer has any per-customer `customer_discounts` rows. Edit this
  * array to change or remove the active offer(s); no code change needed.
@@ -15,8 +15,8 @@ export interface MemberOffer {
 export const MEMBER_OFFERS: MemberOffer[] = [
   {
     code: 'Q3MEMBER15',
-    headline: '15% off your order',
-    detail: 'Members-only savings — apply your code at checkout.',
-    expiresLabel: 'Limited time · through Q3',
+    headline: '15% account-holder discount',
+    detail: 'Applies to account-holder orders. Enter the code at checkout.',
+    expiresLabel: 'Current term · through Q3'
   },
 ];

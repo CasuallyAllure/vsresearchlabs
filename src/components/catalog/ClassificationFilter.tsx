@@ -158,7 +158,7 @@ export function ClassificationFilter({
   const allId = tabs[0]?.id;
   const stockColor = inStock?.color ?? 'var(--color-status-success)';
 
-  // Subscribe so the 7–10-day chip's tooltip flips to the LTO promo copy the
+  // Subscribe so the 7–10-day chip's tooltip flips to the promo-term copy the
   // moment promo settings load (or an admin toggles the promo).
   usePromoSettings((s) => s.b2g1Enabled);
   usePromoSettings((s) => s.b2g1EndsAt);
@@ -446,7 +446,7 @@ export function ClassificationFilter({
                     aria-label={
                       shippingTiers.wholesale.on
                         ? 'Wholesale business pricing — tap to return to the regular catalog'
-                        : 'Tap to shop wholesale business pricing (case of 10, 40% off)'
+                        : 'Switch to volume pricing (case of 10)'
                     }
                     onClick={shippingTiers.wholesale.toggle}
                     className={`inline-flex shrink-0 min-h-[40px] sm:min-h-0 items-center gap-1 whitespace-nowrap rounded-full border px-2 py-[3px] text-[10px] uppercase tracking-[0.06em] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 ${
@@ -469,9 +469,9 @@ export function ClassificationFilter({
                       }`}
                       style={shippingTiers.wholesale.on ? { backgroundColor: 'var(--color-accent-gold-dark)' } : undefined}
                     />
-                    {/* Word-only shine — the hover tooltip carries the full
-                        B2B-to-all-industries story. */}
-                    <span className="wholesale-shine font-medium">Wholesale</span>
+                    {/* Plain label — a procurement control, not a promotion.
+                        The hover tooltip carries the volume-pricing detail. */}
+                    <span className="font-medium">Wholesale</span>
                   </button>
                 </Tooltip>
               </>
