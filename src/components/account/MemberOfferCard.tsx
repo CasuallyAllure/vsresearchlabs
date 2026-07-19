@@ -1,5 +1,5 @@
 /**
- * MemberOfferCard — the "shiny" limited-time member offer promo
+ * MemberOfferCard — the account-holder pricing term card
  * (src/config/memberOffers.ts). Shown on Benefits (top of page, always when
  * offers exist) and compact on the Overview dashboard when the customer has
  * no per-customer `customer_discounts`.

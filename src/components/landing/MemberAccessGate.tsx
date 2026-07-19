@@ -28,7 +28,7 @@ interface Perk {
   headline: ReactNode;
   /** Supporting sentence under the headline. */
   body: string;
-  /** Limited-time offer — renders the corner LTO stamp on the chip. */
+  /** Term-limited pricing — renders the corner TERM stamp on the chip. */
   isLimitedTime?: boolean;
   /** Brand-gold icon treatment — the money perks get warmth, not flat mono. */
   isGold?: boolean;
@@ -63,9 +63,9 @@ const PERKS: Perk[] = [
     ),
   },
   {
-    label: '15% off',
-    headline: '15% off the entire order — limited time',
-    body: 'Applied automatically for members — a limited-time offer that can end at any point. Not valid on wholesale orders.',
+    label: '15% discount',
+    headline: '15% account-holder discount on the order',
+    body: 'Applied automatically to account-holder orders. This is a current pricing term and may be revised. Does not apply to volume orders.',
     isLimitedTime: true,
     isGold: true,
     icon: (
@@ -79,15 +79,15 @@ const PERKS: Perk[] = [
     label: 'Wholesale pricing',
     labelNode: (
       <>
-        <span className="wholesale-shine">Wholesale</span> pricing
+        Volume pricing
       </>
     ),
     headline: (
       <>
-        <span className="wholesale-shine">Wholesale</span> — now open to every industry
+        Volume pricing — available to every industry
       </>
     ),
-    body: 'We supplied laboratories business-to-business for years; that pricing is now open to all industries. A $60 vial comes to $36 by the case of 10 (40% off) — half kits of 5 run 27% off. Members only; wholesale price is final, so other discounts and rewards don’t apply.',
+    body: 'We supplied laboratories business-to-business for years; that pricing schedule is now available to all industries. A $60 vial is $36 per unit in a case of 10; half kits of 5 price at $43.80 per unit. Account holders only. Volume pricing is final — other discounts and credits do not apply.',
     isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
@@ -97,21 +97,13 @@ const PERKS: Perk[] = [
     ),
   },
   {
-    label: 'Rewards',
+    label: 'Order credit',
     headline: (
       <>
-        40% off{' '}
-        <span
-          className="font-sans text-[0.82em] font-semibold tracking-[0.04em] underline underline-offset-[3px]"
-          style={{ textDecorationColor: 'rgba(181,144,75,0.55)' }}
-        >
-          ANY
-        </span>{' '}
-        compound
+        40% order credit, any compound
       </>
     ),
-    body: 'Earn points on every order — bank 300 and the unlock is yours. Limited-time offer. Points and the 40% reward don’t apply to wholesale.',
-    isLimitedTime: true,
+    body: 'Accrues on every order. At 300 units the credit applies a 40% reduction to one item. Credit does not apply to volume orders.',
     isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} fill="currentColor" fillOpacity={0.22} aria-hidden="true">
@@ -253,7 +245,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                       borderColor: on ? 'rgba(181,144,75,0.6)' : 'rgba(181,144,75,0.35)',
                     }}
                   >
-                    LTO
+                    TERM
                   </span>
                 )}
                 <span

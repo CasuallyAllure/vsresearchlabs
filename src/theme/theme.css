@@ -644,26 +644,6 @@ html[data-theme="dark"] {
    token. Words stay selectable/readable; motion is slow and reduced-motion
    safe. Brand gold #B5904B (the catalog WHOLESALE pill value — the "gold"
    tailwind tokens are brushed silver under the monochrome direction). */
-.wholesale-shine {
-  background-image: linear-gradient(105deg, #8c6a2f 0%, #b5904b 38%, #ead8ac 50%, #b5904b 62%, #8c6a2f 100%);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: wholesale-shine-sweep 5.5s ease-in-out infinite;
-}
-html[data-theme='dark'] .wholesale-shine {
-  /* brighter base so the sweep reads on near-black cards */
-  background-image: linear-gradient(105deg, #a88544 0%, #c6a25d 38%, #f2e3bc 50%, #c6a25d 62%, #a88544 100%);
-}
-@keyframes wholesale-shine-sweep {
-  0% { background-position: 115% 0; }
-  55%, 100% { background-position: -115% 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .wholesale-shine { animation: none; background-position: 50% 0; }
-}
-
 /* Compound tile depth in dark mode — where drop-shadows vanish against the
    near-black page, a defined rim + a soft cool ambient halo lift the card. */
 html[data-theme="dark"] .compound-tile {
