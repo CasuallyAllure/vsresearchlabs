@@ -2,15 +2,17 @@
  * MemberAccessGate
  *
  * The first thing a guest sees on the landing page: a centered popup that
- * pitches the account perks and offers three ways forward —
+ * states the standing account terms and offers three ways forward —
  *   • Create your account   (→ /account)
  *   • Sign in               (→ /account)
  *   • Continue as guest      (dismiss; the "what are peptides" intro follows)
  *
- * Each perk is a toggle chip; tapping one reveals its detail line just below
+ * Each term is a toggle chip; tapping one reveals its detail line just below
  * the grid (one open at a time, first open by default so the interaction is
- * discoverable). Clean solid surface — no bleeding sheen. Monochrome tokens,
- * dark-mode via tokens, ref-counted scroll lock, reduced-motion-safe.
+ * discoverable). Clean solid surface — no bleeding sheen, no accent foil, no
+ * urgency stamps: the terms are facts about the account, so they read as
+ * facts. Monochrome tokens only, dark-mode via tokens, ref-counted scroll
+ * lock, reduced-motion-safe.
  *
  * Signed-in members never see this — Landing skips straight to the intro.
  */
@@ -28,18 +30,10 @@ interface Perk {
   headline: ReactNode;
   /** Supporting sentence under the headline. */
   body: string;
-  /** Term-limited pricing — renders the corner TERM stamp on the chip. */
-  isLimitedTime?: boolean;
-  /** Brand-gold icon treatment — the money perks get warmth, not flat mono. */
-  isGold?: boolean;
-  /** Optional rich chip label (e.g. the shining "Wholesale" word); `label`
-   *  stays the plain-string key + fallback. */
+  /** Optional rich chip label; `label` stays the plain-string key + fallback. */
   labelNode?: ReactNode;
   icon: ReactNode;
 }
-
-/** Brand gold — same value the catalog's WHOLESALE pill uses. */
-const GOLD = '#B5904B';
 
 const stroke = {
   fill: 'none',
@@ -63,11 +57,9 @@ const PERKS: Perk[] = [
     ),
   },
   {
-    label: '15% discount',
+    label: 'Account discount',
     headline: '15% account-holder discount on the order',
     body: 'Applied automatically to account-holder orders. This is a current pricing term and may be revised. Does not apply to volume orders.',
-    isLimitedTime: true,
-    isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="M4 13 11 6a2 2 0 0 1 1.4-.6H18a2 2 0 0 1 2 2v5.6a2 2 0 0 1-.6 1.4L12 21a2 2 0 0 1-2.8 0L4 15.8a2 2 0 0 1 0-2.8z" />
@@ -88,7 +80,6 @@ const PERKS: Perk[] = [
       </>
     ),
     body: 'We supplied laboratories business-to-business for years; that pricing schedule is now available to all industries. A $60 vial is $36 per unit in a case of 10; half kits of 5 price at $43.80 per unit. Account holders only. Volume pricing is final — other discounts and credits do not apply.',
-    isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden="true">
         <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />
@@ -104,7 +95,6 @@ const PERKS: Perk[] = [
       </>
     ),
     body: 'Accrues on every order. At 300 units the credit applies a 40% reduction to one item. Credit does not apply to volume orders.',
-    isGold: true,
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} fill="currentColor" fillOpacity={0.22} aria-hidden="true">
         <path d="m12 4 2.3 4.7 5.2.8-3.8 3.6.9 5.1L12 15.9 7.4 18.3l.9-5.1L4.5 9.5l5.2-.8z" />
@@ -210,10 +200,11 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
 
         <h2 className="text-center font-serif text-[clamp(1.35rem,4.2vw,1.6rem)] leading-[1.18] tracking-[-0.01em] text-ink">
           Create an account.
-          <span className="block text-ink/60">Ship free, save more.</span>
+          <span className="block text-ink/60">Account terms apply automatically.</span>
         </h2>
         <p className="mx-auto mt-[var(--space-3)] max-w-[38ch] text-center text-[12.5px] leading-[1.55] text-ink/55">
-          Guest checkout always stays open — an account just adds the perks. Tap one to see how it works.
+          Guest checkout always stays open. An account carries standing terms on shipping, pricing, and
+          order credit. Tap one for the detail.
         </p>
 
         {/* Interactive perk chips — 2×2 raised tiles, one open at a time. */}
@@ -226,10 +217,7 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                 type="button"
                 aria-pressed={on}
                 onClick={() => setActive(i)}
-                style={{
-                  animationDelay: `${140 + i * 60}ms`,
-                  ...(on && perk.isGold ? { borderColor: 'rgba(181,144,75,0.45)' } : {}),
-                }}
+                style={{ animationDelay: `${140 + i * 60}ms` }}
                 className={[
                   'perk-chip group relative flex items-center justify-center gap-1.5 rounded-full border px-3 py-3 sm:py-2 focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35',
                   on
@@ -237,22 +225,10 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
                     : 'border-ink/10 bg-ink/[0.03] text-ink/60 hover:border-ink/20 hover:text-ink/85',
                 ].join(' ')}
               >
-                {perk.isLimitedTime && (
-                  <span
-                    className="absolute -top-[7px] right-[12px] rounded-full border bg-base-800 px-[6px] py-[2px] text-[10px] font-medium uppercase leading-none tracking-[0.08em] shadow-[var(--elev-1)] transition-colors"
-                    style={{
-                      color: GOLD,
-                      borderColor: on ? 'rgba(181,144,75,0.6)' : 'rgba(181,144,75,0.35)',
-                    }}
-                  >
-                    TERM
-                  </span>
-                )}
                 <span
                   className={`perk-icon shrink-0 ${
-                    perk.isGold ? '' : on ? 'text-ink/80' : 'text-ink/40 group-hover:text-ink/55'
+                    on ? 'text-ink/80' : 'text-ink/40 group-hover:text-ink/55'
                   }`}
-                  style={perk.isGold ? { color: GOLD, opacity: on ? 1 : 0.75 } : undefined}
                 >
                   {perk.icon}
                 </span>

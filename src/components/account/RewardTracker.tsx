@@ -58,74 +58,88 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
   }
 
   return (
-    <div
-      className={`floating-module relative overflow-hidden ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}
-      style={{ boxShadow: 'var(--surface-highlight-strong), var(--elev-2)' }}
+    <section
+      aria-label="Order credit standing"
+      className={`floating-module ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}
     >
-      {/* Gold-tinted gloss wash — separates the card off the page; tasteful foil, not neon/glow. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: 'radial-gradient(120% 100% at 100% 0%, rgb(var(--c-gold) / 0.12) 0%, transparent 55%)',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/45 to-transparent"
-      />
-
-      <div className="relative">
-        <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Order credit balance</p>
-
-        <p className={`font-light tabular-nums text-gold-dark ${compact ? 'text-[1.6rem]' : 'text-[2rem]'}`}>
-          {balance.toLocaleString()} <span className="text-[12px] uppercase tracking-[0.16em] text-ink/45">points</span>
-        </p>
-
-        {active_voucher ? (
-          <p className="mt-[var(--space-4)] text-[13px] leading-relaxed text-ink/80">
-            Credit available — a {active_voucher.percent}% reduction on the single highest-priced line, applied
-            automatically to the next order. One-time use. Does not apply to volume orders.
-          </p>
-        ) : (
-          <>
-            <div className="mt-[var(--space-4)] h-[6px] rounded-full bg-ink/[0.08] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-ink/70 transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <p className="mt-[var(--space-2)] text-[11px] text-ink/50">
-              {reward_ready
-                ? 'Credit available'
-                : `${pointsRemaining.toLocaleString()} to a ${percent}% credit`}
-            </p>
-
-            {!compact && (
-              <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/60">
-                Accrues 1 unit per $1 ordered. At {threshold.toLocaleString()} units the credit applies a{' '}
-                {percent}% reduction to one item. Credit does not apply to volume orders.
-              </p>
-            )}
-
-            {reward_ready && (
-              <div className="mt-[var(--space-4)]">
-                <Button variant="primary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
-                  {redeeming ? 'Applying…' : `Apply ${percent}% credit to an item`}
-                </Button>
-                {redeemError && (
-                  <p className="mt-[var(--space-2)] text-[12px] text-[color:var(--color-status-error)]">
-                    {redeemError}
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        )}
+      {/* Statement header — quiet label, no badge, no accent wash. */}
+      <div className="flex items-baseline justify-between gap-[var(--space-3)] border-b border-ink/[0.09] pb-[var(--space-3)]">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Order credit</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/30">Account standing</p>
       </div>
 
+      {/* Balance line — the figure is the object, set in tabular mono. */}
+      <dl className="divide-y divide-ink/[0.06]">
+        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+          <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">Balance</dt>
+          <dd
+            className={`font-mono font-light tabular-nums text-ink ${compact ? 'text-[1.35rem]' : 'text-[1.7rem]'}`}
+          >
+            {balance.toLocaleString()}
+            <span className="ml-[0.4em] text-[11px] uppercase tracking-[0.16em] text-ink/40">units</span>
+          </dd>
+        </div>
+
+        {active_voucher ? (
+          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+            <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">Credit on file</dt>
+            <dd className="font-mono tabular-nums text-[13px] text-ink/75">{active_voucher.percent}%</dd>
+          </div>
+        ) : (
+          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+            <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">
+              {reward_ready ? 'Status' : 'To next credit'}
+            </dt>
+            <dd className="font-mono tabular-nums text-[13px] text-ink/75">
+              {reward_ready ? 'Credit available' : `${pointsRemaining.toLocaleString()} units`}
+            </dd>
+          </div>
+        )}
+      </dl>
+
+      {active_voucher ? (
+        <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/55">
+          A {active_voucher.percent}% reduction applies to the single highest-priced line on the next order,
+          automatically. One-time use. Does not apply to volume orders.
+        </p>
+      ) : (
+        <>
+          {/* Accrual against the threshold — a hairline gauge, not a progress toy. */}
+          <div
+            className="h-px w-full bg-ink/[0.12]"
+            role="img"
+            aria-label={`${balance.toLocaleString()} of ${threshold.toLocaleString()} units accrued`}
+          >
+            <div
+              className="h-px bg-ink/45 transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+
+          {!compact && (
+            <p className="mt-[var(--space-3)] text-[12.5px] leading-relaxed text-ink/55">
+              Accrues 1 unit per $1 ordered. At {threshold.toLocaleString()} units the credit applies a{' '}
+              {percent}% reduction to one item. Credit does not apply to volume orders.
+            </p>
+          )}
+
+          {reward_ready && (
+            <div className="mt-[var(--space-4)]">
+              <Button variant="secondary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
+                {redeeming ? 'Applying…' : `Apply ${percent}% credit to an item`}
+              </Button>
+              {redeemError && (
+                <p className="mt-[var(--space-2)] text-[12px] text-[color:var(--color-status-error)]">
+                  {redeemError}
+                </p>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
       {modal}
-    </div>
+    </section>
   );
 }
 
