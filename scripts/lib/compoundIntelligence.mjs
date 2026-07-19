@@ -56,7 +56,7 @@ export const INTELLIGENCE = {
       'Balanced co-agonist at GLP-1R and the glucagon receptor (GCGR); a dual incretin–glucagon agonist rather than a single-receptor agent.',
     pathwaySummary:
       'Both receptors are Gs-coupled GPCRs; agonism raises cAMP/PKA signalling in pancreatic β-cells, hepatocytes, adipocytes, and hypothalamic neurons.',
-    fdaStatus: 'Approved in China (2025); investigational elsewhere — not FDA-approved',
+    fdaStatus: 'Not FDA-approved; reported approved in China (2025), investigational elsewhere',
     humanTrialsConfirmed: true,
     knownStudies: [
       { title: 'Once-Weekly Mazdutide in Chinese Adults with Obesity or Overweight (GLORY-1)', source: 'NEJM', year: 2025, model: 'human', phase: 'Phase 3', pmid: '40421736', doi: '10.1056/NEJMoa2411528' },
@@ -224,7 +224,7 @@ export const INTELLIGENCE = {
       'Acts in part through Toll-like receptor signalling (notably TLR9/TLR2) on dendritic and other immune cells; it has no single high-affinity receptor and works pleiotropically.',
     pathwaySummary:
       'Stimulates Th1 cytokine production (IL-2, IFN-γ), promotes dendritic-cell and T-cell maturation, and increases NK-cell activity via TLR-mediated and NF-κB pathways.',
-    fdaStatus: 'Not FDA-approved; approved abroad as Zadaxin (chronic hepatitis B/C)',
+    fdaStatus: 'Not FDA-approved; reported approved in other jurisdictions as Zadaxin (chronic hepatitis B)',
     humanTrialsConfirmed: true,
     knownStudies: [],
   },
@@ -310,7 +310,7 @@ export const INTELLIGENCE = {
       'Agonist at the GHRH receptor (GHRHR) on anterior-pituitary somatotrophs; selective for GHRHR.',
     pathwaySummary:
       'Activates the GHRHR–Gs–cAMP–PKA pathway to trigger GH release, raising circulating IGF-1.',
-    fdaStatus: 'Formerly approved — Geref (withdrawn from US market 2002)',
+    fdaStatus: 'Formerly approved — Geref (sermorelin acetate); discontinued by the sponsor in 2008, FDA approval withdrawn 2009 (not for safety or effectiveness reasons)',
     humanTrialsConfirmed: true,
     knownStudies: [],
   },
@@ -332,7 +332,7 @@ export const INTELLIGENCE = {
       'Agonist at the GHS-R1a (ghrelin) receptor; mildly stimulates ACTH/cortisol and prolactin at higher doses.',
     pathwaySummary:
       'GHS-R1a coupling to Gq–PLC–IP3-calcium signalling in somatotrophs drives GH secretion.',
-    fdaStatus: 'Not FDA-approved; approved in Japan as a GH-deficiency diagnostic',
+    fdaStatus: 'Not FDA-approved; reported approved in Japan as a GH-deficiency diagnostic',
     humanTrialsConfirmed: true,
     knownStudies: [],
   },
@@ -585,7 +585,7 @@ export const INTELLIGENCE = {
       'Acts via the FSH receptor and the LH/hCG receptor on gonadal cells through its FSH and LH components, respectively.',
     pathwaySummary:
       'Stimulates gonadotropin-receptor signalling driving folliculogenesis and steroidogenesis in the gonads.',
-    fdaStatus: 'Approved — menotropins (e.g. Menopur) for ovulation induction and ART',
+    fdaStatus: 'Approved — menotropins (e.g. Menopur), indicated for use in an Assisted Reproductive Technology (ART) cycle',
     humanTrialsConfirmed: true,
     knownStudies: [],
   },
@@ -596,7 +596,7 @@ export const INTELLIGENCE = {
       'Agonist at the pituitary GnRH receptor.',
     pathwaySummary:
       'Activates GnRH-receptor signalling in the anterior pituitary, driving secretion of LH and FSH.',
-    fdaStatus: 'Approved historically as a GnRH diagnostic/therapeutic agent (availability varies)',
+    fdaStatus: 'Formerly approved as a GnRH diagnostic/therapeutic agent (Factrel, Lutrepulse); both US products discontinued',
     humanTrialsConfirmed: true,
     knownStudies: [],
   },
@@ -629,8 +629,175 @@ export const INTELLIGENCE = {
       'Agonist at the LH/hCG receptor (LHCGR), a Gs-coupled GPCR on ovarian and testicular cells.',
     pathwaySummary:
       'Activates LHCGR–Gs–cAMP signalling, driving steroidogenesis (progesterone/testosterone) and, in females, ovulation and luteal support.',
-    fdaStatus: 'Approved — urinary hCG and recombinant choriogonadotropin alfa (Ovidrel) for ART',
+    fdaStatus: 'Approved — choriogonadotropin alfa (Ovidrel) for ART and ovulation induction; urinary hCG for ovulation induction, cryptorchidism and male hypogonadotropic hypogonadism',
     humanTrialsConfirmed: true,
     knownStudies: [],
+  },
+};
+
+/**
+ * REGULATORY — verified regulatory resources, chemical properties, and
+ * research history, keyed by canonical slug.
+ *
+ * VERIFICATION POLICY (stricter than the rest of this file, because these are
+ * outbound links a reader will follow):
+ *
+ *   fdaResources — every URL below was fetched and the response confirmed to
+ *   name the expected product AND active ingredient before it was recorded.
+ *   Application numbers were cross-checked against the openFDA drugsfda
+ *   register; NCT identifiers against the ClinicalTrials.gov v2 API. No URL
+ *   here was constructed from a pattern. A compound with no approved
+ *   counterpart and no registered trial has NO entry — the absence is the
+ *   accurate statement about that compound, and padding it with a database
+ *   *search query* (which always "resolves", and proves nothing) is exactly
+ *   the failure this policy exists to prevent.
+ *
+ *   appearance / solubility — quoted from the FDA prescribing information for
+ *   the approved product containing that active ingredient, attributed inline.
+ *   Where no label statement about the substance exists, the field is omitted.
+ *   No solubility figure is ever estimated, interpolated, or inferred from a
+ *   structurally similar compound.
+ *
+ *   developmentCodes / originator — taken from the sponsor and intervention
+ *   `otherNames` fields of the verified ClinicalTrials.gov records, or from the
+ *   title of a verified publication. Not from recollection.
+ *
+ * `references` is NOT authored here: it is derived in
+ * src/lib/compoundIntelligence.ts from the knownStudies entries that already
+ * carry a resolved PMID or DOI, so the reference list cannot drift from the
+ * verified evidence or acquire a citation nobody checked.
+ */
+export const REGULATORY = {
+  // ── Approved counterparts: Drugs@FDA + DailyMed + a registered trial ──────
+  'pt-141': {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Vyleesi (bremelanotide), NDA 210557', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=210557' },
+      { kind: 'dailymed', label: 'DailyMed — Vyleesi (bremelanotide) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=8c9607a2-5b57-4a59-b159-cf196deebdd9' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02333071, Phase 3 bremelanotide in premenopausal HSDD', url: 'https://clinicaltrials.gov/study/NCT02333071' },
+    ],
+  },
+  tesamorelin: {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Egrifta (tesamorelin), BLA 022505', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=022505' },
+      { kind: 'dailymed', label: 'DailyMed — Egrifta SV (tesamorelin) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=3d783378-b02d-4f19-99dd-0fc91a042224' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02196831, tesamorelin effects on liver fat in HIV', url: 'https://clinicaltrials.gov/study/NCT02196831' },
+    ],
+    appearance: 'Supplied as a sterile, white to off-white, preservative-free lyophilized powder (FDA prescribing information, Egrifta SV).',
+    developmentCodes: ['TH9507'],
+  },
+  'melanotan-1': {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Scenesse (afamelanotide), NDA 210797', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=210797' },
+      { kind: 'dailymed', label: 'DailyMed — Scenesse (afamelanotide) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=94f53286-11dd-7fbb-e053-2a95a90a7c48' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT01605136, Phase 3 afamelanotide in erythropoietic protoporphyria', url: 'https://clinicaltrials.gov/study/NCT01605136' },
+    ],
+    appearance: 'Afamelanotide is a white to off-white powder (FDA prescribing information, Scenesse).',
+    solubility: 'Freely soluble in water (FDA prescribing information, Scenesse).',
+  },
+  'ss-31': {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Forzinity (elamipretide), NDA 215244', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215244' },
+      { kind: 'dailymed', label: 'DailyMed — Forzinity (elamipretide hydrochloride) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=146bf34c-76f2-48db-ac07-fb29cce2cd75' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT03098797, elamipretide in Barth syndrome', url: 'https://clinicaltrials.gov/study/NCT03098797' },
+    ],
+    developmentCodes: ['MTP-131', 'SS-31'],
+    originator: 'Stealth BioTherapeutics',
+  },
+  'oxytocin-acetate': {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Pitocin (oxytocin injection), NDA 018261', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018261' },
+      { kind: 'dailymed', label: 'DailyMed — Pitocin (oxytocin injection) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=6d4b2c25-2e5d-49b5-93bc-2ae8a20916d1' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT05782816, low- versus high-dose oxytocin for labour induction', url: 'https://clinicaltrials.gov/study/NCT05782816' },
+    ],
+  },
+  hgh: {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Genotropin (somatropin), BLA 020280', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=020280' },
+      { kind: 'dailymed', label: 'DailyMed — Genotropin (somatropin) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ffebf88b-d257-4542-9808-74d9b7167765' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT01088399, somatropin in growth hormone deficiency (HypoCCS)', url: 'https://clinicaltrials.gov/study/NCT01088399' },
+    ],
+    appearance: 'Supplied as a sterile, white lyophilized powder for reconstitution (FDA prescribing information, Genotropin).',
+  },
+  hcg: {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Ovidrel (choriogonadotropin alfa), BLA 021149', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021149' },
+      { kind: 'dailymed', label: 'DailyMed — Ovidrel (choriogonadotropin alfa) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a683e58a-63ea-44b8-a326-1a99a537bcf2' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT03687606, hCG and hCG plus hMG in hypogonadotropic hypogonadism', url: 'https://clinicaltrials.gov/study/NCT03687606' },
+    ],
+  },
+  hmg: {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Menopur (menotropins), BLA 021663', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=021663' },
+      { kind: 'dailymed', label: 'DailyMed — Menopur (menotropins) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=22c8db95-c3db-1770-8086-31356fbabe35' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02554279, Menopur in a GnRH-antagonist IVF cycle', url: 'https://clinicaltrials.gov/study/NCT02554279' },
+    ],
+    appearance: 'Supplied as a sterile lyophilized powder for reconstitution (FDA prescribing information, Menopur).',
+  },
+  'l-carnitine': {
+    fdaResources: [
+      { kind: 'drugs-at-fda', label: 'Drugs@FDA — Carnitor (levocarnitine), NDA 018948', url: 'https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=018948' },
+      { kind: 'dailymed', label: 'DailyMed — Carnitor (levocarnitine) prescribing information', url: 'https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d2133bc3-9c15-48bd-8b16-b8995a6a14cd' },
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT01665092, levocarnitine in severe sepsis (RACE)', url: 'https://clinicaltrials.gov/study/NCT01665092' },
+    ],
+    appearance: 'Levocarnitine is a white, crystalline, hygroscopic powder (FDA prescribing information, Carnitor).',
+  },
+
+  // ── Investigational: a registered trial only. No approval record exists,
+  //    so none is linked. ──────────────────────────────────────────────────
+  cagrilintide: {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06065540, Phase 3 with a cagrilintide monotherapy arm', url: 'https://clinicaltrials.gov/study/NCT06065540' },
+    ],
+    originator: 'Novo Nordisk',
+  },
+  cagrisema: {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT05567796, Phase 3 CagriSema in obesity (REDEFINE 1)', url: 'https://clinicaltrials.gov/study/NCT05567796' },
+    ],
+    originator: 'Novo Nordisk',
+  },
+  survodutide: {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06066515, Phase 3 survodutide in overweight or obesity', url: 'https://clinicaltrials.gov/study/NCT06066515' },
+    ],
+    developmentCodes: ['BI 456906'],
+    originator: 'Boehringer Ingelheim',
+  },
+  mazdutide: {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06184568, Phase 3 mazdutide versus semaglutide (DREAMS-3)', url: 'https://clinicaltrials.gov/study/NCT06184568' },
+    ],
+    developmentCodes: ['IBI362'],
+    originator: 'Innovent Biologics',
+  },
+  'ara-290': {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02039687, ARA 290 and corneal nerve fibre density in sarcoidosis', url: 'https://clinicaltrials.gov/study/NCT02039687' },
+    ],
+    developmentCodes: ['ARA 290', 'pHSBP', 'cibinetide'],
+    originator: 'Araim Pharmaceuticals',
+  },
+  'll-37': {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02225366, intratumoral LL-37 injection in melanoma', url: 'https://clinicaltrials.gov/study/NCT02225366' },
+    ],
+  },
+  'thymosin-alpha-1': {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT04487444, thymalfasin (thymosin alpha-1) in COVID-19', url: 'https://clinicaltrials.gov/study/NCT04487444' },
+    ],
+  },
+  gonadorelin: {
+    // No DailyMed link: the US human gonadorelin products (Factrel, Lutrepulse)
+    // are discontinued, and the only current gonadorelin label on DailyMed is a
+    // veterinary product. Linking it as "the prescribing label" would be wrong.
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT01976728, pulsatile gonadorelin acetate in hypogonadotropic hypogonadism', url: 'https://clinicaltrials.gov/study/NCT01976728' },
+    ],
+  },
+  vip: {
+    fdaResources: [
+      { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT04360096, inhaled aviptadil (VIP analogue) in severe COVID-19', url: 'https://clinicaltrials.gov/study/NCT04360096' },
+    ],
   },
 };

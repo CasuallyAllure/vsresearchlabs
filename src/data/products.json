@@ -5,8 +5,8 @@
   "slug": "aod9604-5mg",
   "name": "AOD-9604",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "hGH C-terminal fragment. Selective β-3 adrenergic lipolysis without IGF-1 axis involvement. Lyophilized, 5mg vial.",
-  "longDescription": "AOD-9604 is the C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine residue at position 176. Research applications center on selective lipolysis models where GH receptor activation and IGF-1 axis involvement must be excluded as variables. Activates β-3 adrenergic receptors in adipocytes without binding the GH receptor. Supplied as a lyophilized powder in a 5mg sealed vial.\n\nNot for human use. For research purposes only.",
+  "shortDescription": "hGH C-terminal fragment. Lipolysis research model; reported not to engage the GH receptor or IGF-1 axis. Lyophilized, 5mg vial.",
+  "longDescription": "AOD-9604 is the C-terminal fragment of human growth hormone (hGH176-191) modified with a tyrosine residue at position 176. Research applications center on lipolysis models where GH receptor activation and IGF-1 axis involvement must be excluded as variables. A β-3 adrenergic-linked lipolytic action has been proposed in preclinical work but is not firmly established; the fragment is reported not to bind the GH receptor. A Phase 2b human obesity trial did not meet its primary weight endpoint. Supplied as a lyophilized powder in a 5mg sealed vial.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/aod9604-5mg.webp"
   ],
@@ -54,8 +54,8 @@
   "createdAt": "2026-04-17T00:00:00.000Z",
   "updatedAt": "2026-04-17T00:00:00.000Z",
   "lotNumber": "LOT-2026-063-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -126,8 +126,8 @@
   "createdAt": "2026-04-13T00:00:00.000Z",
   "updatedAt": "2026-04-13T00:00:00.000Z",
   "lotNumber": "LOT-2026-049-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -174,12 +174,12 @@
  },
  {
   "id": "rs-cjc1295-dac-2mg",
-  "laymanSummary": "CJC-1295 with **DAC** is a long-acting **GHRH** analogue — it signals the pituitary to release growth hormone, and an albumin-binding tag extends its action to roughly *6–8 days*. Studies report ~sustained baseline GH and IGF-1 elevation~ rather than sharp spikes, and it is commonly investigated alongside a GHRP such as ipamorelin for additive signaling.",
+  "laymanSummary": "CJC-1295 with **DAC** is a long-acting **GHRH** analogue — it signals the pituitary to release growth hormone, and an albumin-binding tag extends its action to a published estimate of *5.8–8.1 days*. Studies report ~sustained baseline GH and IGF-1 elevation~ rather than sharp spikes, and it is commonly investigated alongside a GHRP such as ipamorelin for additive signaling.",
   "slug": "cjc1295-dac-2mg",
   "name": "CJC-1295 DAC",
   "category": "biopeptide-research-supplies",
   "shortDescription": "GHRH analogue with Drug Affinity Complex albumin-binding technology. Lyophilized, 2mg vial.",
-  "longDescription": "CJC-1295 with Drug Affinity Complex (DAC) is a synthetic GHRH analogue with a maleimido-propionic acid group that forms a covalent bond with albumin cysteine-34 in vivo, extending half-life to 6–8 days. Used in GH axis research models where sustained GHRH-axis stimulation is required. Supplied as a lyophilized powder in a 2mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
+  "longDescription": "CJC-1295 with Drug Affinity Complex (DAC) is a synthetic GHRH analogue with a maleimido-propionic acid group that forms a covalent bond with albumin cysteine-34 in vivo, with a published estimated half-life of 5.8–8.1 days. Used in GH axis research models where sustained GHRH-axis stimulation is required. Supplied as a lyophilized powder in a 2mg sealed vial with certificate of analysis.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/cjc1295-dac-2mg.webp"
   ],
@@ -227,8 +227,8 @@
   "createdAt": "2026-04-12T00:00:00.000Z",
   "updatedAt": "2026-04-12T00:00:00.000Z",
   "lotNumber": "LOT-2026-043-B",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -240,8 +240,8 @@
   "molecularWeight": "3647.28 g/mol",
   "productType": "peptide",
   "researchClassification": "gh-secretagogue",
-  "mechanismSummary": "GHRH analogue with Drug Affinity Complex (DAC) albumin-binding technology. The maleimido-propionic acid group forms a covalent bond with albumin cysteine-34, extending half-life to 6–8 days. Maintains the sustained GH and IGF-1 axis stimulation profile of native GHRH without frequent dosing.",
-  "receptorActivity": "GHRH receptor (GHRHR) agonist. DAC modification enables albumin binding (Kd ~2 μM for HSA Cys-34) without disrupting peptide–receptor interactions. Full agonism at GHRHR is maintained post-DAC conjugation.",
+  "mechanismSummary": "GHRH analogue with Drug Affinity Complex (DAC) albumin-binding technology. The maleimido-propionic acid group forms a covalent bond with albumin cysteine-34; the published estimated half-life is 5.8–8.1 days. Maintains the sustained GH and IGF-1 axis stimulation profile of native GHRH without frequent dosing.",
+  "receptorActivity": "GHRH receptor (GHRHR) agonist. The DAC modification forms a covalent bond to albumin Cys-34 without disrupting peptide–receptor interactions. Full agonism at GHRHR is maintained post-DAC conjugation.",
   "pathwaySummary": "GHRHR → Gs-coupled → adenylyl cyclase → cAMP → PKA → GH gene transcription and somatotroph Ca2+ sensitization. Sustained plasma levels from albumin binding extend the GHRH pulse without altering downstream GH/IGF-1 pathway mechanics."
  },
  {
@@ -299,8 +299,8 @@
   "createdAt": "2026-04-16T00:00:00.000Z",
   "updatedAt": "2026-04-16T00:00:00.000Z",
   "lotNumber": "LOT-2026-060-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -371,8 +371,8 @@
   "createdAt": "2026-04-11T00:00:00.000Z",
   "updatedAt": "2026-04-11T00:00:00.000Z",
   "lotNumber": "LOT-2026-041-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -384,8 +384,8 @@
   "molecularWeight": "711.86 g/mol",
   "productType": "peptide",
   "researchClassification": "gh-secretagogue",
-  "mechanismSummary": "Selective GHS-R1a agonist that stimulates pulsatile GH release from anterior pituitary somatotrophs. High receptor selectivity distinguishes it from first-generation GHRPs — no concurrent elevation of cortisol, prolactin, or ACTH at research-relevant concentrations. EC50 ~1.3 nM at GHS-R1a.",
-  "receptorActivity": "Selective GHS-R1a (growth hormone secretagogue receptor 1a). No binding at GH-receptor, IGF-1R, or pituitary receptors outside the GHS-R subfamily. No binding at cortisol, prolactin, or ACTH pathways at therapeutic concentrations.",
+  "mechanismSummary": "Selective GHS-R1a agonist that stimulates pulsatile GH release from anterior pituitary somatotrophs. High receptor selectivity distinguishes it from first-generation GHRPs. In the characterising study, ipamorelin released GH from primary rat pituitary cells with an EC50 of 1.3 ± 0.4 nmol/L, and did not release ACTH or cortisol at levels significantly different from GHRH stimulation.",
+  "receptorActivity": "Selective GHS-R1a (growth hormone secretagogue receptor 1a) agonist. The characterising study reports no release of ACTH or cortisol above that seen with GHRH, and no effect on FSH, LH, prolactin or TSH. Note that the widely quoted 1.3 nmol/L figure is the EC50 for GH release from primary rat pituitary cells, not a GHS-R1a receptor-binding constant.",
   "pathwaySummary": "GHS-R1a → Gq-coupled → IP3/DAG/PKC cascade → somatotroph intracellular Ca2+ release → GH secretory granule exocytosis. Independent of the GHRH axis; acts via a distinct intracellular signaling cascade that permits additive GH secretion when combined with GHRH analogues.",
   "fdaStatus": "Not approved — research use only",
   "humanTrialsConfirmed": true,
@@ -421,12 +421,12 @@
  },
  {
   "id": "rs-kpv-10mg",
-  "laymanSummary": "KPV is a three-amino-acid tail of the **α-MSH** hormone with outsized **anti-inflammatory** activity in research models. It is reported to ~downregulate NF-κB and STAT3 signaling~ and is studied in *gut inflammation, IBD, and wound-healing* models — carrying melanocortin's anti-inflammatory signaling without the pigmentation effects.",
+  "laymanSummary": "KPV is a three-amino-acid tail of the **α-MSH** hormone with outsized **anti-inflammatory** activity in research models. It is reported to ~downregulate NF-κB inflammatory signaling~ and is studied in *gut inflammation, IBD, and wound-healing* models. Notably, the published work indicates it works *without* engaging the melanocortin receptors its parent hormone acts on — so it carries the anti-inflammatory activity without the pigmentation signaling.",
   "slug": "kpv-10mg",
   "name": "KPV",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "α-MSH C-terminal tripeptide. MC1R/MC3R agonist, NF-κB suppression. Lyophilized, 10mg vial.",
-  "longDescription": "KPV is the C-terminal tripeptide (Lys-Pro-Val) of alpha-melanocyte-stimulating hormone (α-MSH). Research applications include inflammatory bowel disease models, wound healing assays, and systemic inflammatory response studies. Acts as an MC1R and MC3R melanocortin receptor agonist to suppress NF-κB and STAT3 signaling. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
+  "shortDescription": "α-MSH C-terminal tripeptide. NF-κB suppression, anti-inflammatory research model. Lyophilized, 10mg vial.",
+  "longDescription": "KPV is the C-terminal tripeptide (Lys-Pro-Val) of alpha-melanocyte-stimulating hormone (α-MSH). Research applications include inflammatory bowel disease models, wound healing assays, and systemic inflammatory response studies. Reported to suppress NF-κB signaling through a melanocortin-receptor-independent route involving PepT1-mediated uptake. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/kpv-10mg.webp"
   ],
@@ -474,8 +474,8 @@
   "createdAt": "2026-04-18T00:00:00.000Z",
   "updatedAt": "2026-04-18T00:00:00.000Z",
   "lotNumber": "LOT-2026-066-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -483,13 +483,13 @@
   "batchReference": "KPV-BATCH-2026-066",
   "testingStandard": "HPLC VSR-QC-001 · USP <62>",
   "shippingCondition": "Dry ice required",
-  "casNumber": "13442-01-2",
-  "molecularWeight": "356.40 g/mol",
+  "casNumber": "67727-97-3",
+  "molecularWeight": "342.43 g/mol",
   "productType": "peptide",
   "researchClassification": "immunomodulatory",
-  "mechanismSummary": "C-terminal tripeptide of α-MSH (Lys-Pro-Val). Agonist at MC1R and MC3R melanocortin receptors. Suppresses NF-κB and STAT3 inflammatory signaling pathways and inhibits neutrophil recruitment. Research applications in colitis, wound healing, and systemic inflammatory models.",
-  "receptorActivity": "Agonist at MC1R (melanocortin 1 receptor, Ki ~50 nM) and MC3R (Ki ~200 nM). Antagonizes NF-κB nuclear translocation. Inhibits STAT3 phosphorylation (Tyr705) and downstream cytokine expression. No significant activity at MC2R (ACTH receptor) or MC5R.",
-  "pathwaySummary": "MC1R/MC3R → cAMP → inhibition of NF-κB (IKKβ phosphorylation suppression) → reduced pro-inflammatory cytokine transcription. Blocks STAT3 (Tyr705) phosphorylation → reduced IL-6 and IL-17 signaling. Inhibits neutrophil and macrophage recruitment at inflammatory foci."
+  "mechanismSummary": "C-terminal tripeptide of α-MSH (Lys-Pro-Val). Reported to suppress NF-κB and MAP kinase inflammatory signaling and to inhibit neutrophil recruitment. Preclinical work indicates uptake via the peptide transporter PepT1 and describes the anti-inflammatory effect as melanocortin-receptor-independent. Research applications in colitis, wound healing, and systemic inflammatory models.",
+  "receptorActivity": "No established melanocortin receptor activity: preclinical studies report that the KPV anti-inflammatory effect persists when MC1R is non-functional and is not blocked by melanocortin antagonists, and that KPV does not raise cAMP. Reported activity is attributed to PepT1-mediated uptake followed by antagonism of NF-κB nuclear translocation rather than to receptor binding.",
+  "pathwaySummary": "Proposed: PepT1-mediated cellular uptake → inhibition of NF-κB nuclear translocation and MAP kinase signaling → reduced pro-inflammatory cytokine transcription. Inhibition of neutrophil and macrophage recruitment at inflammatory foci has been reported in preclinical models."
  },
  {
   "laymanSummary": "Pinealon is a short **Glu-Asp-Arg** (EDR) tripeptide developed as a pineal-gland **bioregulator**. It is studied in research contexts for **neuronal protection, cognitive function, and circadian regulation** — a distinct compound from the tetrapeptide Epitalon.",
@@ -522,8 +522,8 @@
    "research"
   ],
   "featured": false,
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -629,8 +629,8 @@
   "createdAt": "2026-04-03T00:00:00.000Z",
   "updatedAt": "2026-04-03T00:00:00.000Z",
   "lotNumber": "LOT-2026-007-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 18,
   "unitOfMeasure": "vial",
@@ -642,9 +642,9 @@
   "molecularWeight": "4731.33 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "Triple GIP/GLP-1/glucagon receptor agonist. The glucagon component drives hepatic glucose output reduction and direct energy expenditure increase via brown adipose tissue thermogenesis, amplifying the metabolic efficacy of the dual GIP/GLP-1 axis. Highest efficacy metabolic profile in the incretin class.",
-  "receptorActivity": "GIP-R (EC50 ~0.04 nM), GLP-1R (EC50 ~0.02 nM), GCGR (EC50 ~1.1 nM). Balanced triple activation. Glucagon receptor activity is titrated below the hyperglycemia threshold while driving energy expenditure.",
-  "pathwaySummary": "Incretin axis (GIP + GLP-1): insulin secretion amplification, satiety signaling. Glucagon axis (GCGR): hepatic glycogenolysis suppression, direct thermogenic effect via UCP-1 upregulation in brown adipose tissue.",
+  "mechanismSummary": "Triple GIP/GLP-1/glucagon receptor agonist. The glucagon component is reported to reduce hepatic glucose output and to augment weight loss through glucagon-receptor-mediated increases in energy expenditure, adding to the dual GIP/GLP-1 axis.",
+  "receptorActivity": "Agonist at GIP-R, GLP-1R and GCGR. The characterising study describes balanced GCGR and GLP-1R activity with greater GIP-R activity. Published potency values for the three receptors could not be verified against an accessible primary table and are therefore not stated here.",
+  "pathwaySummary": "Incretin axis (GIP + GLP-1): insulin secretion amplification, satiety signaling. Glucagon axis (GCGR): hepatic glucose output reduction and increased energy expenditure. The cellular basis of the energy-expenditure effect is not settled in the literature.",
   "fdaStatus": "Investigational — Phase 3 program ongoing; not FDA approved",
   "humanTrialsConfirmed": true,
   "knownStudies": [
@@ -705,7 +705,18 @@
     "pmid": "36354040",
     "doi": "10.1016/S0140-6736(22)02033-5"
    }
-  ]
+  ],
+  "fdaResources": [
+   {
+    "kind": "clinical-trial",
+    "label": "ClinicalTrials.gov — NCT05929066, Phase 3 retatrutide in obesity (TRIUMPH-1)",
+    "url": "https://clinicaltrials.gov/study/NCT05929066"
+   }
+  ],
+  "developmentCodes": [
+   "LY3437943"
+  ],
+  "originator": "Eli Lilly and Company"
  },
  {
   "id": "rs-semaglutide-5mg",
@@ -761,8 +772,8 @@
   "createdAt": "2026-04-01T00:00:00.000Z",
   "updatedAt": "2026-04-01T00:00:00.000Z",
   "lotNumber": "LOT-2026-031-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -774,10 +785,10 @@
   "molecularWeight": "4113.58 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "GLP-1 receptor agonist with high affinity for GLP-1R. Mediates glucose-dependent insulin secretion, suppresses glucagon, and delays gastric emptying. C18 fatty acid chain with albumin linker extends plasma half-life to approximately 7 days, enabling once-weekly dosing in research models.",
-  "receptorActivity": "Primary: GLP-1R (high affinity, Ki ~0.5 nM). No meaningful activity at GIP-R, GCGR, or other incretin receptors at physiological concentrations.",
+  "mechanismSummary": "GLP-1 receptor agonist with high affinity for GLP-1R. Mediates glucose-dependent insulin secretion, suppresses glucagon, and delays gastric emptying. A C18 fatty di-acid attached at Lys26 via a hydrophilic γGlu-2×AEEA spacer mediates albumin binding, extending elimination half-life to approximately 1 week and enabling once-weekly dosing.",
+  "receptorActivity": "Primary: GLP-1R (high affinity; reported binding affinity is reduced relative to liraglutide, and is markedly lower in the presence of albumin — the condition that matters in vivo). No meaningful activity at GIP-R, GCGR, or other incretin receptors at physiological concentrations.",
   "pathwaySummary": "GLP-1R → cAMP/PKA/CREB cascade → glucose-dependent potentiation of pancreatic β-cell insulin exocytosis. Hypothalamic arcuate nucleus satiety circuit activation via vagal afferents and central GLP-1R expression.",
-  "fdaStatus": "Approved — Ozempic (T2DM) · Wegovy (obesity)",
+  "fdaStatus": "Approved — Ozempic (T2DM) · Wegovy (obesity) · Rybelsus (oral, T2DM)",
   "humanTrialsConfirmed": true,
   "knownStudies": [
    {
@@ -822,7 +833,31 @@
     "pmid": "37952131",
     "doi": "10.1056/NEJMoa2307563"
    }
-  ]
+  ],
+  "fdaResources": [
+   {
+    "kind": "drugs-at-fda",
+    "label": "Drugs@FDA — Ozempic (semaglutide), NDA 209637",
+    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=209637"
+   },
+   {
+    "kind": "drugs-at-fda",
+    "label": "Drugs@FDA — Wegovy (semaglutide), NDA 215256",
+    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215256"
+   },
+   {
+    "kind": "dailymed",
+    "label": "DailyMed — Ozempic (semaglutide) prescribing information",
+    "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=adec4fd2-6858-4c99-91d4-531f5f2a2d79"
+   },
+   {
+    "kind": "clinical-trial",
+    "label": "ClinicalTrials.gov — NCT03548935, Phase 3 semaglutide 2.4 mg in obesity (STEP 1)",
+    "url": "https://clinicaltrials.gov/study/NCT03548935"
+   }
+  ],
+  "appearance": "Semaglutide is a white to almost white hygroscopic powder (FDA prescribing information, Ozempic).",
+  "originator": "Novo Nordisk"
  },
  {
   "id": "rs-semax-30mg",
@@ -879,8 +914,8 @@
   "createdAt": "2026-04-15T00:00:00.000Z",
   "updatedAt": "2026-04-15T00:00:00.000Z",
   "lotNumber": "LOT-2026-057-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -889,12 +924,12 @@
   "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
   "shippingCondition": "Dry ice required",
   "casNumber": "80714-61-0",
-  "molecularWeight": "815.97 g/mol",
+  "molecularWeight": "813.93 g/mol",
   "productType": "peptide",
   "researchClassification": "nootropic-neuroactive",
-  "mechanismSummary": "ACTH(4-7) Pro-Gly-Pro analogue with enhanced enzymatic stability. Upregulates BDNF, NGF, and VEGF expression in cortical and hippocampal tissue. Inhibits prolyl oligopeptidase (PO), the primary enkephalin degradation enzyme, extending neuropeptide half-life at cortical synapses. Penetrates the blood-brain barrier via intranasal and parenteral routes.",
-  "receptorActivity": "Binds BDNF/TrkB signaling complex and stimulates endogenous BDNF upregulation. Inhibits prolyl oligopeptidase (EC 3.4.21.26) — the primary enkephalin/MIF-1 degradation enzyme — extending neuropeptide half-life at cortical synapses. No direct binding at classical neuroreceptor subtypes.",
-  "pathwaySummary": "TrkB (BDNF receptor) → Ras/MAPK/ERK → CREB → pro-survival gene transcription. PO inhibition → elevated enkephalin and MIF-1 concentrations at cortical synapses → modulation of dopaminergic and serotonergic tone."
+  "mechanismSummary": "ACTH(4-7) Pro-Gly-Pro analogue with enhanced enzymatic stability. The C-terminal Pro-Gly-Pro extension is reported to confer resistance to enzymatic degradation. Studied for upregulation of BDNF, NGF, and VEGF expression in cortical and hippocampal tissue. Investigated via intranasal and parenteral routes in central nervous system research models.",
+  "receptorActivity": "No direct binding at classical neuroreceptor subtypes. Reported activity is attributed to upregulation of endogenous BDNF and NGF expression and of TrkB, rather than to direct receptor binding by the peptide itself.",
+  "pathwaySummary": "Proposed: elevated BDNF/TrkB expression → Ras/MAPK/ERK → CREB → pro-survival gene transcription. Modulation of dopaminergic and serotonergic tone has also been reported in preclinical models. Specific downstream pathways remain incompletely characterized."
  },
  {
   "id": "rs-tb500-5mg",
@@ -951,8 +986,8 @@
   "createdAt": "2026-04-14T00:00:00.000Z",
   "updatedAt": "2026-04-14T00:00:00.000Z",
   "lotNumber": "LOT-2026-052-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -965,7 +1000,7 @@
   "productType": "peptide",
   "researchClassification": "regenerative",
   "mechanismSummary": "Synthetic peptide analogue of thymosin β4. Upregulates the actin-sequestering G-actin pool, promotes endothelial and smooth muscle cell migration, and activates PI3K/Akt survival pathways. Investigated in cardiac and musculoskeletal repair models. Acts primarily via cytoskeletal reorganization rather than classical receptor-ligand binding.",
-  "receptorActivity": "Acts via G-actin sequestration (Kd ~0.8 nM for G-actin). Activates Akt/protein kinase B and ILK (integrin-linked kinase). Upregulates matrix metalloproteinase-2 for extracellular matrix remodeling. Primary effect is cytoskeletal rather than classical receptor-ligand.",
+  "receptorActivity": "Acts via G-actin sequestration rather than classical receptor–ligand binding. Reported in preclinical models to activate Akt/protein kinase B and ILK (integrin-linked kinase) and to upregulate matrix metalloproteinase-2 for extracellular matrix remodeling. Primary effect is cytoskeletal.",
   "pathwaySummary": "PI3K/Akt/ILK → inhibition of apoptosis, activation of cell survival. G-actin sequestration promotes lamellipodia formation and directed cell migration. MMP-2 upregulation for basement membrane remodeling in tissue repair contexts."
  },
  {
@@ -1041,8 +1076,8 @@
   "createdAt": "2026-04-02T00:00:00.000Z",
   "updatedAt": "2026-04-02T00:00:00.000Z",
   "lotNumber": "LOT-2026-018-B",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -1054,8 +1089,8 @@
   "molecularWeight": "4813.47 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "Dual GIP and GLP-1 receptor agonist with near-equipotent activity at both receptor subtypes. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling. Synergistic metabolic regulation exceeds either mono-agonist in research models.",
-  "receptorActivity": "GIP-R (EC50 ~0.04 nM) and GLP-1R (EC50 ~0.13 nM). Dual coagonism without significant glucagon receptor activity. GIP component acts as full agonist at GIP-R; GLP-1 component retains full GLP-1R agonism.",
+  "mechanismSummary": "Dual GIP and GLP-1 receptor agonist. The characterising study reports greater in-vitro potency at the GIP receptor than at the GLP-1 receptor. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling.",
+  "receptorActivity": "Agonist at GIP-R and GLP-1R, with greater reported in-vitro potency at GIP-R; the characterising study describes GLP-1R potency as approximately 13-fold weaker than native GLP-1. Dual coagonism without significant glucagon receptor activity.",
   "pathwaySummary": "GIP-R → cAMP/PKA axis in pancreatic β-cells and adipocytes, PI3K/Akt in fat tissue. GLP-1R → cAMP/EPAC/PKA, hypothalamic satiety (arcuate nucleus), gastric motility suppression via vagal pathways.",
   "fdaStatus": "Approved — Mounjaro (T2DM) · Zepbound (obesity)",
   "humanTrialsConfirmed": true,
@@ -1088,7 +1123,33 @@
     "pmid": "35658024",
     "doi": "10.1056/NEJMoa2206038"
    }
-  ]
+  ],
+  "fdaResources": [
+   {
+    "kind": "drugs-at-fda",
+    "label": "Drugs@FDA — Mounjaro (tirzepatide), NDA 215866",
+    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
+   },
+   {
+    "kind": "drugs-at-fda",
+    "label": "Drugs@FDA — Zepbound (tirzepatide), NDA 217806",
+    "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
+   },
+   {
+    "kind": "dailymed",
+    "label": "DailyMed — Mounjaro (tirzepatide) prescribing information",
+    "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d2d7da5d-ad07-4228-955f-cf7e355c8cc0"
+   },
+   {
+    "kind": "clinical-trial",
+    "label": "ClinicalTrials.gov — NCT04184622, Phase 3 tirzepatide in obesity (SURMOUNT-1)",
+    "url": "https://clinicaltrials.gov/study/NCT04184622"
+   }
+  ],
+  "developmentCodes": [
+   "LY3298176"
+  ],
+  "originator": "Eli Lilly and Company"
  },
  {
   "id": "le-analytical-balance-0-1mg",
@@ -1414,8 +1475,8 @@
   "createdAt": "2026-06-19T00:00:00.000Z",
   "updatedAt": "2026-06-19T00:00:00.000Z",
   "lotNumber": "LOT-2026-264-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network"
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network"
  },
  {
   "id": "rs-bacteriostatic-water-30ml",
@@ -1468,8 +1529,8 @@
   "createdAt": "2026-04-04T00:00:00.000Z",
   "updatedAt": "2026-04-04T00:00:00.000Z",
   "lotNumber": "LOT-2026-204-C",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "15–30°C, avoid freezing, avoid light",
   "shelfLifeMonths": 36,
   "unitOfMeasure": "vial",
@@ -1540,12 +1601,12 @@
  },
  {
   "id": "rs-adamax-10mg",
-  "laymanSummary": "Adamax is a **synthetic analog of Semax** — the ACTH-derived nootropic peptide — modified with an *adamantyl group and N-terminal acetylation*. Those changes are studied for greatly extending the peptide's stability and improving how well it crosses the blood-brain barrier in research models, so it's investigated in the same *cognitive, neuroprotective, and stress-response* areas as Semax but with a longer-lasting profile.",
+  "laymanSummary": "Adamax is a **synthetic analog of Semax** — the ACTH-derived nootropic peptide — modified with an *adamantyl group and N-terminal acetylation*. Those changes are *intended* to extend the peptide's stability and improve how well it crosses the blood-brain barrier, so it is investigated in the same *cognitive, neuroprotective, and stress-response* areas as Semax. Note that no published study of this specific analogue could be located — its properties are inferred from the Semax scaffold rather than measured.",
   "slug": "adamax-10mg",
   "name": "Adamax",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "Adamantylated, N-acetylated Semax analog. Nootropic/neuroprotective research model with extended half-life. Lyophilized, 10mg vial.",
-  "longDescription": "Adamax is a synthetic analog of the nootropic peptide Semax (an ACTH(4-7) Pro-Gly-Pro derivative), modified by N-terminal acetylation and the addition of an adamantyl moiety. These modifications are reported in research models to substantially increase metabolic stability — extending plasma half-life from minutes to several hours — and to improve blood-brain-barrier penetration relative to unmodified Semax. Research applications parallel those of Semax: neurotrophic signaling, cognitive function models, neuroprotection, and stress-response biology. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
+  "shortDescription": "Adamantylated, N-acetylated Semax analog. Nootropic/neuroprotective research model. Lyophilized, 10mg vial.",
+  "longDescription": "Adamax is a synthetic analog of the nootropic peptide Semax (an ACTH(4-7) Pro-Gly-Pro derivative), modified by N-terminal acetylation and the addition of an adamantyl moiety. These modifications are intended to increase metabolic stability and blood-brain-barrier penetration relative to unmodified Semax; no primary literature characterising the pharmacokinetics of this analogue could be located, and those properties should be treated as unverified. Research applications parallel those of Semax: neurotrophic signaling, cognitive function models, neuroprotection, and stress-response biology. Supplied as a lyophilized powder in a 10mg sealed vial.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/adamax-10mg.webp"
   ],
@@ -1588,8 +1649,8 @@
   "createdAt": "2026-07-12T00:00:00.000Z",
   "updatedAt": "2026-07-12T00:00:00.000Z",
   "lotNumber": "LOT-2026-193-A",
-  "manufacturer": "Vetted global production partners",
-  "countryOfOrigin": "Global partner network",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
   "storageCondition": "−20°C, desiccated, light-protected",
   "shelfLifeMonths": 24,
   "unitOfMeasure": "vial",
@@ -1601,8 +1662,8 @@
   "molecularWeight": null,
   "productType": "peptide",
   "researchClassification": "nootropic-neuroactive",
-  "mechanismSummary": "Adamantyl- and N-acetyl-modified analog of Semax (ACTH(4-7) Pro-Gly-Pro). The adamantyl group and acetylation are reported to confer resistance to enzymatic degradation, extending half-life and improving blood-brain-barrier penetration in research models. Studied for the same prolyl-oligopeptidase inhibition and BDNF/NGF-related neurotrophic signaling associated with the Semax scaffold.",
-  "receptorActivity": "No direct binding at classical neuroreceptor subtypes reported; activity is attributed to the Semax scaffold — stimulation of endogenous BDNF/NGF expression and inhibition of prolyl oligopeptidase (EC 3.4.21.26), with the adamantyl/acetyl modifications extending exposure in research models.",
-  "pathwaySummary": "TrkB (BDNF receptor) → Ras/MAPK/ERK → CREB → pro-survival gene transcription, as characterized for the Semax scaffold; prolonged synaptic exposure attributed to the stability-enhancing adamantyl and N-acetyl modifications."
+  "mechanismSummary": "Adamantyl- and N-acetyl-modified analog of Semax (ACTH(4-7) Pro-Gly-Pro). The adamantyl group and acetylation are intended to confer resistance to enzymatic degradation and improve blood-brain-barrier penetration; these properties are not established in primary literature for this analogue. Studied for the BDNF/NGF-related neurotrophic signaling associated with the Semax scaffold.",
+  "receptorActivity": "No direct binding at classical neuroreceptor subtypes reported; proposed activity is attributed to the Semax scaffold — stimulation of endogenous BDNF/NGF expression — with the adamantyl and N-acetyl modifications proposed to extend exposure. No primary literature characterising this analogue could be located; receptor-level activity is unverified.",
+  "pathwaySummary": "Proposed, by analogy to the Semax scaffold: elevated BDNF/TrkB expression → Ras/MAPK/ERK → CREB → pro-survival gene transcription. Pathway activity has not been characterised for this analogue specifically."
  }
 ]
