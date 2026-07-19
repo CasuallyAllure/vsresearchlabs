@@ -71,8 +71,18 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
 
       {/* Metadata column — eyebrow → serif product name → archival caption. */}
       <div className="flex min-w-0 flex-1 flex-col p-[var(--space-4)]">
-        <p className="mb-[var(--space-1)] truncate text-[10px] uppercase tracking-[0.2em] text-ink/45">
-          {document.documentType}{document.documentVersion ? ` · ${document.documentVersion}` : ''}
+        {/* Sample marker rides the eyebrow so a card that is screenshotted or
+            deep-linked away from the page-level SampleArchiveNotice still
+            declares itself a placeholder rather than an issued record. */}
+        <p className="mb-[var(--space-1)] flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-ink/45">
+          {document.isSamplePlaceholder && (
+            <span className="shrink-0 rounded-[3px] border border-ink/25 px-1 py-px tracking-[0.16em] text-ink/60">
+              Sample
+            </span>
+          )}
+          <span className="truncate">
+            {document.documentType}{document.documentVersion ? ` · ${document.documentVersion}` : ''}
+          </span>
         </p>
         <h3 className="truncate font-serif text-[19px] font-normal leading-tight text-ink transition-colors group-hover:text-gold">
           {document.productName}
@@ -115,7 +125,7 @@ export function DocumentCard({ document, href }: DocumentCardProps) {
     <Link
       to={href}
       className="block rounded-procurement focus:outline-none focus-visible:[&>article]:ring-1 focus-visible:[&>article]:ring-ink/25"
-      aria-label={`${document.documentType} — ${document.productName}, batch ${document.batchId}`}
+      aria-label={`${document.isSamplePlaceholder ? 'Sample placeholder: ' : ''}${document.documentType} — ${document.productName}, batch ${document.batchId}`}
     >
       {inner}
     </Link>
