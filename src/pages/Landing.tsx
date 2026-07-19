@@ -48,7 +48,7 @@ import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
 import { HeroSegmentMenu } from '../components/landing/HeroSegmentMenu';
 
-const documents = documentsData as unknown as Document[];
+const documents = documentsData.documents as unknown as Document[];
 
 /* ── Module header rail ───────────────────────────────────────────────────
    The persistent asymmetry primitive. A mono index + label + operational

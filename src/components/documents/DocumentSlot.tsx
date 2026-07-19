@@ -72,8 +72,15 @@ export function DocumentSlot({ documents }: DocumentSlotProps) {
   return (
     <ul className="space-y-[var(--space-3)]" aria-label="Product documentation slots">
       {SLOTS.map((slot) => {
-        const match = documents.find((d) =>
-          slot.documentTypes.includes(d.documentType as DocumentTypeLabel),
+        // Illustrative placeholders do not fill a slot. Rendering one as a
+        // FilledSlot would present invented issuer/date metadata as a filed
+        // certificate — the exact claim this component was built to avoid.
+        // An unfilled slot is the honest state, and "Awaiting Upload" is
+        // already the right words for it.
+        const match = documents.find(
+          (d) =>
+            !d.isSamplePlaceholder &&
+            slot.documentTypes.includes(d.documentType as DocumentTypeLabel),
         );
         return (
           <li key={slot.abbreviation}>

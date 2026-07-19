@@ -35,7 +35,7 @@ import { DocumentGallery } from '../documents/DocumentGallery';
 const PREVIEW_COUNT = 3;
 
 export function DocumentationPreview() {
-  const all = documents as unknown as Document[];
+  const all = documents.documents as unknown as Document[];
   const preview = all.slice(0, PREVIEW_COUNT);
 
   return (

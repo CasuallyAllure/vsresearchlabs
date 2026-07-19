@@ -17,9 +17,14 @@
  */
 
 import { useState } from 'react';
-import { useDocuments, useDocumentFilterOptions } from '../hooks/useDocuments';
+import {
+  useDocuments,
+  useDocumentFilterOptions,
+  hasSamplePlaceholders,
+} from '../hooks/useDocuments';
 import { PillTabs } from '../components/ui/PillTabs';
 import { DocumentGallery } from '../components/documents/DocumentGallery';
+import { SampleArchiveNotice } from '../components/documents/SampleArchiveNotice';
 
 const TYPE_SHORT: Record<string, string> = {
   'Certificate of Analysis':  'COA',
@@ -69,10 +74,12 @@ export function Documentation() {
           <span className="font-light text-ink/85">Batch </span>
           <span className="font-light text-ink">archive.</span>
         </h1>
+        {/* Deck states the archive's intended structure, not a completed
+            fact — the dataset behind it is still illustrative. */}
         <p className="holo-text-body mt-[var(--space-3)] max-w-[60ch] text-[13px] leading-relaxed">
-          Batch-tracked certificates and reports across the active
-          catalog. Filed against the same procurement abbreviations and
-          batch identifiers used in inventory. Reference, not promotion.
+          How batch-tracked certificates and reports will be filed as they
+          are issued — against the same procurement abbreviations and batch
+          identifiers used in inventory. Reference, not promotion.
         </p>
         <p
           className="holo-text-caption mt-[var(--space-3)] text-[10px] uppercase tracking-[0.2em]"
@@ -84,6 +91,9 @@ export function Documentation() {
             : `${total} ${total === 1 ? 'document' : 'documents'}`}
         </p>
       </header>
+
+      {/* Honesty seal — shown whenever any visible record is a placeholder. */}
+      {hasSamplePlaceholders(documents) && <SampleArchiveNotice />}
 
       {/* Archive filters — PillTabs only, two rows */}
       <div className="mb-[var(--space-8)] flex flex-col gap-[var(--space-3)]">

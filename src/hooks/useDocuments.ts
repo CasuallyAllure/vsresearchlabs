@@ -19,7 +19,17 @@ import { useMemo } from 'react';
 import documentsData from '../data/documents.json';
 import type { Document } from '../types';
 
-const ALL: Document[] = documentsData as unknown as Document[];
+const ALL: Document[] = documentsData.documents as unknown as Document[];
+
+/**
+ * True when any record in `list` is an illustrative placeholder rather than
+ * an issued quality record. Surfaces use this to decide whether to render
+ * the "sample archive — in preparation" seal. Single source of truth so the
+ * gallery, the detail page and the product slots cannot drift apart.
+ */
+export function hasSamplePlaceholders(list: readonly Document[]): boolean {
+  return list.some((d) => d.isSamplePlaceholder);
+}
 
 function isoToday(): string {
   return new Date().toISOString().slice(0, 10);

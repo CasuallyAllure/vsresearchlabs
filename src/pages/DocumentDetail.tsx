@@ -31,6 +31,7 @@ import { useProducts } from '../hooks/useProducts';
 import { AbbreviationChip } from '../components/catalog/AbbreviationChip';
 import { BatchCode, DateStamp, SKUCode } from '../components/ui/identifiers';
 import { DocumentCard } from '../components/documents/DocumentCard';
+import { SampleArchiveNotice } from '../components/documents/SampleArchiveNotice';
 import { ErrorState } from '../components/system/ErrorState';
 
 export function DocumentDetail() {
@@ -85,6 +86,11 @@ export function DocumentDetail() {
         <span className="mx-[var(--space-2)] text-ink/20">/</span>
         <span className="text-ink/60">{doc.documentType}</span>
       </nav>
+
+      {/* Honesty seal — this page renders the fabricated issuer, authorising
+          analyst, standard and instrument fields in full, so the seal sits
+          above the record rather than below it. */}
+      {doc.isSamplePlaceholder && <SampleArchiveNotice />}
 
       {/* Identifier band */}
       <div className="flex items-center flex-wrap gap-x-[var(--space-3)] gap-y-[var(--space-2)] mb-[var(--space-4)]">

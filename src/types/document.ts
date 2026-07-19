@@ -31,6 +31,20 @@ export interface Document {
   /** Stable primary key. */
   id: string;
   /**
+   * REQUIRED, and deliberately not optional.
+   *
+   * `true` marks the record as an illustrative placeholder — sample data
+   * showing the shape of the archive, with no PDF behind it and with
+   * invented issuer / analyst / standard / instrument metadata. Every
+   * rendering surface seals placeholder records behind an "in preparation"
+   * notice so they are never presented as issued quality records.
+   *
+   * A real, issued document must consciously set this to `false`. Keeping
+   * the field required is the point: a future contributor cannot add a
+   * record that silently reads as authentic.
+   */
+  isSamplePlaceholder: boolean;
+  /**
    * Procurement abbreviation linking this document back to a product
    * family (e.g. "SEM", "TZP"). Mirrors `Product.abbreviation` from
    * Wave 7c so the documentation library can be reconciled against
