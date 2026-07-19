@@ -306,8 +306,8 @@ export const META = {
     name: 'SNAP-8', abbr: 'SNP8', family: 'Cosmetic Peptide',
     eyebrow: 'ACETYL OCTAPEPTIDE-3',
     lead: 'Acetyl octapeptide-3 studied for SNARE-complex modulation in topical cosmetic research.',
-    cas: '868844-74-0', mw: '1075.25 g/mol',
-    formula: 'C41H70N16O16S',
+    cas: '868844-74-0', mw: '1073.20 g/mol',
+    formula: 'C42H72N16O15S',
   },
   'glow-blend-ghk': {
     name: 'GLOW Blend (TB-500 · BPC-157 · GHK)', abbr: 'GLOW', family: 'Regenerative Blend',
