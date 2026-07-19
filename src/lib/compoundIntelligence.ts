@@ -33,7 +33,7 @@ export const CLASSIFICATION_LABELS: Record<ResearchClassification, string> = {
   'bioregulator': 'Bioregulators',
   'immunomodulatory': 'Immunomodulatory',
   'reproductive-hormonal': 'Reproductive / Hormonal',
-  'antioxidant-beauty': 'Antioxidant / Beauty',
+  'antioxidant-beauty': 'Antioxidant / Dermatological',
   'experimental': 'Experimental',
 };
 
@@ -60,7 +60,7 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
   'reproductive-hormonal':
     'Hormones, gonadotropins, and CNS neuroendocrine signaling compounds related to the reproductive axis. Includes HPG-axis hormones (GnRH agonists such as Gonadorelin, gonadotropins HCG and HMG), Kisspeptin-class neuropeptides, oxytocinergic compounds, and CNS melanocortin agonists targeting sexual function (PT-141 / Bremelanotide acting on MC4R).',
   'antioxidant-beauty':
-    'Peptides and small molecules supporting collagen synthesis, melanogenesis modulation, and oxidative-stress reduction. Includes glutathione, copper tripeptides (GHK-Cu for skincare research), and antioxidant chelators.',
+    'Peptides and small molecules studied in collagen synthesis, melanogenesis modulation, and oxidative-stress models. Includes glutathione, copper tripeptides (GHK-Cu in dermatological research), and antioxidant chelators.',
   'experimental':
     'Novel investigational compounds outside the established functional classes. Published evidence is limited, mechanism may be incompletely characterized, and the research context is exploratory rather than confirmatory.',
 };
@@ -88,7 +88,7 @@ export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
   'reproductive-hormonal':
     'The hormones & libido group — tied to reproductive-hormone and sexual-function signaling (for example, PT-141), studied in that research area.',
   'antioxidant-beauty':
-    'The skin & antioxidant group — collagen, glutathione, and copper peptides researched in skin-quality and oxidative-stress studies.',
+    'The dermatological & antioxidant group — collagen, glutathione, and copper peptides studied in dermal-tissue and oxidative-stress research models.',
   'experimental':
     'The new & unproven group — investigational compounds where the research is still early: exploratory, not established.',
 };
@@ -117,7 +117,7 @@ export const CLASSIFICATION_SECTION_BLURB: Record<ResearchClassification, string
   'reproductive-hormonal':
     'Compounds tied to reproductive-hormone and sexual-function signaling (for example, PT-141) — studied in that research area.',
   'antioxidant-beauty':
-    'Collagen, glutathione, and copper peptides — researched in skin-quality and oxidative-stress studies.',
+    'Collagen, glutathione, and copper peptides — studied in dermal-tissue and oxidative-stress research models.',
   'experimental':
     'Investigational compounds where the research is still early — exploratory, not established.',
 };
@@ -241,8 +241,8 @@ function buildAnalytical(product: Product): AnalyticalRow[] {
     rows.push({ label: 'CAS Number', value: product.casNumber });
   if (product.molecularWeight)
     rows.push({ label: 'Molecular Weight', value: product.molecularWeight });
-  if (product.testingStandard)
-    rows.push({ label: 'Testing Standard', value: product.testingStandard });
+  // `testingStandard` is procurement metadata, not an analytical parameter.
+  // It is rendered once, by ProcurementSheet on the product spec sheet.
   return rows;
 }
 

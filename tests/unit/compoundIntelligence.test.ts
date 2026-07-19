@@ -105,7 +105,7 @@ describe('getCompoundIntelligence', () => {
     expect(vm.classificationLabel).toBe('Triple Agonist');
   });
 
-  test('keeps only the whitelisted analytical spec rows, then appends CAS/MW/standard', () => {
+  test('keeps only the whitelisted analytical spec rows, then appends CAS/MW', () => {
     const vm = getCompoundIntelligence(
       makeProduct({
         casNumber: '2381089-83-2',
@@ -118,8 +118,12 @@ describe('getCompoundIntelligence', () => {
       { label: 'Form', value: 'Lyophilized' },
       { label: 'CAS Number', value: '2381089-83-2' },
       { label: 'Molecular Weight', value: '4731 g/mol' },
-      { label: 'Testing Standard', value: 'HPLC VSR-QC-001' },
     ]);
+  });
+
+  test('omits testingStandard from the analytical rows — it is procurement metadata', () => {
+    const vm = getCompoundIntelligence(makeProduct({ testingStandard: 'HPLC VSR-QC-001' }));
+    expect(vm.analytical.map((r) => r.label)).not.toContain('Testing Standard');
   });
 
   test('prefers laymanSummary over the description fallback', () => {
