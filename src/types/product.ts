@@ -238,6 +238,12 @@ export interface ProductStudy {
    * prefix. Same evidentiary bar as `pmid`.
    */
   doi?: string;
+  /**
+   * ClinicalTrials.gov registry identifier in bare `NCT########` form. Present
+   * only for trial *registrations* — a registered protocol with no publication
+   * yet. Same evidentiary bar as `pmid`: the identifier must resolve.
+   */
+  nctId?: string;
   /** Observed findings / result bullets. Rendered under "Observed:" label. */
   notes?: string[];
 }

@@ -56,7 +56,7 @@
       <line x1="0" y1="50" x2="108" y2="50" stroke="#B5904B" stroke-opacity="0.6" stroke-width="0.9"/>
       <text x="0" y="76" font-family="'Cormorant Garamond',serif" font-weight="600" font-size="20" fill="#1A1714">IGF-1 LR3</text>
       <text x="0" y="92" font-family="'IBM Plex Mono',monospace" font-size="7.5" letter-spacing="1" fill="#8C6A2A">0.1 – 1 mg / vial</text>
-      <text x="0" y="142" font-family="'IBM Plex Mono',monospace" font-size="5.4" letter-spacing="1" fill="#1A1714" opacity="0.45">CAS 946870-92-4 · ≥ 98%</text>
+      <text x="0" y="142" font-family="'IBM Plex Mono',monospace" font-size="5.4" letter-spacing="1" fill="#1A1714" opacity="0.45">PURITY ≥ 98% · HPLC</text>
       <text x="0" y="154" font-family="'IBM Plex Mono',monospace" font-size="5" letter-spacing="1" fill="#1A1714" opacity="0.5">RESEARCH USE ONLY</text>
     </g>
   </g>

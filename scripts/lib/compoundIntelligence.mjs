@@ -213,7 +213,7 @@ export const INTELLIGENCE = {
     fdaStatus: 'Investigational — Orphan Drug & Fast Track (sarcoidosis-associated neuropathic pain)',
     humanTrialsConfirmed: true,
     knownStudies: [
-      { title: 'Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy', source: 'ClinicalTrials.gov · NCT02039687', year: 2017, model: 'human', phase: 'Phase 2b' },
+      { title: 'Cibinetide (ARA-290) in Sarcoidosis-Associated Small-Fibre Neuropathy — trial registration, no publication', source: 'ClinicalTrials.gov trial registration', year: 2017, model: 'human', phase: 'Phase 2b', nctId: 'NCT02039687' },
       { title: 'Cibinetide Improves Corneal Nerve Fiber Abundance in Patients With Sarcoidosis-Associated Small Nerve Fiber Loss and Neuropathic Pain', source: 'Invest. Ophthalmol. Vis. Sci.', year: 2017, model: 'human', phase: 'Phase 2', pmid: '28475703', doi: '10.1167/iovs.16-21291' },
     ],
   },
@@ -226,9 +226,7 @@ export const INTELLIGENCE = {
       'Stimulates Th1 cytokine production (IL-2, IFN-γ), promotes dendritic-cell and T-cell maturation, and increases NK-cell activity via TLR-mediated and NF-κB pathways.',
     fdaStatus: 'Not FDA-approved; approved abroad as Zadaxin (chronic hepatitis B/C)',
     humanTrialsConfirmed: true,
-    knownStudies: [
-      { title: 'Thymosin α-1 plus Interferon-α for Chronic Hepatitis B (meta-analysis)', source: 'Antiviral Therapy', year: 2009, model: 'human', phase: 'Phase 3' },
-    ],
+    knownStudies: [],
   },
   thymalin: {
     mechanismSummary:
@@ -252,7 +250,7 @@ export const INTELLIGENCE = {
     humanTrialsConfirmed: true,
     knownStudies: [
       { title: 'Treatment with LL-37 is safe and effective in enhancing healing of hard-to-heal venous leg ulcers: a randomized, placebo-controlled clinical trial', source: 'Wound Repair and Regeneration', year: 2014, model: 'human', phase: 'Phase 1/2a', pmid: '25041740', doi: '10.1111/wrr.12211' },
-      { title: 'Intratumoral LL-37 in Patients with Melanoma (first-in-human)', source: 'ClinicalTrials.gov · NCT02225366', year: 2015, model: 'human', phase: 'Phase 1' },
+      { title: 'Intratumoral LL-37 in Patients with Melanoma (first-in-human) — trial registration, no publication', source: 'ClinicalTrials.gov trial registration', year: 2015, model: 'human', phase: 'Phase 1', nctId: 'NCT02225366' },
     ],
   },
   vip: {
