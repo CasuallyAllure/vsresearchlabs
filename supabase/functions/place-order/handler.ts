@@ -492,7 +492,12 @@ const handleOrder = async (req: Request): Promise<Response> => {
         referenceId: dupeReference,
         createdAt: dupe.created_at,
         amountCents: dupe.invoice_amount_cents ?? 0,
-        invoiceEmailSent: contactIsEmail, // sent on the original attempt
+        // OPTIMISTIC (documented, not fixed): "sent on the original attempt"
+        // is assumed, not checked. The stored order/inquiry rows don't record
+        // whether the buyer invoice actually sent — invoiced_at is stamped at
+        // insert time BEFORE any email and no column captures the Resend
+        // outcome — so an honest value here would need a schema change.
+        invoiceEmailSent: contactIsEmail,
         contactIsEmail,
       });
     }
@@ -866,7 +871,10 @@ const handleOrder = async (req: Request): Promise<Response> => {
       p_code: code,
       p_subtotal_cents: grossSubtotalCents,
       p_contact: contact,
-      p_applied_codes: admittedCodes,
+      // Defensive copy — admittedCodes keeps growing as later codes are
+      // admitted; an arg-retaining client (telemetry, mocks) must see the
+      // codes as of THIS call, not a live reference.
+      p_applied_codes: [...admittedCodes],
       p_has_reward: hasReward,
       p_has_promo: willB2G1Apply || willWholesaleApply,
       p_has_account: hasAccount,
@@ -1077,6 +1085,25 @@ const handleOrder = async (req: Request): Promise<Response> => {
         .eq("idempotency_key", idempotencyKey)
         .maybeSingle();
       if (raced) {
+        // This attempt LOST the race: the winner owns the order (and already
+        // sent the emails). The inquiry row THIS attempt inserted above has no
+        // order attached and would persist as an orphan REVIEWING row — delete
+        // exactly that row (by its id, only on this adopt path). Non-fatal:
+        // the duplicate response is already correct either way, so a failed
+        // delete only alerts the operator to remove the orphan manually.
+        const { error: orphanErr } = await supabase
+          .from("inquiries").delete().eq("id", inquiryRow.id);
+        if (orphanErr) {
+          console.error("Orphan inquiry cleanup failed after losing the idempotency race:", orphanErr, inquiryRow.id);
+          await alertOperator({
+            fn: TELEMETRY_FN,
+            stage: "race_inquiry_cleanup",
+            summary:
+              "Lost the idempotency insert race and the orphan REVIEWING inquiry row could not be deleted — remove it manually",
+            error: orphanErr,
+            ctx: { referenceId, inquiryId: inquiryRow.id, contact, orderNumber: raced.order_number },
+          });
+        }
         return jsonResponse({
           success: true,
           duplicate: true,
@@ -1084,6 +1111,11 @@ const handleOrder = async (req: Request): Promise<Response> => {
           referenceId,
           createdAt: raced.created_at,
           amountCents: raced.invoice_amount_cents ?? 0,
+          // OPTIMISTIC (documented, not fixed): whether the winner's buyer
+          // invoice actually sent is not persisted anywhere — invoiced_at is
+          // stamped at insert time BEFORE any email, and no column records the
+          // Resend outcome — so an honest value would need a schema change.
+          // Reported as "sent" whenever the contact is an email address.
           invoiceEmailSent: contactIsEmail,
           contactIsEmail,
         });
@@ -1564,13 +1596,15 @@ const handleOrder = async (req: Request): Promise<Response> => {
         amountCents: totalCents, resendStatus: biz.status,
       },
     });
-  } else {
-    logEvent("info", TELEMETRY_FN, "Order placed", {
-      orderNumber, referenceId, orderId: orderRow.id,
-      amountCents: totalCents, invoiceEmailSent,
-      unverifiedLineCount: unverifiedLines.length,
-    });
   }
+  // The checkout itself succeeded (order persisted, 200 below) — log the
+  // success event regardless of how either email fared. Email failures are
+  // alert-visible above; they must not hide a placed order from telemetry.
+  logEvent("info", TELEMETRY_FN, "Order placed", {
+    orderNumber, referenceId, orderId: orderRow.id,
+    amountCents: totalCents, invoiceEmailSent,
+    unverifiedLineCount: unverifiedLines.length,
+  });
 
   return jsonResponse({
     success: true,

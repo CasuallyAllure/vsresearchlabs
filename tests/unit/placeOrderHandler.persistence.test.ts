@@ -118,18 +118,69 @@ describe('order insert failure', () => {
     expect(h.alerts).toHaveLength(0);
   });
 
-  test('the losing racer still leaves ITS OWN inquiry row behind (pinned quirk)', async () => {
+  test('the losing racer deletes ITS OWN inquiry row (orphan cleanup on the adopt path)', async () => {
     const h = withCatalog(makeHarness());
     scriptInsertRace(h);
 
     const { body } = await placeOrder(h, basePayload({ idempotency_key: KEY }));
-    // This attempt inserted a fresh inquiry before the insert collided, and the
-    // duplicate response's referenceId points at THAT orphan — not the
-    // original order's inquiry.
+    // This attempt inserted a fresh inquiry before the insert collided; the
+    // duplicate response's referenceId still names THAT attempt's reference,
+    // but the row itself — never attached to an order — is deleted, by its
+    // exact id, so no orphan REVIEWING inquiry survives the lost race.
     const inquiries = h.db.of('inquiries', 'insert');
     expect(inquiries).toHaveLength(1);
     const inquiry = inquiries[0].payload as { reference_id: string };
     expect(body.referenceId).toBe(inquiry.reference_id);
+
+    const deletes = h.db.of('inquiries', 'delete');
+    expect(deletes).toHaveLength(1);
+    expect(queryHas(deletes[0], 'eq', 'id', 'inq-1')).toBe(true);
+  });
+
+  test('a failed orphan-inquiry delete is NON-FATAL: duplicate response intact, race_inquiry_cleanup alert', async () => {
+    const h = withCatalog(makeHarness());
+    scriptInsertRace(h);
+    h.db.on('inquiries', 'delete', { error: { message: 'delete refused' } });
+
+    const { status, body } = await placeOrder(h, basePayload({ idempotency_key: KEY }));
+    expect(status).toBe(200);
+    expect(body).toMatchObject({
+      success: true,
+      duplicate: true,
+      orderNumber: RACED_ROW.order_number,
+      amountCents: RACED_ROW.invoice_amount_cents,
+    });
+
+    expect(h.alerts).toHaveLength(1);
+    expect(h.alerts[0].stage).toBe('race_inquiry_cleanup');
+    expect(h.alerts[0].ctx).toMatchObject({
+      inquiryId: 'inq-1',
+      orderNumber: RACED_ROW.order_number,
+      contact: 'buyer@test.example',
+    });
+    expect(h.emails).toHaveLength(0);
+  });
+
+  test('a raced row with a null invoice amount reports amountCents 0', async () => {
+    const h = withCatalog(makeHarness());
+    h.db.on('orders', 'insert', { error: { code: '23505', message: 'duplicate key' } });
+    let lookups = 0;
+    h.db.on(
+      'orders',
+      'select',
+      () => {
+        lookups += 1;
+        return lookups === 1
+          ? { data: null }
+          : { data: { ...RACED_ROW, invoice_amount_cents: null } };
+      },
+      (q) => queryHas(q, 'eq', 'idempotency_key', KEY),
+    );
+
+    const { status, body } = await placeOrder(h, basePayload({ idempotency_key: KEY }));
+    expect(status).toBe(200);
+    expect(body.duplicate).toBe(true);
+    expect(body.amountCents).toBe(0);
   });
 
   test('23505 whose re-read finds nothing falls through to the 502', async () => {
@@ -274,8 +325,12 @@ describe('business notification + telemetry endgame', () => {
       orderId: 'order-1',
     });
 
-    // The success telemetry is reserved for a clean business send.
-    expect(h.logs.some((l) => l.message === 'Order placed')).toBe(false);
+    // The checkout itself succeeded, so the success telemetry fires even
+    // though the business email failed (buyer-only email success) — email
+    // outcomes alert (above) but must not hide a placed order from the log.
+    const placed = h.logs.filter((l) => l.message === 'Order placed');
+    expect(placed).toHaveLength(1);
+    expect(placed[0].level).toBe('info');
   });
 
   test('both emails OK → "Order placed" logged and zero alerts', async () => {

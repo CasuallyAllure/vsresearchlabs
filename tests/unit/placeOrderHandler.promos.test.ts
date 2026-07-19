@@ -206,6 +206,35 @@ describe('wholesale pack pricing', () => {
     expect(lines[1]).toMatchObject({ sku: SLOW_SKU, quantity: 3, fast_ship: false });
   });
 
+  test('a WHOLESALE order_coupons insert error is log-only — money on the order survives', async () => {
+    const h = asMember(
+      withVariantRows(makeHarness(), [
+        variantRow(BPC_SKU, '5mg', BPC_PRICE_CENTS, { wholesale_eligible: true }),
+      ]),
+    );
+    h.db.on(
+      'order_coupons',
+      'insert',
+      { error: { message: 'promo row refused' } },
+      (q) => (q.payload as { code?: string } | undefined)?.code === 'WHOLESALE',
+    );
+
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({ items: [cartLine(BPC_SKU, 'BPC-157 — 5mg', BPC_PRICE_CENTS, 10, true)] }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(10 * BPC_PRICE_CENTS - WHOLESALE_CASE_DISCOUNT);
+    expect(orderInsert(h)).toMatchObject({
+      discount_cents: WHOLESALE_CASE_DISCOUNT,
+      coupon_code: 'WHOLESALE',
+    });
+    expect(h.alerts).toHaveLength(0); // deliberately log-only
+    expect(h.emails).toHaveLength(2);
+  });
+
   test('wholesale + any coupon code is a 400 and creates nothing', async () => {
     const h = asMember(
       withVariantRows(makeHarness(), [
@@ -260,6 +289,51 @@ describe('bundle promo (Retatrutide + GHK-Cu)', () => {
       free_label: 'Retatrutide + GHK-Cu bundle — 20% off 1 pair',
       source: 'promo',
     });
+  });
+
+  test('two complete pairs double the discount and pluralize the free_label', async () => {
+    const h = withVariantRows(makeHarness(), bundleRows());
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({
+        items: [
+          cartLine(RTT_SKU, 'Retatrutide — 5mg', RTT_PRICE_CENTS, 2, true),
+          cartLine(GHK_SKU, 'GHK-Cu — 50mg', GHK_PRICE_CENTS, 2, true),
+        ],
+      }),
+    );
+
+    const gross = 2 * BUNDLE_GROSS;
+    const discount = Math.round((gross * 20) / 100);
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(gross - discount + GUEST_SHIPPING_CENTS);
+    const rows = couponRows(h);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      code: 'BUNDLE',
+      amount_cents: discount,
+      free_label: 'Retatrutide + GHK-Cu bundle — 20% off 2 pairs',
+    });
+  });
+
+  test('a BUNDLE order_coupons insert error is log-only — money on the order survives', async () => {
+    const h = withVariantRows(makeHarness(), bundleRows());
+    h.db.on(
+      'order_coupons',
+      'insert',
+      { error: { message: 'promo row refused' } },
+      (q) => (q.payload as { code?: string } | undefined)?.code === 'BUNDLE',
+    );
+    const { status, body } = await placeOrder(h, basePayload({ items: bundleItems() }));
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(BUNDLE_GROSS - BUNDLE_DISCOUNT + GUEST_SHIPPING_CENTS);
+    expect(orderInsert(h)).toMatchObject({
+      discount_cents: BUNDLE_DISCOUNT,
+      coupon_code: 'BUNDLE',
+    });
+    expect(h.alerts).toHaveLength(0); // deliberately log-only
+    expect(h.emails).toHaveLength(2);
   });
 
   test("a member's account discount is suppressed by the bundle", async () => {
@@ -329,6 +403,43 @@ describe('B2G1 promo', () => {
     });
   });
 
+  test('qty 6 gets TWO units free with the pluralized free_label on row and invoice', async () => {
+    const h = withVariantRows(makeHarness(), [slowRow()]);
+    b2g1Settings(h);
+    const { status, body } = await placeOrder(h, basePayload({ items: [slowLine(6)] }));
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(4 * SLOW_PRICE_CENTS + GUEST_SHIPPING_CENTS);
+    const rows = couponRows(h);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      code: 'B2G1',
+      amount_cents: 2 * SLOW_PRICE_CENTS,
+      free_label: 'Buy 2 Get 1 Free — 2 units free',
+    });
+    // The buyer invoice itemizes the same pluralized promo line.
+    expect(h.emails[0].to).toBe('buyer@test.example');
+    expect(h.emails[0].html).toContain('B2G1');
+  });
+
+  test('a B2G1 order_coupons insert error is log-only — money on the order survives', async () => {
+    const h = withVariantRows(makeHarness(), [slowRow()]);
+    b2g1Settings(h);
+    h.db.on(
+      'order_coupons',
+      'insert',
+      { error: { message: 'promo row refused' } },
+      (q) => (q.payload as { code?: string } | undefined)?.code === 'B2G1',
+    );
+    const { status, body } = await placeOrder(h, basePayload({ items: [slowLine()] }));
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(2 * SLOW_PRICE_CENTS + GUEST_SHIPPING_CENTS);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: SLOW_PRICE_CENTS, coupon_code: 'B2G1' });
+    expect(h.alerts).toHaveLength(0); // deliberately log-only
+    expect(h.emails).toHaveLength(2);
+  });
+
   test('an expired b2g1_ends_at yields no discount', async () => {
     const h = withVariantRows(makeHarness(), [slowRow()]);
     b2g1Settings(h, { b2g1_ends_at: '2020-01-01T00:00:00.000Z' });
@@ -387,6 +498,57 @@ describe('coupon validation', () => {
     expect(h.db.of('orders', 'insert')).toHaveLength(0);
   });
 
+  test('an invalid coupon with NO rpc reason falls back to the generic per-code message', async () => {
+    const h = withCatalog(makeHarness());
+    h.db.onRpc('validate_coupon', { data: { valid: false } });
+    const { status, body } = await placeOrder(h, basePayload({ coupon_codes: ['SAVE10'] }));
+    expect(status).toBe(400);
+    expect(body.error).toBe('Code SAVE10 is not valid.');
+    expect(h.db.of('orders', 'insert')).toHaveLength(0);
+  });
+
+  test('a members-only rejection without a code echo names the submitted code', async () => {
+    const h = withCatalog(makeHarness());
+    h.db.onRpc('validate_coupon', {
+      data: { valid: true, kind: 'percent', percent: 10, discount_cents: 500, requires_account: true },
+    });
+    const { status, body } = await placeOrder(h, basePayload({ coupon_codes: ['MEMBERS10'] }));
+    expect(status).toBe(400);
+    expect(body.error).toBe(
+      'Code MEMBERS10 is for members only. Sign in to your account and try again.',
+    );
+  });
+
+  test('a valid coupon without a code echo applies under the submitted code', async () => {
+    const h = withCatalog(makeHarness());
+    // No `code` and no `amount_cents` in the rpc echo — the submitted code and
+    // a null display amount carry through to the order row and coupon row.
+    h.db.onRpc('validate_coupon', { data: { valid: true, kind: 'fixed', discount_cents: 500 } });
+    redeemOk(h);
+    const { status, body } = await placeOrder(h, basePayload({ coupon_codes: ['SAVE10'] }));
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(BPC_PRICE_CENTS - 500 + GUEST_SHIPPING_CENTS);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: 500, coupon_code: 'SAVE10' });
+    const codeRows = couponRows(h).filter((r) => r.source === 'code');
+    expect(codeRows).toHaveLength(1);
+    expect(codeRows[0]).toMatchObject({ code: 'SAVE10', kind: 'fixed', amount_cents: null, discount_cents: 500 });
+  });
+
+  test('a percent coupon missing discount_cents and percent discounts nothing but still applies', async () => {
+    const h = withCatalog(makeHarness());
+    h.db.onRpc('validate_coupon', { data: { valid: true, code: 'PCT', kind: 'percent' } });
+    redeemOk(h);
+    const { status, body } = await placeOrder(h, basePayload({ coupon_codes: ['PCT'] }));
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(BPC_PRICE_CENTS + GUEST_SHIPPING_CENTS); // 0¢ off
+    expect(orderInsert(h)).toMatchObject({ discount_cents: 0, coupon_code: 'PCT' });
+    const codeRows = couponRows(h).filter((r) => r.source === 'code');
+    expect(codeRows).toHaveLength(1);
+    expect(codeRows[0]).toMatchObject({ code: 'PCT', kind: 'percent', percent: null, discount_cents: 0 });
+  });
+
   test('a requires_account code without a session is a 400 members-only rejection', async () => {
     const h = withCatalog(makeHarness());
     h.db.onRpc('validate_coupon', {
@@ -405,12 +567,7 @@ describe('coupon validation', () => {
 
   test('percent + fixed codes stack per the totals engine and the second validate call carries the context', async () => {
     const h = withCatalog(makeHarness());
-    // Snapshot p_applied_codes at CALL time — the handler passes its live
-    // admittedCodes array by reference, so the recorded args keep mutating as
-    // later codes are admitted.
-    const appliedCodesAtCall: string[][] = [];
     h.db.onRpc('validate_coupon', (args) => {
-      appliedCodesAtCall.push([...((args?.p_applied_codes as string[]) ?? [])]);
       const code = String(args?.p_code ?? '');
       if (code === 'SAVE10') {
         return { data: { valid: true, code, kind: 'percent', percent: 10, discount_cents: 500 } };
@@ -446,7 +603,11 @@ describe('coupon validation', () => {
       p_has_promo: false,
       p_has_account: false,
     });
-    expect(appliedCodesAtCall).toEqual([[], ['SAVE10']]);
+    // p_applied_codes is a DEFENSIVE COPY per call, not the live admittedCodes
+    // array: the handler pushes 'SAVE10' into its source array right after the
+    // first call, yet the RECORDED first arg still reads as empty. An
+    // arg-retaining client (telemetry, mocks) sees the codes as of each call.
+    expect(validates.map((c) => c.args?.p_applied_codes)).toEqual([[], ['SAVE10']]);
 
     // Redemption records each code's actual contribution.
     const redeems = h.db.rpcCalls.filter((c) => c.fn === 'redeem_coupon');
@@ -615,6 +776,35 @@ describe('coupon redemption rollback', () => {
     expect(codeRows).toHaveLength(1);
     expect(codeRows[0]).toMatchObject({ code: 'TENOFF', kind: 'fixed', discount_cents: 500 });
     expect(h.alerts).toHaveLength(0);
+  });
+
+  test("a failed redemption keeps the member's account discount in the rebuilt label and totals", async () => {
+    const h = asMember(withCatalog(makeHarness()));
+    h.db.onRpc('effective_customer_discount', {
+      data: { found: true, scope: 'lifetime', percent: 10, label: 'Lifetime discount' },
+    });
+    h.db.onRpc('validate_coupon', {
+      data: { valid: true, code: 'TENOFF', kind: 'fixed', amount_cents: 500, discount_cents: 500 },
+    });
+    h.db.onRpc('redeem_coupon', { data: { ok: false, reason: 'race lost' } });
+
+    const { status, body } = await placeOrder(h, basePayload({ coupon_codes: ['TENOFF'] }), {
+      bearer: MEMBER_JWT,
+    });
+
+    expect(status).toBe(200);
+    // Flat 500 came off first, then the 10% account discount on the reduced
+    // base: round((4999−500)×10%) = 450. The failed code's 500 goes back on;
+    // the account's 450 must survive the reprice (member ships free).
+    const accountCents = Math.round(((BPC_PRICE_CENTS - 500) * 10) / 100);
+    expect(body.amountCents).toBe(BPC_PRICE_CENTS - accountCents);
+    const updates = h.db.of('orders', 'update');
+    expect(updates).toHaveLength(1);
+    expect(updates[0].payload).toEqual({
+      discount_cents: accountCents,
+      coupon_code: 'ACCT-LIFETIME',
+      invoice_amount_cents: BPC_PRICE_CENTS - accountCents,
+    });
   });
 
   test('a rollback update error raises the coupon_rollback operator alert', async () => {

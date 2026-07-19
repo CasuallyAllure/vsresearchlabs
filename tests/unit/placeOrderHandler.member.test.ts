@@ -93,6 +93,21 @@ describe('ownership + membership resolution', () => {
     expect(h.emails[1].to).toBe('biz@test.example');
   });
 
+  test('a session whose account has NO email still gets member pricing', async () => {
+    // GoTrue can hold accounts without an email (phone auth) — the verified
+    // session alone is the identity signal, so the null-email fallback must
+    // not cost the member their pricing.
+    const h = withCatalog(makeHarness());
+    h.sessions.set(MEMBER_JWT, { id: MEMBER_ID, email: null });
+    const { status, body } = await placeOrder(h, basePayload(), { bearer: MEMBER_JWT });
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(BPC_PRICE_CENTS); // member ships free
+    const order = orderInsert(h);
+    expect(order.user_id).toBe(MEMBER_ID);
+    expect(order.shipping_cents).toBe(0);
+  });
+
   test('the anon key as bearer is not a session — guest semantics, sessions never consulted', async () => {
     const h = withCatalog(makeHarness());
     // Even a session registered under the anon key must be unreachable: the
@@ -202,6 +217,29 @@ describe('account discount (effective_customer_discount)', () => {
     const acctRow = couponInserts(h).find((r) => r.source === 'account');
     expect(acctRow).toMatchObject({ code: 'ACCT-BUSINESS', percent: 15 });
   });
+
+  test.each([
+    ['business scope with no label', 'business', null, 'ACCT-BUSINESS', 15],
+    ['lifetime scope with a whitespace label', 'lifetime', '   ', 'ACCT-LIFETIME', 10],
+  ])(
+    'a %s falls back to the scope default label — money unchanged',
+    async (_name, scope, label, expectedCode, percent) => {
+      const h = memberHarness();
+      h.db.onRpc('effective_customer_discount', {
+        data: { found: true, scope, percent, label },
+      });
+      const { status, body } = await placeOrder(h, basePayload(), { bearer: MEMBER_JWT });
+
+      const expectedDiscount = Math.round((BPC_PRICE_CENTS * percent) / 100);
+      expect(status).toBe(200);
+      expect(body.amountCents).toBe(BPC_PRICE_CENTS - expectedDiscount);
+      const order = orderInsert(h);
+      expect(order.coupon_code).toContain(expectedCode);
+      expect(order.discount_cents).toBe(expectedDiscount);
+      const acctRow = couponInserts(h).find((r) => r.source === 'account');
+      expect(acctRow).toMatchObject({ code: expectedCode, percent });
+    },
+  );
 
   test('an RPC error is non-fatal: the order proceeds at full member price, no discount', async () => {
     const h = memberHarness();
