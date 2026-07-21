@@ -7,7 +7,12 @@
    flash it exists to prevent happens on every load. Keep it external. */
 (function () {
   try {
-    var t = localStorage.getItem('vsr.theme');
+    localStorage.removeItem('vsr.theme'); // stale pin from before the lab-default switch
+  } catch (e) {
+    /* ignore — the read below still falls back to lab */
+  }
+  try {
+    var t = sessionStorage.getItem('vsr.theme');
     document.documentElement.setAttribute('data-theme', (t === 'light' || t === 'dark' || t === 'lab') ? t : 'lab');
   } catch (e) {
     document.documentElement.setAttribute('data-theme', 'lab');

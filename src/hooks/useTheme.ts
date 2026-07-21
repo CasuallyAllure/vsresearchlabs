@@ -1,13 +1,15 @@
 /**
- * useTheme — light / "black & silver" dark mode.
+ * useTheme — lab (default) / light / "black & silver" dark mode.
  *
  * Single source of truth for the active palette. The actual colors live in
- * src/theme/theme.css (`:root` = light, `html[data-theme="dark"]` = dark);
- * this hook only owns the *mode* and persists the user's choice.
+ * src/theme/theme.css (`:root` = light, `html[data-theme="dark"]` = dark,
+ * `html[data-theme="lab"]` = lab); this hook only owns the *mode* and
+ * persists the user's choice for the current tab session.
  *
  * No-flash: index.html sets `data-theme` before first paint from the same
- * localStorage key, so the page never flickers light → dark on load. This
- * hook reads that already-applied attribute as its initial state.
+ * sessionStorage key, so the page never flickers on load. This hook reads
+ * that already-applied attribute as its initial state. Every fresh tab
+ * starts back on lab — the swatch choice doesn't outlive the session.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -35,10 +37,10 @@ const NEXT_THEME: Record<ThemeMode, ThemeMode> = {
 
 function readStoredTheme(): ThemeMode {
   try {
-    const stored = localStorage.getItem(THEME_KEY);
+    const stored = sessionStorage.getItem(THEME_KEY);
     if (stored === 'light' || stored === 'dark' || stored === 'lab') return stored;
   } catch {
-    /* localStorage unavailable (private mode / SSR) — fall through */
+    /* sessionStorage unavailable (private mode / SSR) — fall through */
   }
   return DEFAULT_THEME;
 }
@@ -64,7 +66,7 @@ export function applyTheme(theme: ThemeMode): void {
   if (meta) meta.setAttribute('content', THEME_COLOR[theme]);
 
   try {
-    localStorage.setItem(THEME_KEY, theme);
+    sessionStorage.setItem(THEME_KEY, theme);
   } catch {
     /* ignore persistence failures */
   }

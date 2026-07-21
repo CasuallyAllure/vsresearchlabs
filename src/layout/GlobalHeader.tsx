@@ -17,6 +17,7 @@ import { useCart } from '../hooks/useCart';
 import { NavDrawer } from './NavDrawer';
 import { Logo } from '../components/brand/Logo';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { CartIcon } from '../components/icons/CartIcon';
 
 const CartDrawer = lazy(() => import('./CartDrawer').then((m) => ({ default: m.CartDrawer })));
 
@@ -39,7 +40,7 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
         data-role={role}
         style={{ backgroundColor: 'var(--header-bg)' }}
       >
-        <div className="relative z-10 h-[56px] sm:h-[60px] px-[var(--space-6)] flex items-center">
+        <div className="relative z-10 h-[52px] sm:h-[56px] px-[var(--space-6)] flex items-center">
           {/* LEFT — Hamburger trigger */}
           <button
             type="button"
@@ -73,18 +74,17 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
           {/* CENTER — DNA·V identity lockup.
               Mobile: stacked (mark above wordmark), bigger, centered.
               Desktop (sm+): horizontal lockup, centered, larger. */}
-          <Logo variant="stacked" markSize={44} wordSize={11} circled className="sm:hidden absolute left-1/2 -translate-x-1/2" />
+          <Logo variant="stacked" markSize={32} wordSize={10} circled className="sm:hidden absolute left-1/2 -translate-x-1/2" />
           <Logo
             variant="lockup"
-            markSize={48}
-            wordSize={14}
+            markSize={36}
+            wordSize={13}
             circled
             className="hidden sm:inline-flex sm:absolute sm:left-1/2 sm:-translate-x-1/2"
           />
 
-          {/* RIGHT — Cart */}
-          {/* Dimensional chip: gradient fill + lit top edge + soft drop shadow
-              so the bag reads as a raised control — the header's one action. */}
+          {/* RIGHT — Cart. Quiet control mirroring the hamburger's treatment
+              (no chip, no gradient) — the header's one action stays understated. */}
           <button
             type="button"
             onClick={() => {
@@ -94,42 +94,13 @@ export function GlobalHeader({ role = 'guest' }: GlobalHeaderProps) {
             aria-label="Open inquiry list"
             aria-expanded={cartOpen}
             aria-controls="inquiry-cart-drawer"
-            className="relative ml-auto shrink-0 flex h-10 w-10 items-center justify-center rounded-full border border-ink/[0.12] text-ink/70 hover:text-ink transition-[color,box-shadow,transform] duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/25"
-            style={{
-              background:
-                'linear-gradient(180deg, var(--color-surface-elevated), var(--surface-product))',
-              boxShadow:
-                'var(--surface-highlight), 0 1px 2px rgba(30,28,24,0.08), 0 6px 16px -6px rgba(30,28,24,0.22)',
-            }}
+            className="relative ml-auto shrink-0 p-2 -mr-2 text-ink/70 hover:text-ink transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <defs>
-                <linearGradient id="vsr-bag-depth" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="currentColor" stopOpacity="0.16" />
-                  <stop offset="100%" stopColor="currentColor" stopOpacity="0.04" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M6.5 8.5h11l-.8 11a2 2 0 0 1-2 1.85H9.3a2 2 0 0 1-2-1.85z"
-                fill="url(#vsr-bag-depth)"
-              />
-              <path d="M9 8.5V6.2a3 3 0 0 1 6 0v2.3" />
-            </svg>
+            <CartIcon size={20} />
             {itemCount > 0 && (
               <span
                 aria-label={`${itemCount} item${itemCount === 1 ? '' : 's'} in inquiry`}
-                className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-gold rounded-full text-[10px] font-medium text-ink flex items-center justify-center tabular-nums shadow-[0_1px_3px_rgba(30,28,24,0.25)] ring-2 ring-[color:var(--header-bg)]"
+                className="absolute top-0 right-0 min-w-[17px] h-[17px] px-1 bg-gold rounded-full text-[10px] font-medium text-ink flex items-center justify-center tabular-nums shadow-[0_1px_3px_rgba(30,28,24,0.25)] ring-2 ring-[color:var(--header-bg)]"
               >
                 {itemCount}
               </span>

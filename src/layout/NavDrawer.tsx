@@ -38,6 +38,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
 import { siteConfig } from '../config';
 import { DnaVMark } from '../components/brand/DnaVMark';
+import { CartIcon } from '../components/icons/CartIcon';
 
 interface NavLinkDef {
   to: string;
@@ -149,13 +150,6 @@ const MailIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="5" width="18" height="14" rx="2" />
     <path d="m3 7 9 6 9-6" />
-  </svg>
-);
-
-const CartIcon = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M6.5 8.5h11l-.8 11a2 2 0 0 1-2 1.85H9.3a2 2 0 0 1-2-1.85z" />
-    <path d="M9 8.5V6.2a3 3 0 0 1 6 0v2.3" />
   </svg>
 );
 
@@ -510,7 +504,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
               className={`group relative flex min-h-[52px] items-center gap-3.5 rounded-[14px] border border-gold/25 bg-gold/[0.06] px-3.5 py-3 transition-[background-color,border-color] duration-200 hover:bg-gold/[0.1] hover:border-gold/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${open ? 'drawer-reveal' : ''}`}
             >
               <span className="grid h-[22px] w-[22px] shrink-0 place-items-center text-gold-dark group-hover:text-gold transition-colors">
-                {CartIcon}
+                <CartIcon size={18} />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-[13.5px] leading-tight tracking-[-0.01em] text-ink group-hover:text-ink transition-colors">
