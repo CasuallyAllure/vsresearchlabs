@@ -101,9 +101,13 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
   const heldRef = useRef(false);
   const exitedRef = useRef(false);
   const onFinalFrameHoldRef = useRef(onFinalFrameHold);
-  onFinalFrameHoldRef.current = onFinalFrameHold;
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  // Latest-callback refs, updated post-render (writing during render trips
+  // react-hooks/refs). Both consumers fire from timeouts, never mid-render.
+  useEffect(() => {
+    onFinalFrameHoldRef.current = onFinalFrameHold;
+    onCompleteRef.current = onComplete;
+  });
 
   // Hold body scroll except while actively scrubbing (stacks safely with
   // the gates' own ref-counted locks).
@@ -381,7 +385,10 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
           </div>
         )}
 
-        {/* Scroll cue — fades as soon as scrubbing begins. */}
+        {/* Scroll cue — an unmissable invitation: labeled pill + bobbing
+            double chevron. Fades as soon as scrubbing begins. Only shown on
+            the scrub path, so the loop animation never runs for
+            reduced-motion visitors. */}
         {phase === 'active' && !gateOpen && !reduced && (
           <div
             ref={cueRef}
@@ -390,21 +397,65 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 40,
-              textAlign: 'center',
+              bottom: 32,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 10,
               transition: 'opacity 400ms ease',
             }}
           >
-            <span style={{ ...mono, color: 'rgba(255,255,255,0.75)' }}>Scroll</span>
+            <style>{`
+              @keyframes vsrEntranceCueBob {
+                0%, 100% { transform: translateY(0); }
+                50%      { transform: translateY(9px); }
+              }
+              @keyframes vsrEntranceCueBlink {
+                0%, 100% { opacity: 0.25; }
+                50%      { opacity: 1; }
+              }
+            `}</style>
+            <span
+              style={{
+                ...mono,
+                fontSize: '11px',
+                padding: '10px 18px',
+                color: 'rgba(255,255,255,0.92)',
+                background: 'rgba(23,25,28,0.45)',
+                border: '1px solid rgba(255,255,255,0.28)',
+                borderRadius: 999,
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+              }}
+            >
+              Scroll to begin
+            </span>
             <span
               style={{
                 display: 'block',
-                width: 1,
-                height: 28,
-                margin: '10px auto 0',
-                background: 'linear-gradient(rgba(255,255,255,0.75), transparent)',
+                animation: 'vsrEntranceCueBob 1.6s ease-in-out infinite',
+                filter: 'drop-shadow(0 1px 6px rgba(0,0,0,0.55))',
               }}
-            />
+            >
+              <svg width="22" height="24" viewBox="0 0 22 24" fill="none">
+                <path
+                  d="M1 1l10 9L21 1"
+                  stroke="rgba(255,255,255,0.95)"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ animation: 'vsrEntranceCueBlink 1.6s ease-in-out infinite' }}
+                />
+                <path
+                  d="M1 12l10 9 10-9"
+                  stroke="rgba(255,255,255,0.95)"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ animation: 'vsrEntranceCueBlink 1.6s ease-in-out infinite 0.25s' }}
+                />
+              </svg>
+            </span>
           </div>
         )}
 
