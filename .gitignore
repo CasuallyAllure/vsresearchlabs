@@ -54,6 +54,12 @@ blob-report/
 # VILERAW/ = raw asset dumps.
 video/
 VILERAW/
+
+# Entrance animation SOURCE (137MB GIF — over GitHub's 100MB hard limit).
+# The generated frames it produces ARE committed (public/landing-sequence/);
+# regenerate them with: npm run gen:landing-frames
+# Root-anchored: git's ignorecase would otherwise swallow src/components/landing/.
+/Landing/
 .env.bak-jwt-key
 
 # Print-ready NIIMBOT M2 label library (402 PNGs) + the generator's venv.

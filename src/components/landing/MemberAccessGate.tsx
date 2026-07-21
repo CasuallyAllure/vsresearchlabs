@@ -107,9 +107,13 @@ interface MemberAccessGateProps {
   open: boolean;
   /** Dismiss without signing in — Landing then opens the intro video. */
   onGuest: () => void;
+  /** 'subtle' = no backdrop blur and a lighter tint — used when the gate
+   *  fades in over the entrance sequence's frozen final frame, which must
+   *  stay clearly visible behind the panel. */
+  scrim?: 'default' | 'subtle';
 }
 
-export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProps) {
+export function MemberAccessGate({ open: isOpen, onGuest, scrim = 'default' }: MemberAccessGateProps) {
   const [render, setRender] = useState(isOpen);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -158,9 +162,11 @@ export function MemberAccessGate({ open: isOpen, onGuest }: MemberAccessGateProp
       <div
         aria-hidden="true"
         onClick={onGuest}
-        className={`absolute inset-0 bg-[color:var(--scrim)] backdrop-blur-[2px] transition-opacity duration-300 ${
-          open ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          scrim === 'subtle'
+            ? 'bg-black/25'
+            : 'bg-[color:var(--scrim)] backdrop-blur-[2px]'
+        } ${open ? 'opacity-100' : 'opacity-0'}`}
       />
 
       {/* Panel — solid surface, one calm shadow, hairline top highlight. */}

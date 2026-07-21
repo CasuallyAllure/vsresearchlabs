@@ -33,6 +33,9 @@ import { INDUSTRY_OPTIONS, readDisclaimerAcceptance, writeDisclaimerAcceptance }
 // scrolling internally on short screens.
 const CARD_PADDING_TOP = 28;     // matches inline padding in card style
 const MARK_SIZE = 64;            // DnaVMark size in the gate
+// Fade-out on accept: only the gate interface fades — whatever sits behind
+// it (e.g. the entrance sequence's first frame) stays visually fixed.
+const GATE_FADE_MS = 380;
 
 export function DisclaimerGate() {
   // Show on first visit only — read storage during init (client-only SPA),
@@ -40,6 +43,7 @@ export function DisclaimerGate() {
   // is required: the legacy v1 bare-timestamp value (different key) no longer
   // counts, so existing visitors re-attest once and declare an industry.
   const [open, setOpen] = useState(() => readDisclaimerAcceptance() === null);
+  const [closing, setClosing] = useState(false);
   const [age, setAge] = useState(false);
   const [terms, setTerms] = useState(false);
   const [industry, setIndustry] = useState('');
@@ -81,14 +85,16 @@ export function DisclaimerGate() {
   }, [open]);
 
   function accept() {
-    if (!age || !terms || !industry) return;
+    if (!age || !terms || !industry || closing) return;
     // Structured acceptance record — checkout attaches this to every order
     // so there's an audit trail that the buyer attested before purchasing.
     writeDisclaimerAcceptance(industry);
-    setOpen(false);
     // Let downstream first-visit prompts (e.g. the member-access gate) hold
     // until the age/research disclaimer clears, so it's always shown first.
     try { window.dispatchEvent(new Event('vsr:disclaimer-accepted')); } catch { /* noop */ }
+    // Fade the gate interface out, then unmount.
+    setClosing(true);
+    window.setTimeout(() => setOpen(false), GATE_FADE_MS);
   }
 
   if (!open) return null;
@@ -112,6 +118,9 @@ export function DisclaimerGate() {
         backdropFilter: 'blur(10px) saturate(120%)',
         WebkitBackdropFilter: 'blur(10px) saturate(120%)',
         animation: 'vsrl-dgate-fade 220ms ease-out',
+        opacity: closing ? 0 : 1,
+        transition: `opacity ${GATE_FADE_MS}ms ease`,
+        pointerEvents: closing ? 'none' : 'auto',
       }}
     >
       <style>{`

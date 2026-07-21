@@ -44,6 +44,8 @@ import { CompoundVisualizerFrame } from '../components/landing/CompoundVisualize
 import { CompoundVisualizerModal } from '../components/landing/CompoundVisualizerModal';
 import { IntroModal } from '../components/landing/IntroModal';
 import { MemberAccessGate } from '../components/landing/MemberAccessGate';
+import { EntranceSequence } from '../components/landing/EntranceSequence';
+import { readEntranceDone } from '../lib/entranceSequence';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { LegalDisclaimer } from '../components/landing/LegalDisclaimer';
 import { SameDayDeliveryBadge } from '../components/landing/SameDayDeliveryBadge';
@@ -307,14 +309,37 @@ export function Landing() {
   const [compoundExpanded, setCompoundExpanded] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
+  // Scroll-controlled entrance (frames of Landing GIF), once per browser
+  // session. While active it overlays the page (behind the DisclaimerGate)
+  // and holds the member-access/intro greeting chain until it completes.
+  const [entranceActive, setEntranceActive] = useState(() => !readEntranceDone());
+  // Flipped by "Continue as guest" (or straight away for members/repeat
+  // guests) — the entrance overlay only fades out on this signal, never
+  // merely because the final frame was reached.
+  const [entranceExit, setEntranceExit] = useState(false);
   const { loading: authLoading, profile } = useCustomerAuth();
+
+  // The entrance froze on its final frame: fade the member-access prompt
+  // in above it — unless this visitor already dealt with the prompt (or is
+  // a signed-in member), in which case the overlay just closes.
+  function handleEntranceFinalFrame() {
+    let gateSeen = false;
+    try { gateSeen = sessionStorage.getItem('vsr.gateSeen') === '1'; } catch { /* noop */ }
+    if (profile || gateSeen) {
+      setEntranceExit(true);
+      return;
+    }
+    setGateOpen(true);
+  }
 
   // First-visit greeting, once per browser session. Only a real member (one
   // with a customer profile) skips the gate and goes straight to the intro
   // video — everyone else (guests AND signed-in non-members, e.g. an admin)
   // gets the member-access gate first, so it reliably greets.
+  // Held while the entrance sequence is running — when it completes,
+  // entranceActive flips false and this effect re-runs.
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || entranceActive) return;
     if (profile) {
       if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
       return;
@@ -335,11 +360,14 @@ export function Landing() {
     function onDisclaimerAccepted() { setGateOpen(true); }
     window.addEventListener('vsr:disclaimer-accepted', onDisclaimerAccepted, { once: true });
     return () => window.removeEventListener('vsr:disclaimer-accepted', onDisclaimerAccepted);
-  }, [authLoading, profile]);
+  }, [authLoading, profile, entranceActive]);
 
   function dismissGate() {
     sessionStorage.setItem('vsr.gateSeen', '1');
     setGateOpen(false);
+    // Guest chose to enter while the entrance held its final frame — this
+    // is the signal that actually closes the overlay and reveals the site.
+    if (entranceActive) setEntranceExit(true);
     if (sessionStorage.getItem('vsr.introSeen') !== '1') setIntroOpen(true);
   }
 
@@ -350,8 +378,23 @@ export function Landing() {
 
   return (
     <>
+      {/* Scroll-controlled entrance — frame 0 sits behind the disclaimer
+          gate; accepting the gate hands scroll control to the sequence.
+          On the frozen final frame the member gate fades in above it, and
+          only "Continue as guest" (or member/repeat status) closes it. */}
+      {entranceActive && (
+        <EntranceSequence
+          onFinalFrameHold={handleEntranceFinalFrame}
+          exit={entranceExit}
+          onComplete={() => setEntranceActive(false)}
+        />
+      )}
       {/* Member-access gate greets guests first; on dismiss the intro follows. */}
-      <MemberAccessGate open={gateOpen} onGuest={dismissGate} />
+      <MemberAccessGate
+        open={gateOpen}
+        onGuest={dismissGate}
+        scrim={entranceActive ? 'subtle' : 'default'}
+      />
       {/* "What are peptides" intro video — greets the visitor after the gate. */}
       <IntroModal open={introOpen} onClose={dismissIntro} />
       <ResearchSuppliesModal open={suppliesOpen} onClose={() => setSuppliesOpen(false)} />
