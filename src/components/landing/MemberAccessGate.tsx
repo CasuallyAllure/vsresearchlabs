@@ -103,13 +103,43 @@ const PERKS: Perk[] = [
   },
 ];
 
+/**
+ * Dark-palette pin for the over-entrance glass presentation. The clear glass
+ * sits on the entrance artwork (always dark), so the card must render the
+ * DARK token set even when the site theme is light — theme.css only themes
+ * via `html[data-theme]`, so the dark values are re-declared locally on the
+ * dialog subtree (Tailwind channels + the literal aliases the card's
+ * primitives consume: DnaVMark, .cta-mint, .cta-holo). Values are copied
+ * verbatim from theme.css `html[data-theme="dark"]`.
+ */
+const DARK_GLASS_VARS = {
+  '--c-ink': '233 233 236',
+  '--c-ink-light': '168 169 173',
+  '--c-ink-muted': '110 111 115',
+  '--c-gold': '168 172 178',
+  '--c-gold-light': '198 201 206',
+  '--c-gold-dark': '126 130 136',
+  '--c-gold-muted': '157 160 165',
+  '--c-base-900': '12 12 13',
+  '--c-base-800': '22 22 24',
+  '--color-content-primary': '#E9E9EC',
+  '--color-content-inverse': '#0C0C0D',
+  '--color-accent-gold-light': '#C6C9CE',
+  '--color-accent-gold': '#A8ACB2',
+  '--color-accent-gold-dark': '#7E8288',
+  '--color-accent-gold-muted': '#9DA0A5',
+  '--color-border-strong': 'rgba(233, 233, 236, 0.26)',
+  '--color-interactive-secondary': 'rgba(233, 233, 236, 0.07)',
+} as React.CSSProperties;
+
 interface MemberAccessGateProps {
   open: boolean;
   /** Dismiss without signing in — Landing then opens the intro video. */
   onGuest: () => void;
-  /** 'subtle' = no backdrop blur and a lighter tint — used when the gate
-   *  fades in over the entrance sequence's frozen final frame, which must
-   *  stay clearly visible behind the panel. */
+  /** 'subtle' = no backdrop scrim blur, a lighter tint, and a CLEAR glass
+   *  panel (.mag-clear-glass + locally pinned dark palette) instead of the
+   *  solid card — used when the gate fades in over the entrance sequence's
+   *  frozen final frame, which must stay visible behind and THROUGH it. */
   scrim?: 'default' | 'subtle';
 }
 
@@ -157,6 +187,7 @@ export function MemberAccessGate({ open: isOpen, onGuest, scrim = 'default' }: M
       aria-modal="true"
       aria-label="Member access"
       className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6"
+      style={scrim === 'subtle' ? DARK_GLASS_VARS : undefined}
     >
       {/* Backdrop */}
       <div
@@ -164,14 +195,21 @@ export function MemberAccessGate({ open: isOpen, onGuest, scrim = 'default' }: M
         onClick={onGuest}
         className={`absolute inset-0 transition-opacity duration-300 ${
           scrim === 'subtle'
-            ? 'bg-black/25'
+            ? 'bg-black/10'
             : 'bg-[color:var(--scrim)] backdrop-blur-[2px]'
         } ${open ? 'opacity-100' : 'opacity-0'}`}
       />
 
-      {/* Panel — solid surface, one calm shadow, hairline top highlight. */}
+      {/* Panel — over the entrance's frozen final frame it becomes clear
+          reflective glass (mag-clear-glass below): the vials and lab stay
+          visible THROUGH the card, not just around it. Everywhere else it
+          stays the solid card. */}
       <div
-        className={`relative w-full max-w-[460px] max-h-[90dvh] overflow-y-auto rounded-[20px] border border-ink/15 bg-base-800 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.65),0_0_90px_-10px_rgba(255,255,255,0.10)] p-[var(--space-6)] sm:p-[var(--space-7)] transition-[opacity,transform] duration-300 ease-out ${
+        className={`relative w-full max-w-[460px] max-h-[90dvh] overflow-y-auto rounded-[20px] ${
+          scrim === 'subtle'
+            ? 'mag-clear-glass'
+            : 'border border-ink/15 bg-base-800 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.65),0_0_90px_-10px_rgba(255,255,255,0.10)]'
+        } p-[var(--space-6)] sm:p-[var(--space-7)] transition-[opacity,transform] duration-300 ease-out ${
           open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-[0.98]'
         }`}
       >
@@ -277,6 +315,28 @@ export function MemberAccessGate({ open: isOpen, onGuest, scrim = 'default' }: M
       </div>
 
       <style>{`
+        /* Clear reflective glass for the over-entrance presentation: a
+           near-transparent white sheen (no milky fill), light blur so the
+           artwork reads through, bright hairline + inner highlights for the
+           glass edge. Deliberately clearer than the system .glass-panel —
+           the frozen final frame IS the backdrop and must stay visible. */
+        .mag-clear-glass {
+          background: linear-gradient(
+            160deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.045) 40%,
+            rgba(255, 255, 255, 0.02) 65%,
+            rgba(255, 255, 255, 0.09) 100%
+          );
+          -webkit-backdrop-filter: blur(9px) saturate(175%);
+          backdrop-filter: blur(9px) saturate(175%);
+          border: 1px solid rgba(255, 255, 255, 0.32);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.40),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+            0 24px 60px -16px rgba(0, 0, 0, 0.55);
+        }
+
         .detail-fade { animation: detailFade 220ms ease-out both; }
         @keyframes detailFade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
