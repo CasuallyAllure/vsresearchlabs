@@ -252,15 +252,24 @@ describe('b2g1TooltipContent', () => {
   });
 
   test('returns the full term blurb with the end-date label when the term is live', () => {
-    // Arrange
-    usePromoSettings.setState({ b2g1Enabled: true, b2g1EndsAt: '2026-07-20T12:00:00Z' });
+    // Arrange — freeze "now" the day before the fixed end date. The tooltip
+    // gates on Date.now(), so a bare hardcoded future fixture is a time bomb
+    // that starts failing the morning it lapses (it did, on 2026-07-20).
+    // The end date itself stays fixed so the "Jul 20" label stays exact.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-19T12:00:00Z'));
+    try {
+      usePromoSettings.setState({ b2g1Enabled: true, b2g1EndsAt: '2026-07-20T12:00:00Z' });
 
-    // Act
-    const tooltip = b2g1TooltipContent('ghk-cu');
+      // Act
+      const tooltip = b2g1TooltipContent('ghk-cu');
 
-    // Assert
-    expect(tooltip).toBe(
-      'Standard-shipping volume term: order 3 units of an item and the third is supplied at no charge, applied at checkout. Effective through Jul 20.',
-    );
+      // Assert
+      expect(tooltip).toBe(
+        'Standard-shipping volume term: order 3 units of an item and the third is supplied at no charge, applied at checkout. Effective through Jul 20.',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
