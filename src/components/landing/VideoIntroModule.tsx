@@ -132,7 +132,7 @@ export function VideoIntroModule() {
     <section
       aria-roledescription="carousel"
       aria-label="Introduction"
-      className="research-surface-solid p-[var(--space-5)] sm:p-[var(--space-7)] mb-[var(--space-8)] mx-auto max-w-[920px]"
+      className="glass-clear rounded-[var(--radius-procurement)] p-[var(--space-5)] sm:p-[var(--space-7)] mb-[var(--space-8)] mx-auto max-w-[920px]"
     >
       {/* Masthead — magazine-cover caps in the Cormorant face, compact, with the
           "Peptides Explained" series mark in a brushed-metal gradient beneath. */}
@@ -347,11 +347,12 @@ export function VideoIntroModule() {
               aria-label={`Go to ${t.title}`}
               aria-current={on ? 'true' : undefined}
               onClick={() => go(i)}
-              className="rounded-full transition-[width,background-color] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40"
+              className={`rounded-full transition-[width,background-color] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/40 ${
+                on ? 'bg-ink/70' : 'bg-ink/[0.18]'
+              }`}
               style={{
                 width: on ? 22 : 7,
                 height: 7,
-                backgroundColor: on ? 'rgba(26,23,20,0.7)' : 'rgba(26,23,20,0.18)',
               }}
             />
           );

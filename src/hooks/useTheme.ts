@@ -13,22 +13,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { siteConfig } from '../config';
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'lab';
 
 // Must match the no-flash boot script in index.html, which cannot import this.
 const THEME_KEY = siteConfig.storage.themeKey;
-const DEFAULT_THEME: ThemeMode = 'dark';
+const DEFAULT_THEME: ThemeMode = 'lab';
 
 // Page chrome color for the mobile browser UI, per mode.
 const THEME_COLOR: Record<ThemeMode, string> = {
   light: '#F4EFE6',
   dark: '#0C0C0D',
+  lab: '#12100D',
+};
+
+// 3-way cycle order: lab (client default) → light → dark → lab.
+const NEXT_THEME: Record<ThemeMode, ThemeMode> = {
+  lab: 'light',
+  light: 'dark',
+  dark: 'lab',
 };
 
 function readStoredTheme(): ThemeMode {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
+    if (stored === 'light' || stored === 'dark' || stored === 'lab') return stored;
   } catch {
     /* localStorage unavailable (private mode / SSR) — fall through */
   }
@@ -41,6 +49,7 @@ function readInitialTheme(): ThemeMode {
     const attr = document.documentElement.getAttribute('data-theme');
     if (attr === 'dark') return 'dark';
     if (attr === 'light') return 'light';
+    if (attr === 'lab') return 'lab';
   }
   return readStoredTheme();
 }
@@ -49,11 +58,7 @@ function readInitialTheme(): ThemeMode {
 export function applyTheme(theme: ThemeMode): void {
   if (typeof document === 'undefined') return;
 
-  if (theme === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
+  document.documentElement.setAttribute('data-theme', theme);
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', THEME_COLOR[theme]);
@@ -85,8 +90,8 @@ export function useTheme(): UseThemeResult {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setThemeState((prev) => NEXT_THEME[prev]);
   }, []);
 
-  return { theme, isDark: theme === 'dark', toggleTheme, setTheme };
+  return { theme, isDark: theme !== 'light', toggleTheme, setTheme };
 }

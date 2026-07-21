@@ -490,6 +490,127 @@ html[data-theme="dark"] {
 }
 
 /* ============================================================================
+   LAB — the client-facing default (2026-07-21). Warm lab graphite + restored
+   amber + steel glass-blue, derived from the entrance artwork. Owner-approved
+   supersession of the monochrome-only rule.
+   ============================================================================ */
+html[data-theme="lab"] {
+  --theme-mode: "lab";
+
+  /* ── Tailwind channels ───────────────────────────────────────────────── */
+  /* Surfaces — warm lab graphite ramp (walnut cast). */
+  --c-base-900: 18 16 13;     /* #12100D page */
+  --c-base-800: 27 24 21;     /* #1B1815 cards */
+  --c-base-700: 36 32 25;     /* #242019 overlay/topmost */
+  --c-base-600: 11 10 8;      /* #0B0A08 sunken */
+  /* Content — bone silver, warm. */
+  --c-ink: 234 231 224;       /* #EAE7E0 primary */
+  --c-ink-light: 179 174 164; /* #B3AEA4 secondary */
+  --c-ink-muted: 120 115 105; /* #787369 tertiary */
+  /* Restored amber (real gold, not silver). */
+  --c-gold-light: 225 197 126; /* #E1C57E */
+  --c-gold: 196 154 72;        /* #C49A48 */
+  --c-gold-dark: 168 125 45;   /* #A87D2D */
+  --c-gold-muted: 181 144 75;  /* #B5904B */
+  /* Steel glass-blue — links / secondary. */
+  --c-teal-light: 143 176 188; /* #8FB0BC */
+  --c-teal: 110 147 160;       /* #6E93A0 */
+  --c-teal-dark: 78 117 128;   /* #4E7580 */
+  /* Image bays / display insets — existing warm values, kept. */
+  --c-display: 22 19 15;       /* #16130F */
+  --c-display-elevated: 33 28 22; /* #211C16 */
+  /* Text mirrors ink. */
+  --c-text-primary: 234 231 224;
+  --c-text-secondary: 179 174 164;
+  --c-text-tertiary: 120 115 105;
+
+  /* ── Chrome tokens (inline-styled surfaces) ──────────────────────────── */
+  --header-bg: rgba(18, 16, 13, 0.82);
+  --loader-bg: rgba(18, 16, 13, 0.6);
+  --scrollbar-thumb: rgba(234, 231, 224, 0.16);
+  --scrollbar-thumb-hover: rgba(234, 231, 224, 0.30);
+  --botnav-grad: linear-gradient(180deg, rgba(36, 32, 25, 0.9) 0%, rgba(20, 18, 16, 0.94) 100%);
+  --botnav-sheet-grad: linear-gradient(180deg, rgba(36, 32, 25, 0.96) 0%, rgba(20, 18, 16, 0.97) 100%);
+  --botnav-border: rgba(234, 231, 224, 0.14);
+  --botnav-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6), inset 0 0.5px 0 rgba(234, 231, 224, 0.10);
+  --botnav-shadow-sheet: 0 12px 36px -16px rgba(0, 0, 0, 0.7), inset 0 0.5px 0 rgba(234, 231, 224, 0.10);
+  --visualizer-glass: linear-gradient(155deg, rgba(45, 40, 32, 0.55) 0%, rgba(27, 24, 21, 0.4) 100%);
+  --visualizer-glass-border: rgba(234, 231, 224, 0.12);
+  --visualizer-scrim: linear-gradient(to bottom, rgba(18, 16, 13, 0.92) 0%, rgba(18, 16, 13, 0.45) 55%, transparent 100%);
+  --visualizer-backdrop: radial-gradient(120% 90% at 50% 26%, rgba(27, 24, 21, 0.55) 0%, rgba(18, 16, 13, 0.66) 52%, rgba(11, 10, 8, 0.8) 100%);
+
+  /* ── Legacy --color-* tokens (back the hand-rolled CSS utilities) ─────── */
+  --color-surface-base: #12100D;
+  --color-surface-elevated: #1B1815;
+  --color-surface-overlay: #242019;
+  --color-surface-sunken: #0B0A08;
+
+  --color-content-primary: #EAE7E0;
+  --color-content-secondary: #B3AEA4;
+  --color-content-tertiary: #787369;
+  --color-content-inverse: #12100D;
+
+  --color-border-default: rgba(234, 231, 224, 0.14);
+  --color-border-subtle: rgba(234, 231, 224, 0.07);
+  --color-border-strong: rgba(234, 231, 224, 0.26);
+
+  --color-interactive-primary: #C49A48;
+  --color-interactive-primaryHover: #E1C57E;
+  --color-interactive-primaryActive: #A87D2D;
+  --color-interactive-secondary: rgba(234, 231, 224, 0.07);
+  --color-interactive-secondaryHover: rgba(234, 231, 224, 0.12);
+
+  --color-accent-gold-light: #E1C57E;
+  --color-accent-gold: #C49A48;
+  --color-accent-gold-dark: #A87D2D;
+  --color-accent-gold-muted: #B5904B;
+  --color-accent-teal-light: #8FB0BC;
+  --color-accent-teal: #6E93A0;
+  --color-accent-teal-dark: #4E7580;
+
+  --color-display-base: #16130F;
+  --color-display-elevated: #211C16;
+
+  /* Status — copied verbatim from dark. */
+  --color-status-success: #4CAF82;
+  --color-status-successMuted: rgba(76, 175, 130, 0.16);
+  --color-status-warning: #D89A3A;
+  --color-status-warningMuted: rgba(216, 154, 58, 0.16);
+  --color-status-error: #D96565;
+  --color-status-errorMuted: rgba(217, 101, 101, 0.16);
+  --color-status-info: #868A90;
+  --color-status-infoMuted: rgba(134, 138, 144, 0.16);
+
+  /* ── 2026 elevation + glass (lab) ─────────────────────────────────────── */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 16px -6px rgba(0, 0, 0, 0.45);
+  --elev-2: 0 2px 4px rgba(0, 0, 0, 0.40), 0 14px 36px -10px rgba(0, 0, 0, 0.55);
+  --elev-3: 0 8px 32px rgba(0, 0, 0, 0.45), 0 28px 72px -18px rgba(0, 0, 0, 0.65);
+  --glass-bg: rgba(27, 24, 21, 0.55);
+  --glass-border: rgba(225, 197, 126, 0.14);
+  --glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(16px) saturate(160%);
+  --scrim: rgba(0, 0, 0, 0.62);
+
+  /* ── Research surface tokens (E1/E2) ─────────────────────────────────── */
+  --surface-product: #1B1815;
+  --surface-product-hover: #242019;
+  --surface-elevated-research: #242019;
+  --surface-cta: rgba(234, 231, 224, 0.06);
+  --border-product: rgba(234, 231, 224, 0.10);
+  --border-product-hover: rgba(234, 231, 224, 0.20);
+  --border-cta: rgba(234, 231, 224, 0.15);
+  --surface-specimen-bay: #1B1815;
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --surface-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* Lab sits behind backdrop-blurred chrome same as dark; adopt dark native
+   form control / scrollbar styling. */
+html[data-theme="lab"] {
+  color-scheme: dark;
+}
+
+/* ============================================================================
    Reduced Motion — Disable animations for accessibility
    ============================================================================ */
 
@@ -726,7 +847,8 @@ html[data-theme="dark"] {
    tailwind tokens are brushed silver under the monochrome direction). */
 /* Compound tile depth in dark mode — where drop-shadows vanish against the
    near-black page, a defined rim + a soft cool ambient halo lift the card. */
-html[data-theme="dark"] .compound-tile {
+html[data-theme="dark"] .compound-tile,
+html[data-theme="lab"] .compound-tile {
   border-color: rgba(233, 233, 236, 0.16);
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 46%);
   box-shadow:
@@ -735,14 +857,16 @@ html[data-theme="dark"] .compound-tile {
     0 18px 42px -18px rgba(0, 0, 0, 0.85),
     0 0 40px -14px rgba(150, 162, 184, 0.14);
 }
-html[data-theme="dark"] .compound-tile.is-interactive:hover {
+html[data-theme="dark"] .compound-tile.is-interactive:hover,
+html[data-theme="lab"] .compound-tile.is-interactive:hover {
   border-color: rgba(233, 233, 236, 0.28);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 22px 52px -18px rgba(0, 0, 0, 0.9),
     0 0 54px -12px rgba(150, 162, 184, 0.22);
 }
-html[data-theme="dark"] .tile-spec-plate {
+html[data-theme="dark"] .tile-spec-plate,
+html[data-theme="lab"] .tile-spec-plate {
   background: rgba(255, 255, 255, 0.035);
   border-color: rgba(255, 255, 255, 0.07);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);

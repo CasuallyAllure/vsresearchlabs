@@ -8,8 +8,8 @@
 (function () {
   try {
     var t = localStorage.getItem('vsr.theme');
-    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', (t === 'light' || t === 'dark' || t === 'lab') ? t : 'lab');
   } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'lab');
   }
 })();

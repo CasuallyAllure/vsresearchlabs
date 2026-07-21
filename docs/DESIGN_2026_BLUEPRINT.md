@@ -8,6 +8,56 @@
 > emil-design-eng, high-end-visual-design, redesign-existing-projects,
 > make-interfaces-feel-better, gpt-taste, impeccable) + a full 4-agent audit of every surface.
 
+## ADDENDUM 2026-07-21 — Lab theme (owner-approved)
+
+The owner has approved a THIRD theme **Lab** (`html[data-theme="lab"]`), which supersedes two
+constraints from §0 and §5:
+
+- **Palette lock lifted:** §0's silver/graphite monochrome lock and §5's "no new accent colors"
+  ban apply to Light and Dark themes only. Lab restores warm gold and steel-blue accents derived
+  from the landing entrance artwork (walnut/amber under-cabinet lighting, brushed steel, cool
+  glass-blue).
+- **New default:** Lab is now the client-facing DEFAULT; Light and Dark monochrome remain as
+  toggles.
+
+### Token values (Lab theme)
+| Layer | Token | Hex | Role |
+|---|---|---|---|
+| **Base** | Page bg | `#12100D` | Warm lab graphite |
+| **Base** | Cards | `#1B1815` | Warm card graphite |
+| **Gold** | Primary | `#C49A48` | Warm amber |
+| **Gold** | Light | `#E1C57E` | Amber highlight |
+| **Gold** | Dark | `#A87D2D` | Amber shadow |
+| **Gold** | Variant | `#B5904B` | Amber tone |
+| **Teal** | Primary | `#6E93A0` | Steel glass-blue |
+| **Teal** | Light | `#8FB0BC` | Steel highlight |
+| **Teal** | Dark | `#4E7580` | Steel shadow |
+| **Ink** | Content | `#EAE7E0` | Bone-silver |
+
+### Glass & surface strata (Lab discipline)
+```
+1. Atmosphere          (page bg #12100D)
+   ↓
+2. Display bay         (bg-display, reserved for 3D/hero)
+   ↓
+3. Content card        (.floating-module, solid, elevated)
+   ↓
+4. Glass chrome        (.glass-panel, frosted chrome, modals/fixed only)
+   ↓
+5. Clear glass         (.glass-clear, near-transparent, gate/hero moments ONLY)
+```
+
+**Core rule:** "Glass is only glass when something worth seeing sits behind it."
+- `.glass-panel` — frosted chrome + backdrop-blur. Use for headers, drawers, modals, sticky
+  filters, dropdown menus (fixed/sticky chrome only).
+- `.glass-clear` — near-transparent clear glass with self-scoped dark tokens. Reserved for
+  gate/hero moments: entrance gates, intro video module. Extend the class; never fork copies.
+
+### For future agents
+Do NOT "correct" the warm amber/steel palette back to monochrome. The Lab theme is owner-approved
+and takes precedence. If you spot "no new colors" in §0/§5 and consider "fixing" these values,
+stop: they are intentional and documented here.
+
 ## 0. Mission
 
 Kill the early-2000s "spec sheet" read (sharp 4px corners, 1px hairline grids, 8–10px

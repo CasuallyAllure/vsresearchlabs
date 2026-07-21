@@ -13,6 +13,10 @@
 > chrome may use `.glass-panel`, chips are pills, and 10px is the type floor. The "flat
 > editorial, never glassy" doctrine in §6 below is RETIRED. Palette, fonts, voice, and the
 > price-path rules in this file still govern.
+>
+> **LAB THEME (2026-07-21):** The warm gold/teal palette documented in §2 is now REVIVED as the
+> "Lab" theme (default). See docs/DESIGN_2026_BLUEPRINT.md ADDENDUM for complete token values
+> and glass discipline.
 
 ---
 
