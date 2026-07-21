@@ -7,6 +7,7 @@ import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInvent
 import { CompoundSection } from '../components/catalog/CompoundSection';
 import { BundleOfferTile } from '../components/catalog/BundleOfferTile';
 import { NewlyCatalogedSpotlight } from '../components/catalog/NewlyCatalogedSpotlight';
+import { ProductSpotlightSlide } from '../components/catalog/ProductSpotlightSlide';
 import { FeaturedSupplyCarousel } from '../components/catalog/FeaturedSupplyCarousel';
 import { useProducts } from '../hooks/useProducts';
 import {
@@ -27,6 +28,13 @@ const ALL_LAYMAN =
   'The full biopeptide catalog — tap a category to filter the list and read what it does in plain terms. Swipe right for the technical detail.';
 const ALL_DESCRIPTION =
   'The complete biopeptide catalog. Pick a class to narrow the list and read what it covers.';
+
+/** Korean Glutathione spotlight slide — hero render + copy. */
+const KOREAN_GLUTATHIONE_SLUG = 'korean-glutathione';
+const KOREAN_GLUTATHIONE_DOSE = '1200mg';
+const KOREAN_GLUTATHIONE_IMAGE = '/vials/korean-glutathione-hero.webp';
+const KOREAN_GLUTATHIONE_DESCRIPTION =
+  'Reduced-form L-glutathione, 1200 mg per vial — a research-grade antioxidant compound sourced to order for redox and oxidative-stress research models.';
 
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
@@ -219,16 +227,28 @@ export function BiopeptideResearchSupplies() {
       </div>
 
       {/* Featured-supply carousel — one full-width slide at a time,
-          auto-advancing, with dots + a pause control. Either child can render
+          auto-advancing, with dots + a pause control. Any child can render
           nothing (BundleOfferTile hides on unresolved pricing, the spotlight
-          on an unresolved/hidden dose); the carousel filters those out so a
-          hidden slide never leaves a phantom dot. */}
+          slides on an unresolved/hidden dose); the carousel filters those out
+          so a hidden slide never leaves a phantom dot. slideLabels stays
+          positionally in sync with the children below. */}
       <FeaturedSupplyCarousel
         label="Featured supply"
-        slideLabels={['Paired supply', 'Newly cataloged']}
+        slideLabels={['Paired supply', 'Korean Glutathione', 'Newly cataloged']}
         className="mb-[var(--space-4)]"
       >
         <BundleOfferTile className="w-full" />
+        <ProductSpotlightSlide
+          products={products}
+          slug={KOREAN_GLUTATHIONE_SLUG}
+          dose={KOREAN_GLUTATHIONE_DOSE}
+          heroImage={KOREAN_GLUTATHIONE_IMAGE}
+          eyebrow="Antioxidant · Reduced form"
+          description={KOREAN_GLUTATHIONE_DESCRIPTION}
+          badge="limited"
+          onInspect={setInspectedId}
+          className="w-full"
+        />
         <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
       </FeaturedSupplyCarousel>
 

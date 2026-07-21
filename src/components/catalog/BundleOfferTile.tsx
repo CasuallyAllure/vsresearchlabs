@@ -21,10 +21,16 @@ import { useRef, useState } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
-import { useProductOverrides, isSkuVisible, isVariantPublic } from '../../lib/productOverrides';
+import {
+  useProductOverrides,
+  isSkuVisible,
+  isVariantPublic,
+  doseAvailability,
+} from '../../lib/productOverrides';
 import { useProducts } from '../../hooks/useProducts';
 import { BUNDLE_PROMO, BUNDLE_FEATURED, bundleDiscount } from '../../lib/bundle';
 import { Button } from '../ui/Button';
+import { AvailabilityBadge } from './AvailabilityBadge';
 import type { Product } from '../../types';
 
 /** Paired-supply hero render (the two vials on the lab-glass set). Archived
@@ -80,6 +86,20 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
   const priceB = effectiveTierPriceCents(productB, doseB);
   if (priceA == null || priceB == null || priceA <= 0 || priceB <= 0) return null;
 
+  // Dispatch badge for the pair — it can only ship as fast as its SLOWER
+  // half, so represent it by the lower KNOWN dispatch tier of the two
+  // components (never over-promise 24h when one leg is sourced). Unknowns are
+  // ignored; if neither dose is tracked, no badge renders — same honesty rule
+  // as AvailabilityBadge everywhere else.
+  const tierRank = (state: string) => (state === 'in_stock' ? 2 : state === 'sourced' ? 1 : 0);
+  const legs = [
+    { sku: productA.sku, dose: doseA, rank: tierRank(doseAvailability(productA.sku, doseA).state) },
+    { sku: productB.sku, dose: doseB, rank: tierRank(doseAvailability(productB.sku, doseB).state) },
+  ].filter((leg) => leg.rank > 0);
+  const dispatchLeg = legs.length
+    ? legs.reduce((slower, leg) => (leg.rank < slower.rank ? leg : slower))
+    : null;
+
   const totalCents = priceA + priceB;
   const { discountCents } = bundleDiscount([
     { sku: productA.sku, unitCents: priceA, quantity: 1 },
@@ -106,20 +126,28 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
   }
 
   return (
-    <section aria-label="Paired compound supply" className={`flex flex-col ${className}`}>
-      {/* Hero — the paired-supply render (the two vials on the lab-glass set,
-          matching the entrance/Lab aesthetic). The "Paired supply" chip and
-          the pairing line sit ON the image over legibility scrims; the price
-          and CTA read crisply on the card surface below. */}
-      <div className="relative">
+    // Compact two-part slide (matches ProductSpotlightSlide): a capped image
+    // BAND on mobile / a left image COLUMN on desktop, with price + CTA beside
+    // it. Keeps the slide short so the carousel doesn't swallow the viewport
+    // and every slide stays the same height. Content vertically centered so
+    // there's no dead gap under the CTA.
+    <section
+      aria-label="Paired compound supply"
+      className={`flex h-full flex-col md:min-h-[256px] md:flex-row md:items-stretch ${className}`}
+    >
+      {/* Image — the paired-supply render (two vials on the lab-glass set).
+          "Paired supply" chip + the pairing line sit ON it over scrims.
+          Mobile: capped band in flow. Desktop: absolutely fills the left
+          column (see ProductSpotlightSlide — %-height won't resolve against a
+          flex-stretched parent). */}
+      <div className="relative w-full shrink-0 overflow-hidden md:w-[42%]">
         <img
           src={BUNDLE_IMAGE}
           alt={`${productA.name} and ${productB.name} research vials — paired supply`}
-          className="w-full object-cover"
-          style={{ aspectRatio: '16 / 11', objectPosition: '60% 40%' }}
+          className="h-[160px] w-full object-cover sm:h-[184px] md:absolute md:inset-0 md:h-full"
+          style={{ objectPosition: '60% 40%' }}
           loading="lazy"
         />
-        {/* Bottom + top scrims for chip / title legibility over any framing. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
@@ -133,15 +161,20 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
           Paired supply
         </h2>
         {/* Pairing line — the wording, on the image, over the bottom scrim. */}
-        <p className="absolute inset-x-4 bottom-3 text-[14px] font-medium leading-snug text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+        <p className="absolute inset-x-4 bottom-3 text-[13.5px] font-medium leading-snug text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
           {productA.name} <span className="text-white/65">{doseA}</span>
           <span className="px-1 text-white/45">+</span>
           {productB.name} <span className="text-white/65">{doseB}</span>
         </p>
       </div>
 
-      {/* Price + disclaimer + CTA on the card surface. */}
-      <div className="flex flex-1 flex-col p-[var(--space-4)] lg:p-[var(--space-5)]">
+      {/* Price + disclaimer + CTA, vertically centered on the card surface. */}
+      <div className="flex flex-1 flex-col justify-center p-[var(--space-4)] lg:p-[var(--space-5)]">
+        {dispatchLeg && (
+          <div className="mb-2.5">
+            <AvailabilityBadge sku={dispatchLeg.sku} dose={dispatchLeg.dose} />
+          </div>
+        )}
         <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <span className="font-mono text-[13px] tabular-nums text-ink/40 line-through">
             {formatPrice(totalCents)}
@@ -164,7 +197,7 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
           variant="primary"
           size="md"
           onClick={handleAddBundle}
-          className="mt-auto w-full"
+          className="w-full md:w-auto md:min-w-[240px] md:self-start"
           aria-label={`Add ${productA.name} ${doseA} and ${productB.name} ${doseB} to inquiry`}
         >
           {added ? '✓ Added' : 'Add pair to inquiry'}

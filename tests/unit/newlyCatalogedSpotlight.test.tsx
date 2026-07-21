@@ -1,7 +1,9 @@
 // @vitest-environment happy-dom
 /**
- * The "newly cataloged" spotlight may not assert availability — or add a
- * priced line — it cannot back up.
+ * The single-product spotlight slides (GLOW via NewlyCatalogedSpotlight, and
+ * any other product configured through the shared ProductSpotlightSlide) may
+ * not assert availability or a price — or add a priced line — they cannot
+ * back up.
  *
  * The load-bearing properties:
  *   - The "24 Hour Shipping" chip is a claim about physical inventory, and it
@@ -9,8 +11,14 @@
  *     actually carries on-hand/inbound supply for that exact (sku, dose).
  *     Every other state — sourced, untracked, unloaded, failed-to-load — must
  *     degrade to no claim at all rather than a false one.
- *   - No price is ever displayed on this slide.
- *   - "Add to inquiry" only adds a real, positively-priced GLOW line.
+ *   - Price comes from `effectiveTierPriceCents` — never hardcoded — and only
+ *     renders (and only enables a direct add) when it resolves to a real,
+ *     positive number.
+ *   - No fabricated compareAt/strikethrough price is ever shown on these
+ *     single-product slides — only the genuine bundle tile shows one.
+ *   - "Add to inquiry" only adds a real, positively-priced line.
+ *   - The 'limited' badge mode is entirely data-driven off doseAvailability
+ *     (+ on-hand for the low-stock case), never hardcoded.
  *
  * The store is a Zustand singleton, so each test seeds `variantBySku` /
  * `bySku` in Arrange and resets between tests.
@@ -19,6 +27,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { NewlyCatalogedSpotlight } from '../../src/components/catalog/NewlyCatalogedSpotlight';
+import { ProductSpotlightSlide } from '../../src/components/catalog/ProductSpotlightSlide';
 import { FeaturedSupplyCarousel } from '../../src/components/catalog/FeaturedSupplyCarousel';
 import { BundleOfferTile } from '../../src/components/catalog/BundleOfferTile';
 import { useCart } from '../../src/hooks/useCart';
@@ -28,6 +37,8 @@ import type { Product } from '../../src/types/product';
 
 const GLOW_SKU = 'VSR-RS-GLWC';
 const GLOW_DOSE = '70mg';
+const KG_SKU = 'VSR-RS-GSK';
+const KG_DOSE = '1200mg';
 
 function makeProduct(slug: string, sku: string, name: string, dose: string): Product {
   return {
@@ -57,6 +68,7 @@ const KLOW = makeProduct(
   'KLOW Blend (GHK-Cu · TB-500 · BPC-157 · KPV)',
   '80mg',
 );
+const KOREAN_GLUTATHIONE = makeProduct('korean-glutathione', KG_SKU, 'Korean Glutathione', KG_DOSE);
 
 function makeVariant(sku: string, dose: string, patch: Partial<VariantOverride> = {}): VariantOverride {
   return {
@@ -150,22 +162,53 @@ describe('NewlyCatalogedSpotlight availability', () => {
 });
 
 describe('NewlyCatalogedSpotlight — GLOW hero slide', () => {
-  test('renders the GLOW hero with its constituents and no KLOW row', () => {
+  test('renders the GLOW hero with its constituents, dose, and no KLOW row', () => {
     seedOverrides([makeVariant(GLOW_SKU, GLOW_DOSE, { on_hand: 5 })]);
 
     render(<NewlyCatalogedSpotlight products={[GLOW, KLOW]} onInspect={vi.fn()} />);
 
     expect(screen.getByText('GLOW Blend')).toBeTruthy();
-    expect(screen.getByText('BPC-157 · GHK-Cu · TB-500')).toBeTruthy();
+    expect(screen.getByText('BPC-157 · GHK-Cu · TB-500 · 70mg')).toBeTruthy();
     expect(screen.queryByText('KLOW Blend')).toBeNull();
   });
 
-  test('never displays a price on the GLOW slide', () => {
+  test('shows the GLOW slide price, resolved from effectiveTierPriceCents (never hardcoded)', () => {
     seedOverrides([makeVariant(GLOW_SKU, GLOW_DOSE, { on_hand: 5, price_cents: 24500 })]);
 
     render(<NewlyCatalogedSpotlight products={[GLOW]} onInspect={vi.fn()} />);
 
-    expect(screen.queryByText(/\$/)).toBeNull();
+    // Assert — the live per-dose override price renders, and only once (no
+    // fabricated compareAt/strikethrough companion price).
+    expect(screen.getAllByText('$245')).toHaveLength(1);
+  });
+
+  test('hides the price when no dose price resolves', () => {
+    // NewlyCatalogedSpotlight always configures dose="70mg" (which always
+    // parses to a positive placeholder price), so this exercises the
+    // shared ProductSpotlightSlide directly with a dose string that can't
+    // resolve a price at all — no "mg" magnitude for the formula fallback,
+    // and no product.priceCents.
+    const glowNoPrice = makeProduct(
+      'glow-blend-cu',
+      GLOW_SKU,
+      'GLOW Blend (BPC-157 · GHK-Cu · TB-500)',
+      'sample vial',
+    );
+    useProductOverrides.setState({ bySku: {}, variantBySku: {}, loaded: true, loading: false, error: null });
+
+    render(
+      <ProductSpotlightSlide
+        products={[glowNoPrice]}
+        slug="glow-blend-cu"
+        dose="sample vial"
+        heroImage="/vials/glow-blend-pair.webp"
+        eyebrow="Newly cataloged"
+        description="Test description."
+        onInspect={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText(/^\$/)).toBeNull();
   });
 
   test('opens the intelligence overlay when the hero image is tapped', () => {
@@ -187,10 +230,11 @@ describe('NewlyCatalogedSpotlight — GLOW hero slide', () => {
     // Act
     fireEvent.click(screen.getByRole('button', { name: 'Add GLOW Blend (BPC-157 · GHK-Cu · TB-500) 70mg to inquiry' }));
 
-    // Assert — cart holds one line, priced, not $0.
+    // Assert — cart holds one line, priced, not $0, sku matches GLOW.
     const items = useCart.getState().items;
     expect(items).toHaveLength(1);
     expect(items[0].product.priceCents).toBe(24500);
+    expect(items[0].product.sku).toBe(GLOW_SKU);
     expect(screen.getByText('✓ Added')).toBeTruthy();
   });
 
@@ -210,7 +254,17 @@ describe('NewlyCatalogedSpotlight — GLOW hero slide', () => {
     const onInspect = vi.fn();
     useProductOverrides.setState({ bySku: {}, variantBySku: {}, loaded: true, loading: false, error: null });
 
-    render(<NewlyCatalogedSpotlight products={[glowNoPrice]} onInspect={onInspect} />);
+    render(
+      <ProductSpotlightSlide
+        products={[glowNoPrice]}
+        slug="glow-blend-cu"
+        dose="sample vial"
+        heroImage="/vials/glow-blend-pair.webp"
+        eyebrow="Newly cataloged"
+        description="Test description."
+        onInspect={onInspect}
+      />,
+    );
 
     // Act
     fireEvent.click(
@@ -220,6 +274,141 @@ describe('NewlyCatalogedSpotlight — GLOW hero slide', () => {
     // Assert — no cart line was added; the button routed to inspect instead.
     expect(useCart.getState().items).toHaveLength(0);
     expect(onInspect).toHaveBeenCalledWith(glowNoPrice.id);
+  });
+});
+
+describe('ProductSpotlightSlide — Korean Glutathione configuration', () => {
+  const kgProps = {
+    slug: 'korean-glutathione',
+    dose: KG_DOSE,
+    heroImage: '/vials/korean-glutathione-hero.webp',
+    eyebrow: 'Antioxidant · Reduced form',
+    description: 'Reduced-form L-glutathione, 1200 mg per vial.',
+    badge: 'limited' as const,
+  };
+
+  test('renders the product name, dose, and price', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 20, price_cents: 8900 })]);
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(screen.getByText('Korean Glutathione')).toBeTruthy();
+    expect(screen.getByText('1200mg')).toBeTruthy();
+    expect(screen.getByText('$89')).toBeTruthy();
+  });
+
+  test('never shows a fabricated compareAt/strikethrough price', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 20, price_cents: 8900 })]);
+
+    const { container } = render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(container.querySelector('.line-through')).toBeNull();
+    expect(screen.getAllByText(/\$/)).toHaveLength(1);
+  });
+
+  test('limited badge: sourced (no on-hand/inbound supply) shows "Limited availability"', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 0, inbound_units: 0, price_cents: 8900 })]);
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(screen.getByText('Limited availability')).toBeTruthy();
+    expect(screen.queryByText('24 Hour Shipping')).toBeNull();
+  });
+
+  test('limited badge: in-stock with low on-hand still shows "Limited availability"', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 3, price_cents: 8900 })]);
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(screen.getByText('Limited availability')).toBeTruthy();
+  });
+
+  test('limited badge: in-stock with ample on-hand supply falls back to the normal 24hr badge', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 50, price_cents: 8900 })]);
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(screen.getByText('24 Hour Shipping')).toBeTruthy();
+    expect(screen.queryByText('Limited availability')).toBeNull();
+  });
+
+  test('limited badge: unknown (untracked SKU) renders no badge at all', () => {
+    // No override rows exist for KG at all — a SKU untouched by any import.
+    // isVariantPublic defaults to visible for an untouched SKU (so the slide
+    // still renders), but doseAvailability resolves 'unknown' — the badge
+    // must render nothing rather than fabricate a claim.
+    useProductOverrides.setState({ bySku: {}, variantBySku: {}, loaded: true, loading: false, error: null });
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(screen.getByText('Korean Glutathione')).toBeTruthy();
+    expect(screen.queryByText('Limited availability')).toBeNull();
+    expect(screen.queryByText('24 Hour Shipping')).toBeNull();
+    expect(screen.queryByText('Standard Shipping')).toBeNull();
+  });
+
+  test('clicking "Add to inquiry" adds the Korean Glutathione 1200mg variant at its real price', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 20, price_cents: 8900 })]);
+
+    render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add Korean Glutathione 1200mg to inquiry' }));
+
+    const items = useCart.getState().items;
+    expect(items).toHaveLength(1);
+    expect(items[0].product.sku).toBe(KG_SKU);
+    expect(items[0].product.priceCents).toBe(8900);
+    expect(items[0].product.priceCents).toBeGreaterThan(0);
+  });
+
+  test('drops the slide when the featured dose the catalog hides', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { hidden: true, on_hand: 20, price_cents: 8900 })]);
+
+    const { container } = render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(container.textContent).toBe('');
+  });
+
+  test('renders nothing when the featured compound is not in the catalog', () => {
+    seedOverrides([makeVariant(KG_SKU, KG_DOSE, { on_hand: 20 })]);
+
+    const { container } = render(
+      <ProductSpotlightSlide products={[]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(container.textContent).toBe('');
+  });
+
+  test('renders nothing while the inventory source has not loaded cleanly', () => {
+    useProductOverrides.setState({
+      bySku: {},
+      variantBySku: { [KG_SKU]: { [KG_DOSE]: makeVariant(KG_SKU, KG_DOSE, { on_hand: 20 }) } },
+      loaded: true,
+      loading: false,
+      error: 'network down',
+    });
+
+    const { container } = render(
+      <ProductSpotlightSlide products={[KOREAN_GLUTATHIONE]} onInspect={vi.fn()} {...kgProps} />,
+    );
+
+    expect(container.textContent).toBe('');
   });
 });
 

@@ -153,7 +153,7 @@ export function FeaturedSupplyCarousel({
         className="featured-supply-carousel no-scrollbar flex snap-x snap-mandatory items-stretch overflow-x-auto focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25"
       >
         {slides.map((slide, i) => (
-          <div key={i} className="w-full shrink-0 snap-center">
+          <div key={i} className="flex w-full shrink-0 snap-center">
             {slide}
           </div>
         ))}
