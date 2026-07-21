@@ -172,6 +172,7 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
           </g>
           {/* Seal — a thin brushed-silver ring enclosing the mark (true circle). */}
           <circle
+            className="dna-seal"
             cx="51"
             cy="46"
             r="50"
@@ -266,11 +267,24 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
            clean silver seal ring; the dust reveals when the site goes dark. */
         .dna-v-mark .dna-dust { display: none; }
         html[data-theme="dark"] .dna-v-mark .dna-dust { display: block; }
-        .dna-v-mark .vsbody-1 { animation: vsbody-cw  7s  linear infinite; }
-        .dna-v-mark .vsbody-2 { animation: vsbody-ccw 11s linear infinite; }
-        .dna-v-mark .vsbody-3 { animation: vsbody-cw  15s linear infinite; }
+        .dna-v-mark .vsbody { transition: r 420ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 420ms ease, filter 420ms ease; }
+        .dna-v-mark .vsbody-1 { r: 1.86px; animation: vsbody-cw  7s  linear infinite; }
+        .dna-v-mark .vsbody-2 { r: 2.82px; animation: vsbody-ccw 11s linear infinite; }
+        .dna-v-mark .vsbody-3 { r: 4.2px;  animation: vsbody-cw  15s linear infinite; }
         @keyframes vsbody-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes vsbody-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        /* Hover — the emblem comes alive: the three bodies swell and glow in
+           their own hue, the seal ring catches more light, and the whole mark
+           lifts a touch. Gated on the logo lockup (.logo-hover-group) so loader
+           / decorative marks stay inert. Transition-based — the orbit animation
+           is untouched, so the weave keeps its rhythm without snapping. */
+        .dna-v-mark { transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1); }
+        .logo-hover-group:hover .dna-v-mark { transform: scale(1.035); }
+        .logo-hover-group:hover .dna-v-mark .vsbody-1 { r: 2.7px; opacity: 0.92; filter: drop-shadow(0 0 2px currentColor); }
+        .logo-hover-group:hover .dna-v-mark .vsbody-2 { r: 3.7px; filter: drop-shadow(0 0 3px #5FB4BE); }
+        .logo-hover-group:hover .dna-v-mark .vsbody-3 { r: 5.4px; filter: drop-shadow(0 0 5px #E1C57E); }
+        .dna-v-mark .dna-seal { transition: stroke-opacity 420ms ease, filter 420ms ease; }
+        .logo-hover-group:hover .dna-v-mark .dna-seal { stroke-opacity: 1; filter: drop-shadow(0 0 2.5px rgba(214, 217, 222, 0.55)); }
         /* Loading spinner: bright gold arc rotates around the seal ring while
            the faint base ring pulses. */
         .dna-v-mark .dna-ring-arc {
@@ -302,6 +316,8 @@ export function DnaVMark({ size = 60, className = '', static: isStatic = false, 
         }
         @media (prefers-reduced-motion: reduce) {
           .dna-v-mark .vsbody { animation: none !important; }
+          /* Hover still reveals the swell/glow, just without the tween. */
+          .dna-v-mark, .dna-v-mark .vsbody, .dna-v-mark .dna-seal { transition: none !important; }
           .dna-v-mark .dna-bodies-enter { animation: none !important; }
           /* No staged reveal for reduced motion — V is simply present. */
           .dna-v-mark .dna-v-reveal { animation: none !important; opacity: 1 !important; transform: none !important; }

@@ -124,7 +124,7 @@ export function Logo({
 
   if (to === null) {
     return (
-      <span className={className} aria-label={ariaLabel}>
+      <span className={`logo-hover-group ${className}`} aria-label={ariaLabel}>
         {body}
       </span>
     );
@@ -134,7 +134,7 @@ export function Logo({
     <Link
       to={to}
       aria-label={ariaLabel}
-      className={`inline-flex items-center min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${className}`}
+      className={`logo-hover-group inline-flex items-center min-w-0 rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${className}`}
     >
       {body}
     </Link>
