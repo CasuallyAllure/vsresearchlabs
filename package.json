@@ -8,6 +8,7 @@
     "gen:inventory": "node scripts/buildInventory.mjs",
     "gen:inventory:check": "node scripts/buildInventory.mjs --check",
     "gen:landing-frames": "node scripts/buildLandingFrames.mjs",
+    "gen:atmosphere": "node scripts/buildAtmosphere.mjs",
     "walkthrough": "node scripts/walkthrough.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

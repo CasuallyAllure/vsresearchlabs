@@ -534,8 +534,9 @@ html[data-theme="lab"] {
   --botnav-border: rgba(234, 231, 224, 0.14);
   --botnav-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.6), inset 0 0.5px 0 rgba(234, 231, 224, 0.10);
   --botnav-shadow-sheet: 0 12px 36px -16px rgba(0, 0, 0, 0.7), inset 0 0.5px 0 rgba(234, 231, 224, 0.10);
-  --visualizer-glass: linear-gradient(155deg, rgba(45, 40, 32, 0.55) 0%, rgba(27, 24, 21, 0.4) 100%);
-  --visualizer-glass-border: rgba(234, 231, 224, 0.12);
+  /* Wave 2 T2: clearer glass, tuned toward the entrance-card feel. */
+  --visualizer-glass: linear-gradient(155deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%);
+  --visualizer-glass-border: rgba(255, 255, 255, 0.28);
   --visualizer-scrim: linear-gradient(to bottom, rgba(18, 16, 13, 0.92) 0%, rgba(18, 16, 13, 0.45) 55%, transparent 100%);
   --visualizer-backdrop: radial-gradient(120% 90% at 50% 26%, rgba(27, 24, 21, 0.55) 0%, rgba(18, 16, 13, 0.66) 52%, rgba(11, 10, 8, 0.8) 100%);
 
@@ -591,17 +592,23 @@ html[data-theme="lab"] {
   --glass-blur: blur(16px) saturate(160%);
   --scrim: rgba(0, 0, 0, 0.62);
 
-  /* ── Research surface tokens (E1/E2) ─────────────────────────────────── */
-  --surface-product: #1B1815;
-  --surface-product-hover: #242019;
-  --surface-elevated-research: #242019;
+  /* ── Research surface tokens (E1/E2) ─────────────────────────────────────
+     Wave 2 T2: translucent glass-grammar fills so the fixed .vsr-light-leaks
+     atmosphere backdrop shows through cards. No backdrop-filter here — the
+     translucency + hairline + top-highlight carry the glass read on
+     scrolling content (true blur stays reserved for .glass-panel/.glass-clear
+     chrome). --surface-specimen-bay stays SOLID: display bays are contrast
+     anchors, not glass. */
+  --surface-product: rgba(27, 24, 21, 0.72);
+  --surface-product-hover: rgba(36, 32, 25, 0.78);
+  --surface-elevated-research: rgba(36, 32, 25, 0.74);
   --surface-cta: rgba(234, 231, 224, 0.06);
   --border-product: rgba(234, 231, 224, 0.10);
   --border-product-hover: rgba(234, 231, 224, 0.20);
   --border-cta: rgba(234, 231, 224, 0.15);
-  --surface-specimen-bay: #1B1815;
-  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --surface-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --surface-specimen-bay: #16130F;
+  --surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --surface-highlight-strong: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Lab sits behind backdrop-blurred chrome same as dark; adopt dark native
@@ -865,11 +872,35 @@ html[data-theme="lab"] .compound-tile.is-interactive:hover {
     0 22px 52px -18px rgba(0, 0, 0, 0.9),
     0 0 54px -12px rgba(150, 162, 184, 0.22);
 }
+/* Wave 2 T2: lab's tile fill is glass, not solid — split out of the dark
+   comma above (dark keeps its solid --surface-product read). Rim + halo
+   shadows stay shared; only the fill goes translucent so the fixed
+   .vsr-light-leaks backdrop shows through. */
+html[data-theme="lab"] .compound-tile {
+  background-color: rgba(27, 24, 21, 0.70);
+}
 html[data-theme="dark"] .tile-spec-plate,
 html[data-theme="lab"] .tile-spec-plate {
   background: rgba(255, 255, 255, 0.035);
   border-color: rgba(255, 255, 255, 0.07);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Wave 2 T2: prefers-contrast fallback — lab's card fills are token-driven
+   (.research-surface-solid, .research-surface-elevated, .floating-module all
+   read background-color from the tokens retuned above), so re-pin those
+   tokens solid here rather than overriding the classes directly.
+   .compound-tile is the one literal override (added above), so it's re-pinned
+   directly. */
+@media (prefers-contrast: more) {
+  html[data-theme="lab"] {
+    --surface-product: #1B1815;
+    --surface-product-hover: #242019;
+    --surface-elevated-research: #242019;
+  }
+  html[data-theme="lab"] .compound-tile {
+    background-color: #1B1815;
+  }
 }
 
 /* ─── VN-origin utility classes (required by transplanted primitives) ─── */
@@ -1218,6 +1249,33 @@ html[data-theme="lab"] .tile-spec-plate {
 /* ─── Top light-leaks — retired for the cream editorial system. ──────────── */
 .vsr-light-leaks {
   display: none;
+}
+
+/* Lab atmosphere — the luminous backdrop the glass strata refract. A
+   heavily blurred, darkened still of the entrance lab artwork, warmed by
+   an amber under-cabinet glow (top) and a low steel-blue wash. Fixed and
+   static: repaints nothing on scroll. Lab theme only — the monochrome
+   light/dark themes stay flat.
+   z-index: verified in-browser — GlobalSurface is `relative isolate`
+   with a bg-base-900 fill; a negative z-index here still paints above
+   that parent background within the isolated stacking context (DOM order
+   would also work since this is the first child, but the explicit z-index
+   is kept so the rule is unambiguous if a future sibling gets its own
+   z-index). */
+html[data-theme="lab"] .vsr-light-leaks {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(120% 70% at 50% 0%, rgba(196, 154, 72, 0.10) 0%, transparent 55%),
+    radial-gradient(110% 60% at 85% 100%, rgba(110, 147, 160, 0.08) 0%, transparent 60%),
+    linear-gradient(rgba(18, 16, 13, 0.72), rgba(18, 16, 13, 0.78)),
+    url('/atmosphere/lab-backdrop.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* ─── Module aura ────────────────────────────────────────────────────────

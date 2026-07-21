@@ -36,7 +36,7 @@ constraints from §0 and §5:
 
 ### Glass & surface strata (Lab discipline)
 ```
-1. Atmosphere          (page bg #12100D)
+1. Atmosphere (fixed blurred lab-artwork backdrop + amber/steel glows — .vsr-light-leaks, lab theme only; page bg #12100D beneath)
    ↓
 2. Display bay         (bg-display, reserved for 3D/hero)
    ↓
@@ -48,6 +48,13 @@ constraints from §0 and §5:
 ```
 
 **Core rule:** "Glass is only glass when something worth seeing sits behind it."
+
+**Wave 2 (2026-07-21)** built the atmosphere — a heavily blurred, darkened still of the entrance artwork
+(`public/atmosphere/lab-backdrop.webp`, regenerated via `npm run gen:atmosphere`) fixed behind all content
+in the lab theme. Content cards (`.floating-module` / `.research-surface-*`) retuned to translucent glass-grammar
+fills; NO backdrop-blur on scrolling content (perf law holds). True blur reserved for heroes/overlays/chrome;
+bg-display bays stay solid as contrast anchors; light/dark themes stay flat.
+
 - `.glass-panel` — frosted chrome + backdrop-blur. Use for headers, drawers, modals, sticky
   filters, dropdown menus (fixed/sticky chrome only).
 - `.glass-clear` — near-transparent clear glass with self-scoped dark tokens. Reserved for
