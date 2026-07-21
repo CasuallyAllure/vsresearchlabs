@@ -648,6 +648,74 @@ html[data-theme="dark"] {
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-highlight), var(--elev-2);
   }
+
+  /* ── CANONICAL clear glass ─────────────────────────────────────────────
+     The project's high-end "see-through" glass surface — a near-transparent
+     white sheen (no milky fill), light blur, bright hairline edge + inner
+     highlights. Unlike .glass-panel (a ~60% tinted frost for chrome), this
+     stays CLEAR so whatever sits behind it (the landing entrance's frozen
+     vials, and eventually other dark hero surfaces) reads THROUGH the card.
+
+     Currently used by: the entrance-sequence member-access card and the
+     age/research-use DisclaimerGate. ROLLOUT: intended to spread across the
+     project — extend this one class, don't fork per-component copies.
+
+     The surface is always used over a DARK backdrop, so the class doubles as
+     a self-contained dark-token scope: it re-declares the dark palette (both
+     Tailwind --c-* channels and the legacy --color-* tokens) on itself, so
+     descendants render silver-on-glass even when the site theme is light
+     (theme.css themes via html[data-theme], which can't reach a nested card).
+     Keep this token set in sync with html[data-theme="dark"]. A light-context
+     variant, if ever needed, should be a SEPARATE class — do not un-pin here. */
+  .glass-clear {
+    color-scheme: dark;
+
+    /* Tailwind channels (back text-ink / bg-base / border-ink utilities) */
+    --c-base-900: 12 12 13;
+    --c-base-800: 22 22 24;
+    --c-base-700: 30 30 33;
+    --c-ink: 233 233 236;
+    --c-ink-light: 168 169 173;
+    --c-ink-muted: 110 111 115;
+    --c-gold: 168 172 178;
+    --c-gold-light: 198 201 206;
+    --c-gold-dark: 126 130 136;
+    --c-gold-muted: 157 160 165;
+
+    /* Legacy --color-* tokens (back inline-styled surfaces) */
+    --color-surface-base: #0C0C0D;
+    --color-surface-elevated: #161618;
+    --color-surface-overlay: #1E1E21;
+    --color-content-primary: #E9E9EC;
+    --color-content-secondary: #A8A9AD;
+    --color-content-tertiary: #6E6F73;
+    --color-content-inverse: #0C0C0D;
+    --color-border-default: rgba(233, 233, 236, 0.14);
+    --color-border-subtle: rgba(233, 233, 236, 0.07);
+    --color-border-strong: rgba(233, 233, 236, 0.26);
+    --color-interactive-secondary: rgba(233, 233, 236, 0.07);
+    --color-accent-gold-light: #C6C9CE;
+    --color-accent-gold: #A8ACB2;
+    --color-accent-gold-dark: #7E8288;
+    --color-accent-gold-muted: #9DA0A5;
+    --glass-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+
+    /* Surface — clear reflective sheen, not a fill. */
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.045) 40%,
+      rgba(255, 255, 255, 0.02) 65%,
+      rgba(255, 255, 255, 0.09) 100%
+    );
+    -webkit-backdrop-filter: blur(9px) saturate(175%);
+    backdrop-filter: blur(9px) saturate(175%);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.40),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+      0 24px 60px -16px rgba(0, 0, 0, 0.55);
+  }
 }
 
 /* ─── Wholesale word-mark shine ───

@@ -114,9 +114,10 @@ export function DisclaimerGate() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        background: 'rgba(26, 23, 20, 0.55)',
-        backdropFilter: 'blur(10px) saturate(120%)',
-        WebkitBackdropFilter: 'blur(10px) saturate(120%)',
+        // Light dark scrim, no backdrop blur — over the landing entrance the
+        // frozen vials must read through both the scrim and the glass card
+        // (matches the member-access card's subtle presentation).
+        background: 'rgba(0, 0, 0, 0.30)',
         animation: 'vsrl-dgate-fade 220ms ease-out',
         opacity: closing ? 0 : 1,
         transition: `opacity ${GATE_FADE_MS}ms ease`,
@@ -140,6 +141,10 @@ export function DisclaimerGate() {
 
       <div
         ref={cardRef}
+        // Canonical clear glass — surface, border, blur and the dark-token
+        // scope come from .glass-clear so the entrance's vials read through
+        // the card; only geometry + entrance animation stay inline.
+        className="glass-clear"
         style={{
           // Centered modal: the flex parent handles centering; the card just
           // caps its height to the viewport and scrolls internally if needed.
@@ -150,14 +155,7 @@ export function DisclaimerGate() {
           overflowY: 'auto',
           overflowX: 'hidden',
           padding: `${CARD_PADDING_TOP}px 26px 24px`,
-          background:
-            'linear-gradient(135deg, var(--color-surface-elevated) 0%, var(--color-surface-base) 100%)',
-          border: '1px solid var(--color-border-default)',
           borderRadius: '16px',
-          boxShadow:
-            'var(--glass-highlight), 0 24px 60px rgba(0,0,0,0.40), 0 0 0 1px rgba(140,144,148,0.10)',
-          backdropFilter: 'blur(16px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(16px) saturate(150%)',
           animation: 'vsrl-dgate-rise 340ms cubic-bezier(0.22, 0.61, 0.36, 1)',
         }}
       >
