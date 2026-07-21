@@ -10,6 +10,11 @@
  * Renders nothing when the offer can't be shown honestly: either product
  * missing from the catalog, either featured dose not publicly priced/visible,
  * or either price unresolved. No $0 or broken bundle ever renders.
+ *
+ * Rendered as slide 1 inside FeaturedSupplyCarousel, which owns the single
+ * card chrome (`floating-module`) for the whole carousel — this component is
+ * bare content (no own border/background/radius) so its hero image bleeds to
+ * the carousel box's edges.
  */
 
 import { useRef, useState } from 'react';
@@ -101,10 +106,7 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
   }
 
   return (
-    <section
-      aria-label="Paired compound supply"
-      className={`floating-module flex flex-col overflow-hidden ${className}`}
-    >
+    <section aria-label="Paired compound supply" className={`flex flex-col ${className}`}>
       {/* Hero — the paired-supply render (the two vials on the lab-glass set,
           matching the entrance/Lab aesthetic). The "Paired supply" chip and
           the pairing line sit ON the image over legibility scrims; the price

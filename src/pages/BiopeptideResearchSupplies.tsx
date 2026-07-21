@@ -7,7 +7,7 @@ import { BiopeptideInventoryModal } from '../components/catalog/BiopeptideInvent
 import { CompoundSection } from '../components/catalog/CompoundSection';
 import { BundleOfferTile } from '../components/catalog/BundleOfferTile';
 import { NewlyCatalogedSpotlight } from '../components/catalog/NewlyCatalogedSpotlight';
-import { CatalogFeatureRow, FEATURE_SLIDE } from '../components/catalog/CatalogFeatureRow';
+import { FeaturedSupplyCarousel } from '../components/catalog/FeaturedSupplyCarousel';
 import { useProducts } from '../hooks/useProducts';
 import {
   CLASSIFICATION_LABELS,
@@ -218,19 +218,19 @@ export function BiopeptideResearchSupplies() {
         />
       </div>
 
-      {/* Featured-supply row. Desktop: two equal floating modules side by side.
-          Below sm: a scroll-snap carousel — no JS, no dependency. Either child
-          can render nothing (BundleOfferTile hides on unresolved pricing, the
-          spotlight on unresolved inventory), in which case the survivor simply
-          fills the row. */}
-      <CatalogFeatureRow label="Featured supply" className="mb-[var(--space-4)]">
-        <BundleOfferTile className={FEATURE_SLIDE} />
-        <NewlyCatalogedSpotlight
-          products={products}
-          onInspect={setInspectedId}
-          className={FEATURE_SLIDE}
-        />
-      </CatalogFeatureRow>
+      {/* Featured-supply carousel — one full-width slide at a time,
+          auto-advancing, with dots + a pause control. Either child can render
+          nothing (BundleOfferTile hides on unresolved pricing, the spotlight
+          on an unresolved/hidden dose); the carousel filters those out so a
+          hidden slide never leaves a phantom dot. */}
+      <FeaturedSupplyCarousel
+        label="Featured supply"
+        slideLabels={['Paired supply', 'Newly cataloged']}
+        className="mb-[var(--space-4)]"
+      >
+        <BundleOfferTile className="w-full" />
+        <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
+      </FeaturedSupplyCarousel>
 
       {wholesaleActive && !canWholesale && (
         <div className="mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-field)] border border-ink/15 bg-ink/[0.03] px-3.5 py-2.5">

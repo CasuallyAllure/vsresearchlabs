@@ -757,14 +757,14 @@ html[data-theme="lab"] {
      drawers, modals, sheets, dropdown menus, sticky filter bars). All three
      glass ingredients or it reads as cheap transparency: blur + hairline
      border + inset refraction highlight. */
-  /* Scroll-snap carousel rail for the catalog's featured-supply modules
-     (mobile only — at sm+ the rail becomes a static two-up flex row). Smooth
-     snapping is motion, so reduced-motion drops it to an instant jump. */
-  .catalog-feature-row {
+  /* Full-width single-slide carousel track for the catalog's featured-supply
+     modules (FeaturedSupplyCarousel). Smooth snapping/auto-advance is motion,
+     so reduced-motion drops programmatic scrolls to an instant jump. */
+  .featured-supply-carousel {
     scroll-behavior: smooth;
   }
   @media (prefers-reduced-motion: reduce) {
-    .catalog-feature-row {
+    .featured-supply-carousel {
       scroll-behavior: auto;
     }
   }
