@@ -68,6 +68,42 @@ const MAX_FAILURE_RATIO = 0.2;
 /** Matches the artwork's dark graphite edges — letterbox + backdrop tone. */
 const BACKDROP = '#17191c';
 
+/** Brand gold — the single warm accent on the frosted trust badges. */
+const BRAND_GOLD = '#B5904B';
+/** COA check — a calm lab green, not a neon success green. */
+const TRUST_GREEN = '#4FB07A';
+
+/**
+ * Trust-badge copy — approved, factual. TRUST_NETWORK_LINE is intentionally a
+ * single editable constant: swap in a *verified* figure once one is confirmed
+ * (e.g. `Trusted by 1,200+ research professionals`). Do NOT invent a count.
+ */
+const TRUST_NETWORK_LINE = 'Trusted by research professionals nationwide';
+const BADGE_COA_LABEL = 'COA Verified';
+const BADGE_COA_SUB = 'every lot';
+const BADGE_PURITY_LABEL = '≥98% HPLC Purity';
+
+/**
+ * Scroll-progress band across which the trust badges fade in *as the vials
+ * rise* (progress 0.5 ≈ frame 60, the vials clearing the bench), hold while
+ * they float, then fade out — fully cleared before the final frame (progress
+ * 1) freezes and the member-access prompt fades in over it.
+ */
+const BADGE_IN_START = 0.5;
+const BADGE_IN_END = 0.62;
+const BADGE_OUT_START = 0.82;
+const BADGE_OUT_END = 0.92;
+
+/** Trust-badge opacity for a scroll progress in [0, 1] (0 outside the band). */
+function badgeOpacityForProgress(progress: number): number {
+  if (progress <= BADGE_IN_START || progress >= BADGE_OUT_END) return 0;
+  if (progress < BADGE_IN_END) {
+    return (progress - BADGE_IN_START) / (BADGE_IN_END - BADGE_IN_START);
+  }
+  if (progress <= BADGE_OUT_START) return 1;
+  return 1 - (progress - BADGE_OUT_START) / (BADGE_OUT_END - BADGE_OUT_START);
+}
+
 const LAST_FRAME = ENTRANCE_FRAME_COUNT - 1;
 
 type Phase = 'loading' | 'active' | 'holding' | 'finishing';
@@ -95,6 +131,7 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
+  const badgesRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
   const lastIndexRef = useRef(-1);
@@ -291,6 +328,13 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
       if (cueRef.current) {
         cueRef.current.style.opacity = progress > 0.03 ? '0' : '1';
       }
+      // Trust badges ride the same progress as the vials: fade in as they
+      // rise, hold, fade out — a small upward drift reinforces the lift.
+      if (badgesRef.current) {
+        const o = badgeOpacityForProgress(progress);
+        badgesRef.current.style.opacity = String(o);
+        badgesRef.current.style.transform = `translateY(${(1 - o) * 12}px)`;
+      }
       if (progress >= 1) hold();
     }
     function schedule() {
@@ -320,6 +364,28 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
     fontSize: '10px',
     letterSpacing: '0.28em',
     textTransform: 'uppercase',
+  };
+
+  // Frosted glass pill in the .glass-clear family (clear sheen over the dark
+  // artwork, bright hairline edge + inner highlight). Shared by all badges.
+  const badgePill: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '8px 14px',
+    borderRadius: 999,
+    background: 'rgba(18,20,23,0.52)',
+    border: '1px solid rgba(255,255,255,0.26)',
+    boxShadow:
+      'inset 0 1px 0 rgba(255,255,255,0.24), 0 10px 26px -14px rgba(0,0,0,0.7)',
+    backdropFilter: 'blur(10px) saturate(160%)',
+    WebkitBackdropFilter: 'blur(10px) saturate(160%)',
+    color: 'rgba(255,255,255,0.92)',
+    fontFamily: 'var(--font-mono)',
+    fontSize: '10.5px',
+    letterSpacing: '0.16em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
   };
 
   // The overlay portals to <body>: GlobalSurface is `isolate`, so a fixed
@@ -459,29 +525,146 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
           </div>
         )}
 
-        {/* Accessible completion path — never trap keyboard/AT visitors.
-            Jumps to the frozen final frame + prompt, not into the site. */}
-        {phase === 'active' && !gateOpen && (
-          <button
-            type="button"
-            onClick={hold}
+        {/* Trust badges — frosted glass cluster that fades in as the vials
+            rise (scroll-driven opacity, above) and clears before the freeze.
+            Decorative reinforcement over the animation: aria-hidden so AT
+            isn't asked to track a scrubbing marketing overlay. Reduced motion
+            shows them statically (no scroll driver, full opacity, no drift).
+            Placed low-center, well above the corner Skip pill. */}
+        {!gateOpen && (phase === 'active' || (reduced && phase === 'holding')) && (
+          <div
+            ref={reduced ? undefined : badgesRef}
+            aria-hidden="true"
             style={{
-              ...mono,
               position: 'absolute',
-              right: 20,
-              bottom: 20,
-              padding: '10px 16px',
-              color: 'rgba(255,255,255,0.78)',
-              background: 'rgba(23,25,28,0.4)',
-              border: '1px solid rgba(255,255,255,0.28)',
-              borderRadius: 999,
-              cursor: 'pointer',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
+              left: 0,
+              right: 0,
+              bottom: 'clamp(108px, 19vh, 200px)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0 20px',
+              pointerEvents: 'none',
+              opacity: reduced ? 1 : 0,
+              ...(reduced
+                ? {}
+                : { transition: 'opacity 120ms linear, transform 120ms linear' }),
             }}
           >
-            Skip intro
-          </button>
+            {/* COA Verified — green check + "every lot" */}
+            <span style={badgePill}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" fill={TRUST_GREEN} fillOpacity="0.9" />
+                <path
+                  d="M7.5 12.4l3 3 6-6.4"
+                  stroke="#0C0C0D"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>{BADGE_COA_LABEL}</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.12em' }}>
+                {BADGE_COA_SUB}
+              </span>
+            </span>
+
+            {/* ≥98% HPLC Purity — gold accent node */}
+            <span style={badgePill}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="5.5" fill={BRAND_GOLD} />
+                <circle cx="12" cy="12" r="9" stroke={BRAND_GOLD} strokeOpacity="0.5" strokeWidth="1.4" />
+              </svg>
+              <span>{BADGE_PURITY_LABEL}</span>
+            </span>
+
+            {/* Network / trust line — the three-body brand mark (gold · teal ·
+                ink) as the accent. */}
+            <span style={badgePill}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="8" cy="15" r="2.4" fill="#34727A" />
+                <circle cx="16" cy="13" r="3.2" fill={BRAND_GOLD} />
+                <circle cx="13" cy="7" r="1.7" fill="rgba(255,255,255,0.7)" />
+              </svg>
+              <span style={{ letterSpacing: '0.1em' }}>{TRUST_NETWORK_LINE}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Accessible completion path — never trap keyboard/AT visitors.
+            Jumps to the frozen final frame + prompt, not into the site.
+            Smaller than before but a clearer tap target: brighter border,
+            firmer backing, a skip glyph, and hover/press/focus states. */}
+        {phase === 'active' && !gateOpen && (
+          <>
+            <style>{`
+              .vsr-entrance-skip {
+                position: absolute;
+                right: 16px;
+                bottom: 16px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                min-height: 34px;
+                padding: 7px 13px;
+                font-family: var(--font-mono);
+                font-size: 10px;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+                color: rgba(255,255,255,0.92);
+                background: rgba(16,18,21,0.62);
+                border: 1px solid rgba(255,255,255,0.42);
+                border-radius: 999px;
+                cursor: pointer;
+                -webkit-backdrop-filter: blur(8px) saturate(160%);
+                backdrop-filter: blur(8px) saturate(160%);
+                box-shadow:
+                  inset 0 1px 0 rgba(255,255,255,0.28),
+                  0 6px 18px -8px rgba(0,0,0,0.72);
+                transition:
+                  transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  background 160ms ease,
+                  border-color 160ms ease;
+              }
+              @media (hover: hover) {
+                .vsr-entrance-skip:hover {
+                  background: rgba(30,33,37,0.74);
+                  border-color: rgba(255,255,255,0.62);
+                  transform: translateY(-1px);
+                }
+              }
+              .vsr-entrance-skip:active { transform: translateY(0) scale(0.97); }
+              .vsr-entrance-skip:focus-visible {
+                outline: none;
+                border-color: rgba(181,144,75,0.9);
+                box-shadow:
+                  0 0 0 2px rgba(181,144,75,0.7),
+                  inset 0 1px 0 rgba(255,255,255,0.28);
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .vsr-entrance-skip { transition: none; }
+              }
+            `}</style>
+            <button
+              type="button"
+              onClick={hold}
+              className="vsr-entrance-skip"
+              aria-label="Skip the intro animation"
+            >
+              <span>Skip intro</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 5l7 7-7 7M13 5l7 7-7 7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </>
         )}
       </div>,
     document.body,
