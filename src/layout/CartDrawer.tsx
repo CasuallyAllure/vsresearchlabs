@@ -46,6 +46,7 @@ import { Turnstile } from '../components/security/Turnstile';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
+import { computeB2G1Preview, b2g1NudgeCaption } from '../lib/b2g1Preview';
 import { FIELD_DEFAULT } from '../components/ui/Field';
 import { siteConfig } from '../config';
 
@@ -91,6 +92,28 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const remove = useCart((s) => s.remove);
   const clear = useCart((s) => s.clear);
   const coupons = useCart((s) => s.coupons);
+
+  // Bundle promo (Retatrutide + GHK-Cu) — PREVIEW only; place-order detects the
+  // pair and bills it authoritatively. It's a FINAL price: when it applies the
+  // server suppresses B2G1 and the account discount too, so B2G1 is only
+  // computed when the bundle doesn't apply. Hoisted (not just footer-local)
+  // so the per-line nudge caption below can read it too.
+  const bundle = bundleDiscount(
+    items.map((i) => ({
+      sku: i.product.sku,
+      unitCents: lineUnitCents(i),
+      quantity: i.quantity,
+    })),
+  );
+  // B2G1 (buy-2-get-1-free) — PREVIEW only; mirrors place-order's per-line
+  // arbitration against wholesale pack pricing (see src/lib/b2g1Preview.ts).
+  // A wholesale win anywhere in the cart is a final price order-wide, exactly
+  // like the bundle, so b2g1Applies gates both the summary row and the
+  // account-discount preview below.
+  const b2g1Preview = bundle.pairs === 0
+    ? computeB2G1Preview(items, isMember)
+    : { lines: [], totalCents: 0, suppressedByWholesale: false };
+  const b2g1Applies = bundle.pairs === 0 && !b2g1Preview.suppressedByWholesale;
 
   const [view, setView] = useState<View>('list');
   const [firstName, setFirstName] = useState('');
@@ -575,6 +598,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               {formatUsd(lineUnitCents(item))} each
                             </p>
                           )}
+                          {/* 3-for-2 nudge — quiet caption only, no badge. Hidden
+                              whenever a final price (bundle/wholesale) has
+                              already suppressed B2G1 for the order. */}
+                          {b2g1Applies && b2g1NudgeCaption(item) && (
+                            <p className="mt-1 text-[10.5px] leading-relaxed text-ink/45">
+                              {b2g1NudgeCaption(item)}
+                            </p>
+                          )}
                           {/* Controls: segmented stepper (press feedback) + icon remove */}
                           <div className="mt-3 flex items-center gap-2">
                             <div className="inline-flex items-center rounded-full border border-ink/[0.14] bg-ink/[0.03]">
@@ -640,18 +671,19 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               )}
               {items.length > 0 && (() => {
                 const subtotalCents = cartSubtotalCents(items);
-                // Bundle promo — PREVIEW only (place-order bills it). It's a
-                // FINAL price: when it applies the server suppresses the
-                // account discount, so this preview does too.
-                const bundle = bundleDiscount(
-                  items.map((i) => ({
-                    sku: i.product.sku,
-                    unitCents: lineUnitCents(i),
-                    quantity: i.quantity,
-                  })),
-                );
-                const breakdown = accountDiscount && bundle.pairs === 0
-                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
+                // B2G1 (buy-2-get-1-free) — PREVIEW only (place-order bills
+                // it). bundle/b2g1Preview/b2g1Applies are hoisted to the
+                // component body (see above) so the per-line nudge caption
+                // can read them too.
+                const b2g1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
+                const b2g1FreeUnits = b2g1Preview.lines.reduce((s, l) => s + l.freeUnits, 0);
+                // Account discount rides on the POST-B2G1 base, matching the
+                // server's reduction order (wholesale → bundle → B2G1 →
+                // reward → account). Suppressed under the bundle AND under a
+                // wholesale win, exactly as place-order does.
+                const postB2G1Subtotal = Math.max(subtotalCents - b2g1Cents, 0);
+                const breakdown = accountDiscount && b2g1Applies
+                  ? couponBreakdown(coupons, postB2G1Subtotal, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
                 // Shipping rides on top of the discounted subtotal — mirrors
@@ -660,8 +692,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 const discountedSubtotal = bundle.pairs > 0
                   ? Math.max(subtotalCents - bundle.discountCents, 0)
                   : hasAccountDisc
-                    ? Math.max(subtotalCents - breakdown!.total, 0)
-                    : subtotalCents;
+                    ? Math.max(postB2G1Subtotal - breakdown!.total, 0)
+                    : postB2G1Subtotal;
                 const totalCents = discountedSubtotal + shippingCents;
                 return (
                   <>
@@ -691,6 +723,16 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           </p>
                         )}
                       </>
+                    )}
+                    {b2g1Cents > 0 && (
+                      <div className="mb-3 flex items-baseline justify-between gap-2">
+                        <span className="min-w-0 text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                          3-for-2 · standard shipping — {b2g1FreeUnits} free
+                        </span>
+                        <span className="shrink-0 font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
+                          −{formatUsd(b2g1Cents)}
+                        </span>
+                      </div>
                     )}
                     {hasAccountDisc && (
                       <div className="mb-3 flex items-baseline justify-between">

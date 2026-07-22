@@ -50,6 +50,7 @@ import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
+import { computeB2G1Preview, b2g1NudgeCaption } from '../lib/b2g1Preview';
 import { siteConfig } from '../config';
 
 interface OrderResult {
@@ -93,6 +94,18 @@ export function CartPage() {
       quantity: i.quantity,
     })),
   );
+
+  // B2G1 (buy-2-get-1-free) — PREVIEW only; mirrors place-order's per-line
+  // arbitration against wholesale pack pricing (see src/lib/b2g1Preview.ts).
+  // The bundle above is a final price too, so B2G1 never applies alongside
+  // it. A wholesale win anywhere in the cart is likewise a final price
+  // order-wide; b2g1Applies gates the summary row, the per-line nudge below,
+  // and the account-discount preview, exactly like place-order's gates.
+  const b2g1Preview = bundle.pairs === 0
+    ? computeB2G1Preview(items, isMember)
+    : { lines: [], totalCents: 0, suppressedByWholesale: false };
+  const b2g1Applies = bundle.pairs === 0 && !b2g1Preview.suppressedByWholesale;
+  const b2g1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -616,6 +629,14 @@ export function CartPage() {
                       </span>
                     )}
                   </p>
+                  {/* 3-for-2 nudge — quiet caption only, no badge. Hidden
+                      whenever a final price (bundle/wholesale) has already
+                      suppressed B2G1 for the order. */}
+                  {b2g1Applies && b2g1NudgeCaption(item) && (
+                    <p className="mt-1.5 text-[10.5px] leading-relaxed text-ink/45">
+                      {b2g1NudgeCaption(item)}
+                    </p>
+                  )}
                 </div>
 
                 {/* Quantity controls + remove — one unit so they wrap together */}
@@ -748,11 +769,40 @@ export function CartPage() {
                   </div>
                 );
               })()}
-              {/* Account discount (signed-in perk) — same pass-2a math the
-                  server bills, so this preview matches the invoice. Suppressed
-                  under the bundle, exactly as place-order does. */}
-              {accountDiscount && bundle.pairs === 0 && (() => {
+              {/* B2G1 (buy-2-get-1-free) — automatic, standard-shipping only.
+                  A final price above it (bundle/wholesale) always wins; see
+                  b2g1Applies. */}
+              {b2g1Cents > 0 && (() => {
                 const subtotalCents = cartSubtotalCents(items);
+                const freeUnits = b2g1Preview.lines.reduce((s, l) => s + l.freeUnits, 0);
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        3-for-2 · standard shipping — {freeUnits} free
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(b2g1Cents)}
+                      </span>
+                    </div>
+                    <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Total after discounts
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        {formatUsd(Math.max(subtotalCents - b2g1Cents, 0))}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+              {/* Account discount (signed-in perk) — same pass-2a math the
+                  server bills, computed on the POST-B2G1 base (server order:
+                  wholesale → bundle → B2G1 → reward → account). Suppressed
+                  under the bundle AND under a wholesale win, exactly as
+                  place-order does (b2g1Applies covers both). */}
+              {accountDiscount && b2g1Applies && (() => {
+                const subtotalCents = Math.max(cartSubtotalCents(items) - b2g1Cents, 0);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;
                 return (
@@ -805,16 +855,17 @@ export function CartPage() {
                   the two surfaces read the same figure before checkout. */}
               {(() => {
                 const subtotalCents = cartSubtotalCents(items);
-                const discBreakdown = accountDiscount && bundle.pairs === 0
-                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount)
+                const postB2G1Subtotal = Math.max(subtotalCents - b2g1Cents, 0);
+                const discBreakdown = accountDiscount && b2g1Applies
+                  ? couponBreakdown(coupons, postB2G1Subtotal, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!discBreakdown && discBreakdown.accountCents > 0;
                 const shippingCents = isMember ? 0 : GUEST_SHIPPING_CENTS;
                 const discountedSubtotal = bundle.pairs > 0
                   ? Math.max(subtotalCents - bundle.discountCents, 0)
                   : hasAccountDisc
-                    ? Math.max(subtotalCents - discBreakdown!.total, 0)
-                    : subtotalCents;
+                    ? Math.max(postB2G1Subtotal - discBreakdown!.total, 0)
+                    : postB2G1Subtotal;
                 const totalCents = discountedSubtotal + shippingCents;
                 return (
                   <div className="mt-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-4)] border-t border-ink/[0.08] pt-[var(--space-3)]">
