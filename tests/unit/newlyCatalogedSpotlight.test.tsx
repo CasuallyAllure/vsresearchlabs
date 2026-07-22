@@ -23,8 +23,15 @@
  * The store is a Zustand singleton, so each test seeds `variantBySku` /
  * `bySku` in Arrange and resets between tests.
  */
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render as rtlRender, screen, within } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, test, vi } from 'vitest';
+
+// The spotlight slide now renders a react-router <Link> ("Members" → /account),
+// so every render needs a Router context, exactly as it has in the live app.
+const render = (ui: ReactElement, options?: Parameters<typeof rtlRender>[1]) =>
+  rtlRender(ui, { wrapper: ({ children }) => <MemoryRouter>{children}</MemoryRouter>, ...options });
 
 import { NewlyCatalogedSpotlight } from '../../src/components/catalog/NewlyCatalogedSpotlight';
 import { ProductSpotlightSlide } from '../../src/components/catalog/ProductSpotlightSlide';

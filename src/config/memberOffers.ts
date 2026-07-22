@@ -16,7 +16,7 @@ export const MEMBER_OFFERS: MemberOffer[] = [
   {
     code: 'Q3MEMBER15',
     headline: '15% account-holder discount',
-    detail: 'Applies to account-holder orders. Enter the code at checkout.',
+    detail: 'Applied automatically to your account-holder orders at checkout — no code needed. Excludes paired bundles and wholesale/volume pricing.',
     expiresLabel: 'Current term · through Q3'
   },
 ];

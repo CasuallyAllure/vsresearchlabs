@@ -54,8 +54,8 @@ export function MemberOfferCard({ offer, compact }: MemberOfferCardProps) {
       )}
 
       <div className="mt-[var(--space-4)] flex items-baseline justify-between gap-[var(--space-3)] border-t border-ink/[0.06] pt-[var(--space-3)]">
-        <span className="text-[10px] uppercase tracking-[0.18em] text-ink/40">Code</span>
-        <span className="font-mono text-[12px] tabular-nums tracking-[0.06em] text-ink/75">{offer.code}</span>
+        <span className="text-[10px] uppercase tracking-[0.18em] text-ink/40">Applied</span>
+        <span className="font-mono text-[12px] tracking-[0.06em] text-ink/75">Automatically at checkout</span>
       </div>
     </article>
   );

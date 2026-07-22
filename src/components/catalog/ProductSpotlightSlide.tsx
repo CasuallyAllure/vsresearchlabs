@@ -33,6 +33,7 @@
  */
 
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
@@ -248,11 +249,39 @@ export function ProductSpotlightSlide({
         </div>
 
         {priceCents != null && priceCents > 0 && (
-          <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="font-mono text-[22px] font-semibold tabular-nums leading-none text-ink">
-              {formatPrice(priceCents)}
-            </span>
-          </div>
+          <>
+            <div className="mt-2.5 flex items-baseline gap-2">
+              <span className="font-mono text-[22px] font-semibold tabular-nums leading-none text-ink">
+                {formatPrice(priceCents)}
+              </span>
+            </div>
+
+            {/* Members auto-discount — a thin strip tying the account benefit to
+                the price the buyer sees. The 15% is applied automatically
+                server-side at checkout for signed-in account holders
+                (effective_customer_discount, migration 069); the paired bundle
+                and wholesale are excluded there, so this claim matches what the
+                buyer is actually charged. */}
+            <div
+              className="mt-2 flex items-center gap-2 rounded-md border px-2.5 py-1.5"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--color-accent) 26%, transparent)',
+                backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)',
+              }}
+            >
+              <Link
+                to="/account"
+                aria-label="Become a member — create an account for the 15% discount"
+                className="shrink-0 rounded-sm font-mono text-[9px] font-medium uppercase tracking-[0.16em] underline decoration-1 underline-offset-2 transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-1"
+                style={{ color: 'var(--color-accent)', textDecorationColor: 'color-mix(in srgb, var(--color-accent) 45%, transparent)' }}
+              >
+                Members
+              </Link>
+              <span className="text-[10.5px] leading-tight text-ink/65">
+                Automatic 15% off at checkout · excludes bundles &amp; wholesale
+              </span>
+            </div>
+          </>
         )}
 
         <Button
