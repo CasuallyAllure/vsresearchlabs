@@ -3,11 +3,16 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { installGlobalErrorHandlers } from './lib/telemetry'
+import { initCfAnalytics } from './lib/cfAnalytics'
 
 // Error tracking. Two listener registrations, no network, no SDK — cheap
 // enough to sit on the critical shell path, and it must, because errors
 // thrown before this point are errors we never hear about.
 installGlobalErrorHandlers();
+
+// Cloudflare Web Analytics beacon. No-op until VITE_CF_BEACON_TOKEN is set
+// at build time; see src/lib/cfAnalytics.ts.
+initCfAnalytics();
 
 // Stale-deploy self-heal. Every deploy renames the hashed route chunks, so a
 // browser holding yesterday's HTML asks for chunk files that no longer exist
