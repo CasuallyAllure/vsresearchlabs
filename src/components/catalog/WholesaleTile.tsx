@@ -40,6 +40,7 @@ import { variantProduct } from '../../lib/cartActions';
 import { Link } from 'react-router-dom';
 import { useProductOverrides } from '../../lib/productOverrides';
 import { useCustomerAuth } from '../../lib/customerAuth';
+import { WHOLESALE_PACK_BASES } from '../../data/wholesalePackManifest';
 import { ShippingVan, SourcedDoseSegment } from './DoseTierChips';
 import { Tooltip } from '../ui/Tooltip';
 import {
@@ -143,6 +144,11 @@ interface WholesaleTileProps {
 
 export function WholesaleTile({ product, onInspect, detailed }: WholesaleTileProps) {
   const imageUrl = product.images?.[0] ?? null;
+  // A real photographed wholesale pack (case of vials in a clear tray) when one
+  // has been rendered for this product; otherwise fall back to the CSS
+  // depth-stacked PackShot below. Keyed by the vial image basename.
+  const packBase = imageUrl ? imageUrl.split('/').pop()?.replace('.webp', '') ?? null : null;
+  const packUrl = packBase && WHOLESALE_PACK_BASES.has(packBase) ? `/vials/packs/${packBase}.webp` : null;
 
   // Subscribe so admin price/stock changes propagate live (same as CompoundTile).
   useProductOverrides((s) => s.bySku[product.sku] ?? null);
@@ -206,9 +212,18 @@ export function WholesaleTile({ product, onInspect, detailed }: WholesaleTilePro
       >
         <div className="p-1.5">
           <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-procurement)] bg-display">
-            {imageUrl ? (
-              /* Depth-stacked pack shot filling the entire bay: back rows
-                 receded and defocused, front row sharp — the studio render
+            {packUrl ? (
+              /* Real photographed wholesale pack — a case of vials in a clear
+                 tray, shot in the catalog style. */
+              <img
+                src={packUrl}
+                alt={`${product.name} wholesale ${pack.noun} — ${pack.size} vials`}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : imageUrl ? (
+              /* Fallback: depth-stacked pack shot filling the entire bay: back
+                 rows receded and defocused, front row sharp — the studio render
                  recomposed as one styled group shot. */
               <PackShot imageUrl={imageUrl} layers={isCase ? CASE_FORMATION : HALF_FORMATION} />
             ) : (
