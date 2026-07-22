@@ -46,7 +46,7 @@ import { Turnstile } from '../components/security/Turnstile';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
-import { computeB2G1Preview, b2g1NudgeCaption } from '../lib/b2g1Preview';
+import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
 import { FIELD_DEFAULT } from '../components/ui/Field';
 import { siteConfig } from '../config';
 
@@ -675,14 +675,25 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 // it). bundle/b2g1Preview/b2g1Applies are hoisted to the
                 // component body (see above) so the per-line nudge caption
                 // can read them too.
-                const b2g1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
+                const rawB2G1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
                 const b2g1FreeUnits = b2g1Preview.lines.reduce((s, l) => s + l.freeUnits, 0);
+                // Owner policy (2026-07-22): B2G1 and the account discount
+                // never stack — compare each candidate's value on the base as
+                // if the OTHER hadn't fired (bigger wins, tie → B2G1) and show
+                // only the winner's row, mirroring place-order's handler.ts
+                // exclusivity gate.
+                const accountCandidateCents = accountDiscount && b2g1Applies
+                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount).accountCents
+                  : 0;
+                const b2g1Wins = b2g1BeatsAccount(rawB2G1Cents, accountCandidateCents);
+                const b2g1Cents = b2g1Wins ? rawB2G1Cents : 0;
                 // Account discount rides on the POST-B2G1 base, matching the
                 // server's reduction order (wholesale → bundle → B2G1 →
-                // reward → account). Suppressed under the bundle AND under a
-                // wholesale win, exactly as place-order does.
+                // reward → account). Suppressed under the bundle, a wholesale
+                // win, AND now a B2G1 win (b2g1Wins), exactly as place-order
+                // does.
                 const postB2G1Subtotal = Math.max(subtotalCents - b2g1Cents, 0);
-                const breakdown = accountDiscount && b2g1Applies
+                const breakdown = !b2g1Wins && accountDiscount && b2g1Applies
                   ? couponBreakdown(coupons, postB2G1Subtotal, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;

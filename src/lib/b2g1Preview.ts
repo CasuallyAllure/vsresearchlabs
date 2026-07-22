@@ -150,6 +150,23 @@ export function computeB2G1Preview(
  * suppressed B2G1 entirely — this helper only knows about ONE line, not the
  * cart's overall precedence.
  */
+/**
+ * Owner policy (2026-07-22): the automatic B2G1 promo and the automatic
+ * member/account discount must never stack on one order — the single bigger
+ * discount wins, tie → B2G1. Mirrors place-order's handler.ts exclusivity
+ * gate exactly: compare B2G1's flat value against what the account % would
+ * yield on the base WITHOUT B2G1 (never the post-B2G1 base — that was the old
+ * stacked behavior this replaces).
+ *
+ * Returns true when B2G1 bills (and the account row must be hidden), false
+ * when the account discount bills instead (and the B2G1 row must be hidden).
+ * Safe to call even when one or both candidates are 0 — there's no real
+ * conflict then, and whichever side is non-zero (if any) still applies.
+ */
+export function b2g1BeatsAccount(b2g1Cents: number, accountCentsWithoutB2G1: number): boolean {
+  return b2g1Cents >= accountCentsWithoutB2G1;
+}
+
 export function b2g1NudgeCaption(item: { product: Product; quantity: number }): string | null {
   const sku = item.product.sku;
   const qty = item.quantity;

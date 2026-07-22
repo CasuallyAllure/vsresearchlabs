@@ -7,7 +7,12 @@
  * as tests/unit/wholesale.test.ts) rather than mocking modules.
  */
 import { beforeEach, describe, expect, test } from 'vitest';
-import { computeB2G1Preview, b2g1NudgeCaption, B2G1_GROUP } from '../../src/lib/b2g1Preview';
+import {
+  computeB2G1Preview,
+  b2g1NudgeCaption,
+  b2g1BeatsAccount,
+  B2G1_GROUP,
+} from '../../src/lib/b2g1Preview';
 import { useProductOverrides, type VariantOverride } from '../../src/lib/productOverrides';
 import { usePromoSettings } from '../../src/lib/promoSettings';
 import { makeCartItem } from '../fixtures/product';
@@ -188,6 +193,32 @@ describe('computeB2G1Preview — wholesale precedence (per-line arbitration)', (
     // gate (which zeroes b2g1FreePlan for the WHOLE order, not just that line).
     expect(preview.lines).toEqual([]);
     expect(preview.suppressedByWholesale).toBe(true);
+  });
+});
+
+describe('b2g1BeatsAccount — owner policy 2026-07-22 exclusivity', () => {
+  test('B2G1 bigger than the account candidate — B2G1 wins', () => {
+    expect(b2g1BeatsAccount(2_000, 800)).toBe(true);
+  });
+
+  test('account candidate bigger than B2G1 — account wins', () => {
+    expect(b2g1BeatsAccount(2_000, 4_000)).toBe(false);
+  });
+
+  test('a tie goes to B2G1', () => {
+    expect(b2g1BeatsAccount(2_000, 2_000)).toBe(true);
+  });
+
+  test('no account candidate (guest, or no entitlement) — B2G1 always "wins" (nothing to suppress)', () => {
+    expect(b2g1BeatsAccount(2_000, 0)).toBe(true);
+  });
+
+  test('no B2G1 value — the account candidate "wins" (nothing to suppress)', () => {
+    expect(b2g1BeatsAccount(0, 800)).toBe(false);
+  });
+
+  test('both zero — B2G1 "wins" but there is nothing to show either way', () => {
+    expect(b2g1BeatsAccount(0, 0)).toBe(true);
   });
 });
 

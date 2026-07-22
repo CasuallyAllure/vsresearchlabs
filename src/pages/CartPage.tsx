@@ -50,7 +50,7 @@ import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
-import { computeB2G1Preview, b2g1NudgeCaption } from '../lib/b2g1Preview';
+import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
 import { siteConfig } from '../config';
 
 interface OrderResult {
@@ -105,7 +105,7 @@ export function CartPage() {
     ? computeB2G1Preview(items, isMember)
     : { lines: [], totalCents: 0, suppressedByWholesale: false };
   const b2g1Applies = bundle.pairs === 0 && !b2g1Preview.suppressedByWholesale;
-  const b2g1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
+  const rawB2G1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -119,6 +119,16 @@ export function CartPage() {
       cancelled = true;
     };
   }, []);
+
+  // Owner policy (2026-07-22): B2G1 and the account discount never stack —
+  // compare each candidate's value on the base as if the OTHER hadn't fired
+  // (bigger wins, tie → B2G1) and show only the winner's row, mirroring
+  // place-order's handler.ts exclusivity gate exactly.
+  const accountCandidateCents = accountDiscount && b2g1Applies
+    ? couponBreakdown(coupons, cartSubtotalCents(items), items, accountDiscount).accountCents
+    : 0;
+  const b2g1Wins = b2g1BeatsAccount(rawB2G1Cents, accountCandidateCents);
+  const b2g1Cents = b2g1Wins ? rawB2G1Cents : 0;
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
@@ -771,7 +781,8 @@ export function CartPage() {
               })()}
               {/* B2G1 (buy-2-get-1-free) — automatic, standard-shipping only.
                   A final price above it (bundle/wholesale) always wins; see
-                  b2g1Applies. */}
+                  b2g1Applies. b2g1Cents is already 0 when the account
+                  discount won the owner's bigger-wins comparison (b2g1Wins). */}
               {b2g1Cents > 0 && (() => {
                 const subtotalCents = cartSubtotalCents(items);
                 const freeUnits = b2g1Preview.lines.reduce((s, l) => s + l.freeUnits, 0);
@@ -799,9 +810,10 @@ export function CartPage() {
               {/* Account discount (signed-in perk) — same pass-2a math the
                   server bills, computed on the POST-B2G1 base (server order:
                   wholesale → bundle → B2G1 → reward → account). Suppressed
-                  under the bundle AND under a wholesale win, exactly as
-                  place-order does (b2g1Applies covers both). */}
-              {accountDiscount && b2g1Applies && (() => {
+                  under the bundle, a wholesale win, AND now a B2G1 win
+                  (owner policy 2026-07-22: the two never stack — b2g1Wins
+                  means B2G1's row above already won this order). */}
+              {!b2g1Wins && accountDiscount && b2g1Applies && (() => {
                 const subtotalCents = Math.max(cartSubtotalCents(items) - b2g1Cents, 0);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;
@@ -856,7 +868,9 @@ export function CartPage() {
               {(() => {
                 const subtotalCents = cartSubtotalCents(items);
                 const postB2G1Subtotal = Math.max(subtotalCents - b2g1Cents, 0);
-                const discBreakdown = accountDiscount && b2g1Applies
+                // b2g1Wins already means the account discount lost the
+                // owner's bigger-wins comparison — don't recompute it here.
+                const discBreakdown = !b2g1Wins && accountDiscount && b2g1Applies
                   ? couponBreakdown(coupons, postB2G1Subtotal, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!discBreakdown && discBreakdown.accountCents > 0;

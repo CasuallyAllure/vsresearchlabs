@@ -956,6 +956,42 @@ const handleOrder = async (req: Request): Promise<Response> => {
     }
   }
 
+  // Account % and B2G1 are mutually exclusive — larger wins, tie → B2G1
+  // (owner policy 2026-07-22). Wholesale/bundle already zeroed both above when
+  // either fires, so by the time we get here a live conflict means neither of
+  // those final prices is in play. Compare each candidate on a consistent
+  // base: B2G1's value as it stands (unaffected by account either way) against
+  // what the account % would yield on the base that would exist if B2G1
+  // hadn't fired — i.e. run the same reduction engine once with the real
+  // b2g1FreePlan and once with it emptied, holding flat codes/reward/account
+  // fixed. Zero the loser exactly like the wholesale/bundle gates do, so every
+  // downstream consumer (totals below, order_coupons, invoice, emails)
+  // follows automatically.
+  if (b2g1FreePlan.length > 0 && accountDiscount) {
+    const sharedTotalsInput = {
+      grossSubtotalCents,
+      shippingCents,
+      flatCentsFromCodes: flatCents,
+      itemUnitPricesCents: items.map((i) => clampCents(i.unitPriceCents)),
+      wholesalePlan,
+      bundleValue: bundlePlan.value,
+      rewardPercent: rewardVoucher ? rewardVoucher.percent : null,
+      accountPercent: accountDiscount.percent,
+      percentEntries: appliedList.filter((a) => a.kind === "percent"),
+    };
+    const withB2G1 = computeOrderTotals({ ...sharedTotalsInput, b2g1FreePlan });
+    const withoutB2G1 = computeOrderTotals({ ...sharedTotalsInput, b2g1FreePlan: [] });
+    const b2g1Value = withB2G1.b2g1Reduction;
+    const accountValue = withoutB2G1.accountCents;
+    if (b2g1Value > 0 && accountValue > 0) {
+      if (accountValue > b2g1Value) {
+        b2g1FreePlan.length = 0;
+      } else {
+        accountDiscount = null;
+      }
+    }
+  }
+
   // The whole reduction engine — wholesale → bundle → B2G1 → reward (fenced)
   // → account percent (2a) → code percents (2b) → cap, then shipping on top —
   // lives in orderTotals.ts (pure, unit-tested). Pass 1's flat code cents go

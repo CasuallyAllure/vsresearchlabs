@@ -470,6 +470,154 @@ describe('B2G1 promo', () => {
     expect(orderInsert(h)).toMatchObject({ discount_cents: 0, coupon_code: null });
     expect(couponRows(h)).toHaveLength(0);
   });
+
+  test('guest B2G1 is unchanged — no account discount to conflict with', async () => {
+    const h = withVariantRows(makeHarness(), [slowRow()]);
+    b2g1Settings(h);
+    const { status, body } = await placeOrder(h, basePayload({ items: [slowLine()] }));
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(2 * SLOW_PRICE_CENTS + GUEST_SHIPPING_CENTS);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: SLOW_PRICE_CENTS, coupon_code: 'B2G1' });
+    expect(couponRows(h)).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B2G1 vs account discount exclusivity (owner policy 2026-07-22)
+// ---------------------------------------------------------------------------
+//
+// A qty-4 slow-ship line makes the arithmetic clean: B2G1 frees exactly 1 of
+// 4 units, i.e. B2G1's value is ALWAYS exactly 25% of that line's gross
+// (floor(4/3) × unit = unit, and gross = 4 × unit) — so an account percent of
+// 25 is an exact tie, below it B2G1 is bigger, above it the account is bigger.
+
+describe('B2G1 vs account discount exclusivity', () => {
+  function accountRpc(h: Harness, percent: number): void {
+    h.db.onRpc('effective_customer_discount', {
+      data: { found: true, scope: 'lifetime', percent, label: 'Lifetime discount' },
+    });
+  }
+
+  test('B2G1 bigger (10% account) — B2G1 bills, account is suppressed entirely', async () => {
+    const h = asMember(withVariantRows(makeHarness(), [slowRow()]));
+    b2g1Settings(h);
+    accountRpc(h, 10);
+
+    const gross = 4 * SLOW_PRICE_CENTS;
+    const b2g1Value = SLOW_PRICE_CENTS; // floor(4/3) × unit = 1 free unit
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({ items: [slowLine(4)] }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(gross - b2g1Value); // member ships free
+    expect(orderInsert(h)).toMatchObject({
+      discount_cents: b2g1Value,
+      coupon_code: 'B2G1',
+      shipping_cents: 0,
+    });
+    const rows = couponRows(h);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ code: 'B2G1', source: 'promo' });
+  });
+
+  test('account bigger (50% account) — account bills, B2G1 is suppressed entirely', async () => {
+    const h = asMember(withVariantRows(makeHarness(), [slowRow()]));
+    b2g1Settings(h);
+    accountRpc(h, 50);
+
+    const gross = 4 * SLOW_PRICE_CENTS;
+    const accountValue = Math.round((gross * 50) / 100); // on the base WITHOUT B2G1
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({ items: [slowLine(4)] }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(gross - accountValue); // member ships free
+    expect(orderInsert(h)).toMatchObject({
+      discount_cents: accountValue,
+      coupon_code: 'ACCT-LIFETIME',
+      shipping_cents: 0,
+    });
+    const rows = couponRows(h);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ code: 'ACCT-LIFETIME', source: 'account', percent: 50 });
+  });
+
+  test('tie (25% account, exactly matching B2G1s value) — B2G1 wins the tie', async () => {
+    const h = asMember(withVariantRows(makeHarness(), [slowRow()]));
+    b2g1Settings(h);
+    accountRpc(h, 25);
+
+    const gross = 4 * SLOW_PRICE_CENTS;
+    const b2g1Value = SLOW_PRICE_CENTS;
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({ items: [slowLine(4)] }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(gross - b2g1Value);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: b2g1Value, coupon_code: 'B2G1' });
+    const rows = couponRows(h);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ code: 'B2G1', source: 'promo' });
+  });
+
+  test('a large mixed cart where the account % clearly outweighs B2G1 still yields ONLY the account row', async () => {
+    // A second, non-B2G1-eligible (fast-ship) line inflates the subtotal the
+    // account percent applies to, without adding anything for B2G1 to free —
+    // this pins that the comparison uses the correct "as if B2G1 never fired"
+    // base rather than double-counting the fast line into B2G1's value.
+    const h = asMember(
+      withVariantRows(makeHarness(), [slowRow(), variantRow(BPC_SKU, '5mg', BPC_PRICE_CENTS)]),
+    );
+    b2g1Settings(h);
+    accountRpc(h, 40);
+
+    const slowGross = 4 * SLOW_PRICE_CENTS;
+    const gross = slowGross + BPC_PRICE_CENTS;
+    const b2g1Value = SLOW_PRICE_CENTS;
+    const accountValue = Math.round((gross * 40) / 100);
+    expect(accountValue).toBeGreaterThan(b2g1Value);
+
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({
+        items: [slowLine(4), cartLine(BPC_SKU, 'BPC-157 — 5mg', BPC_PRICE_CENTS, 1, true)],
+      }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    expect(body.amountCents).toBe(gross - accountValue);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: accountValue, coupon_code: 'ACCT-LIFETIME' });
+    expect(couponRows(h)).toHaveLength(1);
+  });
+
+  test('bundle still suppresses BOTH B2G1 and account, even when B2G1 would otherwise win', async () => {
+    const h = asMember(
+      withVariantRows(makeHarness(), [...bundleRows(), slowRow()]),
+    );
+    b2g1Settings(h);
+    accountRpc(h, 10); // would lose to B2G1 on its own — irrelevant, bundle kills both
+    const { status, body } = await placeOrder(
+      h,
+      basePayload({ items: [...bundleItems(), slowLine(4)] }),
+      { bearer: MEMBER_JWT },
+    );
+    expect(status).toBe(200);
+    const gross = BUNDLE_GROSS + 4 * SLOW_PRICE_CENTS;
+    // Bundle is final: neither B2G1 nor the account discount survives.
+    expect(body.amountCents).toBe(gross - BUNDLE_DISCOUNT);
+    expect(orderInsert(h)).toMatchObject({ discount_cents: BUNDLE_DISCOUNT, coupon_code: 'BUNDLE' });
+    expect(couponRows(h)).toHaveLength(1);
+  });
 });
 
 // ---------------------------------------------------------------------------
