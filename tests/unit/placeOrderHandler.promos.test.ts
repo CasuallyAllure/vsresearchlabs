@@ -600,6 +600,34 @@ describe('B2G1 vs account discount exclusivity', () => {
     expect(couponRows(h)).toHaveLength(1);
   });
 
+  test('B2G1 + account + a percent code together — account wins, B2G1 drops, the code still rides', async () => {
+    // Both a B2G1 free line and an account discount are present, AND a percent
+    // coupon code is applied. Unlike the other exclusivity cases (none of which
+    // carry a code), this drives the B2G1-vs-account comparison with a NON-EMPTY
+    // applied-code list, exercising the percent-entries filter in that block.
+    const h = asMember(withVariantRows(makeHarness(), [slowRow()]));
+    b2g1Settings(h);
+    accountRpc(h, 50); // clearly outweighs the single B2G1 free unit
+    h.db.onRpc('validate_coupon', {
+      data: { valid: true, code: 'SAVE10', kind: 'percent', percent: 10, discount_cents: 500 },
+    });
+    redeemOk(h);
+
+    const { status } = await placeOrder(
+      h,
+      basePayload({ items: [slowLine(4)], coupon_codes: ['SAVE10'] }),
+      { bearer: MEMBER_JWT },
+    );
+
+    expect(status).toBe(200);
+    const codes = couponRows(h).map((r) => r.code);
+    // Account beat B2G1, so B2G1 is dropped; the account row and the percent
+    // code both survive.
+    expect(codes).toContain('ACCT-LIFETIME');
+    expect(codes).toContain('SAVE10');
+    expect(codes).not.toContain('B2G1');
+  });
+
   test('bundle still suppresses BOTH B2G1 and account, even when B2G1 would otherwise win', async () => {
     const h = asMember(
       withVariantRows(makeHarness(), [...bundleRows(), slowRow()]),
