@@ -488,20 +488,30 @@ describe('FeaturedSupplyCarousel', () => {
 });
 
 describe('BundleOfferTile labelling', () => {
-  test('states its "Paired supply" label once, as a heading', () => {
+  test('states its "Paired supply" label once and opens the pair on request', () => {
     // Arrange — real prices for the merchandised pair so the tile renders.
     seedOverrides([
       makeVariant(BUNDLE_PROMO.skuA, BUNDLE_FEATURED.doseA, { price_cents: 11000 }),
       makeVariant(BUNDLE_PROMO.skuB, BUNDLE_FEATURED.doseB, { price_cents: 22000 }),
     ]);
 
-    const { container } = render(<BundleOfferTile />);
+    const onInspectPair = vi.fn();
+    const { container } = render(<BundleOfferTile onInspectPair={onInspectPair} />);
 
     // Act
     const labels = container.textContent?.match(/Paired supply/g) ?? [];
 
-    // Assert
+    // Assert — the chip states the label exactly once. It's a styled span, not
+    // a heading, because the slide's image is now a button (openable) and a
+    // heading can't be nested inside a button.
     expect(labels).toHaveLength(1);
-    expect(screen.getByRole('heading', { name: 'Paired supply' })).toBeTruthy();
+    expect(screen.getByText('Paired supply')).toBeTruthy();
+
+    // The slide is not a dead picture: its image is a button that opens the
+    // pair's two compounds so a visitor can see what's inside.
+    const openButton = screen.getByRole('button', { name: /paired supply/i });
+    fireEvent.click(openButton);
+    expect(onInspectPair).toHaveBeenCalledTimes(1);
+    expect(onInspectPair.mock.calls[0][0]).toHaveLength(2);
   });
 });
