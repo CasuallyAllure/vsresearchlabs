@@ -182,6 +182,33 @@ export function BiopeptideResearchSupplies() {
 
   return (
     <section className="pt-[var(--space-2)] pb-[var(--space-8)]">
+      {/* Featured-supply carousel — one full-width slide at a time,
+          auto-advancing, with dots + a pause control. Any child can render
+          nothing (BundleOfferTile hides on unresolved pricing, the spotlight
+          slides on an unresolved/hidden dose); the carousel filters those out
+          so a hidden slide never leaves a phantom dot. slideLabels stays
+          positionally in sync with the children below. Sits at the very top;
+          the filter module renders below it, directly above the listing. */}
+      <FeaturedSupplyCarousel
+        label="Featured supply"
+        slideLabels={['Paired supply', 'Korean Glutathione', 'Newly cataloged']}
+        className="mb-[var(--space-4)]"
+      >
+        <BundleOfferTile className="w-full" />
+        <ProductSpotlightSlide
+          products={products}
+          slug={KOREAN_GLUTATHIONE_SLUG}
+          dose={KOREAN_GLUTATHIONE_DOSE}
+          heroImage={KOREAN_GLUTATHIONE_IMAGE}
+          eyebrow="Antioxidant · Reduced form"
+          description={KOREAN_GLUTATHIONE_DESCRIPTION}
+          badge="limited"
+          onInspect={setInspectedId}
+          className="w-full"
+        />
+        <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
+      </FeaturedSupplyCarousel>
+
       <div className="relative isolate mb-[var(--space-3)]">
         <div aria-hidden="true" className="bio-mercury-bg pointer-events-none absolute inset-0 -z-10" />
 
@@ -225,32 +252,6 @@ export function BiopeptideResearchSupplies() {
           searchPlaceholder="Search peptides…"
         />
       </div>
-
-      {/* Featured-supply carousel — one full-width slide at a time,
-          auto-advancing, with dots + a pause control. Any child can render
-          nothing (BundleOfferTile hides on unresolved pricing, the spotlight
-          slides on an unresolved/hidden dose); the carousel filters those out
-          so a hidden slide never leaves a phantom dot. slideLabels stays
-          positionally in sync with the children below. */}
-      <FeaturedSupplyCarousel
-        label="Featured supply"
-        slideLabels={['Paired supply', 'Korean Glutathione', 'Newly cataloged']}
-        className="mb-[var(--space-4)]"
-      >
-        <BundleOfferTile className="w-full" />
-        <ProductSpotlightSlide
-          products={products}
-          slug={KOREAN_GLUTATHIONE_SLUG}
-          dose={KOREAN_GLUTATHIONE_DOSE}
-          heroImage={KOREAN_GLUTATHIONE_IMAGE}
-          eyebrow="Antioxidant · Reduced form"
-          description={KOREAN_GLUTATHIONE_DESCRIPTION}
-          badge="limited"
-          onInspect={setInspectedId}
-          className="w-full"
-        />
-        <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
-      </FeaturedSupplyCarousel>
 
       {wholesaleActive && !canWholesale && (
         <div className="mt-3 flex items-center justify-between gap-3 rounded-[var(--radius-field)] border border-ink/15 bg-ink/[0.03] px-3.5 py-2.5">
