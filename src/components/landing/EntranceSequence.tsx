@@ -74,11 +74,11 @@ const BRAND_GOLD = '#B5904B';
 const TRUST_GREEN = '#4FB07A';
 
 /**
- * Trust-badge copy — approved, factual. TRUST_NETWORK_LINE is intentionally a
- * single editable constant: swap in a *verified* figure once one is confirmed
- * (e.g. `Trusted by 1,200+ research professionals`). Do NOT invent a count.
+ * Trust-badge copy — approved, factual. TRUST_NETWORK_LINE is a single
+ * editable constant: swap in an updated figure when the number changes. The
+ * "1,000+" partner count is owner-approved (2026-07-22).
  */
-const TRUST_NETWORK_LINE = 'Trusted by research professionals nationwide';
+const TRUST_NETWORK_LINE = '1,000+ Partners in Our Network';
 const BADGE_COA_LABEL = 'COA Verified';
 const BADGE_COA_SUB = 'every lot';
 const BADGE_PURITY_LABEL = '≥98% HPLC Purity';
@@ -366,24 +366,25 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
     textTransform: 'uppercase',
   };
 
-  // Frosted glass pill in the .glass-clear family (clear sheen over the dark
-  // artwork, bright hairline edge + inner highlight). Shared by all badges.
+  // Compact frosted glass chip in the .glass-clear family (clear sheen over
+  // the dark artwork, bright hairline edge + inner highlight). Sizes to its
+  // content — never a full-width bar. Shared by all badges.
   const badgePill: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 8,
-    padding: '8px 14px',
+    gap: 5,
+    padding: '4px 9px',
     borderRadius: 999,
-    background: 'rgba(18,20,23,0.52)',
-    border: '1px solid rgba(255,255,255,0.26)',
+    background: 'rgba(18,20,23,0.5)',
+    border: '1px solid rgba(255,255,255,0.22)',
     boxShadow:
-      'inset 0 1px 0 rgba(255,255,255,0.24), 0 10px 26px -14px rgba(0,0,0,0.7)',
+      'inset 0 1px 0 rgba(255,255,255,0.2), 0 6px 16px -12px rgba(0,0,0,0.7)',
     backdropFilter: 'blur(10px) saturate(160%)',
     WebkitBackdropFilter: 'blur(10px) saturate(160%)',
-    color: 'rgba(255,255,255,0.92)',
+    color: 'rgba(255,255,255,0.9)',
     fontFamily: 'var(--font-mono)',
-    fontSize: '10.5px',
-    letterSpacing: '0.16em',
+    fontSize: '9px',
+    letterSpacing: '0.11em',
     textTransform: 'uppercase',
     whiteSpace: 'nowrap',
   };
@@ -539,13 +540,14 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
               position: 'absolute',
               left: 0,
               right: 0,
-              bottom: 'clamp(108px, 19vh, 200px)',
+              bottom: 'clamp(104px, 18vh, 190px)',
+              // A neat, anchored cluster: two compact chips on top, the
+              // network line centered beneath — never scattered bars.
               display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 8,
-              padding: '0 20px',
+              gap: 6,
+              padding: '0 16px',
               pointerEvents: 'none',
               opacity: reduced ? 1 : 0,
               ...(reduced
@@ -553,42 +555,44 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
                 : { transition: 'opacity 120ms linear, transform 120ms linear' }),
             }}
           >
-            {/* COA Verified — green check + "every lot" */}
-            <span style={badgePill}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="10" fill={TRUST_GREEN} fillOpacity="0.9" />
-                <path
-                  d="M7.5 12.4l3 3 6-6.4"
-                  stroke="#0C0C0D"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{BADGE_COA_LABEL}</span>
-              <span style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.12em' }}>
-                {BADGE_COA_SUB}
+            {/* Row 1 — COA Verified + ≥98% HPLC Purity, side by side. */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              {/* COA Verified — green check + "every lot" */}
+              <span style={badgePill}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" fill={TRUST_GREEN} fillOpacity="0.9" />
+                  <path
+                    d="M7.5 12.4l3 3 6-6.4"
+                    stroke="#0C0C0D"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>{BADGE_COA_LABEL}</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em' }}>
+                  {BADGE_COA_SUB}
+                </span>
               </span>
-            </span>
 
-            {/* ≥98% HPLC Purity — gold accent node */}
+              {/* ≥98% HPLC Purity — gold accent node */}
+              <span style={badgePill}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5.5" fill={BRAND_GOLD} />
+                  <circle cx="12" cy="12" r="9" stroke={BRAND_GOLD} strokeOpacity="0.5" strokeWidth="1.6" />
+                </svg>
+                <span>{BADGE_PURITY_LABEL}</span>
+              </span>
+            </div>
+
+            {/* Row 2 — network line, centered, three-body brand mark accent. */}
             <span style={badgePill}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="5.5" fill={BRAND_GOLD} />
-                <circle cx="12" cy="12" r="9" stroke={BRAND_GOLD} strokeOpacity="0.5" strokeWidth="1.4" />
-              </svg>
-              <span>{BADGE_PURITY_LABEL}</span>
-            </span>
-
-            {/* Network / trust line — the three-body brand mark (gold · teal ·
-                ink) as the accent. */}
-            <span style={badgePill}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="8" cy="15" r="2.4" fill="#34727A" />
                 <circle cx="16" cy="13" r="3.2" fill={BRAND_GOLD} />
                 <circle cx="13" cy="7" r="1.7" fill="rgba(255,255,255,0.7)" />
               </svg>
-              <span style={{ letterSpacing: '0.1em' }}>{TRUST_NETWORK_LINE}</span>
+              <span>{TRUST_NETWORK_LINE}</span>
             </span>
           </div>
         )}
@@ -602,27 +606,27 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
             <style>{`
               .vsr-entrance-skip {
                 position: absolute;
-                right: 16px;
-                bottom: 16px;
+                right: 14px;
+                bottom: 14px;
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
-                min-height: 34px;
-                padding: 7px 13px;
+                gap: 5px;
+                min-height: 28px;
+                padding: 5px 10px;
                 font-family: var(--font-mono);
-                font-size: 10px;
-                letter-spacing: 0.2em;
+                font-size: 8.5px;
+                letter-spacing: 0.18em;
                 text-transform: uppercase;
-                color: rgba(255,255,255,0.92);
-                background: rgba(16,18,21,0.62);
-                border: 1px solid rgba(255,255,255,0.42);
+                color: rgba(255,255,255,0.9);
+                background: rgba(16,18,21,0.6);
+                border: 1px solid rgba(255,255,255,0.4);
                 border-radius: 999px;
                 cursor: pointer;
                 -webkit-backdrop-filter: blur(8px) saturate(160%);
                 backdrop-filter: blur(8px) saturate(160%);
                 box-shadow:
-                  inset 0 1px 0 rgba(255,255,255,0.28),
-                  0 6px 18px -8px rgba(0,0,0,0.72);
+                  inset 0 1px 0 rgba(255,255,255,0.26),
+                  0 5px 14px -8px rgba(0,0,0,0.72);
                 transition:
                   transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
                   background 160ms ease,
@@ -654,7 +658,7 @@ export function EntranceSequence({ onFinalFrameHold, exit, onComplete }: Entranc
               aria-label="Skip the intro animation"
             >
               <span>Skip intro</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M4 5l7 7-7 7M13 5l7 7-7 7"
                   stroke="currentColor"
