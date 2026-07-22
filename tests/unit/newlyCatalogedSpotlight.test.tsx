@@ -23,7 +23,7 @@
  * The store is a Zustand singleton, so each test seeds `variantBySku` /
  * `bySku` in Arrange and resets between tests.
  */
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { NewlyCatalogedSpotlight } from '../../src/components/catalog/NewlyCatalogedSpotlight';
@@ -488,30 +488,28 @@ describe('FeaturedSupplyCarousel', () => {
 });
 
 describe('BundleOfferTile labelling', () => {
-  test('states its "Paired supply" label once and opens the pair on request', () => {
+  test('states its "Paired supply" label once and opens a panel showing both compounds', () => {
     // Arrange — real prices for the merchandised pair so the tile renders.
     seedOverrides([
       makeVariant(BUNDLE_PROMO.skuA, BUNDLE_FEATURED.doseA, { price_cents: 11000 }),
       makeVariant(BUNDLE_PROMO.skuB, BUNDLE_FEATURED.doseB, { price_cents: 22000 }),
     ]);
 
-    const onInspectPair = vi.fn();
-    const { container } = render(<BundleOfferTile onInspectPair={onInspectPair} />);
+    const { container } = render(<BundleOfferTile />);
 
-    // Act
-    const labels = container.textContent?.match(/Paired supply/g) ?? [];
-
-    // Assert — the chip states the label exactly once. It's a styled span, not
-    // a heading, because the slide's image is now a button (openable) and a
+    // The chip states the label exactly once. It's a styled span, not a
+    // heading, because the slide's image is now a button (openable) and a
     // heading can't be nested inside a button.
+    const labels = container.textContent?.match(/Paired supply/g) ?? [];
     expect(labels).toHaveLength(1);
     expect(screen.getByText('Paired supply')).toBeTruthy();
 
-    // The slide is not a dead picture: its image is a button that opens the
-    // pair's two compounds so a visitor can see what's inside.
-    const openButton = screen.getByRole('button', { name: /paired supply/i });
-    fireEvent.click(openButton);
-    expect(onInspectPair).toHaveBeenCalledTimes(1);
-    expect(onInspectPair.mock.calls[0][0]).toHaveLength(2);
+    // Not a dead picture, and never a single-compound dossier: clicking opens a
+    // panel that makes clear you receive BOTH compounds — one vial of each,
+    // each with its own full record.
+    fireEvent.click(screen.getByRole('button', { name: /paired supply/i }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(/one vial of each/i)).toBeTruthy();
+    expect(within(dialog).getAllByRole('button', { name: /view full record/i })).toHaveLength(2);
   });
 });

@@ -31,6 +31,7 @@ import { useProducts } from '../../hooks/useProducts';
 import { BUNDLE_PROMO, BUNDLE_FEATURED, bundleDiscount } from '../../lib/bundle';
 import { Button } from '../ui/Button';
 import { AvailabilityBadge } from './AvailabilityBadge';
+import { BundlePairModal } from './BundlePairModal';
 import type { Product } from '../../types';
 
 /** Paired-supply hero render (the two vials on the lab-glass set). Archived
@@ -41,12 +42,9 @@ interface BundleOfferTileProps {
   /** Layout classes from the parent (width / snap / flex / spacing). The tile
    *  owns no outer margin so it composes into a row or stands alone. */
   className?: string;
-  /** Opens the compound overlay scoped to the pair's two compounds so a
-   *  visitor can read exactly what's in the bundle. Passed the [A, B] ids. */
-  onInspectPair?: (ids: [string, string]) => void;
 }
 
-export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTileProps) {
+export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
   // Subscribe so an admin price/visibility edit propagates live, same as
   // CompoundTile's override subscriptions.
   useProductOverrides((s) => s.bySku);
@@ -69,6 +67,7 @@ export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTi
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
   const [added, setAdded] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const flashTimer = useRef<number | null>(null);
 
   if (!overridesLoaded || overridesError) return null;
@@ -129,11 +128,12 @@ export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTi
   }
 
   return (
-    // Compact two-part slide (matches ProductSpotlightSlide): a capped image
-    // BAND on mobile / a left image COLUMN on desktop, with price + CTA beside
-    // it. Keeps the slide short so the carousel doesn't swallow the viewport
-    // and every slide stays the same height. Content vertically centered so
-    // there's no dead gap under the CTA.
+    <>
+    {/* Compact two-part slide (matches ProductSpotlightSlide): a capped image
+        BAND on mobile / a left image COLUMN on desktop, with price + CTA beside
+        it. Keeps the slide short so the carousel doesn't swallow the viewport
+        and every slide stays the same height. Content vertically centered so
+        there's no dead gap under the CTA. */}
     <section
       aria-label="Paired compound supply"
       className={`flex h-full flex-col md:min-h-[256px] md:flex-row md:items-stretch ${className}`}
@@ -149,7 +149,7 @@ export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTi
           chip is a styled span (the section aria-label already names it). */}
       <button
         type="button"
-        onClick={() => onInspectPair?.([productA.id, productB.id])}
+        onClick={() => setDetailOpen(true)}
         aria-label={`See what's in the ${productA.name} + ${productB.name} paired supply`}
         className="relative block w-full shrink-0 overflow-hidden text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 md:w-[42%]"
       >
@@ -222,17 +222,30 @@ export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTi
           {added ? '✓ Added' : 'Add pair to inquiry'}
         </Button>
 
-        {onInspectPair && (
-          <button
-            type="button"
-            onClick={() => onInspectPair([productA.id, productB.id])}
-            className="mt-2.5 inline-flex items-center gap-1.5 self-start text-[11px] uppercase tracking-[0.16em] text-holo/75 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
-          >
-            <span>See what's inside</span>
-            <span aria-hidden="true" className="text-holo/45">↗</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setDetailOpen(true)}
+          className="mt-2.5 inline-flex items-center gap-1.5 self-start text-[11px] uppercase tracking-[0.16em] text-holo/75 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+        >
+          <span>See what's inside</span>
+          <span aria-hidden="true" className="text-holo/45">↗</span>
+        </button>
       </div>
     </section>
+
+    <BundlePairModal
+      open={detailOpen}
+      onClose={() => setDetailOpen(false)}
+      productA={productA}
+      doseA={doseA}
+      productB={productB}
+      doseB={doseB}
+      totalCents={totalCents}
+      bundleCents={bundleCents}
+      discountCents={discountCents}
+      percent={BUNDLE_PROMO.percent}
+      onAddPair={handleAddBundle}
+    />
+    </>
   );
 }
