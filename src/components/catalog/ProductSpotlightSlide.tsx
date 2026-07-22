@@ -216,6 +216,13 @@ export function ProductSpotlightSlide({
         <span className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/40 px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.16em] text-white/85 backdrop-blur-sm">
           {eyebrow}
         </span>
+        {/* Expand affordance so the slide clearly reads as openable. */}
+        <span
+          aria-hidden="true"
+          className="absolute right-3 top-3 rounded-full border border-white/15 bg-black/40 px-2 py-[3px] font-mono text-[9.5px] uppercase tracking-[0.14em] text-white/80 backdrop-blur-sm"
+        >
+          Details ↗
+        </span>
         <span className="absolute inset-x-4 bottom-3">
           <span className="block text-[14px] font-medium leading-snug text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
             {title}
@@ -258,6 +265,15 @@ export function ProductSpotlightSlide({
         >
           {added ? '✓ Added' : 'Add to inquiry'}
         </Button>
+
+        <button
+          type="button"
+          onClick={() => onInspect(product.id)}
+          className="mt-2.5 inline-flex items-center gap-1.5 self-start text-[11px] uppercase tracking-[0.16em] text-holo/75 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+        >
+          <span>See full record</span>
+          <span aria-hidden="true" className="text-holo/45">↗</span>
+        </button>
       </div>
     </section>
   );

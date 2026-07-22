@@ -79,6 +79,9 @@ export function BiopeptideResearchSupplies() {
   const showSourcedOnly = !wholesaleActive && sourcedOn && !fastOn;
   const [search, setSearch] = useState('');
   const [inspectedId, setInspectedId] = useState<string | null>(null);
+  // Set when the overlay is opened from the paired-supply slide: the two
+  // bundled compound ids, so the overlay is scoped to just the pair.
+  const [pairIds, setPairIds] = useState<[string, string] | null>(null);
   const [inventoryOpen, setInventoryOpen] = useState(false);
 
   // isSkuInStock/isSkuVisible read the override store via getState() (not
@@ -180,6 +183,23 @@ export function BiopeptideResearchSupplies() {
     [inspectedId, products],
   );
 
+  // The overlay normally carousels the whole filtered catalog. Opened from the
+  // paired-supply slide it's scoped to just the two bundled compounds, so
+  // prev/next flips between exactly what's in the pair.
+  const overlayList = pairIds
+    ? (pairIds.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[])
+    : filtered;
+
+  function openPair(ids: [string, string]) {
+    setPairIds(ids);
+    setInspectedId(ids[0]);
+  }
+
+  function closeOverlay() {
+    setInspectedId(null);
+    setPairIds(null);
+  }
+
   return (
     <section className="pt-[var(--space-2)] pb-[var(--space-8)]">
       {/* Featured-supply carousel — one full-width slide at a time,
@@ -194,7 +214,7 @@ export function BiopeptideResearchSupplies() {
         slideLabels={['Paired supply', 'Korean Glutathione', 'Newly cataloged']}
         className="mb-[var(--space-4)]"
       >
-        <BundleOfferTile className="w-full" />
+        <BundleOfferTile className="w-full" onInspectPair={openPair} />
         <ProductSpotlightSlide
           products={products}
           slug={KOREAN_GLUTATHIONE_SLUG}
@@ -303,10 +323,10 @@ export function BiopeptideResearchSupplies() {
       {inspectedProduct && (
         <CompoundIntelligenceOverlay
           product={inspectedProduct}
-          onClose={() => setInspectedId(null)}
-          list={filtered}
+          onClose={closeOverlay}
+          list={overlayList}
           onNavigate={setInspectedId}
-          wholesale={wholesaleActive}
+          wholesale={!pairIds && wholesaleActive}
         />
       )}
 

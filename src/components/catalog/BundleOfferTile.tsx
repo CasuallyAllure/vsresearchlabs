@@ -41,9 +41,12 @@ interface BundleOfferTileProps {
   /** Layout classes from the parent (width / snap / flex / spacing). The tile
    *  owns no outer margin so it composes into a row or stands alone. */
   className?: string;
+  /** Opens the compound overlay scoped to the pair's two compounds so a
+   *  visitor can read exactly what's in the bundle. Passed the [A, B] ids. */
+  onInspectPair?: (ids: [string, string]) => void;
 }
 
-export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
+export function BundleOfferTile({ className = '', onInspectPair }: BundleOfferTileProps) {
   // Subscribe so an admin price/visibility edit propagates live, same as
   // CompoundTile's override subscriptions.
   useProductOverrides((s) => s.bySku);
@@ -140,7 +143,16 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
           Mobile: capped band in flow. Desktop: absolutely fills the left
           column (see ProductSpotlightSlide — %-height won't resolve against a
           flex-stretched parent). */}
-      <div className="relative w-full shrink-0 overflow-hidden md:w-[42%]">
+      {/* Image opens the compound overlay scoped to the pair — so the slide
+          reads as an openable card that explains what's in the bundle, not a
+          dead picture. A heading can't live inside a button, so the status
+          chip is a styled span (the section aria-label already names it). */}
+      <button
+        type="button"
+        onClick={() => onInspectPair?.([productA.id, productB.id])}
+        aria-label={`See what's in the ${productA.name} + ${productB.name} paired supply`}
+        className="relative block w-full shrink-0 overflow-hidden text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/25 md:w-[42%]"
+      >
         <img
           src={BUNDLE_IMAGE}
           alt={`${productA.name} and ${productB.name} research vials — paired supply`}
@@ -157,16 +169,23 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
           }}
         />
         {/* One label, not two: the status chip IS the section heading. */}
-        <h2 className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/35 px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--color-status-success)] backdrop-blur-sm">
+        <span className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/35 px-2.5 py-[3px] font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--color-status-success)] backdrop-blur-sm">
           Paired supply
-        </h2>
+        </span>
+        {/* Expand affordance so the slide clearly reads as openable. */}
+        <span
+          aria-hidden="true"
+          className="absolute right-3 top-3 rounded-full border border-white/15 bg-black/40 px-2 py-[3px] font-mono text-[9.5px] uppercase tracking-[0.14em] text-white/80 backdrop-blur-sm"
+        >
+          Details ↗
+        </span>
         {/* Pairing line — the wording, on the image, over the bottom scrim. */}
-        <p className="absolute inset-x-4 bottom-3 text-[13.5px] font-medium leading-snug text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+        <span className="absolute inset-x-4 bottom-3 block text-[13.5px] font-medium leading-snug text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
           {productA.name} <span className="text-white/65">{doseA}</span>
           <span className="px-1 text-white/45">+</span>
           {productB.name} <span className="text-white/65">{doseB}</span>
-        </p>
-      </div>
+        </span>
+      </button>
 
       {/* Price + disclaimer + CTA, vertically centered on the card surface. */}
       <div className="flex flex-1 flex-col justify-center p-[var(--space-4)] lg:p-[var(--space-5)]">
@@ -202,6 +221,17 @@ export function BundleOfferTile({ className = '' }: BundleOfferTileProps) {
         >
           {added ? '✓ Added' : 'Add pair to inquiry'}
         </Button>
+
+        {onInspectPair && (
+          <button
+            type="button"
+            onClick={() => onInspectPair([productA.id, productB.id])}
+            className="mt-2.5 inline-flex items-center gap-1.5 self-start text-[11px] uppercase tracking-[0.16em] text-holo/75 transition-colors hover:text-holo-light focus:outline-none focus-visible:ring-1 focus-visible:ring-holo/40"
+          >
+            <span>See what's inside</span>
+            <span aria-hidden="true" className="text-holo/45">↗</span>
+          </button>
+        )}
       </div>
     </section>
   );
