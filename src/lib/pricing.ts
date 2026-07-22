@@ -51,3 +51,21 @@ export function formatPrice(cents: number | null): string {
   if (cents == null) return '—';
   return '$' + Math.round(cents / 100).toLocaleString('en-US');
 }
+
+/**
+ * Format cents with exact dollars and cents, e.g. 7395 → "$73.95", 7300 → "$73".
+ * Used where the amount isn't a whole dollar (e.g. a 15%-off member price) so the
+ * displayed figure equals the cents the buyer is actually charged, never rounded.
+ */
+export function formatPriceExact(cents: number | null): string {
+  if (cents == null) return '—';
+  const whole = cents / 100;
+  const hasCents = cents % 100 !== 0;
+  return (
+    '$' +
+    whole.toLocaleString('en-US', {
+      minimumFractionDigits: hasCents ? 2 : 0,
+      maximumFractionDigits: 2,
+    })
+  );
+}

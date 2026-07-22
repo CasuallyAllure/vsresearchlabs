@@ -46,6 +46,8 @@ import { FdaResourceList } from './intelligence/FdaResourceList';
 import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
+import { isMemberPriceEligible } from '../../lib/memberPricing';
+import { MemberPrice } from './MemberPrice';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 import { useCustomerAuth } from '../../lib/customerAuth';
 import {
@@ -623,8 +625,11 @@ export function CompoundIntelligenceOverlay({
                   <span className="text-ink/45 uppercase" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
                     Select mg
                   </span>
-                  <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
-                    {formatPrice(priceCents)}
+                  <span className="flex items-center gap-2">
+                    <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
+                      {formatPrice(priceCents)}
+                    </span>
+                    <MemberPrice baseCents={priceCents} eligible={isMemberPriceEligible(product)} size="md" />
                   </span>
                 </div>
                 {(() => {

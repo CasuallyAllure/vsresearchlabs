@@ -314,7 +314,12 @@ describe('ProductSpotlightSlide — Korean Glutathione configuration', () => {
     );
 
     expect(container.querySelector('.line-through')).toBeNull();
-    expect(screen.getAllByText(/\$/)).toHaveLength(1);
+    // The two prices shown are the real normal price and the derived member
+    // price (15% off, same rounding as checkout) — neither is a fabricated
+    // strikethrough/compare-at. 8900 → 8900 − round(8900×0.15=1335) = 7565.
+    expect(screen.getByText('$89')).toBeTruthy();
+    expect(screen.getByText('$75.65')).toBeTruthy();
+    expect(screen.getAllByText(/\$/)).toHaveLength(2);
   });
 
   test('limited badge: sourced (no on-hand/inbound supply) shows "Limited availability"', () => {

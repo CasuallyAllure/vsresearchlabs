@@ -31,6 +31,8 @@ import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
+import { isMemberPriceEligible } from '../../lib/memberPricing';
+import { MemberPrice } from './MemberPrice';
 import { useProductOverrides, isVariantPublic, is24hrDose, doseAvailability } from '../../lib/productOverrides';
 import { ShippingVan, DoseChip, SourcedDoseSegment } from './DoseTierChips';
 import { Tooltip } from '../ui/Tooltip';
@@ -284,8 +286,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             variants.length > 0 ? 'mt-2 border-t border-ink/[0.07] pt-2' : ''
           }`}
         >
-          <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
-            {formatPrice(priceCents)}
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1">
+            <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
+              {formatPrice(priceCents)}
+            </span>
+            <MemberPrice baseCents={priceCents} eligible={isMemberPriceEligible(product)} />
           </span>
 
           <button
