@@ -90,13 +90,13 @@ describe('RewardTracker', () => {
 });
 
 describe('MemberOfferCard', () => {
-  test('states the term, its figure, and its code', () => {
+  test('states the term, its figure, and that it applies automatically (no code)', () => {
     render(
       <MemberOfferCard
         offer={{
           code: 'Q3MEMBER15',
           headline: '15% account-holder discount',
-          detail: 'Applies to account-holder orders. Enter the code at checkout.',
+          detail: 'Applied automatically to your account-holder orders at checkout — no code needed.',
           expiresLabel: 'Current term · through Q3',
         }}
       />,
@@ -105,6 +105,9 @@ describe('MemberOfferCard', () => {
     expect(screen.getByText('Pricing term')).toBeTruthy();
     expect(screen.getByText('15%')).toBeTruthy();
     expect(screen.getByText('account-holder discount')).toBeTruthy();
-    expect(screen.getByText('Q3MEMBER15')).toBeTruthy();
+    // The discount is now automatic — the card shows how it's applied, not a code.
+    expect(screen.getByText('Applied')).toBeTruthy();
+    expect(screen.getByText('Automatically at checkout')).toBeTruthy();
+    expect(screen.queryByText('Q3MEMBER15')).toBeNull();
   });
 });

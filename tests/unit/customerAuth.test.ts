@@ -113,12 +113,17 @@ describe('useCustomerAuth — bootstrap', () => {
   test('resolves to signed-out when the backend is not configured', async () => {
     seam.client = null;
 
-    const { result } = renderHook(() => useCustomerAuth());
+    const { result, unmount } = renderHook(() => useCustomerAuth());
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.user).toBeNull();
     expect(result.current.profile).toBeNull();
     expect(result.current.error).toBeNull();
+
+    // With no backend, the effect returns the bare cancel-only cleanup (no auth
+    // listener to unsubscribe). Unmount explicitly so that teardown path runs
+    // deterministically instead of relying on afterEach's timing.
+    unmount();
   });
 
   test('resolves to signed-out when there is no session — and claims nothing', async () => {
