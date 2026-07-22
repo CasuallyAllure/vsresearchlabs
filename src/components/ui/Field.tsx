@@ -12,12 +12,17 @@
  * Exported so forms that can't use the <Field> component (selects, bespoke
  * composites, admin editors) still share the exact same input grammar.
  */
+// text-[16px] on mobile is deliberate: iOS Safari auto-zooms the whole page
+// when a focused input's font-size is < 16px (this made the account form read
+// as "way too large" on iPhone). 16px on small screens defeats that zoom; the
+// slimmer editorial size returns at sm+.
 export const FIELD_SURFACE =
-  'w-full px-[14px] py-[11px] bg-base-700 border rounded-field text-[14px] text-ink placeholder-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] focus:outline-none transition-[border-color,box-shadow] duration-150';
+  'w-full px-[14px] py-[11px] bg-base-700 border rounded-field text-[16px] sm:text-[14px] text-ink placeholder-ink/30 shadow-[inset_0_1px_2px_rgba(26,23,20,0.035)] focus:outline-none transition-[border-color,box-shadow] duration-150';
 /** Thin variant — genuinely slim editorial input for dense forms (SignUpForm).
- *  Shorter (py-[5px] ≈ 30px tall), crisper 10px radius, lighter placeholder. */
+ *  Shorter (py-[5px] ≈ 30px tall), crisper 10px radius, lighter placeholder.
+ *  16px text on mobile (see FIELD_SURFACE) to defeat iOS focus-zoom. */
 export const FIELD_SURFACE_DENSE =
-  'w-full px-[13px] py-[5px] bg-base-700 border rounded-[10px] text-[13.5px] text-ink placeholder-ink/30 placeholder:uppercase placeholder:text-[10.5px] placeholder:tracking-[0.14em] shadow-[inset_0_1px_2px_rgba(26,23,20,0.03)] focus:outline-none transition-[border-color,box-shadow] duration-150';
+  'w-full px-[13px] py-[6px] sm:py-[5px] bg-base-700 border rounded-[10px] text-[16px] sm:text-[13.5px] text-ink placeholder-ink/30 placeholder:uppercase placeholder:text-[10.5px] placeholder:tracking-[0.14em] shadow-[inset_0_1px_2px_rgba(26,23,20,0.03)] focus:outline-none transition-[border-color,box-shadow] duration-150';
 export const FIELD_DEFAULT =
   'border-ink/12 hover:border-ink/20 focus:border-gold/70 focus:ring-2 focus:ring-gold/15';
 export const FIELD_ERROR =

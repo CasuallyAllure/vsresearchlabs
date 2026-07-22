@@ -1,13 +1,16 @@
 /**
  * AuthCard — the customer portal entry card.
  *
- * One card, two faces. "Create Account" flips the front (sign-in) to the back
- * (the full sign-up fill-out) on the Y axis — no page navigation. The card's
- * height animates to whichever face is showing, so the tall signup form and
- * the short signin form both sit cleanly framed.
+ * One card, two faces. "Create Account" crossfades the sign-in face to the
+ * full sign-up fill-out — no page navigation. The card's height animates to
+ * whichever face is showing, so the tall signup form and the short signin form
+ * both sit cleanly framed. (A 3D Y-axis flip was used originally, but
+ * backface-visibility is unreliable on iOS Safari and let the hidden face
+ * bleed through, so the transition is now a plain opacity crossfade.)
  *
- * Motion is gated: under `prefers-reduced-motion` the flip is an instant swap.
- * The hidden face is `inert`, so it takes no focus and no pointer events.
+ * Motion is gated: under `prefers-reduced-motion` the swap is instant. The
+ * hidden face is `opacity-0` + `inert`, so it's invisible and takes no focus
+ * or pointer events.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -81,51 +84,48 @@ export function AuthCard({ signIn, signUp, verifyOtp, resendOtp, error, initialM
             onBack={() => { setConfirmEmail(null); setMode('signin'); }}
           />
         ) : (
-        /* Flip viewport */
-        <div style={{ perspective: '1600px' }}>
+        /* Face viewport — a clean crossfade between the two faces. NOT a 3D
+           flip: backface-visibility is unreliable on iOS Safari, which let the
+           hidden face bleed through (a mirrored "Sign In" over the sign-up
+           form). Both faces stay mounted so field state survives a switch; the
+           inactive one is opacity-0 + inert so it's fully invisible and takes
+           no focus/pointer. The frame height animates to the active face. */
+        <div
+          className="relative transition-[height] duration-[var(--duration-slow)] ease-[var(--easing-spring)] motion-reduce:transition-none"
+          style={{ height }}
+        >
+          {/* Sign in */}
           <div
-            className="relative transition-[transform,height] duration-[var(--duration-slow)] ease-[var(--easing-spring)] motion-reduce:transition-none"
-            style={{
-              transformStyle: 'preserve-3d',
-              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-              height,
-            }}
+            ref={frontRef}
+            inert={flipped}
+            aria-hidden={flipped}
+            className={`w-full transition-opacity duration-[var(--duration-normal)] motion-reduce:transition-none ${
+              flipped ? 'pointer-events-none opacity-0' : 'opacity-100'
+            }`}
           >
-            {/* Front — Sign in */}
-            <div
-              ref={frontRef}
-              inert={flipped}
-              aria-hidden={flipped}
-              className="w-full"
-              style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-            >
-              <SignInForm
-                signIn={signIn}
-                error={error}
-                onSwitchToSignUp={() => setMode('signup')}
-                initialEmail={initialEmail}
-              />
-            </div>
+            <SignInForm
+              signIn={signIn}
+              error={error}
+              onSwitchToSignUp={() => setMode('signup')}
+              initialEmail={initialEmail}
+            />
+          </div>
 
-            {/* Back — Create account */}
-            <div
-              ref={backRef}
-              inert={!flipped}
-              aria-hidden={!flipped}
-              className="absolute inset-x-0 top-0 w-full"
-              style={{
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }}
-            >
-              <SignUpForm
-                signUp={signUp}
-                onNeedsConfirmation={(email) => setConfirmEmail(email)}
-                onSwitchToSignIn={() => setMode('signin')}
-                initialEmail={initialEmail}
-              />
-            </div>
+          {/* Create account */}
+          <div
+            ref={backRef}
+            inert={!flipped}
+            aria-hidden={!flipped}
+            className={`absolute inset-x-0 top-0 w-full transition-opacity duration-[var(--duration-normal)] motion-reduce:transition-none ${
+              flipped ? 'opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+          >
+            <SignUpForm
+              signUp={signUp}
+              onNeedsConfirmation={(email) => setConfirmEmail(email)}
+              onSwitchToSignIn={() => setMode('signin')}
+              initialEmail={initialEmail}
+            />
           </div>
         </div>
         )}
