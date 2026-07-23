@@ -112,6 +112,10 @@ export interface AdminGateResult {
 export interface SendInviteHandlerDeps {
   requireAdmin: (req: Request) => Promise<AdminGateResult>;
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
+  /** Best-effort invite-funnel logging (service-role record_member_invite RPC,
+   *  migration 070). Optional so unit tests can omit it; a logging failure is
+   *  swallowed and NEVER fails the send. */
+  recordInvite?: (args: { email: string; points: number }) => Promise<void>;
 }
 
 export function createSendInviteHandler(
@@ -123,7 +127,7 @@ export function createSendInviteHandler(
 
   const CORS_HEADERS = cfg.corsHeaders;
 
-  const { requireAdmin, fetch } = deps;
+  const { requireAdmin, fetch, recordInvite } = deps;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -183,6 +187,17 @@ async function sendResendEmail(args: { to: string; subject: string; html: string
       console.error("Invite email failed:", result);
       return jsonResponse({ error: "Email delivery failed.", detail: result.body }, 502);
     }
+
+    // Record the invite for the funnel (migration 070). Best-effort: a logging
+    // failure must never turn a delivered email into an error for the admin.
+    if (recordInvite) {
+      try {
+        await recordInvite({ email: contact, points });
+      } catch (e) {
+        console.error("Invite logging failed (non-fatal):", e);
+      }
+    }
+
     return jsonResponse({ ok: true, contact, points });
   };
 }

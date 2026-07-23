@@ -62,6 +62,7 @@ const AdminStockHistory = lazyPage(() => import('./pages/admin/AdminStockHistory
 const AdminAuditLog = lazyPage(() => import('./pages/admin/AdminAuditLog'), 'AdminAuditLog');
 const AdminCustomers = lazyPage(() => import('./pages/admin/AdminCustomers'), 'AdminCustomers');
 const AdminCustomerDetail = lazyPage(() => import('./pages/admin/AdminCustomerDetail'), 'AdminCustomerDetail');
+const AdminMembers = lazyPage(() => import('./pages/admin/AdminMembers'), 'AdminMembers');
 const AdminSystemHealth = lazyPage(() => import('./pages/admin/AdminSystemHealth'), 'AdminSystemHealth');
 const AdminReports = lazyPage(() => import('./pages/admin/AdminReports'), 'AdminReports');
 const AdminCoupons = lazyPage(() => import('./pages/admin/AdminCoupons'), 'AdminCoupons');
@@ -118,6 +119,7 @@ export default function App() {
                 <Route path="/admin/stock-history" element={<AdminGate><AdminStockHistory /></AdminGate>} />
                 <Route path="/admin/customers" element={<AdminGate><AdminCustomers /></AdminGate>} />
                 <Route path="/admin/customers/:id" element={<AdminGate><AdminCustomerDetail /></AdminGate>} />
+                <Route path="/admin/members" element={<AdminGate><AdminMembers /></AdminGate>} />
                 <Route path="/admin/coupons" element={<AdminGate><AdminCoupons /></AdminGate>} />
                 <Route path="/admin/audit-log" element={<AdminGate><AdminAuditLog /></AdminGate>} />
                 <Route path="/admin/system-health" element={<AdminGate><AdminSystemHealth /></AdminGate>} />

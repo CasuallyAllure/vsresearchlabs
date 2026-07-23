@@ -20,9 +20,16 @@
 // ../_shared/adminGate.ts).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 import { buildCorsHeaders } from "../_shared/cors.ts";
 import { requireAdmin } from "../_shared/adminGate.ts";
 import { createSendInviteHandler } from "./handler.ts";
+
+// Service-role client for best-effort invite-funnel logging (migration 070).
+// SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are auto-injected in the edge runtime.
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const adminDb = supabaseUrl && serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
 const handleSendInvite = createSendInviteHandler(
   {
@@ -30,7 +37,20 @@ const handleSendInvite = createSendInviteHandler(
     fromEmail: Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>",
     corsHeaders: buildCorsHeaders(),
   },
-  { requireAdmin, fetch: (input, init) => fetch(input, init) },
+  {
+    requireAdmin,
+    fetch: (input, init) => fetch(input, init),
+    recordInvite: adminDb
+      ? async ({ email, points }) => {
+          const { error } = await adminDb.rpc("record_member_invite", {
+            p_email: email,
+            p_points: points,
+            p_channel: "email",
+          });
+          if (error) throw error;
+        }
+      : undefined,
+  },
 );
 
 Deno.serve(handleSendInvite);
