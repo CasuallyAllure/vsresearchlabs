@@ -49,9 +49,9 @@ describe('isMemberPriceEligible', () => {
     expect(isMemberPriceEligible(product({ tags: undefined }))).toBe(true);
   });
 
-  test('blends (merchandised as bundles, e.g. GLOW) are excluded', () => {
+  test('blends (e.g. GLOW) are also eligible — a standalone blend line is charged the 15% too', () => {
     expect(isMemberPriceEligible(product({ tags: ['antioxidant-beauty', 'blend', 'research'] }))).toBe(
-      false,
+      true,
     );
   });
 });

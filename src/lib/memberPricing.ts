@@ -19,15 +19,16 @@
  * server engine.
  *
  * ELIGIBILITY mirrors the "excludes bundles & wholesale" rule the buyer already
- * sees. Wholesale volume pricing and the Retatrutide + GHK-Cu paired bundle are
- * fenced off from the account percent server-side (they apply as FLAT reductions
- * before the account slice — orderTotals.ts), and those surfaces are excluded
- * structurally by simply not rendering <MemberPrice> in WholesaleTile /
- * BundleOfferTile. `isMemberPriceEligible` additionally excludes multi-compound
- * BLEND products (the GLOW family), which are merchandised as bundles — so a
- * blend never advertises a member price. Showing NO member price is never
- * misleading; it only declines to advertise. Every product that DOES show one
- * (single compounds) genuinely receives exactly that price at checkout.
+ * sees. The only real exclusions are pricing MODES, not products: wholesale
+ * volume pricing and the Retatrutide + GHK-Cu paired bundle are fenced off from
+ * the account percent server-side (they apply as FLAT reductions before the
+ * account slice — orderTotals.ts), and those surfaces are excluded structurally
+ * by simply not rendering <MemberPrice> in WholesaleTile / BundleOfferTile.
+ * Every standalone catalog line — single compounds AND multi-compound blends
+ * (GLOW etc.) — genuinely receives the 15% at checkout, so `isMemberPriceEligible`
+ * is true for them all. (Blends were briefly hidden as a conservative reading of
+ * "bundles"; the owner confirmed the blend IS eligible and should show its
+ * member price like every other product — 2026-07-23.)
  */
 
 import type { Product } from '../types/product';
@@ -49,10 +50,14 @@ export function memberPriceCents(baseCents: number | null): number | null {
 }
 
 /**
- * Whether a product should advertise a member price. Single compounds are
- * eligible; multi-compound blends (merchandised as bundles) are not. Wholesale
- * and the paired-bundle tile are excluded at the render site, not here.
+ * Whether a product should advertise a member price. Every standalone catalog
+ * line receives the automatic 15% at checkout — single compounds and blends
+ * alike — so all are eligible. The only exclusions are pricing MODES (wholesale
+ * packs, the Reta+GHK paired bundle), excluded at their render sites by not
+ * rendering <MemberPrice> there, not per-product here. The `_product` param is
+ * kept so callers stay uniform and a real per-product carve-out can land here if
+ * one ever exists.
  */
-export function isMemberPriceEligible(product: Product): boolean {
-  return !(product.tags ?? []).includes('blend');
+export function isMemberPriceEligible(_product: Product): boolean {
+  return true;
 }
