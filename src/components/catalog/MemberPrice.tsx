@@ -4,6 +4,13 @@
  * price. Used by every shopper-facing price surface (catalog tiles, featured
  * spotlight, compound overlay) so the treatment and copy never fork.
  *
+ * LAYOUT: a hairline vertical rule then the member price, with a very small
+ * "members" caption stacked underneath it — i.e. `$60 │ $51` with the label
+ * below the second figure. Deliberately borderless and narrow: the earlier
+ * bordered pill was wide enough to collide with the tile's Add button on
+ * mobile. Parents align this with `items-baseline` so the member figure sits on
+ * the same baseline as the normal price and the caption hangs below.
+ *
  * DISPLAY ONLY — the amount comes from src/lib/memberPricing.ts, which mirrors
  * the checkout's account-slice math exactly (round(base × 15 / 100)); the money
  * a buyer is charged is unchanged and still resolved server-side.
@@ -42,8 +49,8 @@ export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }
 
   if (!eligible || member == null) return null;
 
-  const priceText = size === 'md' ? 'text-[13px]' : 'text-[11px]';
-  const tagText = size === 'md' ? 'text-[8.5px]' : 'text-[8px]';
+  const priceText = size === 'md' ? 'text-[15px]' : 'text-[12px]';
+  const tagText = size === 'md' ? 'text-[7.5px]' : 'text-[7px]';
 
   return (
     <Tooltip
@@ -62,20 +69,25 @@ export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }
       <Link
         to="/account"
         aria-label={`Member price ${formatPriceExact(member)} — automatic ${MEMBER_DISCOUNT_PERCENT}% off for account holders; create a profile`}
-        className={`group inline-flex items-center gap-1 rounded-full border px-1.5 py-[3px] font-mono tabular-nums no-underline leading-none transition-colors hover:brightness-105 focus:outline-none focus-visible:ring-1 ${className}`}
-        style={{
-          borderColor: 'color-mix(in srgb, var(--color-accent) 30%, transparent)',
-          backgroundColor: 'color-mix(in srgb, var(--color-accent) 9%, transparent)',
-        }}
+        className={`inline-flex items-stretch gap-1 font-mono tabular-nums no-underline leading-none transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-1 ${className}`}
       >
+        {/* Hairline rule separating the normal price from the member price —
+            the divider reads as "$60 │ $51" instead of a competing pill. */}
         <span
-          className={`font-medium uppercase tracking-[0.14em] ${tagText}`}
-          style={{ color: ACCENT }}
-        >
-          Members
-        </span>
-        <span className={`font-semibold ${priceText}`} style={{ color: ACCENT }}>
-          {formatPriceExact(member)}
+          aria-hidden="true"
+          className="w-px shrink-0 self-stretch"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 40%, transparent)' }}
+        />
+        <span className="inline-flex flex-col items-start">
+          <span className={`font-semibold ${priceText}`} style={{ color: ACCENT }}>
+            {formatPriceExact(member)}
+          </span>
+          <span
+            className={`mt-[2px] uppercase tracking-[0.1em] ${tagText}`}
+            style={{ color: 'color-mix(in srgb, var(--color-accent) 75%, transparent)' }}
+          >
+            members
+          </span>
         </span>
       </Link>
     </Tooltip>

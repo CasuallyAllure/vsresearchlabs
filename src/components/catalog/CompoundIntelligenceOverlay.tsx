@@ -625,7 +625,7 @@ export function CompoundIntelligenceOverlay({
                   <span className="text-ink/45 uppercase" style={{ fontSize: '10px', letterSpacing: '0.24em' }}>
                     Select mg
                   </span>
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-baseline gap-2">
                     <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                       {formatPrice(priceCents)}
                     </span>

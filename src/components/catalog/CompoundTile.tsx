@@ -286,7 +286,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             variants.length > 0 ? 'mt-2 border-t border-ink/[0.07] pt-2' : ''
           }`}
         >
-          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1">
+          <span className="flex min-w-0 flex-1 items-baseline gap-1">
             <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
               {formatPrice(priceCents)}
             </span>
@@ -296,13 +296,22 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           <button
             type="button"
             onClick={handleAdd}
-            aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+            aria-label={
+              added
+                ? `${product.name} ${activeDose} added to inquiry`
+                : `Add ${product.name} ${activeDose} to inquiry`
+            }
             className={[
-              'tile-add-btn shrink-0 min-h-[44px] min-w-[48px] inline-flex items-center justify-center gap-1 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] font-normal leading-none focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
+              // Compact by design: the member price now sits beside the normal
+              // price, so the Add control is slimmed to stop crowding it. 32×42
+              // still clears the WCAG 2.5.8 (AA) 24×24 target-size minimum.
+              // FIXED width (not padding-driven) so the confirm state can never
+              // grow into the member price — the collision this replaced.
+              'tile-add-btn shrink-0 h-[32px] w-[42px] inline-flex items-center justify-center rounded-full text-[10px] uppercase tracking-[0.1em] font-normal leading-none whitespace-nowrap focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
               added ? 'is-added' : '',
             ].join(' ')}
           >
-            {added ? '✓ Added' : 'Add'}
+            {added ? '✓' : 'Add'}
           </button>
         </div>
        </div>

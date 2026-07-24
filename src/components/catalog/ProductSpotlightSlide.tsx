@@ -252,7 +252,7 @@ export function ProductSpotlightSlide({
 
         {priceCents != null && priceCents > 0 && (
           <>
-            <div className="mt-2.5 flex items-center gap-2.5">
+            <div className="mt-2.5 flex items-baseline gap-2.5">
               <span className="font-mono text-[22px] font-semibold tabular-nums leading-none text-ink">
                 {formatPrice(priceCents)}
               </span>
