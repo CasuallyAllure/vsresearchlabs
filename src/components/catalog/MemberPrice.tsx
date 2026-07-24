@@ -69,25 +69,23 @@ export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }
       <Link
         to="/account"
         aria-label={`Member price ${formatPriceExact(member)} — automatic ${MEMBER_DISCOUNT_PERCENT}% off for account holders; create a profile`}
-        className={`inline-flex items-stretch gap-1 font-mono tabular-nums no-underline leading-none transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-1 ${className}`}
+        // The hairline rule is a LEFT BORDER on this column, not a separate
+        // element. An empty divider span would be the first flex item and the
+        // browser would take the link's baseline from it (its full stretched
+        // height), dropping the normal price well below the member price under
+        // `items-baseline`. As a border, the first in-flow line is the member
+        // price, so the two figures share one baseline.
+        className={`inline-flex flex-col items-start border-l pl-1.5 font-mono tabular-nums no-underline leading-none transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-1 ${className}`}
+        style={{ borderColor: 'color-mix(in srgb, var(--color-accent) 40%, transparent)' }}
       >
-        {/* Hairline rule separating the normal price from the member price —
-            the divider reads as "$60 │ $51" instead of a competing pill. */}
+        <span className={`font-semibold ${priceText}`} style={{ color: ACCENT }}>
+          {formatPriceExact(member)}
+        </span>
         <span
-          aria-hidden="true"
-          className="w-px shrink-0 self-stretch"
-          style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 40%, transparent)' }}
-        />
-        <span className="inline-flex flex-col items-start">
-          <span className={`font-semibold ${priceText}`} style={{ color: ACCENT }}>
-            {formatPriceExact(member)}
-          </span>
-          <span
-            className={`mt-[2px] uppercase tracking-[0.1em] ${tagText}`}
-            style={{ color: 'color-mix(in srgb, var(--color-accent) 75%, transparent)' }}
-          >
-            members
-          </span>
+          className={`mt-[2px] uppercase tracking-[0.1em] ${tagText}`}
+          style={{ color: 'color-mix(in srgb, var(--color-accent) 75%, transparent)' }}
+        >
+          members
         </span>
       </Link>
     </Tooltip>
