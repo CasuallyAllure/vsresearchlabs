@@ -106,3 +106,27 @@ Roster row → `MemberRow`: `id`(customer_id, null when unlinked), `userId`, `na
 
 ## Deliberate expansion points
 `member_invites.metadata` jsonb · all functions return jsonb (append fields freely) · tier passed through as data (a new tier = one check-constraint change, no code here) · `member_roster_base` is the single place to add a computed column (a benefit flag, a new segment) · if the view gets slow at scale, promote it to a scheduled materialized view — function signatures don't change.
+
+---
+
+## Migration 073 — `member_vouchers_invites.sql` (Phase 2: redemptions + invites)
+
+Adds the admin windows into redemptions and invites, plus the one new write verb. Same style as 071 — jsonb-returning, `is_admin()`-gated SECURITY DEFINER, `revoke … from public, anon; grant … to authenticated`. Still a lens: reads `reward_vouchers`, `reward_ledger`, `orders`, `member_invites`, `customer_profiles`, `customers`; owns no new customer state.
+
+### Schema (additive)
+- `reward_vouchers` gains `voided_at timestamptz` + `void_reason text` — so the Redemptions view is self-contained without joining `audit_log`. No other table touched.
+
+### Functions
+- **`admin_member_vouchers(p_status, p_limit, p_offset) → jsonb`** — paged voucher list joined to member identity (`customer_profiles`/`customers`) + consuming `order_number`, with a `summary {active, used, void, outstandingPoints}`. Read-only.
+- **`admin_void_voucher(p_voucher_id, p_refund_points, p_reason) → jsonb`** — the single new write verb. **Active-only** (raises on non-active). Requires a non-empty reason. Optionally appends a **+`points_spent` `adjustment`** row to `reward_ledger` (append-only refund — never edits a balance), sets the voucher `status='void'` + `voided_at` + `void_reason`, and `log_audit('reward.voucher_voided','customer',…)`. Returns `{ok, refunded_points}`.
+- **`admin_member_invites(p_filter, p_limit, p_offset) → jsonb`** — paged invite list (`all`/`outstanding`/`converted`) + funnel `summary {sent, converted, outstanding, conversionPct}`, over the existing `member_invites` (070).
+- **`admin_invitable_guests(p_limit) → jsonb`** — server-side bulk-invite eligibility: contacts with paid-order points (`floor(cents/100)`, the 044 accrual) that are NOT already accounts (linked profile OR matching `auth.users` email) and were NOT invited in the last 7 days (re-run throttle). No client estimation.
+
+### RECONCILE (067) DELIBERATELY UNTOUCHED
+`admin_void_voucher` only voids `status='active'` vouchers. An active voucher has never been consumed — no `order_id`, no applied discount, no `source='reward'` coupon row — and `reconcile_reward_vouchers` only inspects `status='used'` vouchers + order-side gaps. So voiding an active voucher **cannot** create any reconcile state (A/B/C/D); 067 needs no change. The blueprint's "teach reconcile about voids" caveat only applied to voiding *used* vouchers, which this RPC refuses. Used-voucher voiding (unwinding an order discount) would be a separate change that must extend reconcile in the same migration — out of Phase 2 scope.
+
+### Client wiring
+`src/pages/admin/members/` — `useVouchers`/`useInvites` (hooks), `RedemptionsView`/`InvitesView` (sub-views), `ui.tsx`/`format.ts`/`backend.ts` (shared atoms/helpers). Bulk invite reuses the existing `send-invite` edge function via `composeInvite` (no new email/logging path). Members export = one `ReportDef` in `AdminReports.tsx` reusing the `exporters.ts` engine. Missing 073 degrades to a calm "not migrated" note.
+
+### Not asserted (honesty)
+Dollar "exposure at current catalog prices" is not computed — a voucher's value depends on which item a member applies it to. The view shows the truthful figure instead: outstanding **points** locked in active vouchers (refundable on void). A live reconcile "clean" badge is deferred (the probe result isn't persisted for a cheap client read); the view notes the 15-min auto-reconcile cadence.

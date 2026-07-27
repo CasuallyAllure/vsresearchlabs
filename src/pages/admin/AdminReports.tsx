@@ -74,6 +74,25 @@ async function sb(
   return (data ?? []) as unknown as Row[];
 }
 
+/** Page through the whole member roster via the admin RPC (migration 071) —
+ *  server-side truth (real ledger points, computed segment/discount), not a raw
+ *  table select. Reused by the Members export sheet. */
+async function fetchAllMembers(): Promise<Row[]> {
+  if (!supabase) throw new Error('Backend not configured — set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.');
+  const pageSize = 200;
+  const out: Row[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase.rpc('admin_member_roster', {
+      p_segment: 'all', p_sort: 'spend', p_search: null, p_limit: pageSize, p_offset: offset,
+    });
+    if (error) throw new Error(error.message);
+    const rows = ((data as { rows?: Row[] } | null)?.rows ?? []) as Row[];
+    out.push(...rows);
+    if (rows.length < pageSize || out.length >= 20000) break;
+  }
+  return out;
+}
+
 // ── report definitions ───────────────────────────────────────────────────────
 interface ReportDef {
   id: string;
@@ -261,6 +280,31 @@ function buildReports(products: Product[]): ReportDef[] {
         { header: 'Last seen', value: (r) => DT(r.last_seen_at) },
         { header: 'Last inquiry', value: (r) => DT(r.last_inquiry_at) },
         { header: 'Last order', value: (r) => DT(r.last_order_at) },
+      ],
+    },
+    {
+      id: 'members',
+      label: 'Members',
+      description: 'Portal members — tier, status, spend, real reward-ledger points, effective discount, segment, and lifecycle dates.',
+      sheet: 'Members',
+      hasRange: false,
+      fetch: () => fetchAllMembers(),
+      columns: [
+        { header: 'Name', value: (r) => S(r.name) },
+        { header: 'Contact', value: (r) => S(r.contact) },
+        { header: 'Organization', value: (r) => S(r.org) },
+        { header: 'Tier', value: (r) => S(r.tier) },
+        { header: 'Status', value: (r) => S(r.status) },
+        { header: 'Account type', value: (r) => S(r.accountType) },
+        { header: 'Lifetime paid (USD)', type: 'currency', value: (r) => USD(r.spendCents) },
+        { header: 'Trailing 12mo (USD)', type: 'currency', value: (r) => USD(r.ttmSpendCents) },
+        { header: 'Paid orders', type: 'number', value: (r) => N(r.paidOrders) },
+        { header: 'Reward points', type: 'number', value: (r) => N(r.points) },
+        { header: 'Effective discount %', type: 'number', value: (r) => N(r.effectivePercent) },
+        { header: 'Segment', value: (r) => S(r.segment) },
+        { header: 'VIP', value: (r) => (r.vip ? 'YES' : '') },
+        { header: 'Joined', value: (r) => S(r.joinedIso) },
+        { header: 'Last order', value: (r) => S(r.lastOrderIso) },
       ],
     },
     {
