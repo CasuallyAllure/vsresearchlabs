@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import type {
-  MemberDetail, MemberQueueItem, MemberRow, MemberStat, MembersViewData, RewardLine,
+  MemberDetail, MemberQueueItem, MemberRow, MemberStat, MembersViewData,
 } from './membersView';
 
 export const MEMBERS_PAGE_SIZE = 50;
@@ -301,44 +301,20 @@ export function useMemberDetail(row: MemberRow | null): { detail: MemberDetail |
     async function load() {
       if (!row || !supabase) return;
 
-      const [activityRes, rewardsRes, discountRes] = await Promise.all([
-        row.id
-          ? supabase.rpc('admin_member_activity', { p_customer_id: row.id })
-          : Promise.resolve({ data: null, error: null }),
-        // Existing admin-readable ledger (044) — reused, not re-implemented.
-        supabase
-          .from('reward_ledger')
-          .select('kind, points, note, created_at')
-          .eq('user_id', row.userId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('customer_discounts')
-          .select('expires_at, active')
-          .eq('user_id', row.userId)
-          .eq('active', true)
-          .order('created_at', { ascending: false })
-          .limit(1),
-      ]);
+      // Just the activity timeline — reward balance and discount rules are
+      // owned by the shared management panels, which fetch their own data.
+      // admin_member_activity keys on the CRM customer id; unlinked accounts
+      // (id === null) simply have no timeline yet.
+      const activityRes = row.id
+        ? await supabase.rpc('admin_member_activity', { p_customer_id: row.id })
+        : { data: null, error: null };
       if (cancelled) return;
 
       const events = ((activityRes.data as { events?: Array<{ label: string; iso: string }> } | null)?.events ?? [])
         .slice(0, 6)
         .map((e) => ({ label: e.label, iso: e.iso }));
 
-      const recentRewards: RewardLine[] = ((rewardsRes.data ?? []) as Array<{
-        kind: RewardLine['kind']; points: number; note: string | null; created_at: string;
-      }>).map((r) => ({
-        kind: r.kind, points: r.points, note: r.note, iso: (r.created_at ?? '').slice(0, 10),
-      }));
-
-      const expires = ((discountRes.data ?? []) as Array<{ expires_at: string | null }>)[0]?.expires_at ?? null;
-
-      const next: MemberDetail = {
-        recentRewards,
-        timeline: events,
-        discountExpiresIso: expires ? expires.slice(0, 10) : null,
-      };
+      const next: MemberDetail = { timeline: events };
       inflight.current.delete(k);
       setCache((prev) => ({ ...prev, [k]: next }));
     }

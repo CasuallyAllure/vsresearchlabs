@@ -17,20 +17,23 @@
  * Filtering, sorting, searching and pagination are server-side (see
  * useMembersData) — the list is not capped by a client-side fetch.
  *
- * Inline editing of the management panels is deliberately deferred: the write
- * RPCs live in CustomerAccountPanels on the customer detail page (one place,
- * already audited + confirm-guarded). Extracting those three panels into
- * shared writable components is the remaining Phase 1 step; until then the
- * inline panels are read-only mirrors and "Open full customer profile" is the
- * edit path. No write logic is duplicated here.
+ * Inline management is writable: the expandable rows mount the SAME shared
+ * panels (src/components/admin/accountPanels) the customer-detail page uses,
+ * wired to the SAME audited RPCs (admin_set_profile_flags /
+ * admin_adjust_reward_points / admin_set_customer_discount). No write logic is
+ * duplicated — those panels are the single source of member mutations, and
+ * "Open full customer profile" remains for the complete order/inquiry history.
  */
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
+import { useConfirm } from '../../components/admin/ConfirmModal';
 import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
-import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
+import {
+  ProfileFlagsPanel, RewardsPanel, DiscountsPanel, useLinkedProfile,
+} from '../../components/admin/accountPanels';
 import type { MemberDetail, MemberRow, Segment, Tier } from './membersView';
 import {
   MEMBERS_PAGE_SIZE, money, useMemberDetail, useMembersData,
@@ -229,6 +232,9 @@ export function AdminMembers() {
 /* ── Expanded row ──────────────────────────────────────────────────────────── */
 
 function MemberExpand({ member: m, detail }: { member: MemberRow; detail: MemberDetail | null }) {
+  const { confirm, modal } = useConfirm();
+  const { state, profile, reload } = useLinkedProfile({ by: 'user_id', value: m.userId });
+
   return (
     <div className="border-t border-ink/[0.04] bg-ink/[0.012] px-[var(--space-5)] pb-[var(--space-5)] pt-[var(--space-4)]">
       {/* on phones the right-side stats are hidden in the row — surface them here */}
@@ -238,10 +244,23 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
         <span>{m.effectivePercent}% · {ageLabel(m.lastOrderIso)}</span>
       </div>
 
+      {/* The SAME shared panels the customer-detail page renders, in the
+          approved 3-up grid. One write path, no duplicated logic. */}
       <div className="grid grid-cols-1 gap-[var(--space-4)] lg:grid-cols-3">
-        <ProfileFlagsView m={m} />
-        <RewardsView m={m} detail={detail} />
-        <DiscountsView m={m} detail={detail} />
+        {state === 'ready' && profile ? (
+          <ProfileFlagsPanel profile={profile} contact={m.contact} confirm={confirm} onSaved={reload} />
+        ) : (
+          <Panel caption="Profile flags">
+            <p className="text-[12px] text-ink/40">
+              {state === 'loading' ? 'Loading…'
+                : state === 'none' ? 'No portal account linked.'
+                : state === 'unmigrated' ? 'Portal backend not migrated yet.'
+                : 'Could not load profile.'}
+            </p>
+          </Panel>
+        )}
+        <RewardsPanel userId={m.userId} confirm={confirm} />
+        <DiscountsPanel userId={m.userId} accountType={profile?.account_type ?? m.accountType} confirm={confirm} />
       </div>
 
       <div className="mt-[var(--space-4)] grid grid-cols-1 gap-[var(--space-4)] lg:grid-cols-3">
@@ -265,127 +284,8 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
         </div>
       </div>
 
-      <p className="mt-[var(--space-4)] text-[10.5px] text-ink/35">
-        Read-only here — editing profile flags, points and discounts lives on the full customer profile,
-        where the audited write path already runs.
-      </p>
+      {modal}
     </div>
-  );
-}
-
-const inputCls = [FIELD_SURFACE, FIELD_DEFAULT, 'mb-[var(--space-3)] disabled:opacity-50 disabled:cursor-not-allowed'].join(' ');
-
-function ProfileFlagsView({ m }: { m: MemberRow }) {
-  return (
-    <Panel caption="Profile flags">
-      <div className="mb-[var(--space-4)]">
-        <p className="text-[13px] text-ink">{m.name}</p>
-        <p className="font-mono text-[11px] text-ink/55">{m.contact}</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          <Chip tone={m.tier === 'pro' ? 'good' : 'neutral'}>{m.tier}</Chip>
-          <Chip tone={m.status === 'active' ? 'good' : m.status === 'suspended' ? 'warn' : 'neutral'}>{m.status}</Chip>
-          <Chip tone="neutral">{m.accountType}</Chip>
-          {m.businessName && <Chip tone="neutral">{m.businessName}</Chip>}
-          {m.freeShipping && <Chip tone="good">free shipping</Chip>}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-x-[var(--space-3)] sm:grid-cols-3">
-        <div>
-          <FieldLabel>Tier</FieldLabel>
-          <select value={m.tier} disabled className={inputCls} onChange={() => {}}>
-            <option value="member">Member</option>
-            <option value="pro">Pro</option>
-          </select>
-        </div>
-        <div>
-          <FieldLabel>Status</FieldLabel>
-          <select value={m.status} disabled className={inputCls} onChange={() => {}}>
-            <option value="active">Active</option>
-            <option value="waitlisted">Waitlisted</option>
-            <option value="suspended">Suspended</option>
-          </select>
-        </div>
-        <div>
-          <FieldLabel>Account type</FieldLabel>
-          <select value={m.accountType} disabled className={inputCls} onChange={() => {}}>
-            <option value="individual">Individual</option>
-            <option value="business">Business</option>
-          </select>
-        </div>
-      </div>
-      <label className="mb-[var(--space-3)] flex items-center gap-2 text-[12px] text-ink/75">
-        <input type="checkbox" checked={m.freeShipping} disabled readOnly />
-        Free shipping (lifetime)
-      </label>
-      <p className="font-mono text-[10px] tabular-nums text-ink/35">Joined {shortDate(m.joinedIso)}</p>
-    </Panel>
-  );
-}
-
-function RewardsView({ m, detail }: { m: MemberRow; detail: MemberDetail | null }) {
-  return (
-    <Panel caption="Rewards">
-      <div className="mb-[var(--space-4)]">
-        <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-ink/40">Balance</p>
-        <p className="font-mono text-[18px] tabular-nums text-ink">
-          {m.points.toLocaleString()} pts
-          {m.rewardReady && <span className="ml-2 align-middle text-[10px] uppercase tracking-[0.16em] text-holo">credit ready</span>}
-        </p>
-      </div>
-      {detail === null ? (
-        <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>
-      ) : detail.recentRewards.length === 0 ? (
-        <p className="text-[12px] text-ink/40">No reward activity yet.</p>
-      ) : (
-        <ul className="divide-y divide-ink/[0.04] border-y border-ink/[0.06]">
-          {detail.recentRewards.map((e, i) => (
-            <li key={i} className="flex flex-wrap items-baseline gap-x-[var(--space-3)] gap-y-0.5 py-[var(--space-2)]">
-              <span className={`w-[52px] shrink-0 font-mono text-[12px] tabular-nums ${e.points > 0 ? 'text-[color:var(--color-status-success)]' : 'text-red-400/80'}`}>
-                {e.points > 0 ? `+${e.points}` : `−${Math.abs(e.points)}`}
-              </span>
-              <span className="w-[80px] shrink-0 text-[10px] uppercase tracking-[0.16em] text-ink/45">{e.kind}</span>
-              <span className="shrink-0 font-mono text-[10.5px] tabular-nums text-ink/40">{shortDate(e.iso)}</span>
-              {e.note && <span className="min-w-0 flex-1 text-[11.5px] text-ink/60">{e.note}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-function DiscountsView({ m, detail }: { m: MemberRow; detail: MemberDetail | null }) {
-  const hasCustom = m.discountLabel !== null;
-  const expires = detail?.discountExpiresIso ?? m.discountExpiresIso;
-  return (
-    <Panel caption="Account discounts">
-      <div className="mb-[var(--space-3)]">
-        <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-ink/40">Effective rate</p>
-        <p className="font-mono text-[18px] tabular-nums text-ink">
-          {m.effectivePercent}%
-          <span className="ml-2 align-middle text-[10px] uppercase tracking-[0.16em] text-ink/40">
-            {hasCustom ? m.discountScope : m.tier === 'pro' ? 'pro floor' : 'member floor'}
-          </span>
-        </p>
-      </div>
-      {hasCustom ? (
-        <ul className="divide-y divide-ink/[0.04] border-y border-ink/[0.06]">
-          <li className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1 py-[var(--space-3)]">
-            <span className="w-[64px] shrink-0 font-mono text-[13px] tabular-nums text-ink">{m.effectivePercent}%</span>
-            <Chip tone="good">active</Chip>
-            <Chip tone="neutral">{m.discountScope}</Chip>
-            <span className="min-w-0 flex-1 text-[12px] text-ink/70">{m.discountLabel}</span>
-            <span className="font-mono text-[10.5px] tabular-nums text-ink/40">
-              {expires ? `to ${shortDate(expires)}` : 'no expiry'}
-            </span>
-          </li>
-        </ul>
-      ) : (
-        <p className="text-[12px] text-ink/40">
-          No custom rule — on the automatic {m.effectivePercent}% {m.tier === 'pro' ? 'Pro' : 'member'} floor.
-        </p>
-      )}
-    </Panel>
   );
 }
 
@@ -439,10 +339,6 @@ function Panel({ caption, children }: { caption: string; children: React.ReactNo
       {children}
     </div>
   );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="mb-[var(--space-2)] block text-[11px] uppercase tracking-[0.22em] text-ink/50">{children}</label>;
 }
 
 function Chip({ tone, children }: { tone: 'neutral' | 'warn' | 'good'; children: React.ReactNode }) {
