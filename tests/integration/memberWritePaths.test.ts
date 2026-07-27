@@ -32,15 +32,35 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
   const runId = randomUUID().slice(0, 8);
   let service: SupabaseClient;
   let anon: SupabaseClient;
+  let admin: SupabaseClient; // signed in as an active admin — the RPC caller
   let userId = '';
+  let adminUserId = '';
   const email = `member-wp-${runId}@example.test`;
 
   beforeAll(async () => {
     service = serviceClient();
     anon = anonClient();
 
-    // A real auth user (FK target for customer_profiles / reward_ledger /
-    // customer_discounts), created + confirmed via the admin API.
+    // The write RPCs gate on is_admin(), which authorizes by an active row in
+    // admin_users for the CALLING auth user. The service-role key bypasses RLS
+    // but is NOT an admin user, so it cannot (and must not) call these — the
+    // real admin console calls them as a signed-in admin, and so does this
+    // suite. Mirrors tests/integration/membershipAdminSurface.test.ts.
+    const adminEmail = `admin-wp-${runId}@example.test`;
+    const adminPw = `Admin-${runId}-Aa1!`;
+    const adminCreated = await service.auth.admin.createUser({
+      email: adminEmail, password: adminPw, email_confirm: true,
+    });
+    if (adminCreated.error || !adminCreated.data.user) throw new Error(`admin createUser failed: ${adminCreated.error?.message}`);
+    adminUserId = adminCreated.data.user.id;
+    const adminRow = await service.from('admin_users').insert({ user_id: adminUserId, email: adminEmail, active: true });
+    if (adminRow.error) throw new Error(`admin_users insert failed: ${adminRow.error.message}`);
+    admin = anonClient();
+    const adminSignIn = await admin.auth.signInWithPassword({ email: adminEmail, password: adminPw });
+    if (adminSignIn.error) throw new Error(`admin sign-in failed: ${adminSignIn.error.message}`);
+
+    // The member being managed — a real auth user (FK target for
+    // customer_profiles / reward_ledger / customer_discounts).
     const created = await service.auth.admin.createUser({
       email,
       password: `pw-${runId}-Aa1!`,
@@ -59,17 +79,22 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
   });
 
   afterAll(async () => {
-    if (!userId) return;
-    await service.from('customer_discounts').delete().eq('user_id', userId);
-    await service.from('reward_ledger').delete().eq('user_id', userId);
-    await service.from('customer_profiles').delete().eq('user_id', userId);
-    await service.auth.admin.deleteUser(userId);
+    if (userId) {
+      await service.from('customer_discounts').delete().eq('user_id', userId);
+      await service.from('reward_ledger').delete().eq('user_id', userId);
+      await service.from('customer_profiles').delete().eq('user_id', userId);
+      await service.auth.admin.deleteUser(userId);
+    }
+    if (adminUserId) {
+      await service.from('admin_users').delete().eq('user_id', adminUserId);
+      await service.auth.admin.deleteUser(adminUserId);
+    }
   });
 
   // ── admin_set_profile_flags ───────────────────────────────────────────────
 
   test('admin_set_profile_flags updates the row atomically', async () => {
-    const res = await service.rpc('admin_set_profile_flags', {
+    const res = await admin.rpc('admin_set_profile_flags', {
       p_user_id: userId,
       p_tier: 'pro',
       p_status: 'active',
@@ -108,12 +133,12 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
   // ── admin_adjust_reward_points ────────────────────────────────────────────
 
   test('admin_adjust_reward_points appends signed ledger rows (never mutates a balance)', async () => {
-    const credit = await service.rpc('admin_adjust_reward_points', {
+    const credit = await admin.rpc('admin_adjust_reward_points', {
       p_user_id: userId, p_points: 120, p_note: 'Goodwill credit',
     });
     expect(credit.error).toBeNull();
 
-    const debit = await service.rpc('admin_adjust_reward_points', {
+    const debit = await admin.rpc('admin_adjust_reward_points', {
       p_user_id: userId, p_points: -20, p_note: 'Correction',
     });
     expect(debit.error).toBeNull();
@@ -142,7 +167,7 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
   // ── admin_set_customer_discount / _deactivate ─────────────────────────────
 
   test('admin_set_customer_discount sets one active rule per scope, then deactivate soft-offs it', async () => {
-    const set = await service.rpc('admin_set_customer_discount', {
+    const set = await admin.rpc('admin_set_customer_discount', {
       p_user_id: userId, p_scope: 'lifetime', p_percent: 12.5, p_label: 'Lifetime 12.5%', p_expires_at: null,
     });
     expect(set.error).toBeNull();
@@ -159,7 +184,7 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
     expect(rule.percent).toBeCloseTo(12.5, 2);
 
     // Replacing the active lifetime rule must not leave two active at once.
-    const replace = await service.rpc('admin_set_customer_discount', {
+    const replace = await admin.rpc('admin_set_customer_discount', {
       p_user_id: userId, p_scope: 'lifetime', p_percent: 15, p_label: 'Lifetime 15%', p_expires_at: null,
     });
     expect(replace.error).toBeNull();
@@ -179,7 +204,7 @@ describe.skipIf(!canRun)('member management write paths (real DB, migrations 043
       .eq('scope', 'lifetime')
       .eq('active', true)
       .single();
-    const off = await service.rpc('admin_deactivate_customer_discount', { p_id: (current.data as { id: string }).id });
+    const off = await admin.rpc('admin_deactivate_customer_discount', { p_id: (current.data as { id: string }).id });
     expect(off.error).toBeNull();
 
     const afterOff = await service
