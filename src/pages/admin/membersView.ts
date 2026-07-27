@@ -18,13 +18,6 @@ export type AccountType = 'individual' | 'business';
 export type MemberStatus = 'active' | 'waitlisted' | 'suspended';
 export type DiscountScope = 'lifetime' | 'business';
 
-export interface RewardLine {
-  kind: 'earn' | 'adjustment' | 'redemption' | 'reversal';
-  points: number;
-  note: string | null;
-  iso: string;
-}
-
 export interface MemberRow {
   /** CRM customers.id — the full-profile deep-link. Null when the portal
    *  account has not been soft-linked to a CRM record yet. */
@@ -55,12 +48,12 @@ export interface MemberRow {
   spendPercentile: number;
 }
 
-/** Loaded lazily when a roster row is expanded — the roster RPC deliberately
- *  does not ship per-row history, so the list stays cheap at any page size. */
+/** Loaded lazily when a roster row is expanded — just the activity timeline.
+ *  Reward balance and discount rules are owned by the shared management panels
+ *  (accountPanels), which fetch their own authoritative data, so the roster RPC
+ *  ships no per-row history and the list stays cheap at any page size. */
 export interface MemberDetail {
-  recentRewards: RewardLine[];
   timeline: Array<{ label: string; iso: string }>;
-  discountExpiresIso: string | null;
 }
 
 export interface MemberStat {
