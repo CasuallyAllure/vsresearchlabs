@@ -40,6 +40,8 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { variantProduct } from '../lib/cartActions';
+import { useCustomerAuth } from '../lib/customerAuth';
+import { isEarlyAccessProduct, EARLY_ACCESS_GUEST_LINE } from '../lib/earlyAccess';
 import { useProductOverrides, isSkuVisible } from '../lib/productOverrides';
 import { useDocumentsByProduct } from '../hooks/useDocuments';
 import { getCompoundIntelligence } from '../lib/compoundIntelligence';
@@ -99,6 +101,7 @@ export function ProductPage() {
   const { product, error } = useProduct(id);
   const addToInquiry = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+  const { user: authUser } = useCustomerAuth();
 
   // Subscribe to the overrides store so this recomputes once inventory loads.
   // A SKU whose product_stock row is hidden (or soft-deleted) must not be
@@ -212,6 +215,10 @@ export function ProductPage() {
   const categoryLabel = product.category.replace(/-/g, ' ');
   const categoryHref = `/${product.category}`;
   const outOfStock = product.stock === 0;
+  // Member-first window (earlyAccess.ts): tagged products are orderable only
+  // by signed-in account holders; guests get the sign-in line instead. Ships
+  // dark — no product carries the tag today.
+  const earlyLocked = isEarlyAccessProduct(product) && !authUser;
   const procurementRowCount = selectProcurementRows(product).length;
   const specificationRowCount = selectSpecificationRows(product).length;
 
@@ -416,12 +423,20 @@ export function ProductPage() {
                 size="sm"
                 type="button"
                 onClick={handleAddToInquiry}
-                disabled={outOfStock}
+                disabled={outOfStock || earlyLocked}
                 className="flex-1"
               >
-                {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
+                {outOfStock ? 'Unavailable' : earlyLocked ? 'Member early access' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
               </Button>
             </div>
+            {earlyLocked && (
+              <p className="mb-[var(--space-2)] text-[11.5px] text-ink/55">
+                {EARLY_ACCESS_GUEST_LINE}{' — '}
+                <Link to="/account" className="text-teal hover:text-teal-dark transition-colors">
+                  create a free account
+                </Link>
+              </p>
+            )}
             {(activeTier || quantity > 1) && (
               <p className="text-ink/30 font-mono tabular-nums" style={{ fontSize: '10px', letterSpacing: '0.06em' }}>
                 {[
@@ -478,10 +493,10 @@ export function ProductPage() {
             size="sm"
             type="button"
             onClick={handleAddToInquiry}
-            disabled={outOfStock}
+            disabled={outOfStock || earlyLocked}
             className="flex-1"
           >
-            {outOfStock ? 'Unavailable' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
+            {outOfStock ? 'Unavailable' : earlyLocked ? 'Member early access' : added ? 'Added to Inquiry' : 'Add to Inquiry'}
           </Button>
         </div>
       </div>

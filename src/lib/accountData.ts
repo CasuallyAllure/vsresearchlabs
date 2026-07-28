@@ -30,6 +30,17 @@ export interface MyOrderRow {
   tracking_number: string | null;
 }
 
+/**
+ * One owned order line, flattened with its parent order's number + status.
+ * Feeds the documentation library (`src/lib/memberLibrary.ts`).
+ */
+export interface MyOrderLineRow {
+  sku: string;
+  product_name: string;
+  order_number: string;
+  status: string;
+}
+
 /** `get_my_order` RPC result — same shape as `get_order_by_token`, plus `found`. */
 export type MyOrderResult = { found: false } | (OrderInvoice & { found: true });
 
@@ -93,6 +104,43 @@ export async function listMyOrders(): Promise<{ data: MyOrderRow[]; error: strin
     .order('created_at', { ascending: false });
   if (error) return { data: [], error: error.message };
   return { data: (data as MyOrderRow[]) ?? [], error: null };
+}
+
+/** Embedded parent order on an `order_lines` select. */
+interface OrderLineJoinRow {
+  sku: string;
+  product_name: string;
+  orders: { order_number: string; status: string } | { order_number: string; status: string }[] | null;
+}
+
+/**
+ * Every line of every order owned by the signed-in customer, in one round
+ * trip. RLS on `order_lines` ("Customers read own order_lines", migration
+ * 028) scopes the select server-side, and the `orders!inner` embed rides the
+ * existing `order_lines.order_id` foreign key — no new server object.
+ */
+export async function listMyOrderLines(): Promise<{ data: MyOrderLineRow[]; error: string | null }> {
+  if (!supabase) return { data: [], error: NOT_CONFIGURED };
+  const { data, error } = await supabase
+    .from('order_lines')
+    .select('sku, product_name, orders!inner(order_number, status)');
+  if (error) return { data: [], error: error.message };
+  const rows = (data as OrderLineJoinRow[] | null) ?? [];
+  return {
+    // PostgREST returns a to-one embed as an object, but has shipped it as a
+    // single-element array in past versions — normalize both.
+    data: rows.flatMap((row) => {
+      const parent = Array.isArray(row.orders) ? row.orders[0] : row.orders;
+      if (!parent) return [];
+      return [{
+        sku: row.sku,
+        product_name: row.product_name,
+        order_number: parent.order_number,
+        status: parent.status,
+      }];
+    }),
+    error: null,
+  };
 }
 
 /** One order's full detail, scoped to the signed-in customer. */

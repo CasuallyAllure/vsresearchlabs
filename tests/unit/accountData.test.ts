@@ -15,6 +15,7 @@ import {
   getMyOrder,
   getMyRewardSummary,
   listMyDiscounts,
+  listMyOrderLines,
   listMyOrders,
   redeemReward,
 } from '../../src/lib/accountData';
@@ -293,5 +294,99 @@ describe('listMyDiscounts', () => {
     seam.client = client;
 
     await expect(listMyDiscounts()).resolves.toEqual({ data: [], error: null });
+  });
+});
+
+describe('listMyOrderLines', () => {
+  /** from(...).select(...) is awaited directly here — no .order() link. */
+  function makeSelectClient(result: QueryResult) {
+    const select = vi.fn(async () => result);
+    const chain = { select };
+    return { client: { from: vi.fn(() => chain) }, chain };
+  }
+
+  test('degrades to an empty list when the backend is not configured', async () => {
+    seam.client = null;
+
+    await expect(listMyOrderLines()).resolves.toEqual({
+      data: [],
+      error: 'Backend not configured.',
+    });
+  });
+
+  test('flattens the embedded parent order onto each line (query shape pinned)', async () => {
+    const { client, chain } = makeSelectClient({
+      data: [
+        {
+          sku: 'VSR-RS-AOD-005',
+          product_name: 'AOD-9604 — 5mg',
+          orders: { order_number: 'VSR-ORD-260701-001', status: 'fulfilled' },
+        },
+      ],
+      error: null,
+    });
+    seam.client = client;
+
+    await expect(listMyOrderLines()).resolves.toEqual({
+      data: [
+        {
+          sku: 'VSR-RS-AOD-005',
+          product_name: 'AOD-9604 — 5mg',
+          order_number: 'VSR-ORD-260701-001',
+          status: 'fulfilled',
+        },
+      ],
+      error: null,
+    });
+    expect(client.from).toHaveBeenCalledWith('order_lines');
+    expect(chain.select).toHaveBeenCalledWith('sku, product_name, orders!inner(order_number, status)');
+  });
+
+  test('accepts a to-one embed delivered as a single-element array', async () => {
+    const { client } = makeSelectClient({
+      data: [
+        {
+          sku: 'VSR-LE-RCK-001',
+          product_name: 'Vial Rack',
+          orders: [{ order_number: 'VSR-ORD-260701-002', status: 'paid' }],
+        },
+      ],
+      error: null,
+    });
+    seam.client = client;
+
+    const { data } = await listMyOrderLines();
+
+    expect(data).toEqual([
+      {
+        sku: 'VSR-LE-RCK-001',
+        product_name: 'Vial Rack',
+        order_number: 'VSR-ORD-260701-002',
+        status: 'paid',
+      },
+    ]);
+  });
+
+  test('drops a line whose parent order did not come back', async () => {
+    const { client } = makeSelectClient({
+      data: [{ sku: 'VSR-RS-AOD-005', product_name: 'AOD-9604 — 5mg', orders: null }],
+      error: null,
+    });
+    seam.client = client;
+
+    await expect(listMyOrderLines()).resolves.toEqual({ data: [], error: null });
+  });
+
+  test('surfaces a query error as a string', async () => {
+    const { client } = makeSelectClient({
+      data: null,
+      error: { message: 'permission denied for table order_lines' },
+    });
+    seam.client = client;
+
+    await expect(listMyOrderLines()).resolves.toEqual({
+      data: [],
+      error: 'permission denied for table order_lines',
+    });
   });
 });
