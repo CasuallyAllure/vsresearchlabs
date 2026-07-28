@@ -37,6 +37,7 @@ import { Chip, Panel, SubNav, Tile, type SubNavItem } from './members/ui';
 import { shortDate } from './members/format';
 import { RedemptionsView } from './members/RedemptionsView';
 import { InvitesView } from './members/InvitesView';
+import { AutomationsView } from './members/AutomationsView';
 
 /* ── Filters ──────────────────────────────────────────────────────────────── */
 
@@ -56,11 +57,12 @@ const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
   { value: 'joined', label: 'Newest ↓' },
 ];
 
-type MembersSubView = 'roster' | 'redemptions' | 'invites';
+type MembersSubView = 'roster' | 'redemptions' | 'invites' | 'automations';
 const VIEW_TABS: SubNavItem<MembersSubView>[] = [
   { value: 'roster', label: 'Roster' },
   { value: 'redemptions', label: 'Redemptions' },
   { value: 'invites', label: 'Invites' },
+  { value: 'automations', label: 'Automations' },
 ];
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -98,6 +100,7 @@ export function AdminMembers() {
 
       {view === 'redemptions' && <RedemptionsView />}
       {view === 'invites' && <InvitesView />}
+      {view === 'automations' && <AutomationsView />}
 
       {view === 'roster' && (
         <>

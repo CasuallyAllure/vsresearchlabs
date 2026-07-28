@@ -1,0 +1,45 @@
+# Daily membership-automation run — invokes the member-automations edge
+# function from a GitHub-hosted runner (same scheduled-workflow → edge-fn
+# pattern as uptime.yml). The function ships DARK: every automation kind is
+# seeded disabled in automation_settings (075), so this run sends nothing
+# until an admin enables a kind from Members → Automations.
+#
+# Auth: the function requires the x-automations-secret header to match its
+# AUTOMATIONS_CRON_SECRET env (fail-closed 503 when unset). Set the SAME value
+# as a repo Actions secret named AUTOMATIONS_CRON_SECRET and as a Supabase
+# function secret.
+#
+# Failure = the pager: non-200, an "error" anywhere in the body, or a missing
+# ok flag fails the workflow, and GitHub's scheduled-failure email alerts the
+# owner — the same channel as every other probe. GitHub cron is best-effort;
+# a late daily run is fine for this workload.
+name: member-automations
+
+on:
+  schedule:
+    - cron: "23 15 * * *"
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run the membership automation pass
+        run: |
+          out=$(curl -sS --max-time 60 --retry 2 --retry-delay 10 \
+            -X POST \
+            -H "x-automations-secret: ${{ secrets.AUTOMATIONS_CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w '\n%{http_code}' \
+            https://ufaajzfuppohbxebftwp.supabase.co/functions/v1/member-automations)
+          code=$(echo "$out" | tail -n 1)
+          body=$(echo "$out" | sed '$d')
+          echo "$body"
+          [ "$code" = "200" ] || { echo "AUTOMATIONS RUN FAILED: HTTP $code"; exit 1; }
+          echo "$body" | grep -q '"error"' && { echo "AUTOMATIONS RUN FAILED: error in body"; exit 1; }
+          echo "$body" | grep -q '"ok":true' || { echo "AUTOMATIONS RUN FAILED: ok flag missing"; exit 1; }
+          echo "automation run OK"
