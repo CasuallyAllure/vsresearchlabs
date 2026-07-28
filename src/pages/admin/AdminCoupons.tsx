@@ -26,6 +26,7 @@ import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 import { Button } from '../../components/ui/Button';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
 import { PromoTab } from './PromoTab';
+import { MemberReferralsBlock } from './MemberReferralsBlock';
 
 // ── Domain types ─────────────────────────────────────────────────────────────
 
@@ -852,6 +853,8 @@ function AffiliatesTab({ affiliates, coupons, redemptions, onChanged }: Affiliat
           })}
         </ul>
       )}
+
+      <MemberReferralsBlock />
     </div>
   );
 }
