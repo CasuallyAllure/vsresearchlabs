@@ -31,3 +31,13 @@ verify_jwt = false
 # Keep this false.
 [functions.reconcile]
 verify_jwt = false
+
+# member-automations is invoked by a scheduled GitHub workflow
+# (.github/workflows/member-automations.yml) that sends no Supabase JWT, so
+# platform JWT verification must be OFF. Unlike reconcile this function CAN
+# email customers, so it is NOT safe-public by design — it carries its own
+# MANDATORY shared-secret gate (x-automations-secret must match the
+# AUTOMATIONS_CRON_SECRET secret; unset → 503 fail-closed, never a send).
+# Keep this false.
+[functions.member-automations]
+verify_jwt = false

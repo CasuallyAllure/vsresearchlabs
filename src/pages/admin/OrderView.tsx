@@ -23,6 +23,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { OrderStatusChip } from './AdminOrders';
+import { ProPriorityChip } from './ProPriorityChip';
 import { CARRIERS, carrierRequiresTracking } from '../../lib/tracking';
 import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
@@ -74,6 +75,8 @@ interface OrderRecord {
   id: string;
   order_number: string;
   status: OrderStatus;
+  /** Account that placed the order — null for guest checkouts. */
+  user_id: string | null;
   buyer_name: string;
   buyer_contact: string;
   buyer_organization: string | null;
@@ -133,7 +136,7 @@ interface OrderEvent {
 }
 
 const ORDER_SELECT =
-  'id, order_number, status, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token, research_attestation';
+  'id, order_number, status, user_id, buyer_name, buyer_contact, buyer_organization, notes, invoice_url, invoice_amount_cents, subtotal_cents, shipping_cents, payment_method, tracking_number, carrier, cancellation_reason, ship_street, ship_city, ship_state, ship_zip, ship_country, ship_confirmed_at, invoiced_at, payment_claimed_at, paid_at, fulfilled_at, shipped_at, delivered_at, cancelled_at, created_at, coupon_code, lookup_token, research_attestation';
 
 /** Effective unit price: the stored line price, else the catalog tier price
  *  derived from the dose in the item name/note (so RETA 5 mg vs BPC-157 differ). */
@@ -341,7 +344,12 @@ export function OrderView({
       <div className="space-y-1 border-b border-ink/[0.10] pb-[var(--space-3)]">
         <HeaderLine label="Order"><span className="font-mono text-[12.5px] tracking-[0.04em] text-ink">{order.order_number}</span></HeaderLine>
         <HeaderLine label="Date"><span className="font-mono text-[11px] tabular-nums text-ink/60">{fmtDate(order.created_at)}</span></HeaderLine>
-        <HeaderLine label="Status"><OrderStatusChip status={order.status} deliveredAt={order.delivered_at} /></HeaderLine>
+        <HeaderLine label="Status">
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            <OrderStatusChip status={order.status} deliveredAt={order.delivered_at} />
+            <ProPriorityChip userId={order.user_id} />
+          </span>
+        </HeaderLine>
       </div>
 
       {/* Bill to (left) · amounts (right) — equal columns */}
