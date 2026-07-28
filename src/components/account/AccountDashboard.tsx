@@ -28,6 +28,7 @@ import { Button } from '../ui/Button';
 import { RewardTracker } from './RewardTracker';
 import { MemberOfferCard } from './MemberOfferCard';
 import { MEMBER_OFFERS } from '../../config/memberOffers';
+import { TIER_BENEFITS } from '../../config/tierBenefits';
 import { supabase } from '../../lib/supabase';
 
 /** `customer_profiles.account_type`/`business_name` (migration 043) aren't on
@@ -172,6 +173,25 @@ export function AccountDashboard() {
           </p>
         </div>
       )}
+
+      {/* Membership — tier, member-since, standing terms (src/config/tierBenefits.ts) */}
+      <div className="research-surface-solid p-[var(--space-5)] mb-[var(--space-6)]">
+        <div className="mb-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-3)] border-b border-ink/[0.09] pb-[var(--space-3)]">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">
+            {TIER_BENEFITS[profile.tier].label}
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/30">
+            Member since {formatDate(profile.created_at)}
+          </p>
+        </div>
+        <ul className="space-y-1">
+          {TIER_BENEFITS[profile.tier].benefits.map((benefit) => (
+            <li key={benefit} className="text-[12.5px] leading-relaxed text-ink/75">
+              {benefit}
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Reward balance + active discounts */}
       <div className="mb-[var(--space-6)] grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
