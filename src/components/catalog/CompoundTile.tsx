@@ -28,6 +28,8 @@
 import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
+import { useCustomerAuth } from '../../lib/customerAuth';
+import { isEarlyAccessProduct } from '../../lib/earlyAccess';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
@@ -86,6 +88,10 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
 
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+  const { user: authUser } = useCustomerAuth();
+  // Member-first window (earlyAccess.ts) — guests can view but not add; the
+  // product page carries the sign-in line. Dark until a product is tagged.
+  const earlyLocked = isEarlyAccessProduct(product) && !authUser;
   const [added, setAdded] = useState(false);
   const flashTimer = useRef<number | null>(null);
 
@@ -296,8 +302,12 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
           <button
             type="button"
             onClick={handleAdd}
+            disabled={earlyLocked}
+            title={earlyLocked ? 'Member early access — sign in to order' : undefined}
             aria-label={
-              added
+              earlyLocked
+                ? `${product.name} — member early access, sign in to order`
+                : added
                 ? `${product.name} ${activeDose} added to inquiry`
                 : `Add ${product.name} ${activeDose} to inquiry`
             }
