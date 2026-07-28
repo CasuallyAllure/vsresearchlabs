@@ -13,6 +13,7 @@ import { getMyRewardSummary, type RewardEntryKind, type RewardSummary } from '..
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
 import { RewardTracker } from '../../components/account/RewardTracker';
+import { ReferralCard } from '../../components/account/ReferralCard';
 
 type LoadState =
   | { kind: 'loading' }
@@ -81,6 +82,10 @@ function AccountRewardsContent() {
     <>
       <div className="mb-[var(--space-6)]">
         <RewardTracker summary={state.summary} onChanged={reload} />
+      </div>
+
+      <div className="mb-[var(--space-6)]">
+        <ReferralCard />
       </div>
 
       <h2 className="mb-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Statement</h2>

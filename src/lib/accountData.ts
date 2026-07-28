@@ -131,6 +131,22 @@ export async function redeemReward(): Promise<{ data: RedeemRewardResult | null;
   return { data: (data as RedeemRewardResult) ?? { ok: false, reason: 'Unexpected response.' }, error: null };
 }
 
+/** `get_my_referral_code()` RPC result (migration 076). */
+export interface ReferralCodeResult {
+  code: string;
+  percent: number;
+  /** Redemptions recorded against the code, excluding the member's own contact. */
+  uses: number;
+}
+
+/** Issue-or-fetch the member's referral code (`get_my_referral_code()`, migration 076). Idempotent. */
+export async function getMyReferralCode(): Promise<{ data: ReferralCodeResult | null; error: string | null }> {
+  if (!supabase) return { data: null, error: NOT_CONFIGURED };
+  const { data, error } = await supabase.rpc('get_my_referral_code');
+  if (error) return { data: null, error: error.message };
+  return { data: (data as ReferralCodeResult) ?? null, error: null };
+}
+
 /** The signed-in customer's own discount rules (active + inactive). */
 export async function listMyDiscounts(): Promise<{ data: CustomerDiscountRow[]; error: string | null }> {
   if (!supabase) return { data: [], error: NOT_CONFIGURED };
