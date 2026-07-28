@@ -2,19 +2,21 @@
  * accountDiscount — the signed-in customer's own lifetime/business discount,
  * for CART PREVIEW ONLY.
  *
- * Mirrors effective_customer_discount() (migration 069) client-side over the
+ * Mirrors effective_customer_discount() (migration 074) client-side over the
  * customer's OWN customer_discounts rows (RLS "Customers read own discounts"):
  * best = highest percent among active, in-window rows whose scope is valid for
  * the profile — 'business' requires customer_profiles.account_type ===
  * 'business' (read from the customer's own profile), 'lifetime' applies to any
  * account. Lifetime and business never stack; ties break to the newest rule.
  *
- * Migration 069 made a 15% discount AUTOMATIC for every account holder: an
- * assigned rule that meets or beats 15% is honored verbatim; any account
- * holder with no rule, or a rule below 15%, gets the automatic floor instead
- * (never averaged with it). Only a signed-in user with NO customer_profiles
- * row at all gets nothing, exactly like the SQL function's "not exists"
- * branch.
+ * Migration 069 made a 15% discount AUTOMATIC for every account holder;
+ * migration 074 made the floor TIER-AWARE — customer_profiles.tier 'member'
+ * floors at 15%, 'pro' at 20% (TIER_FLOOR_PERCENTS in memberPricing.ts). An
+ * assigned rule that meets or beats the caller's tier floor is honored
+ * verbatim; any account holder with no rule, or a rule below their floor,
+ * gets the automatic tier floor instead (never averaged with it). Only a
+ * signed-in user with NO customer_profiles row at all gets nothing, exactly
+ * like the SQL function's "not exists" branch.
  *
  * NOT authoritative for billing: place-order re-resolves the entitlement
  * server-side (service-role RPC) and materializes it on the order. Guests,
@@ -27,10 +29,7 @@
 
 import { supabase } from './supabase';
 import type { AccountDiscountPreview } from './coupons';
-
-/** Every account holder's guaranteed floor (migration 069). */
-const ACCOUNT_FLOOR_PERCENT = 15;
-const ACCOUNT_FLOOR_LABEL = 'Account-holder 15%';
+import { TIER_FLOOR_PERCENTS, type TierKey } from './memberPricing';
 
 interface DiscountRow {
   scope: string;
@@ -51,7 +50,7 @@ export async function fetchMyAccountDiscount(): Promise<AccountDiscountPreview |
     const [profileRes, rowsRes] = await Promise.all([
       supabase
         .from('customer_profiles')
-        .select('account_type')
+        .select('account_type, tier')
         .eq('user_id', userId)
         .maybeSingle(),
       supabase
@@ -65,6 +64,13 @@ export async function fetchMyAccountDiscount(): Promise<AccountDiscountPreview |
     // effective_customer_discount's "not exists" branch.
     if (profileRes.error || !profileRes.data) return null;
     const isBusiness = profileRes.data.account_type === 'business';
+
+    // Tier-aware floor (074): anything other than a literal 'pro' degrades to
+    // the base member floor — always safe, it never exceeds what the server
+    // would actually bill.
+    const tier: TierKey = profileRes.data.tier === 'pro' ? 'pro' : 'member';
+    const floorPercent = TIER_FLOOR_PERCENTS[tier] ?? TIER_FLOOR_PERCENTS.member;
+    const floorLabel = tier === 'pro' ? 'Pro member 20%' : 'Account-holder 15%';
 
     // Same predicate as effective_customer_discount: active (queried above),
     // inside [starts_at, expires_at], scope valid for the profile. A rows
@@ -90,17 +96,17 @@ export async function fetchMyAccountDiscount(): Promise<AccountDiscountPreview |
         )[0]
       : null;
 
-    // An assigned rate that meets or beats the floor is honored verbatim; a
-    // rule below the floor (or no rule at all) is REPLACED by the automatic
-    // 15% floor — every confirmed account holder gets a row now.
-    if (best && Number(best.percent) >= ACCOUNT_FLOOR_PERCENT) {
+    // An assigned rate that meets or beats the tier floor is honored verbatim;
+    // a rule below the floor (or no rule at all) is REPLACED by the automatic
+    // tier floor — every confirmed account holder gets a row now.
+    if (best && Number(best.percent) >= floorPercent) {
       return {
         scope: best.scope === 'business' ? 'business' : 'lifetime',
         percent: Number(best.percent),
         label: best.label,
       };
     }
-    return { scope: 'lifetime', percent: ACCOUNT_FLOOR_PERCENT, label: ACCOUNT_FLOOR_LABEL };
+    return { scope: 'lifetime', percent: floorPercent, label: floorLabel };
   } catch {
     // Any unexpected failure downgrades to "no preview" — never blocks the cart.
     return null;

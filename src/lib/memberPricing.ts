@@ -4,7 +4,7 @@
  *
  * DISPLAY ONLY. Nothing here changes what a buyer is charged. The real
  * entitlement is resolved and applied server-side in place-order
- * (orderTotals.ts::computeOrderTotals, migration 069 effective_customer_discount);
+ * (orderTotals.ts::computeOrderTotals, migration 074 effective_customer_discount);
  * this module only mirrors that math so a card can show the member price the
  * checkout will actually bill.
  *
@@ -33,9 +33,21 @@
 
 import type { Product } from '../types/product';
 
-/** Every confirmed account holder's automatic member discount (migration 069).
- *  Kept in lockstep with ACCOUNT_FLOOR_PERCENT in src/lib/accountDiscount.ts and
- *  the server entitlement — this constant only labels/derives the DISPLAY. */
+/** Tier-aware automatic discount floors (migration 074): the base 'member'
+ *  tier keeps the 15% floor from 069; the paid 'pro' tier is floored at 20%.
+ *  The single client source of tier floors — src/lib/accountDiscount.ts
+ *  derives its cart-preview floor from this map. Kept in lockstep with the
+ *  server's effective_customer_discount(). */
+export const TIER_FLOOR_PERCENTS = { member: 15, pro: 20 } as const;
+
+export type TierKey = keyof typeof TIER_FLOOR_PERCENTS;
+
+/** The GUEST-FACING catalog "Members $X" chip rate. Deliberately stays at the
+ *  base member 15% even though Pro floors at 20% (074): the chip is the join
+ *  incentive shown to shoppers who don't have an account yet, so it advertises
+ *  the entry offer every new account actually receives. Pro is an upgrade on
+ *  top, not the advertised entry offer — a signed-in Pro's real rate is
+ *  resolved server-side at checkout regardless. */
 export const MEMBER_DISCOUNT_PERCENT = 15;
 
 /**
