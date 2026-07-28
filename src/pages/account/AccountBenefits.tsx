@@ -16,6 +16,8 @@ import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
 import { MemberOfferCard } from '../../components/account/MemberOfferCard';
 import { MEMBER_OFFERS } from '../../config/memberOffers';
+import { TIER_BENEFITS } from '../../config/tierBenefits';
+import type { CustomerTier } from '../../lib/customerProfile';
 
 type LoadState =
   | { kind: 'loading' }
@@ -82,6 +84,26 @@ function HowDiscountsApply() {
   );
 }
 
+/** Standing terms of the customer's tier — driven by src/config/tierBenefits.ts. */
+function TierBenefitsCard({ tier }: { tier: CustomerTier }) {
+  const { label, benefits } = TIER_BENEFITS[tier];
+  return (
+    <article className="research-surface-solid p-[var(--space-5)]">
+      <div className="mb-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-3)]">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Membership</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/30">{label}</p>
+      </div>
+      <ul className="space-y-[var(--space-2)]">
+        {benefits.map((benefit) => (
+          <li key={benefit} className="text-[13px] leading-relaxed text-ink/75">
+            {benefit}
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
 function MemberPerksNote({ freeShipping }: { freeShipping: boolean }) {
   return (
     <article className="research-surface-solid p-[var(--space-5)]">
@@ -125,6 +147,7 @@ function AccountBenefitsContent() {
 
   return (
     <div className="space-y-[var(--space-4)]">
+      <TierBenefitsCard tier={profile?.tier ?? 'member'} />
       {MEMBER_OFFERS.map((offer) => (
         <MemberOfferCard key={offer.code} offer={offer} />
       ))}
