@@ -6,9 +6,11 @@
  * server-side, so the property that matters here is fidelity to the SQL
  * function: active rows only, inside [starts_at, expires_at], 'business'
  * scope gated on the profile's account_type, sane percent, best-of by
- * (percent desc, created_at desc) — PLUS migration 069's automatic 15% floor
- * for every confirmed account holder (an assigned rule below 15% is replaced
- * by the floor, not averaged with it). Only a guest, a missing profile row,
+ * (percent desc, created_at desc) — PLUS the automatic tier-aware floor for
+ * every confirmed account holder (069 introduced the flat 15%; 074 keyed it
+ * to customer_profiles.tier — member 15%, pro 20%; an assigned rule below the
+ * caller's floor is replaced by it, not averaged with it). Only a guest, a
+ * missing profile row,
  * missing env, or a thrown error resolve to null; a discounts-query error
  * degrades to the floor (still a confirmed account holder) rather than null.
  * The supabase seam is mocked (tests/setup.ts forbids live network).
@@ -46,18 +48,20 @@ function row(input: DiscountRowInput) {
 
 /**
  * Build a mock client: a signed-in session (unless userId is null), a
- * customer_profiles row with the given account_type (or none), and the
+ * customer_profiles row with the given account_type + tier (or none), and the
  * active customer_discounts rows the query would return.
  */
 function makeClient({
   userId = 'user-1',
   accountType = 'personal',
+  tier = 'member',
   hasProfile = true,
   rows = [] as ReturnType<typeof row>[],
   rowsError = null as { message: string } | null,
 }: {
   userId?: string | null;
   accountType?: string;
+  tier?: string;
   hasProfile?: boolean;
   rows?: ReturnType<typeof row>[];
   rowsError?: { message: string } | null;
@@ -66,7 +70,7 @@ function makeClient({
     select: vi.fn(() => profilesChain),
     eq: vi.fn(() => profilesChain),
     maybeSingle: vi.fn(async () => ({
-      data: hasProfile ? { account_type: accountType } : null,
+      data: hasProfile ? { account_type: accountType, tier } : null,
       error: null,
     })),
   };
@@ -296,6 +300,69 @@ describe('fetchMyAccountDiscount', () => {
     });
 
     await expect(fetchMyAccountDiscount()).resolves.toMatchObject({ label: 'newer' });
+  });
+
+  // ── Tier-aware floor (migration 074) ──────────────────────────────────────
+
+  test('a pro-tier account with no rules gets the automatic 20% floor', async () => {
+    seam.client = makeClient({ tier: 'pro', rows: [] });
+
+    await expect(fetchMyAccountDiscount()).resolves.toEqual({
+      scope: 'lifetime',
+      percent: 20,
+      label: 'Pro member 20%',
+    });
+  });
+
+  test('a pro-tier assigned rate above the 20% floor is honored verbatim', async () => {
+    seam.client = makeClient({
+      tier: 'pro',
+      rows: [row({ scope: 'lifetime', percent: 22, label: 'Founding pro' })],
+    });
+
+    await expect(fetchMyAccountDiscount()).resolves.toEqual({
+      scope: 'lifetime',
+      percent: 22,
+      label: 'Founding pro',
+    });
+  });
+
+  test('a pro-tier assigned rate below the 20% floor is replaced by the floor', async () => {
+    seam.client = makeClient({
+      tier: 'pro',
+      rows: [row({ scope: 'lifetime', percent: 10, label: 'Legacy 10' })],
+    });
+
+    await expect(fetchMyAccountDiscount()).resolves.toEqual({
+      scope: 'lifetime',
+      percent: 20,
+      label: 'Pro member 20%',
+    });
+  });
+
+  test('an assigned 15% clears the member floor but not the pro floor', async () => {
+    // The same rule that a member keeps verbatim is raised to 20% for a pro —
+    // the comparison threshold is the CALLER'S tier floor, not a literal 15.
+    seam.client = makeClient({
+      tier: 'pro',
+      rows: [row({ scope: 'lifetime', percent: 15, label: 'Lifetime 15' })],
+    });
+
+    await expect(fetchMyAccountDiscount()).resolves.toEqual({
+      scope: 'lifetime',
+      percent: 20,
+      label: 'Pro member 20%',
+    });
+  });
+
+  test('an unrecognized tier degrades to the base member 15% floor', async () => {
+    seam.client = makeClient({ tier: 'vip-unknown', rows: [] });
+
+    await expect(fetchMyAccountDiscount()).resolves.toEqual({
+      scope: 'lifetime',
+      percent: 15,
+      label: 'Account-holder 15%',
+    });
   });
 
   test('coerces a string percent from the API into a number', async () => {
