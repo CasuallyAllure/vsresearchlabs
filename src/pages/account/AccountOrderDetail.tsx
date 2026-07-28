@@ -22,6 +22,10 @@ import {
   type OrderInvoiceCoupon,
 } from '../../lib/tracking';
 import { allocateLineDiscounts } from '../../lib/lineDiscounts';
+import { planReorder } from '../../lib/reorder';
+import { variantProduct } from '../../lib/cartActions';
+import { useCart } from '../../hooks/useCart';
+import { useProducts } from '../../hooks/useProducts';
 import { Button } from '../../components/ui/Button';
 import { InvoiceDocument } from '../../components/order/InvoiceDocument';
 import { useCustomerAuth } from '../../lib/customerAuth';
@@ -58,6 +62,10 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
   const memberFreeShipping = profile?.free_shipping === true;
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
+  const { products } = useProducts();
+  const addToCart = useCart((s) => s.add);
+  /** Quiet in-app confirmation after "Reorder items" (never a native dialog). */
+  const [reorderNote, setReorderNote] = useState<{ added: number; skipped: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -116,6 +124,21 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
   const retailUnits = o.lines.map((l) => l.unit_price_cents ?? 0);
   const perLineDiscount = allocateLineDiscounts(o.lines, retailUnits, o.coupons ?? []);
   const hasDiscounts = (o.coupons ?? []).some((c) => c.discount_cents > 0);
+
+  /** Re-add this order's lines to the cart. Every add goes through
+   *  `variantProduct(product, dose)` — a bare add() drops the dose and
+   *  produces $0 order lines (cart-variant-dose incident). */
+  function handleReorder() {
+    const plan = planReorder(o.lines, products);
+    for (const item of plan.addable) {
+      const line = variantProduct(item.product, item.dose);
+      for (let i = 0; i < item.quantity; i += 1) {
+        addToCart(line);
+      }
+    }
+    const added = plan.addable.reduce((sum, item) => sum + item.quantity, 0);
+    setReorderNote({ added, skipped: plan.skipped.length });
+  }
 
   return (
     <>
@@ -259,15 +282,33 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
             <dd className="border-t border-ink/15 pt-1 text-right font-mono text-[14px] tabular-nums text-ink">{fmtUSD(o.total_cents)}</dd>
           </dl>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => setShowDoc(true)}
-          className="mt-[var(--space-4)]"
-        >
-          View / print {docKind}
-        </Button>
+        <div className="mt-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-3)]">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowDoc(true)}
+          >
+            View / print {docKind}
+          </Button>
+          <Button type="button" variant="secondary" size="sm" onClick={handleReorder}>
+            Reorder items
+          </Button>
+        </div>
+        {reorderNote && (
+          <p className="mt-[var(--space-2)] text-[12px] text-ink/60" role="status">
+            {reorderNote.added} item{reorderNote.added === 1 ? '' : 's'} added to cart
+            {reorderNote.skipped > 0 ? ` · ${reorderNote.skipped} unavailable` : ''}
+            {reorderNote.added > 0 && (
+              <>
+                {' · '}
+                <Link to="/cart" className="text-teal hover:text-teal-dark transition-colors">
+                  View cart →
+                </Link>
+              </>
+            )}
+          </p>
+        )}
       </article>
 
       {/* Shipping address */}
