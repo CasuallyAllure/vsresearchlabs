@@ -22,6 +22,7 @@ const TABS: PillTab[] = [
   { id: '/account', label: 'Overview' },
   { id: '/account/orders', label: 'Orders' },
   { id: '/account/rewards', label: 'Rewards' },
+  { id: '/account/library', label: 'Library' },
   { id: '/account/benefits', label: 'Benefits' },
   { id: '/account/profile', label: 'Profile' },
 ];

@@ -40,6 +40,7 @@ const Account = lazyPage(() => import('./pages/Account'), 'Account');
 const AccountOrders = lazyPage(() => import('./pages/account/AccountOrders'), 'AccountOrders');
 const AccountOrderDetail = lazyPage(() => import('./pages/account/AccountOrderDetail'), 'AccountOrderDetail');
 const AccountRewards = lazyPage(() => import('./pages/account/AccountRewards'), 'AccountRewards');
+const AccountLibrary = lazyPage(() => import('./pages/account/AccountLibrary'), 'AccountLibrary');
 const AccountBenefits = lazyPage(() => import('./pages/account/AccountBenefits'), 'AccountBenefits');
 const AccountProfile = lazyPage(() => import('./pages/account/AccountProfile'), 'AccountProfile');
 const Documentation = lazyPage(() => import('./pages/Documentation'), 'Documentation');
@@ -99,6 +100,7 @@ export default function App() {
                 <Route path="/account/orders" element={<AccountOrders />} />
                 <Route path="/account/orders/:orderNumber" element={<AccountOrderDetail />} />
                 <Route path="/account/rewards" element={<AccountRewards />} />
+                <Route path="/account/library" element={<AccountLibrary />} />
                 <Route path="/account/benefits" element={<AccountBenefits />} />
                 <Route path="/account/profile" element={<AccountProfile />} />
                 <Route path="/login" element={<Navigate to="/account" replace />} />
