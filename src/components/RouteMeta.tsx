@@ -15,6 +15,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { siteConfig } from '../config';
+import { isCompoundSharePath } from '../lib/compoundShare';
 
 const BRAND = siteConfig.brand.name;
 
@@ -64,8 +65,13 @@ function setRobots(content: string | null): void {
 export function RouteMeta() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const match = TITLES.find(([re]) => re.test(pathname));
-    document.title = match ? match[1] : BRAND;
+    // /c/<slug> records name themselves: the prerendered share HTML ships the
+    // compound title, and the overlay keeps it in sync as the visitor swipes
+    // through the catalog. Overwriting it here would clobber both.
+    if (!isCompoundSharePath(pathname)) {
+      const match = TITLES.find(([re]) => re.test(pathname));
+      document.title = match ? match[1] : BRAND;
+    }
 
     const isNoindex = NOINDEX_PATHS.some((re) => re.test(pathname));
     setRobots(isNoindex ? 'noindex, nofollow' : null);

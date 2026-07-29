@@ -10,7 +10,7 @@
     "gen:landing-frames": "node scripts/buildLandingFrames.mjs",
     "gen:atmosphere": "node scripts/buildAtmosphere.mjs",
     "walkthrough": "node scripts/walkthrough.mjs",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/buildCompoundShareRoutes.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",

@@ -21,6 +21,8 @@ import { createPortal } from 'react-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useCompoundShareRoute } from '../../hooks/useCompoundShareRoute';
+import { ShareCompoundButton } from './ShareCompoundButton';
 import {
   getCompoundIntelligence,
   chemicalPropertyRows,
@@ -181,6 +183,11 @@ export function CompoundIntelligenceOverlay({
     setClosing(true);
     closeTimerRef.current = setTimeout(() => onCloseRef.current(), 230);
   }
+
+  // Shareable URL. Every surface that mounts this overlay inherits the
+  // /c/<slug> address bar + back-button-closes behaviour from here — do not
+  // re-implement it per call site.
+  useCompoundShareRoute(product, { onBack: handleClose });
 
   function handleAddToInquiry() {
     const line = variantProduct(product, activeDoseLabel);
@@ -394,6 +401,7 @@ export function CompoundIntelligenceOverlay({
                   </svg>
                 </button>
               )}
+              <ShareCompoundButton product={product} />
               <button
                 type="button"
                 onClick={handleClose}

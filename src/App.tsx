@@ -33,6 +33,8 @@ const LaboratoryEquipment = lazyPage(() => import('./pages/LaboratoryEquipment')
 const ProductPage = lazyPage(() => import('./pages/ProductPage'), 'ProductPage');
 const Catalog = lazyPage(() => import('./pages/Catalog'), 'Catalog');
 const Research = lazyPage(() => import('./pages/Research'), 'Research');
+// Shareable compound record — /c/<slug>. See lib/compoundShare.ts.
+const CompoundShare = lazyPage(() => import('./pages/CompoundShare'), 'CompoundShare');
 const CartPage = lazyPage(() => import('./pages/CartPage'), 'CartPage');
 const Contact = lazyPage(() => import('./pages/Contact'), 'Contact');
 const TrackOrder = lazyPage(() => import('./pages/TrackOrder'), 'TrackOrder');
@@ -92,6 +94,7 @@ export default function App() {
                 <Route path="/laboratory-equipment" element={<LaboratoryEquipment />} />
                 <Route path="/catalog" element={<Catalog />} />
                 <Route path="/research" element={<Research />} />
+                <Route path="/c/:slug" element={<CompoundShare />} />
                 <Route path="/product/:id" element={<ProductPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/contact" element={<Contact />} />
