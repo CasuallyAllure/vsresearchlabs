@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { AccountLayout } from './AccountLayout';
-import { useCustomerAuth } from '../../lib/customerAuth';
+import { useAccountSession } from '../../lib/accountSession';
 import { listMyDiscounts, type CustomerDiscountRow } from '../../lib/accountData';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
@@ -123,7 +123,7 @@ function MemberPerksNote() {
 }
 
 function AccountBenefitsContent() {
-  const { profile } = useCustomerAuth();
+  const { profile } = useAccountSession();
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   useEffect(() => {

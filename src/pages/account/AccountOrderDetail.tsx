@@ -9,10 +9,11 @@
  * `InvoiceDocument` for print/download.
  */
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AccountLayout } from './AccountLayout';
 import { getMyOrder, type MyOrderResult } from '../../lib/accountData';
+import { orderDetailCacheKey, useAccountQuery } from '../../lib/accountQueryCache';
 import {
   carrierLabel,
   carrierRequiresTracking,
@@ -28,9 +29,10 @@ import { useCart } from '../../hooks/useCart';
 import { useProducts } from '../../hooks/useProducts';
 import { Button } from '../../components/ui/Button';
 import { InvoiceDocument } from '../../components/order/InvoiceDocument';
-import { useCustomerAuth } from '../../lib/customerAuth';
+import { useAccountSession } from '../../lib/accountSession';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
+import { StaleDataNotice } from '../../components/system/StaleDataNotice';
 
 function formatDate(iso: string | null): string | null {
   if (!iso) return null;
@@ -51,54 +53,32 @@ function invoiceCouponLabel(c: OrderInvoiceCoupon): string {
   return `${c.code} · Free ${c.free_label ?? 'item'}`;
 }
 
-type LoadState =
-  | { kind: 'loading' }
-  | { kind: 'notFound' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ok'; order: Extract<MyOrderResult, { found: true }> };
-
 function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
-  const { profile } = useCustomerAuth();
+  const { user, profile } = useAccountSession();
   // Membership itself waives shipping (src/lib/shipping.ts — the 049
   // free_shipping column is an admin extra, not the gate). Keying the invoice
   // label on that flag mislabeled nearly every member order (release audit).
   const memberFreeShipping = !!profile;
-  const [state, setState] = useState<LoadState>({ kind: 'loading' });
+  const key = user ? orderDetailCacheKey(user.id, orderNumber) : null;
+  const { data, error, loading } = useAccountQuery(key, () => getMyOrder(orderNumber));
   const [showDoc, setShowDoc] = useState(false);
   const { products } = useProducts();
   const addToCart = useCart((s) => s.add);
   /** Quiet in-app confirmation after "Reorder items" (never a native dialog). */
   const [reorderNote, setReorderNote] = useState<{ added: number; skipped: number } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setState({ kind: 'loading' });
-      const { data, error } = await getMyOrder(orderNumber);
-      if (cancelled) return;
-      if (error) {
-        setState({ kind: 'error', message: error });
-        return;
-      }
-      if (!data || !data.found) {
-        setState({ kind: 'notFound' });
-        return;
-      }
-      setState({ kind: 'ok', order: data });
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [orderNumber]);
-
-  if (state.kind === 'loading') {
+  if (loading) {
     return <p className="py-[var(--space-8)] text-[13px] text-ink/50">Loading order…</p>;
   }
-  if (state.kind === 'error') {
-    return <ErrorState message={state.message} />;
+  // `data === null`: never successfully loaded — a full failure state. A
+  // non-null `data` alongside an `error` means a background refresh failed
+  // AFTER a successful load — keep showing the last-known order
+  // (accountQueryCache.ts's revalidation-failure contract); the notice
+  // renders below, once we know `data.found` too.
+  if (!data) {
+    return <ErrorState message={error ?? 'Something went wrong loading this order.'} />;
   }
-  if (state.kind === 'notFound') {
+  if (!data.found) {
     return (
       <EmptyState
         label="We couldn't find that order on your account."
@@ -112,7 +92,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
     );
   }
 
-  const o = state.order;
+  const o: Extract<MyOrderResult, { found: true }> = data;
   const pres = statusPresentation(o.status);
   const url = carrierTrackingUrl(o.carrier, o.tracking_number);
   const docKind: 'invoice' | 'receipt' = o.paid ? 'receipt' : 'invoice';
@@ -145,6 +125,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
 
   return (
     <>
+      {error && <StaleDataNotice subject="this order" />}
       <div className="mb-[var(--space-4)]">
         <Link to="/account/orders" className="text-[11px] uppercase tracking-[0.18em] text-ink/45 hover:text-ink/75 transition-colors">
           ← Order history

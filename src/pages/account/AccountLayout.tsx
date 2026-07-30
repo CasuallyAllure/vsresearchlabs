@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useCustomerAuth } from '../../lib/customerAuth';
+import { AccountSessionProvider } from '../../lib/accountSession';
 import { supabase } from '../../lib/supabase';
 import { AuthCard } from '../../components/account/AuthCard';
 import { Button } from '../../components/ui/Button';
@@ -36,7 +37,8 @@ function activeTabId(pathname: string): string {
 }
 
 export function AccountLayout({ children }: { children: ReactNode }) {
-  const { loading, user, profile, error, signIn, signUp, verifyOtp, resendOtp, signOut } = useCustomerAuth();
+  const auth = useCustomerAuth();
+  const { loading, user, profile, error, signIn, signUp, verifyOtp, resendOtp, signOut } = auth;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -151,7 +153,11 @@ export function AccountLayout({ children }: { children: ReactNode }) {
         />
       </nav>
 
-      <div>{children}</div>
+      {/* Descendants read this ONE hydrated instance via useAccountSession()
+          instead of each calling useCustomerAuth() again (accountSession.ts). */}
+      <AccountSessionProvider value={auth}>
+        <div>{children}</div>
+      </AccountSessionProvider>
     </section>
   );
 }

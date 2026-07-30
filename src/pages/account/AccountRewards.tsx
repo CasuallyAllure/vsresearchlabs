@@ -6,19 +6,16 @@
  * points are earned/reversed/adjusted entirely server-side.
  */
 
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AccountLayout } from './AccountLayout';
-import { getMyRewardSummary, type RewardEntryKind, type RewardSummary } from '../../lib/accountData';
+import { getMyRewardSummary, type RewardEntryKind } from '../../lib/accountData';
+import { useAccountSession } from '../../lib/accountSession';
+import { rewardsCacheKey, useAccountQuery } from '../../lib/accountQueryCache';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
+import { StaleDataNotice } from '../../components/system/StaleDataNotice';
 import { RewardTracker } from '../../components/account/RewardTracker';
 import { ReferralCard } from '../../components/account/ReferralCard';
-
-type LoadState =
-  | { kind: 'loading' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ok'; summary: RewardSummary };
 
 const KIND_LABEL: Record<RewardEntryKind, string> = {
   earn: 'Earned',
@@ -41,47 +38,29 @@ function formatPoints(points: number): string {
 }
 
 function AccountRewardsContent() {
-  const [state, setState] = useState<LoadState>({ kind: 'loading' });
+  const { user } = useAccountSession();
+  const key = user ? rewardsCacheKey(user.id) : null;
+  const { data, error, loading, refresh } = useAccountQuery(key, getMyRewardSummary);
 
-  async function reload() {
-    const { data, error } = await getMyRewardSummary();
-    if (error || !data) {
-      setState({ kind: 'error', message: error ?? 'Rewards are unavailable right now.' });
-      return;
-    }
-    setState({ kind: 'ok', summary: data });
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const { data, error } = await getMyRewardSummary();
-      if (cancelled) return;
-      if (error || !data) {
-        setState({ kind: 'error', message: error ?? 'Rewards are unavailable right now.' });
-        return;
-      }
-      setState({ kind: 'ok', summary: data });
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (state.kind === 'loading') {
+  if (loading) {
     return <p className="py-[var(--space-8)] text-[13px] text-ink/50">Loading your rewards…</p>;
   }
-  if (state.kind === 'error') {
-    return <ErrorState message={state.message} />;
+  // `data === null`: never successfully loaded — a full failure state.
+  // `data` present alongside `error`: a background refresh (or a failed
+  // `refresh()` after redeeming) failed AFTER a successful load — keep
+  // showing the last-known balance/ledger (accountQueryCache.ts's
+  // revalidation-failure contract).
+  if (!data) {
+    return <ErrorState message={error ?? 'Rewards are unavailable right now.'} />;
   }
 
-  const { entries } = state.summary;
+  const { entries } = data;
 
   return (
     <>
+      {error && <StaleDataNotice subject="your rewards" />}
       <div className="mb-[var(--space-6)]">
-        <RewardTracker summary={state.summary} onChanged={reload} />
+        <RewardTracker summary={data} onChanged={refresh} />
       </div>
 
       <div className="mb-[var(--space-6)]">

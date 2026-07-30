@@ -12,7 +12,7 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AccountLayout } from './AccountLayout';
-import { useCustomerAuth } from '../../lib/customerAuth';
+import { useAccountSession } from '../../lib/accountSession';
 import { updateMyProfile, type CustomerProfilePatch, type CustomerProfile } from '../../lib/customerProfile';
 import { Field } from '../../components/ui/Field';
 import { Button } from '../../components/ui/Button';
@@ -114,7 +114,7 @@ function ProfileEditForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const { user, reloadProfile } = useCustomerAuth();
+  const { user, reloadProfile } = useAccountSession();
   const initial = useMemo(() => valuesFromProfile(profile), [profile]);
   const [values, setValues] = useState<FormValues>(initial);
   const [save, setSave] = useState<SaveState>({ kind: 'idle' });
@@ -247,7 +247,7 @@ function ProfileEditForm({
 }
 
 function ProfileSection() {
-  const { user, profile } = useCustomerAuth();
+  const { user, profile } = useAccountSession();
   const [mode, setMode] = useState<ViewMode>('display');
 
   // AccountLayout only renders children when user && profile exist.
@@ -273,7 +273,7 @@ function ProfileSection() {
  * so this control must exist before that kind is ever enabled.
  */
 function EmailPreferencesSection() {
-  const { user, profile, reloadProfile } = useCustomerAuth();
+  const { user, profile, reloadProfile } = useAccountSession();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
