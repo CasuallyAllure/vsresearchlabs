@@ -9,15 +9,19 @@
  * src/pages/admin/CustomerInvite.tsx (older WebViews lack navigator.clipboard).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/Button';
-import { getMyReferralCode, type ReferralCodeResult } from '../../lib/accountData';
+import { supabase } from '../../lib/supabase';
+import { getMyReferralCode } from '../../lib/accountData';
 
 type LoadState =
   | { kind: 'idle' }
   | { kind: 'working' }
   | { kind: 'error' }
-  | { kind: 'ok'; result: ReferralCodeResult };
+  /** `uses` is null when the code was surfaced by the mount-time table read
+   *  (uses is RPC-computed, not stored) — the count fills in after any
+   *  explicit refresh via the RPC. */
+  | { kind: 'ok'; result: { code: string; uses: number | null } };
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
@@ -47,6 +51,26 @@ export function ReferralCard() {
   const [state, setState] = useState<LoadState>({ kind: 'idle' });
   const [copied, setCopied] = useState<CopyState>('idle');
 
+  // Auto-surface an EXISTING code on mount via the member's own
+  // member_referral_codes row (RLS owner select) — a plain read, so it never
+  // mints a code. Issuance stays behind the explicit button (get_my_referral_code
+  // creates on first call; auto-calling it would issue codes nobody asked for).
+  // Without this, a member re-clicked "Get referral code" on every visit
+  // (release audit: read as unfinished).
+  useEffect(() => {
+    let cancelled = false;
+    if (!supabase) return;
+    supabase
+      .from('member_referral_codes')
+      .select('code')
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled || error || !data?.code) return;
+        setState((prev) => (prev.kind === 'idle' ? { kind: 'ok', result: { code: data.code, uses: null } } : prev));
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   async function load() {
     setState({ kind: 'working' });
     const { data, error } = await getMyReferralCode();
@@ -54,7 +78,7 @@ export function ReferralCard() {
       setState({ kind: 'error' });
       return;
     }
-    setState({ kind: 'ok', result: data });
+    setState({ kind: 'ok', result: { code: data.code, uses: data.uses } });
   }
 
   async function handleCopy(code: string) {
@@ -91,9 +115,11 @@ export function ReferralCard() {
               {copied === 'copied' ? 'Copied ✓' : copied === 'failed' ? 'Copy failed' : 'Copy'}
             </Button>
           </div>
-          <p className="mt-[var(--space-3)] font-mono text-[11px] tabular-nums text-ink/45">
-            Recorded uses: {state.result.uses.toLocaleString()}
-          </p>
+          {state.result.uses != null && (
+            <p className="mt-[var(--space-3)] font-mono text-[11px] tabular-nums text-ink/45">
+              Recorded uses: {state.result.uses.toLocaleString()}
+            </p>
+          )}
         </>
       ) : state.kind === 'error' ? (
         <p className="mt-[var(--space-4)] text-[12.5px] leading-relaxed text-ink/55">

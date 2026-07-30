@@ -25,6 +25,13 @@ export interface CustomerProfile {
   status: CustomerStatus;
   /** Admin-granted perk (049) — guarded column, customers can't set it themselves. */
   free_shipping: boolean;
+  /** Business identity (043) — guarded columns, admin-set. */
+  account_type: 'individual' | 'business';
+  business_name: string | null;
+  /** Marketing-email opt-out (075). Deliberately CUSTOMER-writable — the
+   *  043/049 guard trigger pins only tier/status/account_type/business_name/
+   *  customer_id/free_shipping; this column is the member's own preference. */
+  marketing_opt_out: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +48,7 @@ export type CustomerProfilePatch = Partial<
     | 'state'
     | 'postal_code'
     | 'country'
+    | 'marketing_opt_out'
   >
 >;
 

@@ -35,6 +35,9 @@ const PROFILE: CustomerProfile = {
   tier: 'member',
   status: 'active',
   free_shipping: false,
+  account_type: 'individual',
+  business_name: null,
+  marketing_opt_out: false,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
 };

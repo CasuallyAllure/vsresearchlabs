@@ -27,6 +27,8 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useSignedIn } from '../../lib/authPresence';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
 import { variantProduct, resolveSellableDose, canQuickAdd } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 import { SKUCode } from '../ui/identifiers';
@@ -45,12 +47,16 @@ const ADDED_MS = 1400;
 
 export function InventoryRow({ product, family, dose, onInspect }: InventoryRowProps) {
   const addToCart = useCart((s) => s.add);
+  const signedIn = useSignedIn();
+  // Member-first window — terminal buy surface, gated like CompoundTile.
+  const earlyLocked = isEarlyAccessProduct(product) && !signedIn;
   const [added, setAdded] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   function handleAdd(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
+    if (earlyLocked) return;
     // Resolve to a real priced dose — the row headline is empty for multi-dose
     // compounds (e.g. "AOD-9604"), which would otherwise add a $0 line.
     const sellableDose = resolveSellableDose(product, dose);
@@ -109,10 +115,14 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
       <button
         type="button"
         onClick={handleAdd}
+        disabled={earlyLocked}
+        title={earlyLocked ? EARLY_ACCESS_GUEST_LINE : undefined}
         aria-label={
-          added
-            ? `${product.name} added to inquiry`
-            : `Add ${product.name} to inquiry`
+          earlyLocked
+            ? EARLY_ACCESS_GUEST_LINE
+            : added
+              ? `${product.name} added to inquiry`
+              : `Add ${product.name} to inquiry`
         }
         className={[
           'absolute right-[var(--space-3)] top-1/2 -translate-y-1/2',

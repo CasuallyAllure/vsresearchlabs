@@ -129,26 +129,26 @@ function toQueue(items: AttentionItem[]): MemberQueueItem[] {
     switch (it.kind) {
       case 'vip_at_risk':
         return {
-          tone: it.tone, action: 'Review',
+          kind: it.kind, tone: it.tone, action: 'Review',
           title: `${it.count} VIP ${plural(it.count, 'member is', 'members are')} now At-Risk`,
           meta: `No order in 60+ days · combined lifetime ${money(it.detail?.lifetimeCents ?? 0)}`,
         };
       case 'reward_ready':
         return {
-          tone: it.tone, action: 'Nudge',
+          kind: it.kind, tone: it.tone, action: 'View',
           title: `${it.count} ${plural(it.count, 'member has', 'members have')} a reward credit ready`,
           meta: 'Crossed 300 points · voucher not yet redeemed',
         };
       case 'discount_expiring':
         return {
-          tone: it.tone, action: 'Renew',
+          kind: it.kind, tone: it.tone, action: 'Renew',
           title: `${it.count} custom ${plural(it.count, 'discount expires', 'discounts expire')} within 14 days`,
           meta: 'Renew, or let it lapse deliberately',
         };
       case 'invites_stale':
       default:
         return {
-          tone: it.tone, action: 'Follow up',
+          kind: 'invites_stale', tone: it.tone, action: 'Follow up',
           title: `${it.count} ${plural(it.count, 'invite', 'invites')} outstanding > 7 days`,
           meta: 'Sent, no signup yet',
         };
@@ -300,23 +300,26 @@ export function useMemberDetail(row: MemberRow | null): { detail: MemberDetail |
 
     async function load() {
       if (!row || !supabase) return;
+      try {
+        // Just the activity timeline — reward balance and discount rules are
+        // owned by the shared management panels, which fetch their own data.
+        // admin_member_activity keys on the CRM customer id; unlinked accounts
+        // (id === null) simply have no timeline yet.
+        const activityRes = row.id
+          ? await supabase.rpc('admin_member_activity', { p_customer_id: row.id })
+          : { data: null, error: null };
 
-      // Just the activity timeline — reward balance and discount rules are
-      // owned by the shared management panels, which fetch their own data.
-      // admin_member_activity keys on the CRM customer id; unlinked accounts
-      // (id === null) simply have no timeline yet.
-      const activityRes = row.id
-        ? await supabase.rpc('admin_member_activity', { p_customer_id: row.id })
-        : { data: null, error: null };
-      if (cancelled) return;
+        const events = ((activityRes.data as { events?: Array<{ label: string; iso: string }> } | null)?.events ?? [])
+          .slice(0, 6)
+          .map((e) => ({ label: e.label, iso: e.iso }));
 
-      const events = ((activityRes.data as { events?: Array<{ label: string; iso: string }> } | null)?.events ?? [])
-        .slice(0, 6)
-        .map((e) => ({ label: e.label, iso: e.iso }));
-
-      const next: MemberDetail = { timeline: events };
-      inflight.current.delete(k);
-      setCache((prev) => ({ ...prev, [k]: next }));
+        if (!cancelled) setCache((prev) => ({ ...prev, [k]: { timeline: events } }));
+      } finally {
+        // ALWAYS release the claim — a cancelled or failed fetch that left `k`
+        // in the set would block every future fetch for this member, wedging
+        // the row on "Loading…" until a page reload (release-audit bug).
+        inflight.current.delete(k);
+      }
     }
     load();
     return () => { cancelled = true; };

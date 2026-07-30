@@ -16,7 +16,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCustomerAuth } from '../../lib/customerAuth';
-import type { CustomerProfile } from '../../lib/customerProfile';
 import {
   getMyRewardSummary,
   listMyDiscounts,
@@ -30,15 +29,6 @@ import { MemberOfferCard } from './MemberOfferCard';
 import { MEMBER_OFFERS } from '../../config/memberOffers';
 import { TIER_BENEFITS } from '../../config/tierBenefits';
 import { supabase } from '../../lib/supabase';
-
-/** `customer_profiles.account_type`/`business_name` (migration 043) aren't on
- *  `CustomerProfile` yet — this workstream can't add them (owned elsewhere).
- *  Read them defensively so the badge lights up the moment the column lands,
- *  and degrades to "individual" (no badge) until then. */
-interface ProfileWithAccountType extends CustomerProfile {
-  account_type?: 'individual' | 'business';
-  business_name?: string | null;
-}
 
 interface OrderRow {
   order_number: string;
@@ -67,8 +57,9 @@ function formatAmount(cents: number | null): string {
 }
 
 export function AccountDashboard() {
-  const { user, profile: rawProfile } = useCustomerAuth();
-  const profile = rawProfile as ProfileWithAccountType | null;
+  // account_type/business_name/marketing_opt_out are on CustomerProfile now
+  // (release-audit cleanup — the old defensive cast predated the 043 types).
+  const { user, profile } = useCustomerAuth();
 
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
   const [ordersError, setOrdersError] = useState<string | null>(null);
@@ -217,7 +208,9 @@ export function AccountDashboard() {
         </div>
 
         <div>
-          {discounts !== null && discounts.length === 0 && MEMBER_OFFERS.length > 0 ? (
+          {/* Base-member offer card only — a Pro's membership card states 20%,
+              so the 15% fallback would contradict it (release audit). */}
+          {discounts !== null && discounts.length === 0 && MEMBER_OFFERS.length > 0 && profile.tier !== 'pro' ? (
             <MemberOfferCard offer={MEMBER_OFFERS[0]} compact />
           ) : (
             <div className="research-surface-solid p-[var(--space-5)]">

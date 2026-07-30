@@ -21,7 +21,7 @@ export const TIER_BENEFITS: Record<CustomerTier, TierBenefitList> = {
     benefits: [
       '15% account rate, applied automatically at checkout',
       'Free shipping on standard orders',
-      'Reward accrual — 1 point per $1 paid, redeemable at 300 points',
+      'Order credit — 1 unit per $1 paid, redeemable at 300 units',
       'Order history, invoices, and tracking in the portal',
     ],
   },

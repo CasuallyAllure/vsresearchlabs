@@ -70,7 +70,7 @@ export function RowAction({
 
 export interface SubNavItem<T extends string> { value: T; label: string }
 
-/** The Members sub-view switcher (Roster · Redemptions · Invites). Quiet
+/** The Members sub-view switcher (Roster · Redemptions · Invites · Automations). Quiet
  *  segmented control in the admin register — a tab strip, not a redesign. */
 export function SubNav<T extends string>({
   items, value, onChange,

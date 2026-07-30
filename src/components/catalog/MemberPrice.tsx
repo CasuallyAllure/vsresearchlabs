@@ -27,6 +27,7 @@
 
 import { useId } from 'react';
 import { Link } from 'react-router-dom';
+import { useSignedIn } from '../../lib/authPresence';
 import { MEMBER_DISCOUNT_PERCENT, memberPriceCents } from '../../lib/memberPricing';
 import { formatPriceExact } from '../../lib/pricing';
 import { Tooltip } from '../ui/Tooltip';
@@ -45,9 +46,14 @@ const ACCENT = 'var(--color-accent)';
 
 export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }: MemberPriceProps) {
   const ariaId = useId();
+  // GUESTS ONLY. This chip is the join incentive ("create a profile") at the
+  // base member rate — shown to a signed-in member it understates a Pro's 20%
+  // and tells a profile-holder to create a profile (release audit). Members
+  // see their true rate in the cart preview; presence check is zero-query.
+  const signedIn = useSignedIn();
   const member = memberPriceCents(baseCents);
 
-  if (!eligible || member == null) return null;
+  if (signedIn || !eligible || member == null) return null;
 
   const priceText = size === 'md' ? 'text-[15px]' : 'text-[12px]';
   const tagText = size === 'md' ? 'text-[7.5px]' : 'text-[7px]';

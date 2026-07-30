@@ -1,6 +1,6 @@
 # Membership System Blueprint
 
-**Status:** DRAFT — awaiting owner approval. No implementation until approved.
+**Status:** SHIPPED — Phases 0–3b and the automation/growth layer are deployed (migrations 070–076 live; see `MEMBERSHIP_RELEASE.md` for the as-built record). This document is the HISTORICAL design; where it and the release doc disagree, the release doc is current (e.g. Pro's 20% floor shipped hard-coded in 074 rather than percentile-derived; the demo-data prototype described in §3 was replaced by the live page).
 **Date:** 2026-07-23
 **Scope:** The complete member lifecycle — first signup through long-term retention — built on top of what already exists. Design goals: admin stays fast, clean, iPhone-375px-friendly; pricing authority stays server-side; every phase ships independently.
 

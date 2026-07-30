@@ -23,10 +23,14 @@ beforeEach(() => { seam.client = null; });
 
 type RpcHandler = (args: unknown) => { data: unknown; error: unknown };
 
-function makeClient(handlers: Record<string, RpcHandler>) {
+/** Mock client: rpc per-name handlers + the mount-time member_referral_codes
+ *  read (from().select().maybeSingle()), which resolves `existingCode`. */
+function makeClient(handlers: Record<string, RpcHandler>, existingCode: string | null = null) {
   const rpc = vi.fn(async (name: string, args?: unknown) =>
     handlers[name] ? handlers[name](args) : { data: null, error: null });
-  return { rpc };
+  const maybeSingle = vi.fn(async () => ({ data: existingCode ? { code: existingCode } : null, error: null }));
+  const chain = { select: vi.fn(() => chain), maybeSingle };
+  return { rpc, from: vi.fn(() => chain) };
 }
 
 describe('ReferralCard', () => {
@@ -54,5 +58,18 @@ describe('ReferralCard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Get referral code' }));
     expect(await screen.findByText('Referral codes are unavailable right now.')).toBeTruthy();
+  });
+
+  test('an already-issued code auto-surfaces on mount WITHOUT calling the issuing RPC', async () => {
+    const referralRpc = vi.fn(() => ({ data: { code: 'REF-ZZZZZZ', percent: 10, uses: 0 }, error: null }));
+    seam.client = makeClient({ get_my_referral_code: referralRpc }, 'REF-EXIST1');
+    render(<ReferralCard />);
+
+    // The stored code appears from the plain table read…
+    expect(await screen.findByText('REF-EXIST1')).toBeTruthy();
+    // …and the mint-on-first-call RPC was never invoked (auto-issuance guard).
+    expect(referralRpc).not.toHaveBeenCalled();
+    // Uses count is unknown from the table read — the line is simply omitted.
+    expect(screen.queryByText(/Recorded uses:/)).toBeNull();
   });
 });

@@ -16,14 +16,19 @@ import {
   NOT_MIGRATED_NOTE, fmtDateShort, inputCls, isLiveDiscount, isMissingBackend,
   type AccountType, type ConfirmFn, type DiscountRow,
 } from './shared';
+import { TIER_FLOOR_PERCENTS, type TierKey } from '../../../lib/memberPricing';
 
 interface DiscountsPanelProps {
   userId: string;
   accountType: AccountType;
   confirm: ConfirmFn;
+  /** The member's tier — drives the automatic floor callout (074: member 15 /
+   *  pro 20). Optional so older call sites degrade to the base floor. */
+  tier?: TierKey;
 }
 
-export function DiscountsPanel({ userId, accountType, confirm }: DiscountsPanelProps) {
+export function DiscountsPanel({ userId, accountType, confirm, tier = 'member' }: DiscountsPanelProps) {
+  const tierFloor = TIER_FLOOR_PERCENTS[tier] ?? TIER_FLOOR_PERCENTS.member;
   const [rows, setRows] = useState<DiscountRow[] | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'unmigrated' | 'error'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -158,6 +163,14 @@ export function DiscountsPanel({ userId, accountType, confirm }: DiscountsPanelP
         <>
           {rowError && <InlineError>{rowError}</InlineError>}
 
+          {/* Server truth (074): the tier floor is automatic, and a rule BELOW
+              it is replaced by the floor at checkout — without this line an
+              admin could set 12% on a pro and believe it billed 12% while
+              checkout charged 20% (release audit). */}
+          <p className="mb-[var(--space-3)] font-mono text-[10px] uppercase tracking-[0.14em] text-ink/40">
+            Automatic {tier} floor: {tierFloor}% — rules below it are raised to {tierFloor}% at checkout
+          </p>
+
           {rows.length === 0 ? (
             <MutedNote>No discount rules on file.</MutedNote>
           ) : (
@@ -172,6 +185,9 @@ export function DiscountsPanel({ userId, accountType, confirm }: DiscountsPanelP
                     <span className="font-mono text-[13px] tabular-nums text-ink w-[64px] shrink-0">{row.percent}%</span>
                     <Badge tone={live ? 'good' : 'neutral'}>{live ? 'active' : row.active ? 'expired' : 'inactive'}</Badge>
                     <Badge>{row.scope}</Badge>
+                    {live && Number(row.percent) < tierFloor && (
+                      <Badge tone="warn">bills {tierFloor}% (floor)</Badge>
+                    )}
                     <span className="min-w-0 w-full text-[12px] text-ink/70 sm:w-auto sm:flex-1">{row.label}</span>
                     <span className="font-mono text-[10.5px] text-ink/40 tabular-nums">
                       {row.expires_at ? `to ${fmtDateShort(row.expires_at)}` : 'no expiry'}

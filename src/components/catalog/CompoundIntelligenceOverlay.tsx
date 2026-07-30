@@ -52,6 +52,7 @@ import { isMemberPriceEligible } from '../../lib/memberPricing';
 import { MemberPrice } from './MemberPrice';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 import { useCustomerAuth } from '../../lib/customerAuth';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
 import {
   WHOLESALE_PACKS,
   wholesaleDoses,
@@ -190,6 +191,7 @@ export function CompoundIntelligenceOverlay({
   useCompoundShareRoute(product, { onBack: handleClose });
 
   function handleAddToInquiry() {
+    if (earlyLocked) return;
     const line = variantProduct(product, activeDoseLabel);
     const currentItems = useCart.getState().items;
     const existing = currentItems.find((i) => i.product.id === line.id);
@@ -246,8 +248,12 @@ export function CompoundIntelligenceOverlay({
   const wsPricing = wsDose ? wholesalePackPricing(product, wsDose, wsPack) : null;
   const { user } = useCustomerAuth();
   const isMember = !!user;
+  // Member-first window — the overlay is one tap from a gated tile, so it must
+  // gate too or the tile's lock is decorative (release audit).
+  const earlyLocked = isEarlyAccessProduct(product) && !isMember;
 
   function handleAddPack() {
+    if (earlyLocked) return;
     if (!wsDose || !wsPricing) return;
     const line = variantProduct(product, wsDose);
     const currentItems = useCart.getState().items;
@@ -706,8 +712,16 @@ export function CompoundIntelligenceOverlay({
                 })()}
                 <div className="mt-3 flex items-center gap-2">
                   <QuantityStepper quantity={quantity} onChange={setQuantity} />
-                  <Button variant="primary" size="sm" type="button" onClick={handleAddToInquiry} className="flex-1">
-                    Add to Inquiry
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    type="button"
+                    onClick={handleAddToInquiry}
+                    disabled={earlyLocked}
+                    title={earlyLocked ? EARLY_ACCESS_GUEST_LINE : undefined}
+                    className="flex-1"
+                  >
+                    {earlyLocked ? 'Member early access' : 'Add to Inquiry'}
                   </Button>
                 </div>
                 {quantity > 1 && priceCents != null && (
