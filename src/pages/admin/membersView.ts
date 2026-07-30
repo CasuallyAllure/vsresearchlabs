@@ -63,7 +63,11 @@ export interface MemberStat {
   emphasis?: boolean;
 }
 
+/** Server-declared queue-item kinds (admin_member_attention, 072). */
+export type QueueKind = 'vip_at_risk' | 'reward_ready' | 'discount_expiring' | 'invites_stale';
+
 export interface MemberQueueItem {
+  kind: QueueKind;
   tone: 'good' | 'warn';
   title: string;
   meta: string;

@@ -28,7 +28,7 @@
 import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
-import { useCustomerAuth } from '../../lib/customerAuth';
+import { useSignedIn } from '../../lib/authPresence';
 import { isEarlyAccessProduct } from '../../lib/earlyAccess';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
@@ -88,10 +88,12 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
 
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
-  const { user: authUser } = useCustomerAuth();
+  // Presence-only auth signal — useCustomerAuth() here fired a profile fetch
+  // AND a link_my_orders RPC per TILE for signed-in shoppers (release audit).
+  const signedIn = useSignedIn();
   // Member-first window (earlyAccess.ts) — guests can view but not add; the
   // product page carries the sign-in line. Dark until a product is tagged.
-  const earlyLocked = isEarlyAccessProduct(product) && !authUser;
+  const earlyLocked = isEarlyAccessProduct(product) && !signedIn;
   const [added, setAdded] = useState(false);
   const flashTimer = useRef<number | null>(null);
 

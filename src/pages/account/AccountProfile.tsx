@@ -266,10 +266,64 @@ function ProfileSection() {
   return <ProfileDisplay profile={profile} email={user.email} onEdit={() => setMode('edit')} />;
 }
 
+/**
+ * Email preferences — the customer-writable marketing opt-out (075). The
+ * winback automation excludes opted-out members at the SQL candidate level;
+ * its emails point here ("Manage email preferences in your account profile"),
+ * so this control must exist before that kind is ever enabled.
+ */
+function EmailPreferencesSection() {
+  const { user, profile, reloadProfile } = useCustomerAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!user || !profile) return null;
+  const optedOut = profile.marketing_opt_out === true;
+
+  async function handleToggle(nextReceive: boolean) {
+    if (!user || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await updateMyProfile(user.id, { marketing_opt_out: !nextReceive });
+      await reloadProfile();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Could not save your preference.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="research-surface-solid mt-[var(--space-4)] p-[var(--space-5)]">
+      <h2 className="mb-[var(--space-3)] text-[13px] font-medium tracking-[-0.01em] text-ink">
+        Email preferences
+      </h2>
+      <label className="flex items-start gap-[var(--space-2)] text-[13px] leading-relaxed text-ink/80">
+        <input
+          type="checkbox"
+          checked={!optedOut}
+          disabled={busy}
+          onChange={(e) => handleToggle(e.target.checked)}
+          className="mt-[3px]"
+        />
+        <span>
+          Receive occasional program notices by email — account benefits and
+          standing-terms updates. Order and account emails are unaffected.
+        </span>
+      </label>
+      <p aria-live="polite" className="mt-[var(--space-2)] text-[11px] text-ink/45">
+        {busy ? 'Saving…' : error ? <span className="holo-text-warning">{error}</span> : optedOut ? 'You will not receive program emails.' : ' '}
+      </p>
+    </div>
+  );
+}
+
 export function AccountProfile() {
   return (
     <AccountLayout>
       <ProfileSection />
+      <EmailPreferencesSection />
     </AccountLayout>
   );
 }

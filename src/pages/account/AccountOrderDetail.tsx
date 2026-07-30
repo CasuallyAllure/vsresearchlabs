@@ -59,7 +59,10 @@ type LoadState =
 
 function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
   const { profile } = useCustomerAuth();
-  const memberFreeShipping = profile?.free_shipping === true;
+  // Membership itself waives shipping (src/lib/shipping.ts — the 049
+  // free_shipping column is an admin extra, not the gate). Keying the invoice
+  // label on that flag mislabeled nearly every member order (release audit).
+  const memberFreeShipping = !!profile;
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
   const { products } = useProducts();

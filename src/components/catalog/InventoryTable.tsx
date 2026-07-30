@@ -31,6 +31,8 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Product, ProductCategory } from '../../types';
 import { useCart } from '../../hooks/useCart';
+import { useSignedIn } from '../../lib/authPresence';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
 import { variantProduct, resolveSellableDose, canQuickAdd } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 
@@ -73,6 +75,7 @@ const TH_CLASS =
 export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
   const navigate = useNavigate();
   const addToCart = useCart((s) => s.add);
+  const signedIn = useSignedIn();
   const [addedId, setAddedId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
 
@@ -87,6 +90,8 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
   function handleAdd(e: React.MouseEvent<HTMLButtonElement>, product: Product, dose: string) {
     e.preventDefault();
     e.stopPropagation();
+    // Member-first window — terminal buy surface, gated like CompoundTile.
+    if (isEarlyAccessProduct(product) && !signedIn) return;
     // Resolve to a real priced dose — the row spec is empty for multi-dose
     // compounds (e.g. "AOD-9604"), which would otherwise add a $0 line.
     const sellableDose = resolveSellableDose(product, dose);
@@ -178,10 +183,14 @@ export function InventoryTable({ rows, onInspect }: InventoryTableProps) {
                   <button
                     type="button"
                     onClick={(e) => handleAdd(e, product, dose)}
+                    disabled={isEarlyAccessProduct(product) && !signedIn}
+                    title={isEarlyAccessProduct(product) && !signedIn ? EARLY_ACCESS_GUEST_LINE : undefined}
                     aria-label={
-                      isAdded
-                        ? `${product.name} added to inquiry`
-                        : `Add ${product.name} to inquiry`
+                      isEarlyAccessProduct(product) && !signedIn
+                        ? EARLY_ACCESS_GUEST_LINE
+                        : isAdded
+                          ? `${product.name} added to inquiry`
+                          : `Add ${product.name} to inquiry`
                     }
                     className={[
                       'h-10 w-10 rounded-full border inline-flex items-center justify-center transition-colors',

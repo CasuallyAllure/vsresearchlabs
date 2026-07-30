@@ -21,6 +21,8 @@ import { useCart } from '../../hooks/useCart';
 import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
+import { useSignedIn } from '../../lib/authPresence';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, isSkuInStock, doseAvailability } from '../../lib/productOverrides';
@@ -46,10 +48,15 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   const priceCents = effectiveTierPriceCents(product, activeDose);
   const add = useCart((s) => s.add);
   const updateQuantity = useCart((s) => s.updateQuantity);
+  const signedIn = useSignedIn();
+  // Member-first window — mirrors CompoundTile/ProductPage (release audit:
+  // this modal is a terminal buy surface, so it must gate too).
+  const earlyLocked = isEarlyAccessProduct(product) && !signedIn;
   const [added, setAdded] = useState(false);
   const timer = useRef<number | null>(null);
 
   function handleAdd() {
+    if (earlyLocked) return;
     const line = variantProduct(product, activeDose);
     const items = useCart.getState().items;
     const existing = items.find((i) => i.product.id === line.id);
@@ -139,7 +146,9 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
       <button
         type="button"
         onClick={handleAdd}
-        aria-label={`Add ${product.name} ${activeDose} to inquiry`}
+        disabled={earlyLocked}
+        title={earlyLocked ? EARLY_ACCESS_GUEST_LINE : undefined}
+        aria-label={earlyLocked ? EARLY_ACCESS_GUEST_LINE : `Add ${product.name} ${activeDose} to inquiry`}
         className={[
           'shrink-0 inline-flex items-center justify-center min-h-[40px] rounded-full border px-2.5 text-[10px] uppercase tracking-[0.14em] font-medium leading-none transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/35 disabled:opacity-40 disabled:cursor-not-allowed',
           // Theme-bound teal-light token (was a hardcoded hex) — never

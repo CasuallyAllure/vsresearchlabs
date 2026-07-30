@@ -104,14 +104,19 @@ function TierBenefitsCard({ tier }: { tier: CustomerTier }) {
   );
 }
 
-function MemberPerksNote({ freeShipping }: { freeShipping: boolean }) {
+function MemberPerksNote() {
+  // Every signed-in member ships free (src/lib/shipping.ts — membership alone
+  // is the gate; the 049 free_shipping column is an admin belt-and-braces
+  // extra, NOT the condition). This page only renders for members, so the
+  // line is unconditional — keying it on the 049 flag hid the perk from
+  // nearly every member (release-audit bug).
   return (
     <article className="research-surface-solid p-[var(--space-5)]">
       <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Member perks</p>
       <p className="text-[13px] leading-relaxed text-ink/75">
-        {freeShipping
-          ? 'Free shipping is active on your account — it applies automatically at checkout.'
-          : 'Some promo codes are member-only and require you to be signed in to redeem.'}
+        Free shipping is active on your account — it applies automatically at
+        checkout. Some promo codes are also member-only and require you to be
+        signed in to redeem.
       </p>
     </article>
   );
@@ -148,7 +153,10 @@ function AccountBenefitsContent() {
   return (
     <div className="space-y-[var(--space-4)]">
       <TierBenefitsCard tier={profile?.tier ?? 'member'} />
-      {MEMBER_OFFERS.map((offer) => (
+      {/* The standing 15% offer card is the base-member term — a Pro's tier
+          card already states their 20% rate, so showing both contradicted
+          itself on one screen (release audit). */}
+      {profile?.tier !== 'pro' && MEMBER_OFFERS.map((offer) => (
         <MemberOfferCard key={offer.code} offer={offer} />
       ))}
       {state.discounts.length === 0 ? (
@@ -162,7 +170,7 @@ function AccountBenefitsContent() {
       ) : (
         state.discounts.map((d) => <DiscountCard key={d.id} discount={d} />)
       )}
-      <MemberPerksNote freeShipping={profile?.free_shipping ?? false} />
+      <MemberPerksNote />
       <HowDiscountsApply />
     </div>
   );

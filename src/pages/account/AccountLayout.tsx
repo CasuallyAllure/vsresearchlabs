@@ -3,7 +3,7 @@
  *
  * Owns the customer-portal auth guard AND the chrome (mirrors AdminLayout's
  * thin command bar + sub-nav, customer-flavored): a slim bar with the brand,
- * the signed-in email, and sign-out, plus a PillTabs strip for the five
+ * the signed-in email, and sign-out, plus a PillTabs strip for the six
  * portal sections. `/account`'s URL and logged-out behavior are unchanged —
  * a signed-out visitor still sees the existing AuthCard in place.
  */

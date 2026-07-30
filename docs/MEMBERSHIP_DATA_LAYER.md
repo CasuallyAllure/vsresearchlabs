@@ -1,6 +1,6 @@
 # Membership Data Layer — Architectural Map
 
-**Status:** Phase 0 built 2026-07-23 — migration files + edge change + tests written, **not yet applied to prod** (`supabase db push` + `supabase functions deploy` are manual; CI's real-Postgres tier is the gate). Local DB validation was not possible in the authoring environment (no Docker); the integration suite runs in CI.
+**Status:** LIVE — migrations **070–076 are all applied to production** and every function below is deployed and smoke-verified (release audit 2026-07-30). Sections for 070/071/073 are detailed; 072/074/075/076 are summarized below and inventoried in full in `MEMBERSHIP_RELEASE.md`.
 
 This is the complete map of every server-side object the membership system adds. Companion: [MEMBERSHIP_BLUEPRINT.md](MEMBERSHIP_BLUEPRINT.md) (the phased plan) and `src/pages/admin/membersView.ts` (the client view-model contract).
 
@@ -99,10 +99,11 @@ Roster row → `MemberRow`: `id`(customer_id, null when unlinked), `userId`, `na
 ## Tests
 `tests/integration/membershipAdminSurface.test.ts` (Vitest + local `supabase start`, loopback-guarded, self-skips without env). Covers: anon denial on every `admin_member_*`; roster shows the real ledger balance (350) not the projection (210); spend/segment/tier/effective %/reward-ready; segment + search filters; stats aggregation; distribution percentiles; activity UNION; and the full invite→signup→conversion-stamp path. Runs in CI via `npx vitest run tests/integration tests/rls`.
 
-## Not done in Phase 0 (by design)
-- Applying migrations to prod (`db push`) and redeploying `send-invite` — manual.
-- Phase 1 UI wiring (the `useMemberRoster()` hook, deleting `membersPreviewData.ts`).
-- Voucher void RPC + redemptions view (Phase 2), tier-aware floor (Phase 3), automations (Phase 4).
+## Migrations 072–076 (summary — all LIVE)
+- **072** `admin_member_attention()` — the needs-attention queue as structured `{kind, tone, count, detail}`.
+- **074** tier-aware `effective_customer_discount()` floor — member 15% / pro 20%; assigned rule ≥ tier floor wins verbatim; client mirrors in `memberPricing.ts` (`TIER_FLOOR_PERCENTS`) + `accountDiscount.ts`.
+- **075** automations — `customer_profiles.marketing_opt_out` (customer-writable; portal toggle in AccountProfile), `email_log` (UNIQUE recipient/kind/period_key = idempotency claim), `automation_settings` (5 kinds seeded OFF), `admin_set_automation_kind`, `admin_email_log`, `automation_candidates` (service-only). Edge fn `member-automations` (secret-gated, insert-then-send) + daily scheduled workflow.
+- **076** referrals — `member_referral_codes`, `get_my_referral_code()` (idempotent issue; REF- code = member-owned affiliate coupon, percent 10, exclusive, commission 0), `admin_member_referrals()`. Point payouts deliberately not implemented (future automation kind).
 
 ## Deliberate expansion points
 `member_invites.metadata` jsonb · all functions return jsonb (append fields freely) · tier passed through as data (a new tier = one check-constraint change, no code here) · `member_roster_base` is the single place to add a computed column (a benefit flag, a new segment) · if the view gets slow at scale, promote it to a scheduled materialized view — function signatures don't change.

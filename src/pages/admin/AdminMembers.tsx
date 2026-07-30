@@ -3,12 +3,12 @@
  *
  * A specialized LENS over the existing customer ecosystem, not a second
  * customer system: every figure comes from the server surface (admin_member_*
- * RPCs, migrations 070–073) computed over the existing customer_profiles, CRM
+ * RPCs, migrations 070–076) computed over the existing customer_profiles, CRM
  * customers, orders, reward_ledger, reward_vouchers, customer_discounts and
  * member_invites records. The Customers section remains the source of truth;
  * every row links back to the full customer profile.
  *
- * Three sub-views share one shell: Roster (the approved cockpit — KPI strip,
+ * Four sub-views share one shell: Roster (the approved cockpit — KPI strip,
  * needs-attention queue, segmented expandable rows with the SAME shared
  * writable panels the customer-detail page uses), Redemptions (voucher
  * oversight + void), and Invites (funnel + bulk invite). The roster layout is
@@ -33,7 +33,7 @@ import {
   MEMBERS_PAGE_SIZE, money, useMemberDetail, useMembersData,
   type RosterSegment, type RosterSort,
 } from './useMembersData';
-import { Chip, Panel, SubNav, Tile, type SubNavItem } from './members/ui';
+import { Chip, Panel, RowAction, SubNav, Tile, type SubNavItem } from './members/ui';
 import { shortDate } from './members/format';
 import { RedemptionsView } from './members/RedemptionsView';
 import { InvitesView } from './members/InvitesView';
@@ -139,7 +139,20 @@ export function AdminMembers() {
                         <span className="block truncate text-[12.5px] text-ink">{q.title}</span>
                         <span className="block truncate font-mono text-[10.5px] text-ink/45">{q.meta}</span>
                       </span>
-                      <GhostAction>{q.action} →</GhostAction>
+                      {/* Blueprint: queue items deep-link into the filtered
+                          roster or relevant sub-view. discount_expiring has no
+                          honest target surface yet → plain text, no fake
+                          affordance (release audit: these were disabled
+                          buttons styled like live ones). */}
+                      {q.kind === 'vip_at_risk' ? (
+                        <RowAction onClick={() => { setView('roster'); setSegment('vip'); }}>{q.action} →</RowAction>
+                      ) : q.kind === 'reward_ready' ? (
+                        <RowAction onClick={() => { setView('roster'); setSort('points'); }}>{q.action} →</RowAction>
+                      ) : q.kind === 'invites_stale' ? (
+                        <RowAction onClick={() => setView('invites')}>{q.action} →</RowAction>
+                      ) : (
+                        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/35">{q.action} in roster rows</span>
+                      )}
                     </li>
                   ))}
                   {data.queue.length === 0 && (
@@ -277,7 +290,7 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
           </Panel>
         )}
         <RewardsPanel userId={m.userId} confirm={confirm} />
-        <DiscountsPanel userId={m.userId} accountType={profile?.account_type ?? m.accountType} confirm={confirm} />
+        <DiscountsPanel userId={m.userId} accountType={profile?.account_type ?? m.accountType} tier={profile?.tier ?? m.tier} confirm={confirm} />
       </div>
 
       <div className="mt-[var(--space-4)] grid grid-cols-1 gap-[var(--space-4)] lg:grid-cols-3">
@@ -344,18 +357,6 @@ function SegmentChip({ segment }: { segment: Segment }) {
     segment === 'new' ? 'border-ink/10 text-[color:var(--color-status-info)] bg-[color:var(--color-status-infoMuted)]' :
                         'border-ink/15 text-ink/55 bg-ink/[0.03]';
   return <span className={`${CHIP_BASE} ${cls}`}>{SEGMENT_LABEL[segment] ?? segment}</span>;
-}
-
-function GhostAction({ children }: { children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      disabled
-      className="shrink-0 rounded-full border border-ink/15 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {children}
-    </button>
-  );
 }
 
 function ageLabel(iso: string | null): string {

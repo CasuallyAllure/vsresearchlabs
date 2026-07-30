@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getErrorMessage, isMissingBackend } from './members/backend';
+import { shortDate } from './members/format';
 
 interface ReferralRow {
   memberName: string | null;
@@ -103,7 +104,7 @@ export function MemberReferralsBlock() {
               </span>
               <span className="font-mono text-[11.5px] tracking-[0.04em] text-ink/80">{row.code}</span>
               <span className="font-mono text-[10.5px] tabular-nums text-ink/45">
-                {row.uses} use{row.uses === 1 ? '' : 's'} · {row.createdIso}
+                {row.uses} use{row.uses === 1 ? '' : 's'} · {shortDate(row.createdIso)}
               </span>
             </li>
           ))}
@@ -113,4 +114,3 @@ export function MemberReferralsBlock() {
   );
 }
 
-export default MemberReferralsBlock;
