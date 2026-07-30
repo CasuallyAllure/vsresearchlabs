@@ -20,7 +20,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminFilterBar } from './AdminFilterBar';
 import { useConfirm } from '../../components/admin/ConfirmModal';
@@ -65,17 +65,40 @@ const VIEW_TABS: SubNavItem<MembersSubView>[] = [
   { value: 'automations', label: 'Automations' },
 ];
 
+/* ── Validators (hoisted to module scope) ────────────────────────────────── */
+
+function isValidView(v: string): v is MembersSubView {
+  return ['roster', 'redemptions', 'invites', 'automations'].includes(v);
+}
+
+function isValidSegment(s: string): s is RosterSegment {
+  return ['all', 'new', 'active', 'at-risk', 'dormant', 'vip'].includes(s);
+}
+
+function isValidSort(s: string): s is RosterSort {
+  return ['recent', 'spend', 'points', 'joined'].includes(s);
+}
+
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
 export function AdminMembers() {
-  const [view, setView] = useState<MembersSubView>('roster');
-  const [segment, setSegment] = useState<RosterSegment>('all');
-  const [sort, setSort] = useState<RosterSort>('spend');
-  const [query, setQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Parse and validate URL params, reading raw strings and validating before narrowing
+  const rawView = searchParams.get('view') ?? 'roster';
+  const view = isValidView(rawView) ? rawView : 'roster';
+
+  const rawSegment = searchParams.get('segment') ?? 'all';
+  const segment = isValidSegment(rawSegment) ? rawSegment : 'all';
+
+  const rawSort = searchParams.get('sort') ?? 'spend';
+  const sort = isValidSort(rawSort) ? rawSort : 'spend';
+
+  const search = searchParams.get('search') ?? '';
+
   const { data, loading, loadingMore, error, unmigrated, hasMore, loadMore } =
-    useMembersData({ segment, sort, search: query });
+    useMembersData({ segment, sort, search });
 
   const rows = useMemo(() => data?.members ?? [], [data]);
   const expandedRow = useMemo(
@@ -83,6 +106,38 @@ export function AdminMembers() {
     [rows, expandedId],
   );
   const { detail } = useMemberDetail(expandedRow);
+
+  // Helper to update URL params while preserving others (uses functional updater to avoid stale closure)
+  function updateParams(updates: Partial<Record<'view' | 'segment' | 'sort' | 'search', string | null>>, options?: { replace?: boolean }) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === '') {
+          next.delete(key);
+        } else {
+          next.set(key, value);
+        }
+      });
+      return next;
+    }, options);
+  }
+
+  function setViewFn(v: MembersSubView) {
+    updateParams({ view: v === 'roster' ? null : v });
+  }
+
+  function setSegmentFn(s: RosterSegment) {
+    updateParams({ segment: s === 'all' ? null : s });
+  }
+
+  function setSortFn(s: RosterSort) {
+    updateParams({ sort: s === 'spend' ? null : s });
+  }
+
+  function setSearchFn(q: string) {
+    // Search-as-you-type uses replace to avoid history pollution
+    updateParams({ search: q || null }, { replace: true });
+  }
 
   return (
     <AdminLayout>
@@ -95,7 +150,7 @@ export function AdminMembers() {
             </p>
           )}
         </div>
-        <SubNav items={VIEW_TABS} value={view} onChange={setView} />
+        <SubNav items={VIEW_TABS} value={view} onChange={setViewFn} />
       </header>
 
       {view === 'redemptions' && <RedemptionsView />}
@@ -143,13 +198,20 @@ export function AdminMembers() {
                           roster or relevant sub-view. discount_expiring has no
                           honest target surface yet → plain text, no fake
                           affordance (release audit: these were disabled
-                          buttons styled like live ones). */}
+                          buttons styled like live ones). Uses functional updater
+                          to avoid stale-closure bugs when setting multiple params. */}
                       {q.kind === 'vip_at_risk' ? (
-                        <RowAction onClick={() => { setView('roster'); setSegment('vip'); }}>{q.action} →</RowAction>
+                        <RowAction onClick={() => updateParams({ view: null, segment: 'vip' })}>
+                          {q.action} →
+                        </RowAction>
                       ) : q.kind === 'reward_ready' ? (
-                        <RowAction onClick={() => { setView('roster'); setSort('points'); }}>{q.action} →</RowAction>
+                        <RowAction onClick={() => updateParams({ view: null, sort: 'points' })}>
+                          {q.action} →
+                        </RowAction>
                       ) : q.kind === 'invites_stale' ? (
-                        <RowAction onClick={() => setView('invites')}>{q.action} →</RowAction>
+                        <RowAction onClick={() => updateParams({ view: 'invites' })}>
+                          {q.action} →
+                        </RowAction>
                       ) : (
                         <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/35">{q.action} in roster rows</span>
                       )}
@@ -165,13 +227,13 @@ export function AdminMembers() {
 
               {/* Segment filters — AdminFilterBar, reused (mirrors AdminCustomers) */}
               <div className="mb-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-2)]">
-                <AdminFilterBar label="" dense options={SEGMENT_OPTIONS} value={segment} onChange={setSegment} />
-                <AdminFilterBar label="" dense options={SORT_OPTIONS} value={sort} onChange={setSort} />
+                <AdminFilterBar label="" dense options={SEGMENT_OPTIONS} value={segment} onChange={setSegmentFn} />
+                <AdminFilterBar label="" dense options={SORT_OPTIONS} value={sort} onChange={setSortFn} />
                 <input
                   type="search"
                   placeholder="Name / email / org"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  value={search}
+                  onChange={(e) => setSearchFn(e.target.value)}
                   className="min-h-[40px] min-w-0 flex-1 rounded-full border border-ink/10 bg-base-700 px-[var(--space-3)] py-[5px] text-[12px] text-ink placeholder-ink/30 transition-colors focus:border-ink/30 focus:outline-none"
                 />
               </div>
