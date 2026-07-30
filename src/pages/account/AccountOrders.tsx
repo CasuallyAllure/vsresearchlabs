@@ -6,19 +6,16 @@
  * Each row uses the shared OrderStatusChip and links to its detail page.
  */
 
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AccountLayout } from './AccountLayout';
-import { listMyOrders, type MyOrderRow } from '../../lib/accountData';
+import { listMyOrders } from '../../lib/accountData';
+import { useAccountSession } from '../../lib/accountSession';
+import { ordersCacheKey, useAccountQuery } from '../../lib/accountQueryCache';
 import { OrderStatusChip, type AdminOrderStatus } from '../../components/ui/OrderStatusChip';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/system/EmptyState';
 import { ErrorState } from '../../components/system/ErrorState';
-
-type LoadState =
-  | { kind: 'loading' }
-  | { kind: 'ok'; orders: MyOrderRow[] }
-  | { kind: 'error'; message: string };
+import { StaleDataNotice } from '../../components/system/StaleDataNotice';
 
 function formatDate(iso: string): string {
   try {
@@ -34,34 +31,24 @@ function formatAmount(cents: number | null): string {
 }
 
 function AccountOrdersContent() {
-  const [state, setState] = useState<LoadState>({ kind: 'loading' });
+  const { user } = useAccountSession();
+  const key = user ? ordersCacheKey(user.id) : null;
+  const { data, error, loading } = useAccountQuery(key, listMyOrders);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const { data, error } = await listMyOrders();
-      if (cancelled) return;
-      if (error) {
-        setState({ kind: 'error', message: error });
-        return;
-      }
-      setState({ kind: 'ok', orders: data });
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (state.kind === 'loading') {
+  if (loading) {
     return <p className="py-[var(--space-8)] text-[13px] text-ink/50">Loading your orders…</p>;
   }
 
-  if (state.kind === 'error') {
-    return <ErrorState message={state.message} />;
+  // `data === null` means the read has never succeeded (no last-good value
+  // to fall back on) — a full failure state is the honest result. A
+  // non-null `data` alongside an `error` means a background refresh failed
+  // AFTER a successful load; that keeps rendering the last-known list
+  // (accountQueryCache.ts's revalidation-failure contract).
+  if (!data) {
+    return <ErrorState message={error ?? 'Something went wrong loading your orders.'} />;
   }
 
-  if (state.orders.length === 0) {
+  if (data.length === 0) {
     return (
       <EmptyState
         label="You haven't placed an order yet."
@@ -75,25 +62,28 @@ function AccountOrdersContent() {
   }
 
   return (
-    <ul className="space-y-[var(--space-3)]">
-      {state.orders.map((o) => (
-        <li key={o.order_number}>
-          <Link
-            to={`/account/orders/${encodeURIComponent(o.order_number)}`}
-            className="research-surface-solid is-interactive flex items-center justify-between gap-[var(--space-4)] p-[var(--space-4)]"
-          >
-            <div className="min-w-0">
-              <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
-              <p className="mt-0.5 text-[11px] text-ink/45">{formatDate(o.created_at)}</p>
-            </div>
-            <div className="flex shrink-0 items-center gap-[var(--space-3)]">
-              <p className="text-[13px] tabular-nums text-ink">{formatAmount(o.invoice_amount_cents)}</p>
-              <OrderStatusChip status={o.status as AdminOrderStatus} />
-            </div>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <>
+      {error && <StaleDataNotice subject="your orders" />}
+      <ul className="space-y-[var(--space-3)]">
+        {data.map((o) => (
+          <li key={o.order_number}>
+            <Link
+              to={`/account/orders/${encodeURIComponent(o.order_number)}`}
+              className="research-surface-solid is-interactive flex items-center justify-between gap-[var(--space-4)] p-[var(--space-4)]"
+            >
+              <div className="min-w-0">
+                <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
+                <p className="mt-0.5 text-[11px] text-ink/45">{formatDate(o.created_at)}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-[var(--space-3)]">
+                <p className="text-[13px] tabular-nums text-ink">{formatAmount(o.invoice_amount_cents)}</p>
+                <OrderStatusChip status={o.status as AdminOrderStatus} />
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

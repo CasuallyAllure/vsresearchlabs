@@ -8,34 +8,30 @@
  * too) with a link through to the full history.
  *
  * Rendered inside `AccountLayout`, which already gates on `user && profile`
- * and owns the chrome (brand bar, tabs, sign-out) — this component owns only
- * the Overview content, so it reads auth state for itself (cheap; same
- * pattern as the admin pages re-calling `useAdminAuth`).
+ * and owns the chrome (brand bar, tabs, sign-out) — this component reads
+ * that same auth/profile instance via `useAccountSession()` (accountSession.ts,
+ * WS-1) rather than calling `useCustomerAuth()` again. Its orders + rewards
+ * reads ride the same cache keys as the full /account/orders and
+ * /account/rewards pages (accountQueryCache.ts), so navigating between this
+ * card and those pages doesn't re-fetch data the portal already has.
  */
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCustomerAuth } from '../../lib/customerAuth';
+import { useAccountSession } from '../../lib/accountSession';
 import {
-  getMyRewardSummary,
   listMyDiscounts,
+  listMyOrders,
+  getMyRewardSummary,
   type CustomerDiscountRow,
-  type RewardSummary,
 } from '../../lib/accountData';
+import { ordersCacheKey, rewardsCacheKey, useAccountQuery } from '../../lib/accountQueryCache';
 import { OrderStatusChip, type AdminOrderStatus } from '../ui/OrderStatusChip';
 import { Button } from '../ui/Button';
 import { RewardTracker } from './RewardTracker';
 import { MemberOfferCard } from './MemberOfferCard';
 import { MEMBER_OFFERS } from '../../config/memberOffers';
 import { TIER_BENEFITS } from '../../config/tierBenefits';
-import { supabase } from '../../lib/supabase';
-
-interface OrderRow {
-  order_number: string;
-  status: AdminOrderStatus;
-  created_at: string;
-  invoice_amount_cents: number | null;
-}
 
 const RECENT_ORDER_LIMIT = 3;
 
@@ -59,59 +55,20 @@ function formatAmount(cents: number | null): string {
 export function AccountDashboard() {
   // account_type/business_name/marketing_opt_out are on CustomerProfile now
   // (release-audit cleanup — the old defensive cast predated the 043 types).
-  const { user, profile } = useCustomerAuth();
+  const { user, profile } = useAccountSession();
 
-  const [orders, setOrders] = useState<OrderRow[] | null>(null);
-  const [ordersError, setOrdersError] = useState<string | null>(null);
-  const [rewards, setRewards] = useState<RewardSummary | null>(null);
-  const [rewardsError, setRewardsError] = useState<string | null>(null);
+  // Orders + rewards ride the SAME cache keys as the full /account/orders
+  // and /account/rewards pages (accountQueryCache.ts) — this card used to
+  // run its own independent fetch of both, so visiting Overview then the
+  // full page (or back) always re-fetched data the portal already had.
+  const ordersKey = user ? ordersCacheKey(user.id) : null;
+  const { data: allOrders, error: ordersError, loading: ordersLoading } = useAccountQuery(ordersKey, listMyOrders);
+  const orders = ordersLoading ? null : (allOrders ?? []).slice(0, RECENT_ORDER_LIMIT);
+
+  const rewardsKey = user ? rewardsCacheKey(user.id) : null;
+  const { data: rewards, error: rewardsError, refresh: reloadRewards } = useAccountQuery(rewardsKey, getMyRewardSummary);
+
   const [discounts, setDiscounts] = useState<CustomerDiscountRow[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!supabase) {
-        setOrders([]);
-        return;
-      }
-      const { data, error } = await supabase
-        .from('orders')
-        .select('order_number, status, created_at, invoice_amount_cents')
-        .order('created_at', { ascending: false })
-        .limit(RECENT_ORDER_LIMIT);
-      if (cancelled) return;
-      if (error) {
-        setOrdersError(error.message);
-        setOrders([]);
-        return;
-      }
-      setOrders((data as OrderRow[]) ?? []);
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function reloadRewards() {
-    const { data, error } = await getMyRewardSummary();
-    if (error) setRewardsError(error);
-    setRewards(data);
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const { data, error } = await getMyRewardSummary();
-      if (cancelled) return;
-      if (error) setRewardsError(error);
-      setRewards(data);
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -292,7 +249,7 @@ export function AccountDashboard() {
                   </div>
                   <div className="flex shrink-0 items-center gap-[var(--space-3)]">
                     <p className="text-[13px] text-ink tabular-nums">{formatAmount(o.invoice_amount_cents)}</p>
-                    <OrderStatusChip status={o.status} />
+                    <OrderStatusChip status={o.status as AdminOrderStatus} />
                   </div>
                 </Link>
               </li>

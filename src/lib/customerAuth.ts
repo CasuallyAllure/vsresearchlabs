@@ -51,7 +51,7 @@ export interface OtpResult {
   error: string | null;
 }
 
-interface CustomerAuthApi extends CustomerAuthState {
+export interface CustomerAuthApi extends CustomerAuthState {
   signUp: (input: SignUpInput, captchaToken?: string | null) => Promise<SignUpResult>;
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<boolean>;
   /** Confirm a new account with the 6-digit code emailed by Supabase. */
