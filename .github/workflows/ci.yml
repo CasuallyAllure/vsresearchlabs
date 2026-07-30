@@ -199,3 +199,19 @@ jobs:
       # always-green no-op: if the env derivation had failed, the job dies
       # there instead of letting the suites silently self-skip here.
       - run: npx vitest run tests/integration tests/rls
+      # Generated-types drift gate: regenerate `src/types/supabase.ts` from
+      # THIS job's local stack (already booted above, migrations already
+      # applied) and diff against the committed file. Deliberately NOT
+      # `supabase gen types --linked/--project-id`: that would need a
+      # SUPABASE_ACCESS_TOKEN secret (unavailable to forked-repo PRs) and
+      # would compare against whatever is deployed, which can legitimately
+      # differ from this branch. Generating from the local stack instead
+      # proves the committed types match the migrations IN THE REPO — the
+      # actual drift this gate exists to catch.
+      - name: Check generated DB types are up to date
+        run: |
+          supabase gen types typescript --local > /tmp/supabase-types-generated.ts
+          if ! diff -u src/types/supabase.ts /tmp/supabase-types-generated.ts; then
+            echo "::error::src/types/supabase.ts is stale — it no longer matches the schema produced by supabase/migrations/. Run 'supabase start' then 'npm run gen:types' locally, commit the result, and push again."
+            exit 1
+          fi

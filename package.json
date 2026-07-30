@@ -9,6 +9,7 @@
     "gen:inventory:check": "node scripts/buildInventory.mjs --check",
     "gen:landing-frames": "node scripts/buildLandingFrames.mjs",
     "gen:atmosphere": "node scripts/buildAtmosphere.mjs",
+    "gen:types": "(supabase gen types typescript --local > src/types/supabase.ts.tmp && mv src/types/supabase.ts.tmp src/types/supabase.ts) || (rm -f src/types/supabase.ts.tmp; exit 1)",
     "walkthrough": "node scripts/walkthrough.mjs",
     "build": "tsc -b && vite build && node scripts/buildCompoundShareRoutes.mjs",
     "lint": "eslint .",
