@@ -65,14 +65,27 @@ export const usePromoSettings = create<PromoState>((set, get) => ({
   },
 }));
 
+/** The gate itself, over explicit values. Split out from `isB2G1Active` so a
+ *  component that already SUBSCRIBES to the store can evaluate liveness from
+ *  the values it subscribed to — a `getState()` read inside a memo is
+ *  invisible to React and would go stale when the promo loads in. */
+export function isB2G1LiveFrom(
+  enabled: boolean,
+  endsAt: string | null,
+  excludedSkus: ReadonlyArray<string> = [],
+  sku?: string | null,
+): boolean {
+  if (!enabled) return false;
+  if (endsAt != null && Date.parse(endsAt) <= Date.now()) return false;
+  if (sku && excludedSkus.includes(sku)) return false;
+  return true;
+}
+
 /** Is the B2G1 promo live right now for this SKU? Mirrors the place-order
  *  gate: enabled, not past its end date, and the SKU isn't excluded. */
 export function isB2G1Active(sku?: string | null): boolean {
   const s = usePromoSettings.getState();
-  if (!s.b2g1Enabled) return false;
-  if (s.b2g1EndsAt != null && Date.parse(s.b2g1EndsAt) <= Date.now()) return false;
-  if (sku && s.b2g1ExcludedSkus.includes(sku)) return false;
-  return true;
+  return isB2G1LiveFrom(s.b2g1Enabled, s.b2g1EndsAt, s.b2g1ExcludedSkus, sku);
 }
 
 /** "effective through Jul 20" suffix stating the term boundary, or '' when

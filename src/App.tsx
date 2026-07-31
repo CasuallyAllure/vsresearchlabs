@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense, type ComponentType } from 'react';
 import { GlobalSurface } from './layout/GlobalSurface';
 import { GlobalHeader } from './layout/GlobalHeader';
+import { PromoTicker } from './components/promo/PromoTicker';
 import { AnimatedPortalShell } from './layout/AnimatedPortalShell';
 import { GlobalFooter } from './layout/GlobalFooter';
 import { BottomNav } from './layout/BottomNav';
@@ -90,6 +91,7 @@ export default function App() {
           Skip to content
         </a>
         <GlobalHeader />
+        <PromoTicker />
         <AnimatedPortalShell>
           <ErrorBoundary>
             <Suspense fallback={<RouteFallback />}>

@@ -10,16 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-
-const ZONES = [
-  'Benicia, CA',
-  'American Canyon, CA',
-  'Vallejo, CA',
-  'Fairfield, CA',
-  'Napa, CA',
-  'Hercules, CA',
-  'Pinole, CA',
-];
+import { SAME_DAY_ZONES as ZONES } from '../../lib/sameDayDelivery';
 
 export function SameDayDeliveryBadge() {
   const [open, setOpen] = useState(false);

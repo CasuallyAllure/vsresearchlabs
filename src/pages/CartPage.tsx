@@ -28,7 +28,7 @@
 
 import { useEffect, useState } from 'react';
 import { Turnstile } from '../components/security/Turnstile';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { BrandStamp } from '../components/brand/BrandStamp';
 import { useCart } from '../hooks/useCart';
 import { supabase } from '../lib/supabase';
@@ -50,6 +50,9 @@ import { formatUsd } from '../lib/payment';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
+import { cartIncentives } from '../lib/cartIncentives';
+import { memberPercentFor } from '../lib/promoOffers';
+import { CartIncentives } from '../components/cart/CartIncentives';
 import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
 import { siteConfig } from '../config';
 
@@ -72,8 +75,9 @@ export function CartPage() {
   const items = useCart((s) => s.items);
   // Wholesale is account-gated: only a signed-in buyer's pack lines count as
   // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
-  const { user } = useCustomerAuth();
+  const { user, profile } = useCustomerAuth();
   const isMember = !!user;
+  const navigate = useNavigate();
   // Subscribe to variant overrides so prices + FAST/standard ship badges
   // re-render once the store finishes loading (e.g. on a direct /cart load).
   useProductOverrides((s) => s.variantBySku);
@@ -736,6 +740,23 @@ export function CartPage() {
         })}
             </ul>
             <div className="px-[var(--space-5)] py-[var(--space-4)] border-t border-ink/[0.1]">
+              {/* Offers panel — sticky so it stays in view while the item list
+                  scrolls past. `top` clears the header + ticker. */}
+              <div className="sticky top-[var(--space-4)] z-10 mb-[var(--space-4)]">
+                <CartIncentives
+                  model={cartIncentives({
+                    subtotalCents: cartSubtotalCents(items),
+                    isMember,
+                    memberPercent:
+                      accountDiscount?.percent ??
+                      memberPercentFor({ isMember, tier: profile?.tier ?? null }),
+                    b2g1Cents: rawB2G1Cents,
+                    wholesaleApplies: b2g1Preview.suppressedByWholesale,
+                    bundleCents: bundle.pairs > 0 ? bundle.discountCents : 0,
+                  })}
+                  onCreateAccount={() => navigate('/account?mode=signup')}
+                />
+              </div>
               <div className="flex items-baseline justify-between gap-[var(--space-4)]">
                 <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">Subtotal</span>
                 <span className="text-sm font-mono tabular-nums text-ink">
@@ -849,16 +870,13 @@ export function CartPage() {
                     {isMember ? 'Free — member' : formatUsd(GUEST_SHIPPING_CENTS)}
                   </span>
                 </div>
+                {/* Factual note only — the offers panel above owns the single
+                    "create an account" call to action, and quotes what it is
+                    actually worth on THIS cart. Two competing CTAs for the same
+                    account split the click. */}
                 {!isMember && (
                   <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-ink/65">
-                    <Link
-                      to="/account?mode=signup"
-                      className="font-medium text-ink underline decoration-ink/30 underline-offset-2 transition-colors hover:decoration-ink"
-                    >
-                      Create a free profile
-                    </Link>{' '}
-                    and we'll waive this — members always ship free and unlock wholesale case pricing.
-                    Your cart stays as it is.
+                    Waived on member orders.
                   </p>
                 )}
               </div>

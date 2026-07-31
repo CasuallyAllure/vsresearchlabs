@@ -27,7 +27,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useScrollLock } from '../lib/useScrollLock';
@@ -46,6 +46,9 @@ import { Turnstile } from '../components/security/Turnstile';
 import { PromoCode, submittableCouponCodes } from '../components/cart/PromoCode';
 import { couponBreakdown, type AccountDiscountPreview } from '../lib/coupons';
 import { fetchMyAccountDiscount } from '../lib/accountDiscount';
+import { cartIncentives } from '../lib/cartIncentives';
+import { memberPercentFor } from '../lib/promoOffers';
+import { CartIncentives } from '../components/cart/CartIncentives';
 import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
 import { FIELD_DEFAULT } from '../components/ui/Field';
 import { siteConfig } from '../config';
@@ -83,8 +86,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const items = useCart((s) => s.items);
   // Wholesale is account-gated: only a signed-in buyer's pack lines count as
   // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
-  const { user } = useCustomerAuth();
+  const { user, profile } = useCustomerAuth();
   const isMember = !!user;
+  const navigate = useNavigate();
   // Subscribe so prices + FAST/standard badges re-render when overrides load.
   useProductOverrides((s) => s.variantBySku);
   const itemCount = useCart((s) => s.itemCount());
@@ -706,8 +710,30 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     ? Math.max(postB2G1Subtotal - breakdown!.total, 0)
                     : postB2G1Subtotal;
                 const totalCents = discountedSubtotal + shippingCents;
+                // Offers panel — fed the PRE-arbitration B2G1 value, because
+                // cartIncentives runs the same precedence ladder itself (see
+                // lib/cartIncentives) and needs both candidates to compare.
+                const incentives = cartIncentives({
+                  subtotalCents,
+                  isMember,
+                  memberPercent:
+                    accountDiscount?.percent ??
+                    memberPercentFor({ isMember, tier: profile?.tier ?? null }),
+                  b2g1Cents: rawB2G1Cents,
+                  wholesaleApplies: b2g1Preview.suppressedByWholesale,
+                  bundleCents: bundle.pairs > 0 ? bundle.discountCents : 0,
+                });
                 return (
                   <>
+                    <div className="mb-3">
+                      <CartIncentives
+                        model={incentives}
+                        onCreateAccount={() => {
+                          onClose();
+                          navigate('/account?mode=signup');
+                        }}
+                      />
+                    </div>
                     {/* Subtotal + account perk — quiet rows above the anchor total */}
                     <div className="mb-3 flex items-baseline justify-between">
                       <span className="text-[11px] uppercase tracking-[0.2em] text-ink/65">Subtotal</span>
@@ -763,17 +789,13 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         {isMember ? 'Free — member' : formatUsd(shippingCents)}
                       </span>
                     </div>
+                    {/* Factual note only — the offers panel above owns the
+                        single "create an account" call to action, and quotes
+                        what it is actually worth on THIS cart. Two competing
+                        CTAs for the same account split the click. */}
                     {!isMember && (
                       <p className="-mt-1.5 mb-3 text-[11px] leading-relaxed text-ink/65">
-                        <Link
-                          to="/account?mode=signup"
-                          onClick={onClose}
-                          className="font-medium text-ink underline decoration-ink/30 underline-offset-2 transition-colors hover:decoration-ink"
-                        >
-                          Create a free profile
-                        </Link>{' '}
-                        and we'll waive this — members always ship free and unlock wholesale case
-                        pricing. Your cart stays as it is.
+                        Waived on member orders.
                       </p>
                     )}
                     {/* Total — the anchor. A hairline separates it from the line
