@@ -18,6 +18,15 @@
  * order unplaceable rather than cheaper. A negotiated price travels as a coupon
  * CODE, which the server re-prices at checkout.
  *
+ * BUILD AND SEND ARE ONE ACTION, because the link token exists for exactly one
+ * moment: admin_create_prepared_cart returns the plaintext once and stores only
+ * its digest, so a cart whose token was not mailed there and then can never be
+ * mailed at all — only rebuilt. The delivery outcome is reported LITERALLY (see
+ * DeliveryNote): sent, already sent, suppressed because the member opted out of
+ * marketing, or failed. A failed send says so and the copyable link stays on
+ * screen, because "the client was emailed" is the one thing this panel must
+ * never claim falsely.
+ *
  * Confirmation uses ConfirmModal, never window.confirm — iOS silently
  * suppresses native dialogs once "Block Alerts" is tapped, which makes a
  * confirmed admin action look like it did nothing.
@@ -40,17 +49,28 @@ import { Chip, Panel, RowAction } from './ui';
 import { shortDate } from './format';
 import {
   preparedCartClaimUrl, usePreparedCart, useVariantIndex,
-  type CreatedPreparedCart, type PreparedCartStatus, type PreparedCartSummary,
+  type CreatedPreparedCart, type PreparedCartStatus, type PreparedCartSummary, type SendResult,
 } from './usePreparedCart';
 
 const fieldCls = `${FIELD_SURFACE_DENSE} ${FIELD_DEFAULT}`;
 
+// Status answers ONE question — will this link still work? — so there are three
+// states, not four. "Opened" is not a status: 082 made the link re-openable
+// (the member's cart is device-local, so opening on a phone and buying on a
+// laptop must both work), and a chip reading "claimed" would tell the owner a
+// live link was spent. Opens are a COUNT, rendered beside the chip.
 const STATUS_TONE: Record<PreparedCartStatus, 'good' | 'warn' | 'neutral' | 'info'> = {
   live: 'good',
-  claimed: 'info',
   expired: 'neutral',
   revoked: 'warn',
 };
+
+/** "opened 3× · last 12 Aug" — the owner's evidence the link actually landed. */
+function opensLabel(cart: PreparedCartSummary): string | null {
+  if (!cart.claim_count) return null;
+  const last = cart.last_claimed_at ?? cart.claimed_at;
+  return `opened ${cart.claim_count}×${last ? ` · last ${shortDate(last)}` : ''}`;
+}
 
 /** A composer row. `compound` drives the dose list; `optionKey` is the picked
  *  dose's "<sku>|<dose>" identity — the SKU is never typed or parsed. */
@@ -75,15 +95,62 @@ function draftLines(rows: DraftRow[], index: VariantIndex): PreparedCartLine[] {
   return lines;
 }
 
+/**
+ * What actually happened to the email, in words.
+ *
+ * Every branch is a DIFFERENT sentence with a different next step, because
+ * collapsing them would mislead in the two cases that matter: an opted-out
+ * member was never contacted (and the owner must use another channel), and a
+ * failed send was never contacted either (and the owner must hand the link over
+ * or rebuild). `null` is the in-flight state and says "Sending…" — it is never
+ * rendered as nothing, which would read as success.
+ */
+function DeliveryNote({ delivery, member }: { delivery: SendResult | null; member: string }) {
+  const base = 'mt-[var(--space-2)] text-[10.5px] leading-[1.45]';
+  const first = member.split(' ')[0];
+
+  if (delivery === null) {
+    return <p className={`${base} text-ink/40`}>Sending the email…</p>;
+  }
+  if (delivery.status === 'sent') {
+    return <p className={`${base} text-ink/55`}>Emailed to {delivery.recipient}.</p>;
+  }
+  if (delivery.status === 'already_sent') {
+    return (
+      <p className={`${base} text-ink/55`}>
+        Already emailed{delivery.recipient ? ` to ${delivery.recipient}` : ''} — not sent twice. Use the
+        link above if {first} needs it again.
+      </p>
+    );
+  }
+  if (delivery.status === 'opted_out') {
+    return (
+      <p role="alert" className={`${base} text-[color:var(--color-status-warning)]`}>
+        <strong className="font-medium">Not emailed.</strong> {first} has opted out of marketing email,
+        so nothing was sent. The cart is built — send the link above by a channel they agreed to.
+      </p>
+    );
+  }
+  return (
+    <p role="alert" className={`${base} text-red-400`}>
+      <strong className="font-medium">The email did not go out.</strong> {delivery.detail} The cart is
+      built and the link above works — send it yourself, or revoke and rebuild.
+    </p>
+  );
+}
+
 export function PreparedCartPanel({ member, confirm }: { member: MemberRow; confirm: ConfirmFn }) {
   const index = useVariantIndex();
-  const { carts, loading, busy, error, unmigrated, create, revoke } = usePreparedCart(member.userId);
+  const { carts, loading, busy, error, unmigrated, create, revoke, send } = usePreparedCart(member.userId);
 
   const [rows, setRows] = useState<DraftRow[]>([emptyRow('r0')]);
   const [couponCode, setCouponCode] = useState('');
   const [note, setNote] = useState('');
   const [built, setBuilt] = useState<CreatedPreparedCart | null>(null);
   const [copied, setCopied] = useState(false);
+  // null while the send is in flight — rendered as "Sending…", never as a
+  // silent gap that could be mistaken for "done".
+  const [delivery, setDelivery] = useState<SendResult | null>(null);
 
   const lines = useMemo(() => draftLines(rows, index), [rows, index]);
   const pricing = useMemo(() => priceLines(lines, index, member.effectivePercent), [lines, index, member.effectivePercent]);
@@ -99,11 +166,12 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
 
   async function build() {
     const ok = await confirm(
-      `Build a prepared cart for ${member.name} — ${lines.length} line${lines.length === 1 ? '' : 's'}, ` +
+      `Build a prepared cart for ${member.name} and email them the link — ` +
+        `${lines.length} line${lines.length === 1 ? '' : 's'}, ` +
         `${formatPriceExact(pricing.memberTotalCents)} at their ${member.effectivePercent}% rate` +
         `${couponCode.trim() ? ` · coupon ${couponCode.trim().toUpperCase()}` : ''}. ` +
         'The link is valid for 14 days and can be revoked at any time.',
-      { confirmLabel: 'Build cart' },
+      { confirmLabel: 'Build & send' },
     );
     if (!ok) return;
 
@@ -115,9 +183,16 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
     if (!result) return;
     setBuilt(result);
     setCopied(false);
+    setDelivery(null);
     setRows([emptyRow(`r${Date.now()}`)]);
     setCouponCode('');
     setNote('');
+
+    // The ONLY moment the mail can be composed: `result.token` is the plaintext
+    // and it is never readable again. `send` reports rather than throws, so the
+    // link box below survives a failed send — which is exactly when the owner
+    // needs it.
+    setDelivery(await send(result));
   }
 
   async function killCart(cart: PreparedCartSummary) {
@@ -305,7 +380,7 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
           disabled={lines.length === 0 || busy}
           onClick={build}
         >
-          {busy ? 'Working…' : 'Build cart'}
+          {busy ? 'Working…' : 'Build & send cart'}
         </Button>
         {pricing.unpriced.length > 0 && (
           <span className="text-[10.5px] text-[color:var(--color-status-warning)]">
@@ -333,11 +408,9 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
             >
               {copied ? 'Copied' : 'Copy link'}
             </RowAction>
-            <span className="text-[10.5px] text-ink/40">
-              Expires {shortDate(built.expires_at)}. Automatic email delivery lands with the next
-              workstream — send this link yourself for now.
-            </span>
+            <span className="text-[10.5px] text-ink/40">Expires {shortDate(built.expires_at)}.</span>
           </div>
+          <DeliveryNote delivery={delivery} member={member.name} />
         </div>
       )}
 
@@ -356,6 +429,9 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
                   <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink/75">
                     <Chip tone={STATUS_TONE[cart.status]}>{cart.status}</Chip>
                     <span>{cart.lines.length} line{cart.lines.length === 1 ? '' : 's'}</span>
+                    {opensLabel(cart) && (
+                      <span className="text-[10.5px] text-ink/45">{opensLabel(cart)}</span>
+                    )}
                     {cart.coupon_code && <span className="font-mono text-[10.5px] text-ink/50">{cart.coupon_code}</span>}
                   </span>
                   <span className="block truncate font-mono text-[10px] text-ink/40">
@@ -365,7 +441,7 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
                 <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink/35">
                   {shortDate(cart.created_at)} → {shortDate(cart.expires_at)}
                 </span>
-                {cart.status === 'live' || cart.status === 'claimed' ? (
+                {cart.status === 'live' ? (
                   <RowAction danger disabled={busy} onClick={() => killCart(cart)}>Revoke</RowAction>
                 ) : null}
               </li>

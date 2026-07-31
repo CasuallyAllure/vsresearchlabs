@@ -95,6 +95,19 @@ const AUTHENTICATED_ONLY = [
   'admin_upsert_coupon',
   'admin_void_voucher',
   'cancel_order',
+  // 082 prepared-cart claim. The MEMBER's own redemption, so unlike 081's three
+  // admin routines it is not is_admin()-gated — its fence is `token_hash =
+  // sha256($1) and user_id = auth.uid()` in the body. `authenticated` is
+  // therefore load-bearing here, not merely narrow: an anon caller has no
+  // auth.uid(), so an anon grant would make a leaked emailed link redeemable by
+  // whoever holds it, which is the exact property the owner binding exists to
+  // deny. It must NEVER move to ANON_CALLABLE.
+  //
+  // 082's other routine, prepared_cart_email_payload, returns a member's email
+  // address and is granted to NOBODY — the send-prepared-cart edge function
+  // reaches it through service_role's default grant, the same arrangement 075
+  // uses for automation_candidates — so it correctly appears in neither list.
+  'claim_prepared_cart',
   'clear_order_flag',
   'confirm_order_fulfilled',
   'create_order_from_inquiry',

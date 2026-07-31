@@ -30,6 +30,11 @@ import {
 } from '../../supabase/functions/send-invite/handler';
 import { createReportErrorHandler } from '../../supabase/functions/report-error/handler';
 import {
+  createSendPreparedCartHandler,
+  type PreparedCartEmailPayload,
+  type SendPreparedCartConfig,
+} from '../../supabase/functions/send-prepared-cart/handler';
+import {
   createResolveVideoHandler,
   type ResolveVideoHandlerConfig,
   type VideoSupabaseClient,
@@ -275,6 +280,125 @@ export function makeSendInviteHarness(
       return harness.gateResult;
     },
     fetch: fetchMock.fn,
+  });
+  return harness;
+}
+
+// ---------------------------------------------------------------------------
+// send-prepared-cart
+// ---------------------------------------------------------------------------
+
+export interface SentPreparedCartEmail {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  reply_to?: string;
+}
+
+/** One recorded email_log claim attempt. */
+export interface RecordedClaim {
+  userId: string | null;
+  recipient: string;
+  periodKey: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface SendPreparedCartHarness {
+  handler: (req: Request) => Promise<Response>;
+  fetchMock: FetchMock;
+  /** Emails Resend was actually asked to send. */
+  emails: SentPreparedCartEmail[];
+  gateResult: AdminGateResult;
+  gateCalls: Request[];
+  /** What prepared_cart_email_payload answers. Overwrite per test. */
+  cart: PreparedCartEmailPayload | null;
+  /** Throw instead of answering, to drive the lookup-failure branch. */
+  cartThrows: Error | null;
+  /** email_log claim outcome: true = claimed, false = UNIQUE conflict. */
+  claimResult: boolean;
+  claimThrows: Error | null;
+  claims: RecordedClaim[];
+  /** Claims that were undone after a failed send — the retry-ability guarantee. */
+  releases: Array<{ recipient: string; periodKey: string }>;
+  releaseThrows: Error | null;
+  emailResponder: (email: SentPreparedCartEmail) => { status: number; body?: unknown };
+  config: SendPreparedCartConfig;
+}
+
+/** A live, sendable cart. Tests narrow it field by field. */
+export function preparedCartFixture(
+  over: Partial<PreparedCartEmailPayload> = {},
+): PreparedCartEmailPayload {
+  return {
+    ok: true,
+    user_id: '11111111-1111-4111-8111-111111111111',
+    recipient: 'ada@example.com',
+    display_name: 'Ada Reyes',
+    marketing_opt_out: false,
+    coupon_code: null,
+    note: null,
+    expires_at: '2026-08-13T00:00:00Z',
+    revoked: false,
+    expired: false,
+    token_ok: true,
+    lines: [{ sku: 'VSR-RS-BPC', dose: '10mg', quantity: 2 }],
+    ...over,
+  };
+}
+
+export function makeSendPreparedCartHarness(
+  overrides: Partial<SendPreparedCartConfig> = {},
+): SendPreparedCartHarness {
+  const config: SendPreparedCartConfig = {
+    resendApiKey: 're_test_key',
+    fromEmail: 'VSR Test <from@test.example>',
+    corsHeaders: TEST_CORS,
+    ...overrides,
+  };
+  const fetchMock = new FetchMock();
+  const harness: SendPreparedCartHarness = {
+    handler: undefined as unknown as SendPreparedCartHarness['handler'],
+    fetchMock,
+    emails: [],
+    gateResult: GATE_PASS,
+    gateCalls: [],
+    cart: preparedCartFixture(),
+    cartThrows: null,
+    claimResult: true,
+    claimThrows: null,
+    claims: [],
+    releases: [],
+    releaseThrows: null,
+    emailResponder: () => ({ status: 200, body: { id: 'email-1' } }),
+    config,
+  };
+  fetchMock.onUrl('api.resend.com/emails', (_url, init) => {
+    const email = JSON.parse(String(init?.body ?? '{}')) as SentPreparedCartEmail;
+    harness.emails.push(email);
+    const res = harness.emailResponder(email);
+    return jsonRes(res.body ?? { id: 'email-1' }, res.status);
+  });
+  harness.handler = createSendPreparedCartHandler(config, {
+    requireAdmin: async (req) => {
+      harness.gateCalls.push(req);
+      return harness.gateResult;
+    },
+    fetch: fetchMock.fn,
+    loadCart: async () => {
+      if (harness.cartThrows) throw harness.cartThrows;
+      return harness.cart;
+    },
+    claimSend: async (args) => {
+      harness.claims.push(args);
+      if (harness.claimThrows) throw harness.claimThrows;
+      return harness.claimResult;
+    },
+    releaseSend: async (args) => {
+      harness.releases.push(args);
+      if (harness.releaseThrows) throw harness.releaseThrows;
+    },
   });
   return harness;
 }

@@ -1083,36 +1083,42 @@ export type Database = {
       }
       prepared_carts: {
         Row: {
+          claim_count: number
           claimed_at: string | null
           coupon_code: string | null
           created_at: string
           created_by: string | null
           expires_at: string
           id: string
+          last_claimed_at: string | null
           note: string | null
           revoked_at: string | null
           token_hash: string
           user_id: string
         }
         Insert: {
+          claim_count?: number
           claimed_at?: string | null
           coupon_code?: string | null
           created_at?: string
           created_by?: string | null
           expires_at?: string
           id?: string
+          last_claimed_at?: string | null
           note?: string | null
           revoked_at?: string | null
           token_hash: string
           user_id: string
         }
         Update: {
+          claim_count?: number
           claimed_at?: string | null
           coupon_code?: string | null
           created_at?: string
           created_by?: string | null
           expires_at?: string
           id?: string
+          last_claimed_at?: string | null
           note?: string | null
           revoked_at?: string | null
           token_hash?: string
@@ -1816,6 +1822,7 @@ export type Database = {
         Args: { p_order_id: string; p_reason: string }
         Returns: undefined
       }
+      claim_prepared_cart: { Args: { p_token: string }; Returns: Json }
       clear_order_flag: { Args: { p_order_id: string }; Returns: undefined }
       confirm_order_fulfilled: {
         Args: {
@@ -1924,6 +1931,10 @@ export type Database = {
       mark_payment_claimed: { Args: { p_order_id: string }; Returns: undefined }
       mark_product_deleted: { Args: { p_sku: string }; Returns: undefined }
       mark_receipt_sent: { Args: { p_order_id: string }; Returns: undefined }
+      prepared_cart_email_payload: {
+        Args: { p_cart_id: string; p_token: string }
+        Returns: Json
+      }
       recompute_order_totals: { Args: { p_order_id: string }; Returns: Json }
       reconcile_reward_vouchers: { Args: { p_repair?: boolean }; Returns: Json }
       record_member_invite: {

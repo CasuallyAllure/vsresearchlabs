@@ -46,6 +46,10 @@ const AccountRewards = lazyPage(() => import('./pages/account/AccountRewards'), 
 const AccountLibrary = lazyPage(() => import('./pages/account/AccountLibrary'), 'AccountLibrary');
 const AccountBenefits = lazyPage(() => import('./pages/account/AccountBenefits'), 'AccountBenefits');
 const AccountProfile = lazyPage(() => import('./pages/account/AccountProfile'), 'AccountProfile');
+// The prepared-cart claim link (081/082). Deliberately NOT in AccountLayout's
+// tab strip — it is reached only by the emailed link, does its work and hands
+// off to /cart.
+const AccountPreparedCart = lazyPage(() => import('./pages/account/AccountPreparedCart'), 'AccountPreparedCart');
 // DEV-ONLY portal design preview. Both this `lazy()` import and the <Route>
 // below sit behind `import.meta.env.DEV`, which Vite statically replaces with
 // `false` in a production build — so the preview page and its fabricated
@@ -119,6 +123,7 @@ export default function App() {
                 <Route path="/account/library" element={<AccountLibrary />} />
                 <Route path="/account/benefits" element={<AccountBenefits />} />
                 <Route path="/account/profile" element={<AccountProfile />} />
+                <Route path="/account/prepared" element={<AccountPreparedCart />} />
                 <Route path="/login" element={<Navigate to="/account" replace />} />
                 <Route path="/signup" element={<Navigate to="/account" replace />} />
                 <Route path="/documentation" element={<Documentation />} />
