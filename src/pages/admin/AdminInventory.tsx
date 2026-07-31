@@ -9,6 +9,9 @@
  *   • hidden               — Toggle visibility in the public catalog
  *   • deleted_at           — Soft-delete (hides + marks deleted_at);
  *                            restorable from the same surface
+ *   • early_access         — Toggle member-first ordering (product_flags,
+ *                            migration 077; OR'd with the legacy tag in
+ *                            src/lib/earlyAccess.ts — either one gates)
  *
  * Every mutation routes through a SECURITY DEFINER RPC and writes one
  * audit_log row. The frontend catalog reads the override view, so
@@ -37,6 +40,8 @@ import { downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
 import { INVENTORY_COLUMNS, buildInventoryRows, type StockLike } from '../../lib/inventorySheet';
 import { effectiveTierPriceCents } from '../../lib/pricing';
 import { useProductOverrides } from '../../lib/productOverrides';
+import { useEarlyAccessFlags, EARLY_ACCESS_TAG } from '../../lib/earlyAccess';
+import { earlyAccessRowLabel } from '../../lib/earlyAccessAdminLabel';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
 import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 
@@ -112,6 +117,7 @@ function defaultStockRow(sku: string): StockRow {
     video_thumbnail: null,
   };
 }
+
 
 type AdjustReason =
   | 'manual_adjustment'
@@ -213,6 +219,7 @@ function NameWithClip({ row, name }: { row: StockRow; name: string }) {
 export function AdminInventory() {
   const [rows, setRows] = useState<StockRow[] | null>(null);
   const [variantBySku, setVariantBySku] = useState<Record<string, Record<string, VariantRow>>>({});
+  const [flagBySku, setFlagBySku] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('visible');
@@ -295,6 +302,19 @@ export function AdminInventory() {
       const vmap: Record<string, Record<string, VariantRow>> = {};
       for (const r of (vData ?? [])) (vmap[r.sku] ??= {})[r.dose] = r;
       setVariantBySku(vmap);
+
+      // Early-access flags (migration 077). Optional — a DB that hasn't
+      // applied the migration yet just shows every row un-flagged, same as
+      // the ship-day (zero-rows) state.
+      const flags = await supabase.from('product_flags').select('sku, early_access');
+      if (cancelled) return;
+      if (!flags.error) {
+        const fmap: Record<string, boolean> = {};
+        for (const r of (flags.data ?? []) as { sku: string; early_access: boolean }[]) {
+          fmap[r.sku] = r.early_access === true;
+        }
+        setFlagBySku(fmap);
+      }
     }
     load();
     return () => {
@@ -408,6 +428,30 @@ export function AdminInventory() {
       return;
     }
     setRefreshCounter((c) => c + 1);
+  }
+
+  /** Per-SKU member-first ordering toggle (migration 077). Routes through
+   *  admin_set_product_flag, then refetches + nudges the storefront's
+   *  earlyAccess flag cache so the gate reflects it immediately. */
+  async function toggleEarlyAccess(row: StockRow) {
+    if (!supabase) return;
+    setBusySku(row.sku);
+    setError(null);
+    const { error } = await supabase.rpc('admin_set_product_flag', {
+      p_sku: row.sku,
+      p_early_access: !flagBySku[row.sku],
+    });
+    setBusySku(null);
+    if (error) {
+      setError(`Failed: ${error.message}`);
+      return;
+    }
+    setRefreshCounter((c) => c + 1);
+    try {
+      await useEarlyAccessFlags.getState().reload();
+    } catch {
+      /* storefront refreshes on its own cadence */
+    }
   }
 
   async function deleteOrRestore(row: StockRow) {
@@ -568,6 +612,9 @@ export function AdminInventory() {
    *  wrapping freely in the mobile card footer. */
   function rowActions(row: StockRow, opts: { busy: boolean; status: string; wrap?: boolean }) {
     const { busy, status, wrap } = opts;
+    const tagged = !!catalogProducts.find((p) => p.sku === row.sku)?.tags?.includes(EARLY_ACCESS_TAG);
+    const flagged = !!flagBySku[row.sku];
+    const earlyAccess = earlyAccessRowLabel(tagged, flagged);
     return (
       <div className={wrap ? 'flex flex-wrap items-center gap-1.5' : 'flex items-center justify-end gap-1.5'}>
         {idBySku.has(row.sku) && (
@@ -590,6 +637,13 @@ export function AdminInventory() {
         </ActionButton>
         <ActionButton onClick={() => toggleHidden(row)} disabled={busy || status === 'deleted'} title={row.hidden ? 'Show in catalog' : 'Hide from catalog'}>
           {row.hidden ? 'Show' : 'Hide'}
+        </ActionButton>
+        <ActionButton
+          onClick={() => toggleEarlyAccess(row)}
+          disabled={busy || status === 'deleted'}
+          title={earlyAccess.title}
+        >
+          {earlyAccess.label}
         </ActionButton>
         <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
           {row.deleted_at ? 'Restore' : 'Delete'}
@@ -792,7 +846,7 @@ export function AdminInventory() {
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[92px]">On hand</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[110px]">Price</th>
                 <th className="py-[var(--space-3)] px-[var(--space-3)] text-center text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[100px]">Status</th>
-                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[380px]">Actions</th>
+                <th className="py-[var(--space-3)] pl-[var(--space-3)] pr-[var(--space-4)] text-right text-[10px] uppercase tracking-[0.14em] text-ink/45 font-normal w-[430px]">Actions</th>
               </tr>
             </thead>
             <tbody>

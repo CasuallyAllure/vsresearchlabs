@@ -41,7 +41,7 @@ import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { variantProduct } from '../lib/cartActions';
 import { useCustomerAuth } from '../lib/customerAuth';
-import { isEarlyAccessProduct, EARLY_ACCESS_GUEST_LINE } from '../lib/earlyAccess';
+import { isEarlyAccessProduct, EARLY_ACCESS_GUEST_LINE, useEarlyAccessFlags } from '../lib/earlyAccess';
 import { useProductOverrides, isSkuVisible } from '../lib/productOverrides';
 import { useDocumentsByProduct } from '../hooks/useDocuments';
 import { getCompoundIntelligence } from '../lib/compoundIntelligence';
@@ -111,6 +111,9 @@ export function ProductPage() {
   // the direct /product/:id route did not.
   useProductOverrides((s) => s.bySku);
   const skuHidden = product ? !isSkuVisible(product.sku) : false;
+  // Subscribed (not .getState()) so an admin's early-access toggle, or the
+  // boot-time flags load resolving after first paint, re-renders this page.
+  const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
 
   const productDocs = useDocumentsByProduct(product?.abbreviation);
 
@@ -215,10 +218,10 @@ export function ProductPage() {
   const categoryLabel = product.category.replace(/-/g, ' ');
   const categoryHref = `/${product.category}`;
   const outOfStock = product.stock === 0;
-  // Member-first window (earlyAccess.ts): tagged products are orderable only
-  // by signed-in account holders; guests get the sign-in line instead. Ships
-  // dark — no product carries the tag today.
-  const earlyLocked = isEarlyAccessProduct(product) && !authUser;
+  // Member-first window (earlyAccess.ts): flagged/tagged products are
+  // orderable only by signed-in account holders; guests get the sign-in
+  // line instead.
+  const earlyLocked = isEarlyAccessProduct(product, earlyAccessFlags) && !authUser;
   const procurementRowCount = selectProcurementRows(product).length;
   const specificationRowCount = selectSpecificationRows(product).length;
 

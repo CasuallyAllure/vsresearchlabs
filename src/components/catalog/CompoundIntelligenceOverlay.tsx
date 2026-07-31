@@ -52,7 +52,7 @@ import { isMemberPriceEligible } from '../../lib/memberPricing';
 import { MemberPrice } from './MemberPrice';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 import { useCustomerAuth } from '../../lib/customerAuth';
-import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import {
   WHOLESALE_PACKS,
   wholesaleDoses,
@@ -231,6 +231,8 @@ export function CompoundIntelligenceOverlay({
   // Subscribe to admin overrides so the price recomputes when they load.
   useProductOverrides((s) => s.variantBySku);
   useProductOverrides((s) => s.bySku);
+  // Subscribed (not .getState()) so a flag load/toggle re-renders the overlay.
+  const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
   const activeTier = visibleTiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
   const priceCents = effectiveTierPriceCents(product, activeDoseLabel);
@@ -250,7 +252,7 @@ export function CompoundIntelligenceOverlay({
   const isMember = !!user;
   // Member-first window — the overlay is one tap from a gated tile, so it must
   // gate too or the tile's lock is decorative (release audit).
-  const earlyLocked = isEarlyAccessProduct(product) && !isMember;
+  const earlyLocked = isEarlyAccessProduct(product, earlyAccessFlags) && !isMember;
 
   function handleAddPack() {
     if (earlyLocked) return;
