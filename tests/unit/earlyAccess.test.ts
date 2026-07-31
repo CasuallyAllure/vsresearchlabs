@@ -7,6 +7,12 @@
  * carries zero rows — the ship state, and the state of any SKU no admin has
  * touched yet.
  *
+ * `isEarlyAccessProduct` is a pure function over a caller-supplied flag map
+ * (not a `.getState()` read) — see the file header in earlyAccess.ts for why:
+ * a `.getState()` read establishes no React subscription, so a mounted tile
+ * would never re-render when the flags load or an admin toggles one. These
+ * tests pass the flag map explicitly, exactly as a subscribing call site would.
+ *
  * The supabase seam is mocked (tests/setup.ts forbids live network), mirroring
  * tests/unit/promoSettings.test.ts.
  */
@@ -40,43 +46,35 @@ beforeEach(() => {
 
 describe('isEarlyAccessProduct — flag x tag matrix', () => {
   test("flag unset, tag absent -> false (today's production state for every untagged SKU)", () => {
-    useEarlyAccessFlags.setState({ bySku: {} });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product)).toBe(false);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product, {})).toBe(false);
   });
 
   test('flag unset, tag present -> true (the zero-flags ship state; the tag alone still gates)', () => {
-    useEarlyAccessFlags.setState({ bySku: {} });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product)).toBe(true);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product, {})).toBe(true);
   });
 
   test('flag set true, tag absent -> true (admin-only toggle gates on its own)', () => {
-    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': true } });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product)).toBe(true);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product, { 'VSR-X': true })).toBe(true);
   });
 
   test('flag set true, tag present -> true (both agree)', () => {
-    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': true } });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product)).toBe(true);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product, { 'VSR-X': true })).toBe(true);
   });
 
   test('flag explicitly false, tag absent -> false', () => {
-    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': false } });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product)).toBe(false);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide'] } as Product, { 'VSR-X': false })).toBe(false);
   });
 
   test('flag explicitly false, tag present -> true (tag OR-fallback overrides an off flag)', () => {
-    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': false } });
-    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product)).toBe(true);
+    expect(isEarlyAccessProduct({ ...base, tags: ['peptide', EARLY_ACCESS_TAG] } as Product, { 'VSR-X': false })).toBe(true);
   });
 
   test('a flag set for a DIFFERENT sku does not gate this product', () => {
-    useEarlyAccessFlags.setState({ bySku: { 'OTHER-SKU': true } });
-    expect(isEarlyAccessProduct({ ...base, sku: 'VSR-X', tags: [] } as Product)).toBe(false);
+    expect(isEarlyAccessProduct({ ...base, sku: 'VSR-X', tags: [] } as Product, { 'OTHER-SKU': true })).toBe(false);
   });
 
   test('tags absent entirely, flag unset -> false', () => {
-    useEarlyAccessFlags.setState({ bySku: {} });
-    expect(isEarlyAccessProduct({ ...base, tags: undefined } as unknown as Product)).toBe(false);
+    expect(isEarlyAccessProduct({ ...base, tags: undefined } as unknown as Product, {})).toBe(false);
   });
 });
 
@@ -111,7 +109,7 @@ describe('useEarlyAccessFlags.reload', () => {
     expect(select).toHaveBeenCalledWith('sku, early_access');
   });
 
-  test('coerces a non-boolean truthy value to true, not passed through raw', async () => {
+  test('a non-boolean truthy value reads as false, not passed through raw', async () => {
     mockFlagsQuery({ data: [{ sku: 'VSR-X', early_access: 1 }], error: null });
 
     await useEarlyAccessFlags.getState().reload();
@@ -121,7 +119,9 @@ describe('useEarlyAccessFlags.reload', () => {
     // unset — proving the store never trusts a truthy-but-non-boolean value.
   });
 
-  test('falls back to an empty cache when the query errors', async () => {
+  test('a genuine FIRST-load error leaves the (empty) cache empty', async () => {
+    // Store starts fresh (bySku: {} from beforeEach) — there was never
+    // anything to preserve, so this is indistinguishable from a clean miss.
     mockFlagsQuery({ data: null, error: { message: 'relation "public_product_flags" does not exist' } });
 
     await useEarlyAccessFlags.getState().reload();
@@ -129,14 +129,41 @@ describe('useEarlyAccessFlags.reload', () => {
     const s = useEarlyAccessFlags.getState();
     expect(s.bySku).toEqual({});
     expect(s.loaded).toBe(true);
+    expect(s.loading).toBe(false);
   });
 
-  test('falls back to an empty cache when data is null with no error', async () => {
+  test('a REVALIDATION error preserves the already-populated cache (does not wipe known-good flags)', async () => {
+    // Simulate a prior successful load: the store already holds real flags.
+    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': true, 'VSR-Y': false }, loaded: true, loading: false });
+    mockFlagsQuery({ data: null, error: { message: 'network blip' } });
+
+    await useEarlyAccessFlags.getState().reload();
+
+    const s = useEarlyAccessFlags.getState();
+    // The pre-existing flags survive a failed refresh — a transient error
+    // must not make every SKU look un-flagged for the rest of the session.
+    expect(s.bySku).toEqual({ 'VSR-X': true, 'VSR-Y': false });
+    expect(s.loaded).toBe(true);
+    expect(s.loading).toBe(false);
+  });
+
+  test('data: null with no error also preserves an already-populated cache', async () => {
+    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': true }, loaded: true, loading: false });
     mockFlagsQuery({ data: null, error: null });
 
     await useEarlyAccessFlags.getState().reload();
 
-    expect(useEarlyAccessFlags.getState().bySku).toEqual({});
+    expect(useEarlyAccessFlags.getState().bySku).toEqual({ 'VSR-X': true });
+  });
+
+  test('a successful reload REPLACES the cache, including dropping a since-cleared flag', async () => {
+    useEarlyAccessFlags.setState({ bySku: { 'VSR-X': true, 'VSR-STALE': true }, loaded: true, loading: false });
+    mockFlagsQuery({ data: [{ sku: 'VSR-X', early_access: true }], error: null });
+
+    await useEarlyAccessFlags.getState().reload();
+
+    // VSR-STALE is gone — a successful reload is a full replace, not a merge.
+    expect(useEarlyAccessFlags.getState().bySku).toEqual({ 'VSR-X': true });
   });
 });
 

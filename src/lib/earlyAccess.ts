@@ -23,10 +23,17 @@
  *
  * Flags are read through `public_product_flags` (an anon-readable view over
  * the admin-only `product_flags` table — see migration 077) and cached in
- * this small store. `useEarlyAccessFlags.getState().load()` is called once
- * at boot (src/main.tsx, alongside productOverrides/promoSettings); until
- * that resolves — or if Supabase isn't configured — the cache is empty and
- * the tag alone decides, which is exactly the ship-day behavior.
+ * `useEarlyAccessFlags`. `useEarlyAccessFlags.getState().load()` is called
+ * once at boot (src/main.tsx, alongside productOverrides/promoSettings).
+ *
+ * REACTIVITY: `isEarlyAccessProduct` is a pure function — it takes the flag
+ * map as an argument and never reads the store itself. Callers MUST
+ * subscribe with a selector (e.g. `useEarlyAccessFlags((s) => s.bySku)`),
+ * mirroring how components already subscribe to `useProductOverrides` for
+ * price/stock. A `.getState()` read establishes no subscription, so a
+ * mounted tile would never re-render when `load()` resolves after first
+ * paint or an admin toggles a flag — this shape makes that mistake
+ * impossible to make by accident at a call site.
  */
 
 import { create } from 'zustand';
@@ -55,13 +62,20 @@ export const useEarlyAccessFlags = create<EarlyAccessFlagsState>((set, get) => (
 
   reload: async () => {
     if (!supabase) {
+      // Nothing was ever loaded — no prior cache to preserve.
       set({ bySku: {}, loaded: true, loading: false });
       return;
     }
     set({ loading: true });
     const { data, error } = await supabase.from('public_product_flags').select('sku, early_access');
     if (error || !data) {
-      set({ bySku: {}, loaded: true, loading: false });
+      // A failed REVALIDATION (e.g. the post-toggle reload from the admin
+      // editor) must not discard an already-populated cache — that would
+      // drop every flag to "unset" for the rest of the session on a single
+      // transient network blip. Only `loaded`/`loading` change; `bySku`
+      // stays whatever it already was (still {} on a genuine first-load
+      // failure, since that's the initial state).
+      set({ loaded: true, loading: false });
       return;
     }
     const next: Record<string, boolean> = {};
@@ -72,10 +86,13 @@ export const useEarlyAccessFlags = create<EarlyAccessFlagsState>((set, get) => (
   },
 }));
 
-/** Whether this product is currently in its member-first window: the
- *  admin-set DB flag OR the legacy tag (see file header — either gates). */
-export function isEarlyAccessProduct(product: Product): boolean {
-  const flagged = useEarlyAccessFlags.getState().bySku[product.sku] === true;
+/** Whether a product is currently in its member-first window: the
+ *  caller-supplied flag map (from `useEarlyAccessFlags`, subscribed) OR the
+ *  legacy tag — either one gates (see file header). Pure: takes flags as an
+ *  argument instead of reading the store, so callers own the subscription
+ *  and the gate re-renders correctly when flags load or change. */
+export function isEarlyAccessProduct(product: Product, flags: Record<string, boolean>): boolean {
+  const flagged = flags[product.sku] === true;
   const tagged = (product.tags ?? []).includes(EARLY_ACCESS_TAG);
   return flagged || tagged;
 }

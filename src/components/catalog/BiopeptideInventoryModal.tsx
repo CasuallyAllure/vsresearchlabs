@@ -22,7 +22,7 @@ import { CompoundIntelligenceOverlay } from './CompoundIntelligenceOverlay';
 import { CLASSIFICATION_LABELS } from '../../lib/compoundIntelligence';
 import { ClassificationFilter } from './ClassificationFilter';
 import { useSignedIn } from '../../lib/authPresence';
-import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isVariantPublic, isSkuInStock, doseAvailability } from '../../lib/productOverrides';
@@ -50,8 +50,10 @@ function InventoryRow({ product, onInspect }: { product: Product; onInspect: (id
   const updateQuantity = useCart((s) => s.updateQuantity);
   const signedIn = useSignedIn();
   // Member-first window — mirrors CompoundTile/ProductPage (release audit:
-  // this modal is a terminal buy surface, so it must gate too).
-  const earlyLocked = isEarlyAccessProduct(product) && !signedIn;
+  // this modal is a terminal buy surface, so it must gate too). Subscribed
+  // (not .getState()) so a flag load/toggle re-renders this row.
+  const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
+  const earlyLocked = isEarlyAccessProduct(product, earlyAccessFlags) && !signedIn;
   const [added, setAdded] = useState(false);
   const timer = useRef<number | null>(null);
 

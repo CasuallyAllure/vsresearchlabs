@@ -31,7 +31,7 @@ window.addEventListener('vite:preloadError', (event) => {
 // Boot-time data: fetch per-SKU runtime overrides from Supabase so the
 // public catalog renders hidden / deleted / price changes immediately
 // without a redeploy. No-op when Supabase isn't configured. Deferred to
-// first idle so these two fetches don't contend with the critical render
+// first idle so these three fetches don't contend with the critical render
 // path; the 2s timeout bounds the delay so admin price overrides still land
 // before a buyer can meaningfully interact with the catalog.
 const scheduleBootLoads = () => {

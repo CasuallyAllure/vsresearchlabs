@@ -40,7 +40,8 @@ import { downloadXlsx, downloadCsv, stamp } from '../../lib/exporters';
 import { INVENTORY_COLUMNS, buildInventoryRows, type StockLike } from '../../lib/inventorySheet';
 import { effectiveTierPriceCents } from '../../lib/pricing';
 import { useProductOverrides } from '../../lib/productOverrides';
-import { useEarlyAccessFlags } from '../../lib/earlyAccess';
+import { useEarlyAccessFlags, EARLY_ACCESS_TAG } from '../../lib/earlyAccess';
+import { earlyAccessRowLabel } from '../../lib/earlyAccessAdminLabel';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
 import { CHIP_BASE } from '../../components/ui/OrderStatusChip';
 
@@ -116,6 +117,7 @@ function defaultStockRow(sku: string): StockRow {
     video_thumbnail: null,
   };
 }
+
 
 type AdjustReason =
   | 'manual_adjustment'
@@ -610,6 +612,9 @@ export function AdminInventory() {
    *  wrapping freely in the mobile card footer. */
   function rowActions(row: StockRow, opts: { busy: boolean; status: string; wrap?: boolean }) {
     const { busy, status, wrap } = opts;
+    const tagged = !!catalogProducts.find((p) => p.sku === row.sku)?.tags?.includes(EARLY_ACCESS_TAG);
+    const flagged = !!flagBySku[row.sku];
+    const earlyAccess = earlyAccessRowLabel(tagged, flagged);
     return (
       <div className={wrap ? 'flex flex-wrap items-center gap-1.5' : 'flex items-center justify-end gap-1.5'}>
         {idBySku.has(row.sku) && (
@@ -636,9 +641,9 @@ export function AdminInventory() {
         <ActionButton
           onClick={() => toggleEarlyAccess(row)}
           disabled={busy || status === 'deleted'}
-          title={flagBySku[row.sku] ? 'Open to all buyers (currently member early access)' : 'Restrict to members only (early access)'}
+          title={earlyAccess.title}
         >
-          {flagBySku[row.sku] ? 'Open' : 'Early'}
+          {earlyAccess.label}
         </ActionButton>
         <ActionButton onClick={() => deleteOrRestore(row)} disabled={busy} danger={!row.deleted_at} title={row.deleted_at ? 'Restore' : 'Delete'}>
           {row.deleted_at ? 'Restore' : 'Delete'}
