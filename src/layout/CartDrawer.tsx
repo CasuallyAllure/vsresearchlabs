@@ -38,6 +38,7 @@ import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { shippingCentsFor } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
+import { useCheckoutPrefill } from '../lib/checkoutPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -83,7 +84,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const items = useCart((s) => s.items);
   // Wholesale is account-gated: only a signed-in buyer's pack lines count as
   // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
-  const { user } = useCustomerAuth();
+  // NOTE: this drawer is mounted permanently inside GlobalHeader, so on /cart
+  // there are already TWO live useCustomerAuth() instances (this one and
+  // CartPage's), each running getSession → loadMyProfile → link_my_orders.
+  // That is pre-existing; the fix is a single provider above both. Reusing
+  // `profile` off THIS existing call adds no third instance.
+  const { user, profile } = useCustomerAuth();
   const isMember = !!user;
   // Subscribe so prices + FAST/standard badges re-render when overrides load.
   useProductOverrides((s) => s.variantBySku);
@@ -124,6 +130,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [city, setCity] = useState('');
   const [stateRegion, setStateRegion] = useState('');
   const [zip, setZip] = useState('');
+  // Fill a signed-in member's saved name + US shipping address in ONCE,
+  // deferring to anything already typed. Writes into the state above and
+  // nowhere else, so the submitted payload stays purely the form's.
+  const prefill = useCheckoutPrefill(profile, {
+    firstName: setFirstName,
+    lastName: setLastName,
+    street: setStreet,
+    city: setCity,
+    state: setStateRegion,
+    zip: setZip,
+  });
   const [human, setHuman] = useState(false);
   const [tsToken, setTsToken] = useState<string | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
@@ -205,6 +222,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       ship_city: city.trim(),
       ship_state: stateRegion.trim(),
       ship_zip: zip.trim(),
+      // No country input here either — US-only by construction. Profile
+      // prefill WITHHOLDS a saved non-US address rather than posting it into
+      // this payload; see src/lib/checkoutPrefill.ts.
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
       // Research-use disclaimer acceptance (21+/research-only/industry) from
@@ -456,6 +476,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   />
                 </div>
                 <p className="mt-1.5 text-[10px] text-ink/40">The ZIP is how you’ll look up your order at <span className="font-mono">/track</span>.</p>
+                {prefill.addressPrefilled && (
+                  <p className="mt-1.5 text-[10px] text-ink/40">
+                    Filled in from your account — edit any field to send this order somewhere else.
+                  </p>
+                )}
+                {prefill.withheldCountry && (
+                  <p role="status" className="mt-1.5 text-[10px] text-[color:var(--color-status-error)]">
+                    Your saved address is in {prefill.withheldCountry}. Checkout ships to US addresses
+                    only, so it was not filled in — enter a US address, or contact us before ordering.
+                  </p>
+                )}
               </div>
               <label className="flex min-h-[44px] items-start gap-2 py-2 cursor-pointer select-none">
                 <input
