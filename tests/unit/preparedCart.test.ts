@@ -24,6 +24,9 @@ import { afterEach, describe, expect, test } from 'vitest';
 
 import {
   buildVariantIndex,
+  compoundTierLabel,
+  doseTierLabel,
+  doseTierShort,
   findVariantOption,
   memberUnitPriceCents,
   planPreparedCart,
@@ -93,8 +96,8 @@ describe('buildVariantIndex', () => {
 
     expect(index.compoundNames).toEqual(['BPC-157', 'Retatrutide']);
     expect(index.byCompound.get('BPC-157')).toEqual([
-      { sku: 'VSR-RS-BPC', dose: '5mg', name: 'BPC-157 — 5mg', priceCents: 6_000 },
-      { sku: 'VSR-RS-BPC', dose: '10mg', name: 'BPC-157 — 10mg', priceCents: 9_500 },
+      { sku: 'VSR-RS-BPC', dose: '5mg', name: 'BPC-157 — 5mg', priceCents: 6_000, tier: 'in_stock' },
+      { sku: 'VSR-RS-BPC', dose: '10mg', name: 'BPC-157 — 10mg', priceCents: 9_500, tier: 'in_stock' },
     ]);
   });
 
@@ -157,8 +160,111 @@ describe('buildVariantIndex', () => {
     });
 
     expect(buildVariantIndex([centrifuge]).byCompound.get('Benchtop Centrifuge')).toEqual([
-      { sku: 'VSR-LE-CENT', dose: '', name: 'Benchtop Centrifuge', priceCents: 45_000 },
+      { sku: 'VSR-LE-CENT', dose: '', name: 'Benchtop Centrifuge', priceCents: 45_000, tier: 'unknown' },
     ]);
+  });
+});
+
+/* ── shipping tier ─────────────────────────────────────────────────────────── */
+
+describe('per-dose shipping tier', () => {
+  test('a dose with genuine on-hand supply is tagged 24 Hour Shipping', () => {
+    setVariants([{ sku: 'VSR-RS-RETA', dose: '15mg', price_cents: 24_000, on_hand: 4 }]);
+
+    const [option] = buildVariantIndex([reta]).byCompound.get('Retatrutide') ?? [];
+
+    expect(option.tier).toBe('in_stock');
+    expect(doseTierLabel(option.tier)).toBe('24 Hour Shipping');
+    expect(doseTierShort(option.tier)).toBe('24 Hour');
+  });
+
+  test('inbound-only supply still counts as 24 Hour, matching the catalog', () => {
+    setVariants([{
+      sku: 'VSR-RS-RETA', dose: '15mg', price_cents: 24_000, on_hand: 0, inbound_units: 3,
+    }]);
+
+    const [option] = buildVariantIndex([reta]).byCompound.get('Retatrutide') ?? [];
+
+    expect(option.tier).toBe('in_stock');
+  });
+
+  test('a tracked dose with no 24-hour supply is tagged Standard Shipping', () => {
+    // lead_days alone is a drop-ship SLA, never a 24-hour signal.
+    setVariants([{
+      sku: 'VSR-RS-RETA', dose: '15mg', price_cents: 24_000, on_hand: 0, inbound_units: 0, lead_days: 8,
+    }]);
+
+    const [option] = buildVariantIndex([reta]).byCompound.get('Retatrutide') ?? [];
+
+    expect(option.tier).toBe('sourced');
+    expect(doseTierLabel(option.tier)).toBe('Standard Shipping · 7–10 business days');
+    expect(doseTierShort(option.tier)).toBe('Sourced');
+  });
+
+  test('a compound with BOTH tiers tags each dose by its own supply', () => {
+    // The case that catches a compound-level shortcut: one SKU, two doses,
+    // two different tiers. Whichever dose the admin picks, the label must be
+    // that dose's — B2G1 reaches the sourced one and never the 24-hour one.
+    setVariants([
+      { sku: 'VSR-RS-BPC', dose: '5mg', price_cents: 6_000, on_hand: 7 },
+      { sku: 'VSR-RS-BPC', dose: '10mg', price_cents: 9_500, on_hand: 0, inbound_units: 0, lead_days: 9 },
+    ]);
+
+    const options = buildVariantIndex([bpc]).byCompound.get('BPC-157') ?? [];
+
+    expect(options.map((o) => [o.dose, o.tier])).toEqual([
+      ['5mg', 'in_stock'],
+      ['10mg', 'sourced'],
+    ]);
+  });
+
+  test('an untracked dose is labelled neither tier', () => {
+    // No import has touched the SKU: isVariantPublic lets it through, but
+    // there is no supply row to claim a tier from. Silence, not a guess.
+    const [option] = buildVariantIndex([reta]).byCompound.get('Retatrutide') ?? [];
+
+    expect(option.tier).toBe('unknown');
+    expect(doseTierLabel(option.tier)).toBeNull();
+    expect(doseTierShort(option.tier)).toBeNull();
+  });
+});
+
+describe('compoundTierLabel', () => {
+  test('says "all" only when every sellable dose really shares a tier', () => {
+    setVariants([
+      { sku: 'VSR-RS-BPC', dose: '5mg', price_cents: 6_000, on_hand: 2 },
+      { sku: 'VSR-RS-BPC', dose: '10mg', price_cents: 9_500, on_hand: 3 },
+    ]);
+
+    expect(compoundTierLabel(buildVariantIndex([bpc]).byCompound.get('BPC-157') ?? []))
+      .toBe('all 24 Hour');
+  });
+
+  test('a sourced-only compound reads "all Standard"', () => {
+    setVariants([
+      { sku: 'VSR-RS-BPC', dose: '5mg', price_cents: 6_000, on_hand: 0, lead_days: 8 },
+      { sku: 'VSR-RS-BPC', dose: '10mg', price_cents: 9_500, on_hand: 0, lead_days: 8 },
+    ]);
+
+    expect(compoundTierLabel(buildVariantIndex([bpc]).byCompound.get('BPC-157') ?? []))
+      .toBe('all Standard');
+  });
+
+  test('a mixed compound never borrows one dose\'s tier for the whole product', () => {
+    setVariants([
+      { sku: 'VSR-RS-BPC', dose: '5mg', price_cents: 6_000, on_hand: 7 },
+      { sku: 'VSR-RS-BPC', dose: '10mg', price_cents: 9_500, on_hand: 0, lead_days: 9 },
+    ]);
+
+    const label = compoundTierLabel(buildVariantIndex([bpc]).byCompound.get('BPC-157') ?? []);
+
+    expect(label).toBe('mixed tiers');
+    expect(label).not.toMatch(/24 Hour|Standard/);
+  });
+
+  test('an all-untracked compound and an empty list carry no summary', () => {
+    expect(compoundTierLabel(buildVariantIndex([bpc]).byCompound.get('BPC-157') ?? [])).toBeNull();
+    expect(compoundTierLabel([])).toBeNull();
   });
 });
 

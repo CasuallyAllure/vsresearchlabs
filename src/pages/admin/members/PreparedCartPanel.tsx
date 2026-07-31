@@ -32,7 +32,7 @@ import { Button } from '../../../components/ui/Button';
 import { FIELD_DEFAULT, FIELD_LABEL_DENSE, FIELD_SURFACE_DENSE } from '../../../components/ui/Field';
 import { formatPriceExact } from '../../../lib/pricing';
 import {
-  findVariantOption, priceLines, variantOptionKey,
+  compoundTierLabel, doseTierLabel, doseTierShort, findVariantOption, priceLines, variantOptionKey,
   type PreparedCartLine, type VariantIndex,
 } from '../../../lib/preparedCart';
 import type { MemberRow } from '../membersView';
@@ -161,7 +161,12 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
                     className={fieldCls}
                   >
                     <option value="">— Select compound —</option>
-                    {index.compoundNames.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {index.compoundNames.map((c) => {
+                      // Only ever "all X" when every dose agrees; otherwise
+                      // "mixed tiers" — the dose dropdown carries the truth.
+                      const summary = compoundTierLabel(index.byCompound.get(c) ?? []);
+                      return <option key={c} value={c}>{summary ? `${c} · ${summary}` : c}</option>;
+                    })}
                   </select>
                 </label>
                 <label className="block">
@@ -173,25 +178,38 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
                     className={`${fieldCls} disabled:cursor-not-allowed disabled:opacity-40`}
                   >
                     <option value="">{row.compound ? '— Select dose —' : '— Pick compound first —'}</option>
-                    {doseOptions.map((o) => (
-                      <option key={variantOptionKey(o)} value={variantOptionKey(o)}>
-                        {o.dose || o.name} &middot; {formatPriceExact(o.priceCents)}
-                      </option>
-                    ))}
+                    {doseOptions.map((o) => {
+                      // The tier is per (sku, dose) and changes both the price
+                      // and whether B2G1 can ever apply — the admin must not
+                      // have to guess which one they are picking.
+                      const tier = doseTierLabel(o.tier);
+                      return (
+                        <option key={variantOptionKey(o)} value={variantOptionKey(o)}>
+                          {`${o.dose || o.name} · ${formatPriceExact(o.priceCents)}${tier ? ` · ${tier}` : ''}`}
+                        </option>
+                      );
+                    })}
                   </select>
                 </label>
               </div>
 
               <div className="mt-1.5 flex items-end justify-between gap-[var(--space-2)]">
-                <span className="min-w-0 font-mono text-[10px] tabular-nums text-ink/45">
-                  {picked && memberUnit != null ? (
-                    <>
-                      <span className="line-through text-ink/25">{formatPriceExact(picked.priceCents)}</span>
-                      {' → '}
-                      <span className="text-holo">{formatPriceExact(memberUnit)}</span>
-                      <span className="text-ink/30"> / unit</span>
-                    </>
+                {/* The tier stays on the row after selection — re-opening the
+                    dropdown to check what was picked is the bug this fixes. */}
+                <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  {picked && doseTierShort(picked.tier) ? (
+                    <Chip tone={picked.tier === 'in_stock' ? 'good' : 'neutral'}>{doseTierShort(picked.tier)}</Chip>
                   ) : null}
+                  <span className="min-w-0 font-mono text-[10px] tabular-nums text-ink/45">
+                    {picked && memberUnit != null ? (
+                      <>
+                        <span className="line-through text-ink/25">{formatPriceExact(picked.priceCents)}</span>
+                        {' → '}
+                        <span className="text-holo">{formatPriceExact(memberUnit)}</span>
+                        <span className="text-ink/30"> / unit</span>
+                      </>
+                    ) : null}
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-end gap-[var(--space-2)]">
                   <label className="block w-[64px]">
@@ -271,7 +289,8 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
       <p className="mt-[var(--space-2)] text-[10.5px] leading-[1.4] text-ink/35">
         Prices resolve live when the member opens the cart and again at checkout — nothing is locked
         in. Wholesale packs, the paired bundle and a B2G1 promo all replace the account discount
-        rather than stacking with it.
+        rather than stacking with it. B2G1 reaches <strong className="font-medium text-ink/50">Sourced
+        lines only</strong> — a 24 Hour line never earns a free third unit.
       </p>
 
       <div className="mt-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-3)]">

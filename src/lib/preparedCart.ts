@@ -36,7 +36,7 @@
 
 import type { Product } from '../types';
 import { effectiveTierPriceCents } from './pricing';
-import { isVariantPublic } from './productOverrides';
+import { doseAvailability, isVariantPublic, type DoseAvailability } from './productOverrides';
 
 /** The stored shape. `dose` is '' for single-config products (equipment), the
  *  same contract `variantProduct` honours by passing those through unchanged. */
@@ -44,6 +44,69 @@ export interface PreparedCartLine {
   sku: string;
   dose: string;
   quantity: number;
+}
+
+/**
+ * The shipping tier of a specific (sku, dose), reusing `doseAvailability`'s own
+ * three states verbatim rather than minting a fourth vocabulary for it:
+ * `in_stock` is genuine 24-hour supply, `sourced` is the 7–10 business day
+ * drop-ship, `unknown` is a dose with no tracked row and must not be labelled
+ * either way.
+ *
+ * It matters to the admin for two reasons the price alone does not show: the
+ * two tiers are priced differently, and the automatic B2G1 promo applies to
+ * SOURCED lines only — `b2g1Preview.ts` gates on `avail.state === 'sourced'`
+ * and place-order's `promoPlan.ts` on the same `isSlow` test, so a 24-hour line
+ * never earns a free third unit.
+ */
+export type DoseTier = DoseAvailability['state'];
+
+/** Long form for the dose `<option>`, verbatim from the customer-facing
+ *  AvailabilityBadge — "24 Hour Shipping" was renamed from "Fast" deliberately
+ *  and is not paraphrased here. null for an untracked dose. */
+const TIER_LABEL: Record<DoseTier, string | null> = {
+  in_stock: '24 Hour Shipping',
+  sourced: 'Standard Shipping · 7–10 business days',
+  unknown: null,
+};
+
+/** Chip-sized form for a picked line, the same pair the catalog's per-dose
+ *  pill uses (ProductCard). null for an untracked dose. */
+const TIER_SHORT: Record<DoseTier, string | null> = {
+  in_stock: '24 Hour',
+  sourced: 'Sourced',
+  unknown: null,
+};
+
+/** Compound-level summary — only ever states "all", and only when it is true.
+ *  A compound whose doses differ reads `mixed`, never one tier's name. */
+const COMPOUND_LABEL: Record<DoseTier | 'mixed', string | null> = {
+  in_stock: 'all 24 Hour',
+  sourced: 'all Standard',
+  unknown: null,
+  mixed: 'mixed tiers',
+};
+
+export function doseTierLabel(tier: DoseTier): string | null {
+  return TIER_LABEL[tier];
+}
+
+export function doseTierShort(tier: DoseTier): string | null {
+  return TIER_SHORT[tier];
+}
+
+/**
+ * Summary for the compound dropdown. Returns a label only when every sellable
+ * dose of the compound shares a tier ("all 24 Hour" / "all Standard"), and
+ * `mixed tiers` when they differ — tier is a property of the (sku, dose) pair,
+ * so a compound-level label must never imply its doses agree when they do not.
+ * null for an empty list or one whose doses are all untracked.
+ */
+export function compoundTierLabel(options: VariantOption[]): string | null {
+  if (options.length === 0) return null;
+  const first = options[0].tier;
+  const uniform = options.every((o) => o.tier === first);
+  return COMPOUND_LABEL[uniform ? first : 'mixed'];
 }
 
 /** One sellable (sku, dose) the admin can pick. `priceCents` is the LIST price
@@ -54,6 +117,9 @@ export interface VariantOption {
   /** "5-Amino-1MQ — 10mg" — the same label format the order editors use. */
   name: string;
   priceCents: number;
+  /** Per-dose shipping tier. Resolved here, at enumeration time, so every
+   *  surface that shows an option shows the same tier the catalog does. */
+  tier: DoseTier;
 }
 
 export interface VariantIndex {
@@ -79,8 +145,9 @@ export function buildVariantIndex(products: Product[]): VariantIndex {
       const priceCents = effectiveTierPriceCents(product, variant.dose);
       if (priceCents == null) continue;
       const name = variant.dose ? `${product.name} — ${variant.dose}` : product.name;
+      const tier = doseAvailability(product.sku, variant.dose).state;
       const existing = byCompound.get(product.name) ?? [];
-      byCompound.set(product.name, [...existing, { sku: product.sku, dose: variant.dose, name, priceCents }]);
+      byCompound.set(product.name, [...existing, { sku: product.sku, dose: variant.dose, name, priceCents, tier }]);
     }
   }
 
