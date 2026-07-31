@@ -45,6 +45,14 @@ const AccountRewards = lazyPage(() => import('./pages/account/AccountRewards'), 
 const AccountLibrary = lazyPage(() => import('./pages/account/AccountLibrary'), 'AccountLibrary');
 const AccountBenefits = lazyPage(() => import('./pages/account/AccountBenefits'), 'AccountBenefits');
 const AccountProfile = lazyPage(() => import('./pages/account/AccountProfile'), 'AccountProfile');
+// DEV-ONLY portal design preview. Both this `lazy()` import and the <Route>
+// below sit behind `import.meta.env.DEV`, which Vite statically replaces with
+// `false` in a production build — so the preview page and its fabricated
+// records are never emitted into the shipped bundle, and no production URL
+// resolves to them. See src/pages/account/AccountPreview.tsx.
+const AccountPreview = import.meta.env.DEV
+  ? lazyPage(() => import('./pages/account/AccountPreview'), 'AccountPreview')
+  : null;
 const Documentation = lazyPage(() => import('./pages/Documentation'), 'Documentation');
 const DocumentDetail = lazyPage(() => import('./pages/DocumentDetail'), 'DocumentDetail');
 const Privacy = lazyPage(() => import('./pages/legal/Privacy'), 'Privacy');
@@ -99,6 +107,9 @@ export default function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/track" element={<TrackOrder />} />
+                {AccountPreview && (
+                  <Route path="/account/__preview" element={<AccountPreview />} />
+                )}
                 <Route path="/account" element={<Account />} />
                 <Route path="/account/orders" element={<AccountOrders />} />
                 <Route path="/account/orders/:orderNumber" element={<AccountOrderDetail />} />

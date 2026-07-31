@@ -59,11 +59,11 @@ function AccountRewardsContent() {
   return (
     <>
       {error && <StaleDataNotice subject="your rewards" />}
-      <div className="mb-[var(--space-6)]">
+      <div className="mb-[var(--space-5)] sm:mb-[var(--space-6)]">
         <RewardTracker summary={data} onChanged={refresh} />
       </div>
 
-      <div className="mb-[var(--space-6)]">
+      <div className="mb-[var(--space-5)] sm:mb-[var(--space-6)]">
         <ReferralCard />
       </div>
 
@@ -75,11 +75,11 @@ function AccountRewardsContent() {
         /* Ledger, not a feed: one module, hairline-ruled rows, quiet labels,
            and signed tabular figures. No status pills, no colour coding —
            the sign carries the direction. */
-        <ul className="floating-module divide-y divide-ink/[0.06] px-[var(--space-4)]">
+        <ul className="floating-module divide-y divide-ink/[0.06] px-[var(--space-3)] sm:px-[var(--space-4)]">
           {entries.map((e) => (
             <li
               key={e.id}
-              className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]"
+              className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] sm:py-[var(--space-4)]"
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-[var(--space-2)] gap-y-1">

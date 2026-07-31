@@ -93,20 +93,25 @@ export function AccountDashboard() {
     <section>
       {/* Header */}
       <header className="mb-[var(--space-6)] flex items-start justify-between gap-[var(--space-4)]">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-serif text-[clamp(1.4rem,2.6vw,1.9rem)] leading-[1.1] tracking-[-0.02em] text-ink">
             <span className="font-light text-ink/85">Welcome back, </span>
             <span className="font-medium text-ink">{firstName}.</span>
           </h1>
-          <p className="mt-[var(--space-2)] text-[13px] text-ink/55">{user?.email}</p>
+          <p className="mt-[var(--space-2)] truncate text-[13px] text-ink/55">{user?.email}</p>
         </div>
-        {/* Account standing — stated on hairline rules, not worn as badges. */}
-        <div className="flex shrink-0 flex-col items-end gap-[var(--space-1)] border-l border-ink/[0.09] pl-[var(--space-4)]">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/55">
+        {/* Account standing — stated on hairline rules, not worn as badges.
+            The business name is admin-set free text, so it must be allowed to
+            shrink and truncate: as `shrink-0` with no max width, a longer
+            institutional name (~28+ chars) pushed this block past the 375px
+            viewport and made the WHOLE portal page scroll sideways — found by
+            the /account/__preview design preview. */}
+        <div className="flex min-w-0 shrink flex-col items-end gap-[var(--space-1)] border-l border-ink/[0.09] pl-[var(--space-4)]">
+          <span className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-ink/55">
             {profile.tier === 'pro' ? 'Pro member' : 'Member'}
           </span>
           {isBusiness && (
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink/35">
+            <span className="max-w-full truncate font-mono text-[10px] uppercase tracking-[0.2em] text-ink/35">
               {profile.business_name?.trim() || 'Business account'}
             </span>
           )}
@@ -114,7 +119,7 @@ export function AccountDashboard() {
       </header>
 
       {profile.status === 'waitlisted' && (
-        <div className="mb-[var(--space-6)] research-surface-solid p-[var(--space-5)]">
+        <div className="mb-[var(--space-5)] sm:mb-[var(--space-6)] research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
           <p className="text-[12px] uppercase tracking-[0.2em] text-ink/45 mb-[var(--space-1)]">Waitlisted</p>
           <p className="text-[13px] leading-relaxed text-ink/75">
             Your account is on the waitlist. We'll email you the moment access opens up.
@@ -123,7 +128,7 @@ export function AccountDashboard() {
       )}
 
       {/* Membership — tier, member-since, standing terms (src/config/tierBenefits.ts) */}
-      <div className="research-surface-solid p-[var(--space-5)] mb-[var(--space-6)]">
+      <div className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-5)] sm:mb-[var(--space-6)]">
         <div className="mb-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-3)] border-b border-ink/[0.09] pb-[var(--space-3)]">
           <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">
             {TIER_BENEFITS[profile.tier].label}
@@ -142,7 +147,7 @@ export function AccountDashboard() {
       </div>
 
       {/* Reward balance + active discounts */}
-      <div className="mb-[var(--space-6)] grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
+      <div className="mb-[var(--space-5)] sm:mb-[var(--space-6)] grid grid-cols-1 gap-[var(--space-4)] sm:grid-cols-2">
         <div>
           {rewards ? (
             <>
@@ -152,12 +157,12 @@ export function AccountDashboard() {
               </Link>
             </>
           ) : rewardsError ? (
-            <div className="research-surface-solid p-[var(--space-5)]">
+            <div className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
               <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Order credit</p>
               <p className="text-[12.5px] text-ink/50">Rewards aren't available right now.</p>
             </div>
           ) : (
-            <div className="research-surface-solid p-[var(--space-5)]">
+            <div className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
               <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Order credit</p>
               <p className="text-[12.5px] text-ink/50">Loading…</p>
             </div>
@@ -170,7 +175,7 @@ export function AccountDashboard() {
           {discounts !== null && discounts.length === 0 && MEMBER_OFFERS.length > 0 && profile.tier !== 'pro' ? (
             <MemberOfferCard offer={MEMBER_OFFERS[0]} compact />
           ) : (
-            <div className="research-surface-solid p-[var(--space-5)]">
+            <div className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
               <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45 mb-[var(--space-2)]">Active discounts</p>
               {discounts === null ? (
                 <p className="text-[12.5px] text-ink/50">Loading…</p>
@@ -194,7 +199,7 @@ export function AccountDashboard() {
       </div>
 
       {/* Shipping address */}
-      <div className="research-surface-solid p-[var(--space-6)] mb-[var(--space-6)]">
+      <div className="research-surface-solid p-[var(--space-5)] sm:p-[var(--space-6)] mb-[var(--space-5)] sm:mb-[var(--space-6)]">
         <div className="flex items-center justify-between mb-[var(--space-3)]">
           <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Shipping address</p>
         </div>
@@ -225,26 +230,26 @@ export function AccountDashboard() {
         )}
 
         {orders !== null && orders.length === 0 && (
-          <div className="research-surface-solid p-[var(--space-6)] text-center">
+          <div className="research-surface-solid p-[var(--space-5)] sm:p-[var(--space-6)] text-center">
             <p className="text-[13.5px] text-ink/70 mb-[var(--space-4)]">
               {ordersError ? 'Could not load orders right now.' : "You haven't placed an order yet."}
             </p>
-            <Button variant="secondary" size="md" to="/catalog">
+            <Button variant="secondary" size="sm" to="/catalog">
               Browse catalog
             </Button>
           </div>
         )}
 
         {orders !== null && orders.length > 0 && (
-          <ul className="space-y-[var(--space-3)]">
+          <ul className="research-surface-solid divide-y divide-ink/[0.05]">
             {orders.map((o) => (
               <li key={o.order_number}>
                 <Link
                   to={`/account/orders/${encodeURIComponent(o.order_number)}`}
-                  className="research-surface-solid is-interactive flex items-center justify-between gap-[var(--space-4)] p-[var(--space-4)]"
+                  className="flex items-center justify-between gap-[var(--space-4)] px-[var(--space-4)] py-[var(--space-3)] transition-colors hover:bg-ink/[0.02] focus:outline-none focus-visible:bg-ink/[0.03] sm:px-[var(--space-5)]"
                 >
                   <div className="min-w-0">
-                    <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
+                    <p className="font-mono text-[12.5px] text-ink truncate">{o.order_number}</p>
                     <p className="text-[11px] text-ink/45 mt-0.5">{formatDate(o.created_at)}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-[var(--space-3)]">

@@ -60,7 +60,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
   return (
     <section
       aria-label="Order credit standing"
-      className={`floating-module ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}
+      className={`floating-module ${compact ? 'p-[var(--space-4)] sm:p-[var(--space-5)]' : 'p-[var(--space-5)] sm:p-[var(--space-6)]'}`}
     >
       {/* Statement header — quiet label, no badge, no accent wash. */}
       <div className="flex items-baseline justify-between gap-[var(--space-3)] border-b border-ink/[0.09] pb-[var(--space-3)]">
@@ -70,7 +70,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
 
       {/* Balance line — the figure is the object, set in tabular mono. */}
       <dl className="divide-y divide-ink/[0.06]">
-        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+        <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] sm:py-[var(--space-4)]">
           <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">Balance</dt>
           <dd
             className={`font-mono font-light tabular-nums text-ink ${compact ? 'text-[1.35rem]' : 'text-[1.7rem]'}`}
@@ -81,12 +81,12 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
         </div>
 
         {active_voucher ? (
-          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] sm:py-[var(--space-4)]">
             <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">Credit on file</dt>
             <dd className="font-mono tabular-nums text-[13px] text-ink/75">{active_voucher.percent}%</dd>
           </div>
         ) : (
-          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-4)]">
+          <div className="flex items-baseline justify-between gap-[var(--space-4)] py-[var(--space-3)] sm:py-[var(--space-4)]">
             <dt className="text-[11px] uppercase tracking-[0.18em] text-ink/40">
               {reward_ready ? 'Status' : 'To next credit'}
             </dt>
@@ -125,7 +125,7 @@ export function RewardTracker({ summary, onChanged, compact }: RewardTrackerProp
 
           {reward_ready && (
             <div className="mt-[var(--space-4)]">
-              <Button variant="secondary" size={compact ? 'sm' : 'md'} onClick={handleRedeem} disabled={redeeming}>
+              <Button variant="secondary" size="sm" onClick={handleRedeem} disabled={redeeming}>
                 {redeeming ? 'Applying…' : `Apply ${percent}% credit to an item`}
               </Button>
               {redeemError && (

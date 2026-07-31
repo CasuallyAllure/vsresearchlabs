@@ -15,9 +15,17 @@
  * exist yet in this environment. A missing function/table surfaces as a
  * normal Postgrest error here — callers render it as an error state, never a
  * crash.
+ *
+ * Every read below opens with an `accountPreview()` check: the DEV-only
+ * portal design preview (`src/lib/accountPreviewSource.ts`) injects its
+ * fabricated records HERE, at the data seam, so the real pages/components
+ * render unchanged instead of being forked into a preview copy. In a
+ * production build `accountPreview()` is statically `null` — see that
+ * module's production-safety note.
  */
 
 import { supabase } from './supabase';
+import { accountPreview } from './accountPreviewSource';
 import type { OrderInvoice } from './tracking';
 
 /** One row of the owned-order history list (`/account/orders`). */
@@ -97,6 +105,8 @@ const NOT_CONFIGURED = 'Backend not configured.';
 
 /** All orders owned by the signed-in customer (RLS-scoped), newest first. */
 export async function listMyOrders(): Promise<{ data: MyOrderRow[]; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.orders, error: preview.staleError };
   if (!supabase) return { data: [], error: NOT_CONFIGURED };
   const { data, error } = await supabase
     .from('orders')
@@ -120,6 +130,8 @@ interface OrderLineJoinRow {
  * existing `order_lines.order_id` foreign key — no new server object.
  */
 export async function listMyOrderLines(): Promise<{ data: MyOrderLineRow[]; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.orderLines, error: preview.staleError };
   if (!supabase) return { data: [], error: NOT_CONFIGURED };
   const { data, error } = await supabase
     .from('order_lines')
@@ -147,6 +159,8 @@ export async function listMyOrderLines(): Promise<{ data: MyOrderLineRow[]; erro
 export async function getMyOrder(
   orderNumber: string,
 ): Promise<{ data: MyOrderResult | null; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.order(orderNumber), error: preview.staleError };
   if (!supabase) return { data: null, error: NOT_CONFIGURED };
   const { data, error } = await supabase.rpc('get_my_order', { p_order_number: orderNumber });
   if (error) return { data: null, error: error.message };
@@ -155,6 +169,8 @@ export async function getMyOrder(
 
 /** Reward point balance + full ledger for the signed-in customer. */
 export async function getMyRewardSummary(): Promise<{ data: RewardSummary | null; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.rewards, error: preview.staleError };
   if (!supabase) return { data: null, error: NOT_CONFIGURED };
   const { data, error } = await supabase.rpc('get_my_reward_summary');
   if (error) return { data: null, error: error.message };
@@ -173,6 +189,11 @@ export async function getMyRewardSummary(): Promise<{ data: RewardSummary | null
 
 /** Spend 300 points for a 40%-off-one-item voucher (`redeem_reward()`, migration 050). */
 export async function redeemReward(): Promise<{ data: RedeemRewardResult | null; error: string | null }> {
+  // The preview is a LOOK-ONLY surface (same posture as the admin members
+  // preview: controls render, but no control mutates anything).
+  if (accountPreview()) {
+    return { data: { ok: false, reason: 'Redemption is disabled in the design preview.' }, error: null };
+  }
   if (!supabase) return { data: null, error: NOT_CONFIGURED };
   const { data, error } = await supabase.rpc('redeem_reward');
   if (error) return { data: null, error: error.message };
@@ -189,6 +210,8 @@ export interface ReferralCodeResult {
 
 /** Issue-or-fetch the member's referral code (`get_my_referral_code()`, migration 076). Idempotent. */
 export async function getMyReferralCode(): Promise<{ data: ReferralCodeResult | null; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.referral, error: preview.staleError };
   if (!supabase) return { data: null, error: NOT_CONFIGURED };
   const { data, error } = await supabase.rpc('get_my_referral_code');
   if (error) return { data: null, error: error.message };
@@ -197,6 +220,8 @@ export async function getMyReferralCode(): Promise<{ data: ReferralCodeResult | 
 
 /** The signed-in customer's own discount rules (active + inactive). */
 export async function listMyDiscounts(): Promise<{ data: CustomerDiscountRow[]; error: string | null }> {
+  const preview = accountPreview();
+  if (preview) return { data: preview.discounts, error: preview.staleError };
   if (!supabase) return { data: [], error: NOT_CONFIGURED };
   const { data, error } = await supabase
     .from('customer_discounts')

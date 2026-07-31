@@ -69,7 +69,7 @@ function ProfileDisplay({
   const hasAddress = !!profile.address_line1;
 
   return (
-    <div className="research-surface-solid p-[var(--space-5)]">
+    <div className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
       <div className="mb-[var(--space-4)] flex items-center justify-between gap-[var(--space-3)]">
         <h2 className="holo-text-caption text-[10px] uppercase tracking-[0.3em] text-ink/50">
           Contact &amp; shipping details
@@ -156,7 +156,7 @@ function ProfileEditForm({
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate className="research-surface-solid p-[var(--space-5)]">
+    <form onSubmit={onSubmit} noValidate className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
       <h2 className="holo-text-caption mb-[var(--space-4)] text-[10px] uppercase tracking-[0.3em] text-ink/50">
         Contact &amp; shipping details
       </h2>
@@ -295,7 +295,7 @@ function EmailPreferencesSection() {
   }
 
   return (
-    <div className="research-surface-solid mt-[var(--space-4)] p-[var(--space-5)]">
+    <div className="research-surface-solid mt-[var(--space-3)] sm:mt-[var(--space-4)] p-[var(--space-4)] sm:p-[var(--space-5)]">
       <h2 className="mb-[var(--space-3)] text-[13px] font-medium tracking-[-0.01em] text-ink">
         Email preferences
       </h2>

@@ -10,15 +10,17 @@
  * — never a throw), error passthrough as `error.message`, and the null-data
  * fallbacks (empty lists, `{ found: false }`, the zeroed reward summary).
  */
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   getMyOrder,
   getMyRewardSummary,
   listMyDiscounts,
   listMyOrderLines,
   listMyOrders,
+  getMyReferralCode,
   redeemReward,
 } from '../../src/lib/accountData';
+import { installAccountPreview } from '../../src/lib/accountPreviewSource';
 
 // Mutable seam: tests swap `client` between a mock client and null
 // ("backend not configured") without re-importing the module under test.
@@ -388,5 +390,133 @@ describe('listMyOrderLines', () => {
       data: [],
       error: 'permission denied for table order_lines',
     });
+  });
+});
+
+/**
+ * The DEV-only design-preview seam (src/lib/accountPreviewSource.ts). Every
+ * read short-circuits to the installed fabricated source BEFORE touching
+ * supabase — that is what lets the real portal components render at
+ * /account/__preview with no auth and no network. `seam.client` stays null
+ * throughout: if a wrapper ever fell through to supabase it would return
+ * "Backend not configured." instead of the fabricated rows.
+ */
+describe('preview seam', () => {
+  const ORDER_ROW = {
+    order_number: 'DEMO-0001',
+    status: 'shipped',
+    created_at: '2026-07-01T00:00:00Z',
+    invoice_amount_cents: 1000,
+    carrier: null,
+    tracking_number: null,
+  };
+  const LINE_ROW = {
+    sku: 'VSR-RS-BPC-005',
+    product_name: 'BPC-157 — 5mg',
+    order_number: 'DEMO-0001',
+    status: 'shipped',
+  };
+  const REWARDS = {
+    balance: 218,
+    threshold: 300,
+    percent: 40,
+    reward_ready: false,
+    active_voucher: null,
+    entries: [],
+  };
+  const DISCOUNT = {
+    id: 'demo-d1',
+    scope: 'lifetime' as const,
+    percent: 15,
+    label: 'Account discount (demo)',
+    active: true,
+    starts_at: null,
+    expires_at: null,
+  };
+  const REFERRAL = { code: 'DEMO-PREVIEW-0000', percent: 10, uses: 3 };
+
+  function install(staleError: string | null = null) {
+    installAccountPreview({
+      session: {} as never,
+      orders: [ORDER_ROW],
+      orderLines: [LINE_ROW],
+      order: (orderNumber: string) =>
+        orderNumber === 'DEMO-0001'
+          ? ({ found: true, order_number: orderNumber } as never)
+          : { found: false },
+      rewards: REWARDS,
+      referral: REFERRAL,
+      discounts: [DISCOUNT],
+      staleError,
+    });
+  }
+
+  afterEach(() => {
+    installAccountPreview(null);
+  });
+
+  test('every read resolves from the fabricated source, never supabase', async () => {
+    install();
+
+    await expect(listMyOrders()).resolves.toEqual({ data: [ORDER_ROW], error: null });
+    await expect(listMyOrderLines()).resolves.toEqual({ data: [LINE_ROW], error: null });
+    await expect(getMyRewardSummary()).resolves.toEqual({ data: REWARDS, error: null });
+    await expect(listMyDiscounts()).resolves.toEqual({ data: [DISCOUNT], error: null });
+    await expect(getMyReferralCode()).resolves.toEqual({ data: REFERRAL, error: null });
+  });
+
+  test('getMyOrder resolves the requested fabricated order, and misses honestly', async () => {
+    install();
+
+    await expect(getMyOrder('DEMO-0001')).resolves.toEqual({
+      data: { found: true, order_number: 'DEMO-0001' },
+      error: null,
+    });
+    await expect(getMyOrder('DEMO-9999')).resolves.toEqual({ data: { found: false }, error: null });
+  });
+
+  test('redeemReward is disabled — the preview never mutates anything', async () => {
+    install();
+
+    await expect(redeemReward()).resolves.toEqual({
+      data: { ok: false, reason: 'Redemption is disabled in the design preview.' },
+      error: null,
+    });
+  });
+
+  test('staleError rides alongside the data — the shape that drives StaleDataNotice', async () => {
+    install('Demo: background refresh failed.');
+
+    await expect(listMyOrders()).resolves.toEqual({
+      data: [ORDER_ROW],
+      error: 'Demo: background refresh failed.',
+    });
+    await expect(getMyRewardSummary()).resolves.toEqual({
+      data: REWARDS,
+      error: 'Demo: background refresh failed.',
+    });
+    await expect(getMyOrder('DEMO-0001')).resolves.toEqual({
+      data: { found: true, order_number: 'DEMO-0001' },
+      error: 'Demo: background refresh failed.',
+    });
+    await expect(listMyOrderLines()).resolves.toEqual({
+      data: [LINE_ROW],
+      error: 'Demo: background refresh failed.',
+    });
+    await expect(listMyDiscounts()).resolves.toEqual({
+      data: [DISCOUNT],
+      error: 'Demo: background refresh failed.',
+    });
+    await expect(getMyReferralCode()).resolves.toEqual({
+      data: REFERRAL,
+      error: 'Demo: background refresh failed.',
+    });
+  });
+
+  test('uninstalling restores the live path', async () => {
+    install();
+    installAccountPreview(null);
+
+    await expect(listMyOrders()).resolves.toEqual({ data: [], error: 'Backend not configured.' });
   });
 });

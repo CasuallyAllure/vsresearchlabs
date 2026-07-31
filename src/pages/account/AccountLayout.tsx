@@ -13,13 +13,14 @@ import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useCustomerAuth } from '../../lib/customerAuth';
 import { AccountSessionProvider } from '../../lib/accountSession';
+import { accountPreviewSession } from '../../lib/accountPreviewSource';
 import { supabase } from '../../lib/supabase';
 import { AuthCard } from '../../components/account/AuthCard';
 import { Button } from '../../components/ui/Button';
-import { PillTabs, type PillTab } from '../../components/ui/PillTabs';
+import { AccountTabs, type AccountTabItem } from '../../components/account/AccountTabs';
 import { siteConfig } from '../../config';
 
-const TABS: PillTab[] = [
+const TABS: AccountTabItem[] = [
   { id: '/account', label: 'Overview' },
   { id: '/account/orders', label: 'Orders' },
   { id: '/account/rewards', label: 'Rewards' },
@@ -37,7 +38,15 @@ function activeTabId(pathname: string): string {
 }
 
 export function AccountLayout({ children }: { children: ReactNode }) {
-  const auth = useCustomerAuth();
+  // WS-1's rule is intact: this is still the ONE `useCustomerAuth()` call in
+  // the portal, and it still runs unconditionally (never behind a branch, so
+  // hook order never changes). The DEV-only design preview swaps the VALUE
+  // that gets published, so the whole signed-in tree renders for real without
+  // anyone signing in. `accountPreviewSession()` is statically null in a
+  // production build (src/lib/accountPreviewSource.ts).
+  const liveAuth = useCustomerAuth();
+  const previewAuth = accountPreviewSession();
+  const auth = previewAuth ?? liveAuth;
   const { loading, user, profile, error, signIn, signUp, verifyOtp, resendOtp, signOut } = auth;
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,7 +80,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
     return <Navigate to="/admin/customers" replace />;
   }
 
-  if (!supabase) {
+  if (!supabase && !previewAuth) {
     return (
       <section className="py-[var(--space-16)] max-w-[52ch] mx-auto">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.3em]">
@@ -119,7 +128,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <section className="py-[var(--space-6)] max-w-[64ch] mx-auto px-[var(--space-2)]">
+    <section className="py-[var(--space-4)] sm:py-[var(--space-6)] max-w-[64ch] mx-auto px-[var(--space-2)]">
       <header className="mb-[var(--space-4)] flex items-center gap-[var(--space-2)] border-b border-ink/[0.06] pb-[var(--space-2)]">
         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.2em]">
           <span className="text-ink/70">
@@ -144,9 +153,9 @@ export function AccountLayout({ children }: { children: ReactNode }) {
         </Button>
       </header>
 
-      <nav aria-label="Account sections" className="mb-[var(--space-6)] flex justify-start sm:justify-center">
-        <PillTabs
-          tabs={TABS}
+      <nav aria-label="Account sections" className="mb-[var(--space-5)] sm:mb-[var(--space-6)] flex justify-start sm:justify-center">
+        <AccountTabs
+          items={TABS}
           activeId={activeTabId(location.pathname)}
           onChange={(id) => navigate(id)}
           ariaLabel="Account sections"
