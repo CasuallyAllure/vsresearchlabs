@@ -128,12 +128,18 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
     if (ok) await revoke(cart.id);
   }
 
+  // The calm "not migrated" note NAMES THE UNDERLYING FAILURE. PGRST202 means
+  // both "081 was never applied" and "081 was applied a minute ago and
+  // PostgREST's schema cache is still stale" — showing only the placeholder
+  // made the second case a dead end with nothing to act on.
   if (unmigrated) {
     return (
       <Panel caption="Prepared cart">
         <p className="text-[12px] text-ink/40">
-          Prepared-cart data layer not migrated yet — apply migration 081 to enable this.
+          Prepared-cart data layer not migrated yet — apply migration 081 to enable this. If 081 was
+          just applied, PostgREST&rsquo;s schema cache is still stale; reload in a moment.
         </p>
+        {error && <p role="alert" className="mt-[var(--space-2)] font-mono text-[10.5px] text-ink/50">{error}</p>}
       </Panel>
     );
   }
