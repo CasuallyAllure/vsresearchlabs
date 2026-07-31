@@ -3,6 +3,10 @@
 These power the 3-slide intro carousel in the first-visit modal
 (`src/components/landing/VideoIntroModule.tsx`). Self-hosted, no YouTube/embeds.
 
+**Slide 1 (`what-are`) is vertical.** It carries `portrait: true`, so its clip
+plays in a 9:16 lightbox instead of the 16:9 well. Same two drop-in files — only
+the frame differs. Source lives in `vsrl-video/out/deliver/`.
+
 ## Drop-in convention
 
 Each slide auto-looks for two files **named by the slide id**. Drop both in and
@@ -23,7 +27,8 @@ never looks broken before the files exist.
 
 - **Format:** MP4, H.264 (`yuv420p`), AAC audio. Widely supported, hardware-decoded on phones.
 - **Resolution:** 1280×720 (720p) is plenty — go 960×540 if you want even lighter.
-- **Aspect:** 16:9 landscape (the well is 16:9; vertical clips get cropped).
+- **Aspect:** 16:9 landscape, unless the slide sets `portrait: true` (then 9:16).
+  Keep 9:16 files under ~20 MB — Cloudflare caps a static asset at 25 MiB.
 - **Bitrate / size:** aim ~1.5–3 Mbps; a 30–60s clip lands ~5–10 MB. Smaller is better.
 - **Length:** short. These are intros, not features.
 - **Poster:** a single frame as JPG at the same resolution, ~100–200 KB.

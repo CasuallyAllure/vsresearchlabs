@@ -18,13 +18,15 @@
  * to go live: just drop the two files in. See public/media/intro/README.md for
  * the recommended encoding (keep it small — 720p H.264, a few MB).
  *
- * Third-party clips take the other path: set `youtubeId` + `credit` on the slide
- * and it embeds the official (nocookie) player, click-to-load, with the creator
- * named underneath. We do not download and re-host video we don't own. Note that
- * frame-src in public/_headers must allow the player's origin.
+ * Vertical clips take the other path: set `portrait` on the slide. Its cover
+ * hangs centred in the well (taller on a phone, where a 16:9 well would shrink
+ * a 9:16 still to a sliver), and tapping opens the clip in a 9:16 lightbox
+ * rather than cropping it to a strip in the well. Same drop-in files, same
+ * click-to-load — only the frame differs.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { siteConfig } from '../../config';
 
 const mediaSrc = (id: string, ext: 'mp4' | 'jpg') => `/media/intro/${id}.${ext}`;
@@ -34,10 +36,9 @@ interface VideoTab {
   title: string;        // top title (Cormorant), changes per slide
   subtitle: string;     // editorial line under the title
   body: string;         // supporting copy under the video
-  /** Third-party YouTube clip. When set, the slide embeds the official player
-   *  instead of a self-hosted mp4 — the creator keeps the view and the credit.
-   *  We do not re-host other people's video. Requires a `credit`. */
-  youtubeId?: string;
+  /** The clip is 9:16. Plays in the portrait lightbox rather than the 16:9
+   *  well, which would crop it to a strip. */
+  portrait?: boolean;
   credit?: { name: string; url: string };
   /** Optional still shown as the pre-play cover (e.g. a rendered vial group).
    *  When set, it replaces the branded DNA plate behind the play button. */
@@ -54,11 +55,11 @@ const TABS: VideoTab[] = [
       'your body already produces to coordinate repair, growth, metabolism, and ' +
       'immune balance. Production naturally decreases with age. Research peptides ' +
       'are tools used to study these pathways.',
-    cover: '/media/intro/what-are-vials.webp',
-    youtubeId: 'Ha7Chvv5pD8',
+    cover: '/media/intro/what-are.jpg',
+    portrait: true,
     credit: {
-      name: 'What the Health',
-      url: 'https://www.youtube.com/watch?v=Ha7Chvv5pD8',
+      name: '@vsresearchlabs',
+      url: 'https://www.instagram.com/reel/Dbb1AW2PQMV/',
     },
   },
   {
@@ -178,89 +179,95 @@ export function VideoIntroModule() {
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          className="relative w-full overflow-hidden rounded-[12px] bg-display border border-ink/[0.08] shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30"
-          style={{ aspectRatio: '16 / 9' }}
+          className={`relative w-full overflow-hidden rounded-[12px] bg-display border border-ink/[0.08] shadow-[inset_0_1px_2px_rgba(26,23,20,0.05)] focus:outline-none focus-visible:ring-1 focus-visible:ring-ink/30 ${
+            // A 9:16 cover in a 16:9 well is legible on a wide screen but
+            // collapses on a phone, so portrait slides get a taller well there.
+            tab.portrait ? 'aspect-[4/5] sm:aspect-video' : 'aspect-video'
+          }`}
         >
-          {tab.youtubeId ? (
-            playing === tab.id ? (
-              // Tapped: load the official player. Nothing from YouTube is fetched
-              // (and no YouTube cookie is set) until this point.
-              <iframe
-                key={tab.id}
-                src={`https://www.youtube-nocookie.com/embed/${tab.youtubeId}?autoplay=1&rel=0`}
-                title={tab.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full border-0 bg-display"
-              />
-            ) : (
-              // Branded cover plate — no third-party thumbnail. The clip itself
-              // still loads (and is credited) only when tapped.
-              <button
-                type="button"
-                onClick={() => setPlaying(tab.id)}
-                aria-label={`Play: ${tab.title}`}
-                className="group absolute inset-0 h-full w-full bg-display"
-              >
-                {tab.cover ? (
-                  // Vial-group still: the image is the cover; title/eyebrow
-                  // already sit above the well, so we show only the play button.
-                  <>
+          {tab.portrait && posterOk[tab.id] ? (
+            // Branded cover plate. The clip is 9:16, so tapping opens it in the
+            // portrait lightbox below; the mp4 is only fetched at that point.
+            <button
+              type="button"
+              onClick={() => setPlaying(tab.id)}
+              aria-label={`Play: ${tab.title}`}
+              className="group absolute inset-0 h-full w-full bg-display"
+            >
+              {tab.cover ? (
+                // The image is the cover; title/eyebrow already sit above the
+                // well, so we show only the play button. A portrait cover hangs
+                // centred at full height on the dark mat rather than being
+                // cropped to a band.
+                <>
+                  <img
+                    src={tab.cover}
+                    alt=""
+                    aria-hidden="true"
+                    className={
+                      tab.portrait
+                        ? 'absolute left-1/2 top-0 h-full w-auto -translate-x-1/2 shadow-[0_0_40px_-8px_rgba(0,0,0,0.55)]'
+                        : 'absolute inset-0 h-full w-full object-cover'
+                    }
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`absolute inset-0 transition-colors ${
+                      tab.portrait
+                        ? 'bg-ink/[0.06] group-hover:bg-ink/[0.12]'
+                        : 'bg-ink/0 group-hover:bg-ink/[0.06]'
+                    }`}
+                  />
+                  {/* Portrait covers carry their own centred lockup, so the
+                      badge drops into the clear space below it. */}
+                  <span
+                    className={`absolute inset-0 flex justify-center ${
+                      tab.portrait ? 'items-end pb-[10%]' : 'items-center'
+                    }`}
+                  >
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full border border-ink/10 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                        <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
+                      </svg>
+                    </span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-b from-ink/[0.03] via-transparent to-ink/[0.07]"
+                  />
+                  <span className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-2)] px-[var(--space-6)]">
                     <img
-                      src={tab.cover}
+                      src="/brand/vs-dna-s-full-colour.png"
                       alt=""
                       aria-hidden="true"
-                      className="absolute inset-0 h-full w-full object-cover"
+                      width="44"
+                      height="44"
+                      style={{ width: 44, height: 44 }}
                     />
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-ink/0 transition-colors group-hover:bg-ink/[0.06]"
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-ink/10 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                          <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
-                        </svg>
-                      </span>
+                    <span className="font-serif font-medium uppercase tracking-[0.16em] leading-tight text-ink text-center text-[clamp(1rem,3vw,1.55rem)] [text-wrap:balance]">
+                      {tab.title}
                     </span>
-                  </>
-                ) : (
-                  <>
                     <span
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-gradient-to-b from-ink/[0.03] via-transparent to-ink/[0.07]"
-                    />
-                    <span className="absolute inset-0 flex flex-col items-center justify-center gap-[var(--space-2)] px-[var(--space-6)]">
-                      <img
-                        src="/brand/vs-dna-s-full-colour.png"
-                        alt=""
-                        aria-hidden="true"
-                        width="44"
-                        height="44"
-                        style={{ width: 44, height: 44 }}
-                      />
-                      <span className="font-serif font-medium uppercase tracking-[0.16em] leading-tight text-ink text-center text-[clamp(1rem,3vw,1.55rem)] [text-wrap:balance]">
-                        {tab.title}
-                      </span>
-                      <span
-                        className="font-mono text-[10px] uppercase tracking-[0.34em] bg-clip-text text-transparent"
-                        style={{
-                          backgroundImage:
-                            'linear-gradient(90deg, var(--color-accent-gold-dark), var(--color-accent-gold-light) 50%, var(--color-accent-gold-dark))',
-                        }}
-                      >
-                        Peptides Explained · {String(active + 1).padStart(2, '0')}
-                      </span>
-                      <span className="mt-[var(--space-2)] flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
-                        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                          <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
-                        </svg>
-                      </span>
+                      className="font-mono text-[10px] uppercase tracking-[0.34em] bg-clip-text text-transparent"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(90deg, var(--color-accent-gold-dark), var(--color-accent-gold-light) 50%, var(--color-accent-gold-dark))',
+                      }}
+                    >
+                      Peptides Explained · {String(active + 1).padStart(2, '0')}
                     </span>
-                  </>
-                )}
-              </button>
-            )
+                    <span className="mt-[var(--space-2)] flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 bg-base-800/90 backdrop-blur transition-transform group-hover:scale-105">
+                      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                        <path d="M5 3.5 14 9 5 14.5V3.5Z" fill="currentColor" className="text-ink/80" />
+                      </svg>
+                    </span>
+                  </span>
+                </>
+              )}
+            </button>
           ) : playing === tab.id && posterOk[tab.id] ? (
             // Tapped: load + play the mp4 (only fetched now — keeps the page light).
             <video
@@ -302,7 +309,7 @@ export function VideoIntroModule() {
         {/* Hidden probes: a poster that loads flips its slide from "coming soon"
             to the real player. Drop <id>.jpg + <id>.mp4 into public/media/intro/. */}
         <div className="hidden" aria-hidden="true">
-          {TABS.filter((t) => !t.youtubeId).map((t) => (
+          {TABS.map((t) => (
             <img
               key={t.id}
               src={mediaSrc(t.id, 'jpg')}
@@ -316,12 +323,22 @@ export function VideoIntroModule() {
         <CarouselArrow side="right" onClick={() => go(active + 1)} />
       </div>
 
+      {/* Portrait player — opened from the cover plate above. */}
+      {tab.portrait && playing === tab.id && (
+        <PortraitLightbox
+          id={tab.id}
+          title={tab.title}
+          credit={tab.credit}
+          onClose={() => setPlaying(null)}
+        />
+      )}
+
       {/* Body */}
       <p className="mt-[var(--space-4)] text-center text-[12.5px] sm:text-[13px] text-ink/60 leading-[1.65] max-w-[52ch] mx-auto [text-wrap:pretty]">
         {tab.body}
       </p>
 
-      {/* Credit — third-party clip, embedded and attributed, never re-hosted. */}
+      {/* Credit — the clip is embedded from its source and attributed. */}
       {tab.credit && (
         <p className="mt-[var(--space-3)] text-center font-mono text-[10px] uppercase tracking-[0.24em] text-ink/35">
           Video ·{' '}
@@ -359,6 +376,95 @@ export function VideoIntroModule() {
         })}
       </div>
     </section>
+  );
+}
+
+interface PortraitLightboxProps {
+  /** Slide id — resolves <id>.mp4 + <id>.jpg in public/media/intro/. */
+  id: string;
+  title: string;
+  credit?: { name: string; url: string };
+  onClose: () => void;
+}
+
+/** Centered 9:16 player. The well upstairs is 16:9, so a vertical clip gets its
+ *  own frame rather than being cropped to a strip. Height is capped against the
+ *  viewport and the width follows from the video's own ratio, so the frame is
+ *  always fully on screen — laptop or phone. */
+function PortraitLightbox({ id, title, credit, onClose }: PortraitLightboxProps) {
+  // ESC closes the player only. Capture phase + stopPropagation so the
+  // IntroModal's own document-level ESC handler doesn't close the modal too.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      onClose();
+    }
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [onClose]);
+
+  // Portalled to <body>: the IntroModal's panel carries a transform, which makes
+  // it the containing block for `fixed` — inline, the player would be positioned
+  // against that panel and clipped by its overflow-y-auto.
+  return createPortal(
+    <>
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="fixed inset-0 z-[90] bg-ink/55 backdrop-blur-[3px]"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${title} — video`}
+        className="fixed left-1/2 top-1/2 z-[91] -translate-x-1/2 -translate-y-1/2"
+      >
+        <div className="relative overflow-hidden rounded-[12px] border border-ink/[0.14] bg-display shadow-[0_24px_60px_-18px_rgba(26,23,20,0.5)]">
+          <div className="flex items-center justify-between gap-3 border-b border-ink/[0.08] px-3 py-2">
+            <span className="truncate font-mono text-[10px] uppercase tracking-[0.2em] text-ink/45">
+              {credit?.name ?? title}
+            </span>
+            <div className="flex shrink-0 items-center gap-2">
+              {credit && (
+                <a
+                  href={credit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-ink/55 transition-colors hover:text-ink"
+                >
+                  Open ↗
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close video"
+                className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-ink/45 transition-colors hover:text-ink"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Fixed height + auto width: the 9:16 ratio sets the frame's width,
+              so the card shrink-wraps the video and never letterboxes. */}
+          <video
+            src={mediaSrc(id, 'mp4')}
+            poster={mediaSrc(id, 'jpg')}
+            title={title}
+            controls
+            autoPlay
+            playsInline
+            preload="auto"
+            className="block h-[min(72dvh,620px)] w-auto max-w-[92vw] bg-display object-contain"
+          />
+        </div>
+      </div>
+    </>,
+    document.body,
   );
 }
 
