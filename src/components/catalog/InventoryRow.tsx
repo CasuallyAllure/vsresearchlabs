@@ -28,7 +28,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import { useSignedIn } from '../../lib/authPresence';
-import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct } from '../../lib/earlyAccess';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import { variantProduct, resolveSellableDose, canQuickAdd } from '../../lib/cartActions';
 import { AbbreviationChip } from './AbbreviationChip';
 import { SKUCode } from '../ui/identifiers';
@@ -49,7 +49,9 @@ export function InventoryRow({ product, family, dose, onInspect }: InventoryRowP
   const addToCart = useCart((s) => s.add);
   const signedIn = useSignedIn();
   // Member-first window — terminal buy surface, gated like CompoundTile.
-  const earlyLocked = isEarlyAccessProduct(product) && !signedIn;
+  // Subscribed (not .getState()) so a flag load/toggle re-renders this row.
+  const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
+  const earlyLocked = isEarlyAccessProduct(product, earlyAccessFlags) && !signedIn;
   const [added, setAdded] = useState(false);
   const timerRef = useRef<number | null>(null);
 
