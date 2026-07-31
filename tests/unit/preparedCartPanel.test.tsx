@@ -18,6 +18,9 @@
  *   • Send goes through ConfirmModal's `confirm`, never window.confirm, which
  *     iOS silently suppresses after "Block Alerts".
  *   • Only (sku, dose, quantity) reaches the RPC.
+ *   • Every dose option, and every picked line, NAMES ITS SHIPPING TIER. The
+ *     two tiers are priced differently and B2G1 reaches sourced lines only, so
+ *     picking blind can build a cart that does not behave as the admin expects.
  */
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -47,10 +50,13 @@ import { PreparedCartPanel } from '../../src/pages/admin/members/PreparedCartPan
 import { useProductOverrides, type VariantOverride } from '../../src/lib/productOverrides';
 import type { MemberRow } from '../../src/pages/admin/membersView';
 
+// BPC deliberately straddles BOTH shipping tiers — 5mg carries on-hand supply
+// (24 Hour), 10mg is drop-shipped (Sourced) — because a compound-level tier
+// shortcut would pass a single-tier fixture and lie here.
 const OVERRIDES: Record<string, Record<string, VariantOverride>> = {
   'VSR-RS-BPC': {
     '5mg': { sku: 'VSR-RS-BPC', dose: '5mg', on_hand: 5, inbound_units: 0, price_cents: 6_000, lead_days: null, hidden: false },
-    '10mg': { sku: 'VSR-RS-BPC', dose: '10mg', on_hand: 5, inbound_units: 0, price_cents: 10_000, lead_days: null, hidden: false },
+    '10mg': { sku: 'VSR-RS-BPC', dose: '10mg', on_hand: 0, inbound_units: 0, price_cents: 10_000, lead_days: 9, hidden: false },
   },
   'VSR-RS-RETA': {
     '15mg': { sku: 'VSR-RS-RETA', dose: '15mg', on_hand: 5, inbound_units: 0, price_cents: 24_000, lead_days: null, hidden: false },
@@ -135,6 +141,56 @@ describe('PreparedCartPanel — the line editor', () => {
     expect(doseValues).toEqual(['', 'VSR-RS-RETA|15mg']);
     // The previous compound's dose must not survive the switch.
     expect(selects()[1].value).toBe('');
+  });
+
+  test('every dose option names its own shipping tier', async () => {
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+
+    fireEvent.change(selects()[0], { target: { value: 'BPC-157' } });
+    const labels = [...selects()[1].options].map((o) => o.text);
+
+    expect(labels[1]).toContain('24 Hour Shipping');
+    expect(labels[2]).toContain('Standard Shipping · 7–10 business days');
+    // Same SKU, opposite tiers — neither dose may borrow the other's.
+    expect(labels[1]).not.toContain('Standard');
+    expect(labels[2]).not.toContain('24 Hour');
+    // The price the admin was already relying on stays in the label.
+    expect(labels[1]).toContain('$60');
+    expect(labels[2]).toContain('$100');
+  });
+
+  test('the compound dropdown says "all" only when the doses really agree', async () => {
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+
+    const labels = [...selects()[0].options].map((o) => o.text);
+
+    // BPC has one 24-hour dose and one sourced dose.
+    expect(labels[1]).toBe('BPC-157 · mixed tiers');
+    // Retatrutide's only dose is 24-hour, so "all" is the truth.
+    expect(labels[2]).toBe('Retatrutide · all 24 Hour');
+  });
+
+  test('the picked tier stays visible on the line row after selection', async () => {
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+
+    pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+    expect(screen.getByText('24 Hour')).toBeTruthy();
+    expect(screen.queryByText('Sourced')).toBeNull();
+
+    // Switching dose within the same compound re-reads the tier per dose.
+    fireEvent.change(selects()[1], { target: { value: 'VSR-RS-BPC|10mg' } });
+    expect(screen.getByText('Sourced')).toBeTruthy();
+    expect(screen.queryByText('24 Hour')).toBeNull();
+  });
+
+  test('states that B2G1 cannot reach a 24 Hour line', async () => {
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+
+    expect(screen.getByText(/a 24 Hour line never earns a free third unit/i)).toBeTruthy();
   });
 
   test("shows THIS member's price, not list price", async () => {
