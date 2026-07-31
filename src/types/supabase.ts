@@ -1575,6 +1575,14 @@ export type Database = {
         Args: { p_code: string; p_order_id: string }
         Returns: Json
       }
+      admin_audit_public_view_write_grants: {
+        Args: never
+        Returns: {
+          grantee: string
+          privilege_type: string
+          view_name: string
+        }[]
+      }
       admin_clear_coupon: { Args: { p_order_id: string }; Returns: Json }
       admin_clear_coupons: { Args: { p_order_id: string }; Returns: Json }
       admin_create_order: {
