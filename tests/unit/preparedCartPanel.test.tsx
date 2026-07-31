@@ -77,10 +77,25 @@ type RpcResult = { data: unknown; error: unknown };
  *  the live client can produce and both used to hang the button forever. */
 type RpcHandler = (args: unknown) => RpcResult | Promise<RpcResult>;
 
-function makeClient(handlers: Record<string, RpcHandler>) {
+/** The send-prepared-cart edge call. Defaults to a clean delivery so the older
+ *  build assertions stay about BUILDING; the delivery-reporting suite below
+ *  overrides it per case. */
+type InvokeResult = { data: unknown; error: unknown };
+type InvokeHandler = (body: unknown) => InvokeResult | Promise<InvokeResult>;
+
+const SENT: InvokeHandler = () => ({
+  data: { ok: true, status: 'sent', recipient: 'ada@example.com' },
+  error: null,
+});
+
+function makeClient(handlers: Record<string, RpcHandler>, invoke: InvokeHandler = SENT) {
   const rpc = vi.fn(async (name: string, args: unknown) =>
     handlers[name] ? handlers[name](args) : { data: null, error: null });
-  return { rpc, from: vi.fn(() => ({ select: vi.fn(async () => ({ data: [], error: null })) })) };
+  return {
+    rpc,
+    from: vi.fn(() => ({ select: vi.fn(async () => ({ data: [], error: null })) })),
+    functions: { invoke: vi.fn(async (_fn: string, opts: { body: unknown }) => invoke(opts?.body)) },
+  };
 }
 
 const EMPTY_LIST: RpcHandler = () => ({ data: { rows: [] }, error: null });
@@ -232,7 +247,7 @@ describe('PreparedCartPanel — sending', () => {
 
     pickLine('BPC-157', 'VSR-RS-BPC|10mg');
     fireEvent.change(screen.getByPlaceholderText('e.g. SPRING20'), { target: { value: 'spring20' } });
-    fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
 
     await waitFor(() => expect(create).toHaveBeenCalled());
 
@@ -255,7 +270,7 @@ describe('PreparedCartPanel — sending', () => {
     await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
 
     await waitFor(() => expect(no).toHaveBeenCalled());
     expect(create).not.toHaveBeenCalled();
@@ -274,7 +289,7 @@ describe('PreparedCartPanel — sending', () => {
     await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
 
     // A fragment is never sent to a server and never rides in a Referer header.
     const link = await screen.findByText(new RegExp(`/account/prepared#t=${token}`));
@@ -285,15 +300,15 @@ describe('PreparedCartPanel — sending', () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
     await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
 
-    const button = screen.getByRole('button', { name: /build cart/i }) as HTMLButtonElement;
+    const button = screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
 
     // A compound alone is not a line — the dose is what makes it orderable.
     fireEvent.change(selects()[0], { target: { value: 'BPC-157' } });
-    expect((screen.getByRole('button', { name: /build cart/i }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.change(selects()[1], { target: { value: 'VSR-RS-BPC|5mg' } });
-    expect((screen.getByRole('button', { name: /build cart/i }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement).disabled).toBe(false);
   });
 });
 
@@ -329,7 +344,7 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
     await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
   }
 
   test('a rejecting build RPC clears "Working…" and renders the reason', async () => {
@@ -348,7 +363,7 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
     // would look identical to a build that quietly did nothing.
     expect(await screen.findByText(/Failed to fetch/)).toBeTruthy();
     await waitFor(() => expect(screen.queryByText('Working…')).toBeNull());
-    expect((screen.getByRole('button', { name: 'Build cart' }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole('button', { name: 'Build & send cart' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   test('a build RPC that never settles times out instead of hanging forever', async () => {
@@ -369,7 +384,7 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
       render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
       await flush();
       pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-      fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+      fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
       await flush();
 
       expect(screen.getByText('Working…')).toBeTruthy();
@@ -448,5 +463,169 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
     expect(screen.getByText(/schema cache is still stale/i)).toBeTruthy();
     expect(screen.getByRole('alert').textContent).toMatch(/in the schema cache/i);
     expect(consoleError.mock.calls.some(([, arg]) => arg === raw)).toBe(true);
+  });
+});
+
+/**
+ * DELIVERY TRUTH.
+ *
+ * The panel is the owner's only evidence that a client was contacted. Every
+ * case below exists because reporting the wrong one has a real cost: a false
+ * "sent" leaves a client waiting for an email that never arrives (which is how
+ * this whole workstream started), and a false "failed" gets a member emailed
+ * twice. The link stays copyable in EVERY case, because it is the fallback.
+ */
+describe('PreparedCartPanel — what the owner is told about the email', () => {
+  const TOKEN = 'c'.repeat(64);
+
+  async function buildWith(invoke: InvokeHandler) {
+    seam.client = makeClient(
+      {
+        admin_prepared_carts: EMPTY_LIST,
+        admin_create_prepared_cart: () => ({
+          data: { cart_id: 'cart-9', token: TOKEN, expires_at: '2026-08-13T00:00:00Z' }, error: null,
+        }),
+      },
+      invoke,
+    );
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+  }
+
+  test('the send carries the cart id and the plaintext token — the only moment it exists', async () => {
+    await buildWith(SENT);
+    await screen.findByText(/Emailed to ada@example.com/i);
+
+    const client = seam.client as { functions: { invoke: ReturnType<typeof vi.fn> } };
+    expect(client.functions.invoke).toHaveBeenCalledWith('send-prepared-cart', {
+      body: { cart_id: 'cart-9', token: TOKEN },
+    });
+  });
+
+  test('a delivery failure is REPORTED, never reported as success', async () => {
+    await buildWith(() => ({ data: null, error: { message: 'Email delivery failed.' } }));
+
+    const note = await screen.findByText(/The email did not go out/i);
+    // Announced, not just printed — the owner may have scrolled away from this
+    // panel by the time the send comes back.
+    expect(note.closest('[role="alert"]')).not.toBeNull();
+    expect(screen.queryByText(/Emailed to/i)).toBeNull();
+  });
+
+  test('the copyable link survives a failed send — it is the fallback', async () => {
+    await buildWith(() => ({ data: null, error: { message: 'Email delivery failed.' } }));
+    await screen.findByText(/The email did not go out/i);
+
+    expect(screen.getByText(new RegExp(`/account/prepared#t=${TOKEN}`))).toBeTruthy();
+    expect(screen.getByRole('button', { name: /copy link/i })).toBeTruthy();
+  });
+
+  test('an opted-out member is named as NOT emailed, not quietly skipped', async () => {
+    // Consent is honoured the way 075's winback kind honours it, and the
+    // suppression is surfaced so the owner can use a channel they agreed to.
+    await buildWith(() => ({
+      data: { ok: false, status: 'opted_out', recipient: 'ada@example.com' }, error: null,
+    }));
+
+    const note = await screen.findByText(/has opted out of marketing email/i);
+    expect(note.textContent).toMatch(/Not emailed/i);
+    expect(screen.queryByText(/Emailed to/i)).toBeNull();
+  });
+
+  test('a duplicate send says "already emailed" rather than claiming a second one went out', async () => {
+    await buildWith(() => ({
+      data: { ok: false, status: 'already_sent', recipient: 'ada@example.com' }, error: null,
+    }));
+    expect(await screen.findByText(/Already emailed/i)).toBeTruthy();
+  });
+
+  test('an unrecognisable response is a failure, not an optimistic success', async () => {
+    await buildWith(() => ({ data: { surprise: true }, error: null }));
+    expect(await screen.findByText(/The email did not go out/i)).toBeTruthy();
+  });
+
+  test('a thrown send is caught — the panel and the link survive it', async () => {
+    await buildWith(() => { throw new Error('network down'); });
+
+    expect(await screen.findByText(/The email did not go out/i)).toBeTruthy();
+    expect(screen.getByText(new RegExp(`#t=${TOKEN}`))).toBeTruthy();
+  });
+});
+
+/**
+ * THE BUILT-CARTS LIST.
+ *
+ * 082 made the link re-openable — the member's cart is device-local, so
+ * phone-then-laptop has to work — which changed what the owner needs to see. A
+ * status chip reading "claimed" would now tell them a perfectly live link was
+ * spent, and they would rebuild a cart the member can already open. So status
+ * answers ONE question (will this link still work?) and how often it has been
+ * opened is information beside it, not a verdict.
+ */
+describe('PreparedCartPanel — the built-carts list', () => {
+  function listing(rows: unknown[]): RpcHandler {
+    return () => ({ data: { rows }, error: null });
+  }
+
+  const cart = (over: Record<string, unknown> = {}) => ({
+    id: 'cart-1',
+    created_at: '2026-07-30T00:00:00Z',
+    expires_at: '2026-08-13T00:00:00Z',
+    claimed_at: null,
+    last_claimed_at: null,
+    claim_count: 0,
+    revoked_at: null,
+    coupon_code: null,
+    note: null,
+    status: 'live',
+    lines: [{ sku: 'VSR-RS-BPC', dose: '5mg', quantity: 1 }],
+    ...over,
+  });
+
+  test('an opened cart still reads LIVE, and reports how many times it was opened', async () => {
+    seam.client = makeClient({
+      admin_prepared_carts: listing([
+        cart({ status: 'live', claim_count: 3, claimed_at: '2026-07-30T01:00:00Z', last_claimed_at: '2026-07-31T09:00:00Z' }),
+      ]),
+    });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+
+    expect(await screen.findByText('live')).toBeTruthy();
+    expect(screen.getByText(/opened 3×/)).toBeTruthy();
+    // "claimed" as a STATUS is gone — it said "spent" about a working link.
+    expect(screen.queryByText('claimed')).toBeNull();
+  });
+
+  test('a never-opened cart shows no open count at all', async () => {
+    seam.client = makeClient({ admin_prepared_carts: listing([cart()]) });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+
+    await screen.findByText('live');
+    expect(screen.queryByText(/opened/i)).toBeNull();
+  });
+
+  test('an opened-but-live cart can still be revoked — that is the owner’s kill switch', async () => {
+    seam.client = makeClient({
+      admin_prepared_carts: listing([cart({ claim_count: 2, last_claimed_at: '2026-07-31T09:00:00Z' })]),
+    });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    expect(await screen.findByRole('button', { name: /revoke/i })).toBeTruthy();
+  });
+
+  test.each([
+    ['expired', 'expired'],
+    ['revoked', 'revoked'],
+  ])('a %s cart offers no Revoke — there is nothing left to kill', async (status) => {
+    seam.client = makeClient({ admin_prepared_carts: listing([cart({ status, claim_count: 1 })]) });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+
+    await screen.findByText(status);
+    expect(screen.queryByRole('button', { name: /revoke/i })).toBeNull();
   });
 });

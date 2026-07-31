@@ -16,24 +16,29 @@
  * All pricing and line-shape logic is pure and lives in src/lib/preparedCart.ts
  * so it is unit-testable; this hook does I/O only.
  *
- * ── SEAM FOR THE EMAIL WORKSTREAM ────────────────────────────────────────────
- * This hook stops at "the cart exists and here is its link". It deliberately
- * sends nothing. The next workstream adds a `send-prepared-cart` edge function
- * (structural copy of send-invite: requireAdmin + Resend + an email_log row
- * with kind 'prepared_cart' and period_key 'pc-<cart id>') and calls it from
- * `create`'s result — the plaintext token is available there and nowhere else,
- * so that is the only place the mail can be composed.
+ * ── DELIVERY ─────────────────────────────────────────────────────────────────
+ * `send` posts to the `send-prepared-cart` edge function (requireAdmin +
+ * Resend + an email_log row, kind 'prepared_cart', period_key 'pc-<cart id>').
+ * It is called from `create`'s RESULT and nowhere else, because that result is
+ * the only place the plaintext token ever exists — it is stored as a SHA-256
+ * digest and cannot be read back, so a cart whose token was lost can only be
+ * rebuilt.
+ *
+ * `send` reports the outcome instead of throwing, and the panel renders it:
+ * a failed send is SAID SO, and the copyable link stays on screen as the
+ * fallback. Reporting a send that did not happen would be the worst possible
+ * failure here — the owner would believe a client had been contacted.
  *
  * `preparedCartClaimUrl` below is the contract between the two halves: the
  * token rides in the URL HASH, never a query param, so it is never sent to a
  * server and never appears in a Referer header. The claim route
- * (/account/prepared) must capture it to a ref on first mount and scrub it with
- * history.replaceState before navigating.
+ * (src/pages/account/AccountPreparedCart.tsx) captures it on first mount and
+ * scrubs it with history.replaceState before anything navigates.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
+import { RPC_TIMEOUT_SECONDS, rpcWithTimeout, withTimeout } from '../../../lib/rpcTimeout';
 import productsData from '../../../data/products.json';
 import generatedCompounds from '../../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../../types';
@@ -44,13 +49,25 @@ import { getErrorMessage, isMissingBackend } from './backend';
 /** The full catalog, exactly as the admin order composer enumerates it. */
 const CATALOG = [...productsData, ...generatedCompounds] as unknown as Product[];
 
-export type PreparedCartStatus = 'live' | 'claimed' | 'expired' | 'revoked';
+/**
+ * OPENABILITY, not history. 081 derived a fourth state, 'claimed', the moment
+ * the member first opened the link — correct when a claim was single-use, and
+ * misleading once 082 made the link re-openable (the cart it fills is
+ * device-local, so phone-then-laptop has to work). An owner reading "claimed"
+ * would reasonably conclude the link was spent and rebuild one the member could
+ * already open. How often it has been opened is `claimCount`, below.
+ */
+export type PreparedCartStatus = 'live' | 'expired' | 'revoked';
 
 export interface PreparedCartSummary {
   id: string;
   created_at: string;
   expires_at: string;
   claimed_at: string | null;
+  /** Most recent open. null until the member has opened it at least once. */
+  last_claimed_at: string | null;
+  /** How many times the member has opened the link. Display only. */
+  claim_count: number;
   revoked_at: string | null;
   coupon_code: string | null;
   note: string | null;
@@ -88,49 +105,15 @@ export function useVariantIndex(): VariantIndex {
 }
 
 /**
- * Upper bound on any one prepared-cart RPC. Generous — building a cart writes a
- * row per line plus an audit entry — but finite, which is the whole point.
+ * The bounded-RPC helper moved to src/lib/rpcTimeout.ts when the member-facing
+ * claim page needed exactly the same guarantee (and, being a page, could not
+ * import it from the admin tree). Behaviour is unchanged — the race, the
+ * `finally` clear, and this panel's own wording, which stays here because the
+ * member page owes its reader a different sentence.
  */
-const RPC_TIMEOUT_MS = 15_000;
-
 const timeoutMessage = (verb: string) =>
-  `${verb} did not respond within ${RPC_TIMEOUT_MS / 1000}s. Reload this panel before trying again — ` +
+  `${verb} did not respond within ${RPC_TIMEOUT_SECONDS}s. Reload this panel before trying again — ` +
   'the request may still have gone through.';
-
-/**
- * Runs one prepared-cart RPC with a hard upper bound.
- *
- * supabase-js folds network failures into `{ error }` rather than rejecting, so
- * the resolved-error path is well covered — but NOTHING in the stack bounds how
- * long the call may take. `fetch` has no default timeout, and supabase-js awaits
- * `auth.getSession()` BEFORE it ever reaches `fetch`, so a stalled session read
- * hangs the promise before a request is even made. Either one used to leave
- * `busy` pinned true and the button reading "Working…" with no error and no
- * result — the bug this guards.
- *
- * A plain race rather than `.abortSignal()`: the signal is only handed to
- * `fetch`, so it cannot reach the half of the hang that happens before `fetch`
- * is called. The message says the write may still have landed because aborting
- * the client would not have rolled the server back either.
- */
-async function rpcWithTimeout(
-  client: SupabaseClient,
-  fn: string,
-  args: Record<string, unknown>,
-  verb: string,
-): Promise<{ data: unknown; error: unknown }> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      client.rpc(fn, args),
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(timeoutMessage(verb))), RPC_TIMEOUT_MS);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 /** One place to fail loudly: friendly message into `error`, raw object into the
  *  console so the next person debugging in production has something to read. */
@@ -152,6 +135,25 @@ interface UsePreparedCartResult {
     note: string | null;
   }) => Promise<CreatedPreparedCart | null>;
   revoke: (cartId: string) => Promise<boolean>;
+  send: (cart: CreatedPreparedCart) => Promise<SendResult>;
+}
+
+/**
+ * What actually happened to the email. Never a bare boolean: "we did not send
+ * it because the member opted out of marketing" and "Resend rejected it" call
+ * for different words and different next steps from the owner.
+ */
+export type SendResult =
+  | { status: 'sent'; recipient: string }
+  | { status: 'already_sent'; recipient: string | null }
+  | { status: 'opted_out'; recipient: string | null }
+  | { status: 'failed'; detail: string };
+
+interface SendResponseBody {
+  ok?: boolean;
+  status?: string;
+  recipient?: string | null;
+  error?: string;
 }
 
 export function usePreparedCart(userId: string): UsePreparedCartResult {
@@ -169,7 +171,7 @@ export function usePreparedCart(userId: string): UsePreparedCartResult {
       setLoading(true);
       try {
         const { data, error: rpcError } = await rpcWithTimeout(
-          supabase, 'admin_prepared_carts', { p_user_id: userId, p_limit: 20 }, 'Loading built carts',
+          supabase, 'admin_prepared_carts', { p_user_id: userId, p_limit: 20 }, timeoutMessage('Loading built carts'),
         );
         if (cancelled) return;
         if (rpcError) {
@@ -209,7 +211,7 @@ export function usePreparedCart(userId: string): UsePreparedCartResult {
         supabase,
         'admin_create_prepared_cart',
         { p_user_id: userId, p_lines: payload, p_coupon_code: couponCode, p_note: note },
-        'Building the cart',
+        timeoutMessage('Building the cart'),
       );
       if (rpcError) { reportRpcFailure('admin_create_prepared_cart', rpcError, setError); return null; }
       reload();
@@ -230,7 +232,7 @@ export function usePreparedCart(userId: string): UsePreparedCartResult {
     setError(null);
     try {
       const { data, error: rpcError } = await rpcWithTimeout(
-        supabase, 'admin_revoke_prepared_cart', { p_id: cartId }, 'Revoking the cart',
+        supabase, 'admin_revoke_prepared_cart', { p_id: cartId }, timeoutMessage('Revoking the cart'),
       );
       if (rpcError) { reportRpcFailure('admin_revoke_prepared_cart', rpcError, setError); return false; }
       reload();
@@ -243,5 +245,44 @@ export function usePreparedCart(userId: string): UsePreparedCartResult {
     }
   }, [reload]);
 
-  return { carts, loading, busy, error, unmigrated, reload, create, revoke };
+  /**
+   * Mail the claim link. Takes the WHOLE create result because the plaintext
+   * token lives only there — it is never persisted and cannot be read back.
+   *
+   * Every path returns a SendResult rather than throwing: the cart already
+   * exists at this point, and losing the panel to an exception would take the
+   * copyable link — the fallback the owner needs precisely when the mail did
+   * not go — down with it.
+   */
+  const send = useCallback<UsePreparedCartResult['send']>(async (cart) => {
+    if (!supabase) return { status: 'failed', detail: 'Backend not configured.' };
+    try {
+      const { data, error: fnError } = await withTimeout(
+        supabase.functions.invoke<SendResponseBody>('send-prepared-cart', {
+          body: { cart_id: cart.cart_id, token: cart.token },
+        }),
+        `Sending the email did not finish within ${RPC_TIMEOUT_SECONDS}s — it may or may not have gone out. ` +
+          'Check the member before rebuilding.',
+      );
+
+      if (fnError) {
+        console.error('[preparedCart] send-prepared-cart failed', fnError);
+        // A non-2xx from the function arrives here with the body attached; the
+        // suppression cases are 2xx and land below.
+        return { status: 'failed', detail: getErrorMessage(fnError) };
+      }
+
+      if (data?.status === 'already_sent') return { status: 'already_sent', recipient: data.recipient ?? null };
+      if (data?.status === 'opted_out')    return { status: 'opted_out', recipient: data.recipient ?? null };
+      if (data?.ok === true && data.recipient) return { status: 'sent', recipient: data.recipient };
+
+      console.error('[preparedCart] send-prepared-cart returned an unrecognised body', data);
+      return { status: 'failed', detail: data?.error ?? 'The email service gave an unexpected answer.' };
+    } catch (err) {
+      console.error('[preparedCart] send-prepared-cart threw', err);
+      return { status: 'failed', detail: getErrorMessage(err) };
+    }
+  }, []);
+
+  return { carts, loading, busy, error, unmigrated, reload, create, revoke, send };
 }
