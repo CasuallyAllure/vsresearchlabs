@@ -42,6 +42,7 @@ import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
 import { useAccountEmailPrefill } from '../lib/useAccountEmailPrefill';
+import { useCheckoutPrefill } from '../lib/checkoutPrefill';
 import { useProductOverrides } from '../lib/productOverrides';
 import { placeOrder } from '../lib/placeOrder';
 import { orderAttestationPayload } from '../lib/researchAttestation';
@@ -72,7 +73,7 @@ export function CartPage() {
   const items = useCart((s) => s.items);
   // Wholesale is account-gated: only a signed-in buyer's pack lines count as
   // wholesale (7–10 day, never ⚡24hr) — mirrors place-order's server gate.
-  const { user } = useCustomerAuth();
+  const { user, profile } = useCustomerAuth();
   const isMember = !!user;
   // Subscribe to variant overrides so prices + FAST/standard ship badges
   // re-render once the store finishes loading (e.g. on a direct /cart load).
@@ -138,6 +139,17 @@ export function CartPage() {
   const [shipCity, setShipCity] = useState('');
   const [shipState, setShipState] = useState('');
   const [shipZip, setShipZip] = useState('');
+  // Fill a signed-in member's saved name / organization / US shipping address
+  // in ONCE, deferring to anything already typed. Writes into the state above
+  // and nowhere else, so the submitted payload below stays purely the form's.
+  const prefill = useCheckoutPrefill(profile, {
+    name: setName,
+    organization: setOrganization,
+    street: setShipStreet,
+    city: setShipCity,
+    state: setShipState,
+    zip: setShipZip,
+  });
   const [notes, setNotes] = useState('');
   const [tsToken, setTsToken] = useState<string | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ kind: 'idle' });
@@ -205,6 +217,10 @@ export function CartPage() {
       ship_city:    shipCity.trim() || undefined,
       ship_state:   shipState.trim() || undefined,
       ship_zip:     shipZip.trim() || undefined,
+      // Checkout has no country input; this is US-only by construction (the
+      // State field caps at 2 uppercase chars). Profile prefill therefore
+      // WITHHOLDS a saved non-US address rather than posting it here — see
+      // src/lib/checkoutPrefill.ts. Adding a real country field is separate.
       ship_country: 'US',
       turnstile_token: tsToken ?? undefined,
       // Research-use disclaimer acceptance (21+/research-only/industry) from
@@ -1029,7 +1045,23 @@ export function CartPage() {
         <p className="text-[12px] text-ink/55 mb-[var(--space-5)] leading-relaxed">
           Where you'd like the order shipped. Required for fulfilment — used
           on the invoice and on the packing slip.
+          {prefill.addressPrefilled && (
+            <>
+              {' '}Filled in from your account — edit any field to send this
+              order somewhere else.
+            </>
+          )}
         </p>
+        {prefill.withheldCountry && (
+          <p
+            role="status"
+            className="text-[12px] text-[color:var(--color-status-error)] mb-[var(--space-5)] leading-relaxed"
+          >
+            Your saved address is in {prefill.withheldCountry}. Checkout ships to
+            US addresses only, so it was not filled in — enter a US shipping
+            address below, or contact us before ordering.
+          </p>
+        )}
 
         <div className="space-y-[var(--space-4)]">
           <div>
