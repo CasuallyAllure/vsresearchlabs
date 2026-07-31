@@ -53,7 +53,7 @@ function AccountOrdersContent() {
       <EmptyState
         label="You haven't placed an order yet."
         action={
-          <Button variant="secondary" size="md" to="/catalog">
+          <Button variant="secondary" size="sm" to="/catalog">
             Browse catalog
           </Button>
         }
@@ -64,15 +64,15 @@ function AccountOrdersContent() {
   return (
     <>
       {error && <StaleDataNotice subject="your orders" />}
-      <ul className="space-y-[var(--space-3)]">
+      <ul className="research-surface-solid divide-y divide-ink/[0.05]">
         {data.map((o) => (
           <li key={o.order_number}>
             <Link
               to={`/account/orders/${encodeURIComponent(o.order_number)}`}
-              className="research-surface-solid is-interactive flex items-center justify-between gap-[var(--space-4)] p-[var(--space-4)]"
+              className="flex items-center justify-between gap-[var(--space-4)] px-[var(--space-4)] py-[var(--space-3)] transition-colors hover:bg-ink/[0.02] focus:outline-none focus-visible:bg-ink/[0.03] sm:px-[var(--space-5)]"
             >
               <div className="min-w-0">
-                <p className="font-mono text-[13px] text-ink truncate">{o.order_number}</p>
+                <p className="font-mono text-[12.5px] text-ink truncate">{o.order_number}</p>
                 <p className="mt-0.5 text-[11px] text-ink/45">{formatDate(o.created_at)}</p>
               </div>
               <div className="flex shrink-0 items-center gap-[var(--space-3)]">

@@ -36,32 +36,33 @@ const SCOPE_LABEL: Record<CustomerDiscountRow['scope'], string> = {
   business: 'Business discount',
 };
 
-function DiscountCard({ discount: d }: { discount: CustomerDiscountRow }) {
+/** One row in the discount list — hairline-divided instrument row, not a
+ *  standalone card (site: `discounts.map` renders these inside one shared
+ *  `.floating-module divide-y` list, matching the Rewards ledger grammar). */
+function DiscountRow({ discount: d }: { discount: CustomerDiscountRow }) {
   const expires = formatDate(d.expires_at);
   const starts = formatDate(d.starts_at);
   return (
-    <article className="research-surface-solid p-[var(--space-5)]">
-      <div className="flex items-start justify-between gap-[var(--space-3)]">
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">{SCOPE_LABEL[d.scope]}</p>
-          <p className="mt-1 text-[15px] text-ink">{d.label}</p>
-          {(starts || expires) && (
-            <p className="mt-1 font-mono text-[11px] tabular-nums text-ink/40">
-              {starts ? `From ${starts}` : ''}
-              {starts && expires ? ' · ' : ''}
-              {expires ? `Expires ${expires}` : ''}
-            </p>
-          )}
-        </div>
-        <p className="shrink-0 font-mono text-[1.4rem] font-light tabular-nums text-ink">{d.percent}%</p>
+    <li className="flex items-start justify-between gap-[var(--space-3)] px-[var(--space-3)] py-[var(--space-3)] sm:px-[var(--space-4)] sm:py-[var(--space-4)]">
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.22em] text-ink/45">{SCOPE_LABEL[d.scope]}</p>
+        <p className="mt-1 text-[14px] text-ink">{d.label}</p>
+        {(starts || expires) && (
+          <p className="mt-1 font-mono text-[11px] tabular-nums text-ink/40">
+            {starts ? `From ${starts}` : ''}
+            {starts && expires ? ' · ' : ''}
+            {expires ? `Expires ${expires}` : ''}
+          </p>
+        )}
       </div>
-    </article>
+      <p className="shrink-0 font-mono text-[1.2rem] font-light tabular-nums text-ink">{d.percent}%</p>
+    </li>
   );
 }
 
 function HowDiscountsApply() {
   return (
-    <article className="research-surface-solid p-[var(--space-5)]">
+    <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
       <p className="mb-[var(--space-3)] text-[11px] uppercase tracking-[0.22em] text-ink/45">How discounts apply</p>
       <ol className="list-decimal space-y-[var(--space-2)] pl-[var(--space-5)] text-[13px] leading-relaxed text-ink/75">
         <li>
@@ -88,7 +89,7 @@ function HowDiscountsApply() {
 function TierBenefitsCard({ tier }: { tier: CustomerTier }) {
   const { label, benefits } = TIER_BENEFITS[tier];
   return (
-    <article className="research-surface-solid p-[var(--space-5)]">
+    <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
       <div className="mb-[var(--space-3)] flex items-baseline justify-between gap-[var(--space-3)]">
         <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Membership</p>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/30">{label}</p>
@@ -111,7 +112,7 @@ function MemberPerksNote() {
   // line is unconditional — keying it on the 049 flag hid the perk from
   // nearly every member (release-audit bug).
   return (
-    <article className="research-surface-solid p-[var(--space-5)]">
+    <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)]">
       <p className="mb-[var(--space-2)] text-[11px] uppercase tracking-[0.22em] text-ink/45">Member perks</p>
       <p className="text-[13px] leading-relaxed text-ink/75">
         Free shipping is active on your account — it applies automatically at
@@ -151,7 +152,7 @@ function AccountBenefitsContent() {
   }
 
   return (
-    <div className="space-y-[var(--space-4)]">
+    <div className="space-y-[var(--space-3)] sm:space-y-[var(--space-4)]">
       <TierBenefitsCard tier={profile?.tier ?? 'member'} />
       {/* The standing 15% offer card is the base-member term — a Pro's tier
           card already states their 20% rate, so showing both contradicted
@@ -168,7 +169,9 @@ function AccountBenefitsContent() {
           />
         )
       ) : (
-        state.discounts.map((d) => <DiscountCard key={d.id} discount={d} />)
+        <ul className="floating-module divide-y divide-ink/[0.06]">
+          {state.discounts.map((d) => <DiscountRow key={d.id} discount={d} />)}
+        </ul>
       )}
       <MemberPerksNote />
       <HowDiscountsApply />

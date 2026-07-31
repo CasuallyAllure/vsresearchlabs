@@ -145,7 +145,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
       </header>
 
       {/* Status + payment */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-3)] sm:mb-[var(--space-4)]">
         <p className="holo-text-caption mb-1 text-[10px] uppercase tracking-[0.26em] text-ink/35">Status</p>
         <h3 className="text-[1.05rem] font-medium leading-snug text-ink">{pres.label}</h3>
         {pres.detail && <p className="mt-1.5 max-w-[58ch] text-[12.5px] leading-relaxed text-ink/65">{pres.detail}</p>}
@@ -173,7 +173,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
       </article>
 
       {/* Carrier tracking */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-3)] sm:mb-[var(--space-4)]">
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.26em] text-ink/35">
           {hasTrackingCarrier ? 'Carrier tracking' : 'Delivery method'}
         </p>
@@ -211,7 +211,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
 
       {/* Discounts applied */}
       {hasDiscounts && (
-        <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+        <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-3)] sm:mb-[var(--space-4)]">
           <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.26em] text-ink/35">Discounts applied</p>
           <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[12.5px]">
             {(o.coupons ?? []).filter((c) => c.discount_cents > 0).map((c) => (
@@ -225,7 +225,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
       )}
 
       {/* Line items + totals */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-3)] sm:mb-[var(--space-4)]">
         <p className="holo-text-caption mb-[var(--space-3)] text-[10px] uppercase tracking-[0.26em] text-ink/35">Items</p>
         <ul className="divide-y divide-ink/[0.05] rounded-[14px] border border-ink/[0.08] overflow-hidden">
           {o.lines.map((l, i) => {
@@ -296,7 +296,7 @@ function AccountOrderDetailContent({ orderNumber }: { orderNumber: string }) {
       </article>
 
       {/* Shipping address */}
-      <article className="research-surface-solid p-[var(--space-5)] mb-[var(--space-4)]">
+      <article className="research-surface-solid p-[var(--space-4)] sm:p-[var(--space-5)] mb-[var(--space-3)] sm:mb-[var(--space-4)]">
         <p className="holo-text-caption mb-[var(--space-2)] text-[10px] uppercase tracking-[0.26em] text-ink/35">Shipping address</p>
         {o.ship_street ? (
           <p className="text-[13px] leading-relaxed text-ink/80">

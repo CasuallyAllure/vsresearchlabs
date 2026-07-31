@@ -28,7 +28,7 @@ export function MemberOfferCard({ offer, compact }: MemberOfferCardProps) {
   const { percent, rest } = splitPercent(offer.headline);
 
   return (
-    <article className={`floating-module ${compact ? 'p-[var(--space-5)]' : 'p-[var(--space-6)]'}`}>
+    <article className={`floating-module ${compact ? 'p-[var(--space-4)] sm:p-[var(--space-5)]' : 'p-[var(--space-5)] sm:p-[var(--space-6)]'}`}>
       <div className="flex items-baseline justify-between gap-[var(--space-3)] border-b border-ink/[0.09] pb-[var(--space-3)]">
         <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Pricing term</p>
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/30">{offer.expiresLabel}</p>

@@ -47,7 +47,7 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 
 function DocumentationCard({ entry }: { entry: LibraryEntry }) {
   return (
-    <li className="research-surface-solid p-[var(--space-4)]">
+    <li className="px-[var(--space-3)] py-[var(--space-3)] sm:px-[var(--space-4)] sm:py-[var(--space-4)]">
       <div className="flex flex-wrap items-baseline justify-between gap-x-[var(--space-3)] gap-y-1">
         <p className="min-w-0 text-[14px] text-ink">{entry.name}</p>
         <p className="font-mono text-[11px] text-ink/40">{entry.sku}</p>
@@ -112,7 +112,7 @@ function AccountLibraryContent() {
         label="No records on file yet."
         meta="Documentation appears here once an order includes a catalog record."
         action={
-          <Button variant="secondary" size="md" to="/catalog">
+          <Button variant="secondary" size="sm" to="/catalog">
             Browse catalog
           </Button>
         }
@@ -123,7 +123,7 @@ function AccountLibraryContent() {
   return (
     <>
       {compounds.length > 0 && (
-        <ul className="space-y-[var(--space-3)]">
+        <ul className="floating-module divide-y divide-ink/[0.06]">
           {compounds.map((entry) => (
             <DocumentationCard key={entry.productId} entry={entry} />
           ))}
@@ -132,10 +132,10 @@ function AccountLibraryContent() {
 
       {supplies.length > 0 && (
         <>
-          <h2 className="mb-[var(--space-3)] mt-[var(--space-6)] text-[11px] uppercase tracking-[0.22em] text-ink/45">
+          <h2 className="mb-[var(--space-3)] mt-[var(--space-5)] sm:mt-[var(--space-6)] text-[11px] uppercase tracking-[0.22em] text-ink/45">
             Equipment &amp; supplies
           </h2>
-          <ul className="space-y-[var(--space-3)]">
+          <ul className="floating-module divide-y divide-ink/[0.06]">
             {supplies.map((entry) => (
               <DocumentationCard key={entry.productId} entry={entry} />
             ))}
