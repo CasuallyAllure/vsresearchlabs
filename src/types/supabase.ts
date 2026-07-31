@@ -1611,6 +1611,14 @@ export type Database = {
         Args: { p_code: string; p_order_id: string }
         Returns: Json
       }
+      admin_audit_public_function_grants: {
+        Args: never
+        Returns: {
+          arguments: string
+          function_name: string
+          grantee: string
+        }[]
+      }
       admin_audit_public_view_write_grants: {
         Args: never
         Returns: {
