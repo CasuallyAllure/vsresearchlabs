@@ -22,7 +22,7 @@
  *     two tiers are priced differently and B2G1 reaches sourced lines only, so
  *     picking blind can build a cart that does not behave as the admin expects.
  */
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const seam = vi.hoisted(() => ({ client: null as unknown }));
@@ -72,7 +72,10 @@ const MEMBER = {
   lastOrderIso: null, segment: 'new', vip: false, spendPercentile: 0,
 } as unknown as MemberRow;
 
-type RpcHandler = (args: unknown) => { data: unknown; error: unknown };
+type RpcResult = { data: unknown; error: unknown };
+/** May also REJECT, or return a promise that never settles — both are shapes
+ *  the live client can produce and both used to hang the button forever. */
+type RpcHandler = (args: unknown) => RpcResult | Promise<RpcResult>;
 
 function makeClient(handlers: Record<string, RpcHandler>) {
   const rpc = vi.fn(async (name: string, args: unknown) =>
@@ -97,15 +100,21 @@ function pickLine(compound: string, optionKey: string) {
   fireEvent.change(doseSelect, { target: { value: optionKey } });
 }
 
+/** Every failure path is required to console.error the RAW object; capturing it
+ *  keeps the run quiet AND lets the tests assert that it really happened. */
+let consoleError: ReturnType<typeof vi.spyOn>;
+
 beforeEach(() => {
   useProductOverrides.setState({ variantBySku: OVERRIDES, loaded: true, loading: false });
   seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST });
+  consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   yes.mockClear();
   no.mockClear();
 });
 
 afterEach(() => {
   cleanup();
+  consoleError.mockRestore();
   useProductOverrides.setState({ bySku: {}, variantBySku: {}, loaded: false, loading: false, error: null });
 });
 
@@ -297,5 +306,147 @@ describe('PreparedCartPanel — degradation', () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
 
     expect(await screen.findByText(/migration 081/i)).toBeTruthy();
+  });
+});
+
+/**
+ * The hang. "Build cart" latched on "Working…" in production and never came
+ * back: `busy` was cleared on the one happy line after the await, so a rejected
+ * or never-settling RPC skipped it entirely and the admin was left with no
+ * error, no result and no way forward. Every case below must end with the
+ * button usable again AND a reason on screen.
+ */
+describe('PreparedCartPanel — a failing RPC must never latch the button', () => {
+  /** A promise we can settle by hand, so "Working…" is genuinely observable
+   *  mid-flight rather than inferred. */
+  function deferred() {
+    let settle!: { reject: (e: unknown) => void };
+    const promise = new Promise<RpcResult>((_, reject) => { settle = { reject }; });
+    return { promise, ...settle };
+  }
+
+  async function startBuild() {
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+    fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+  }
+
+  test('a rejecting build RPC clears "Working…" and renders the reason', async () => {
+    const gate = deferred();
+    seam.client = makeClient({
+      admin_prepared_carts: EMPTY_LIST,
+      admin_create_prepared_cart: () => gate.promise,
+    });
+
+    await startBuild();
+    expect(await screen.findByText('Working…')).toBeTruthy();
+
+    gate.reject(new TypeError('Failed to fetch'));
+
+    // The message reaches the ADMIN, not just the console — a silent reset
+    // would look identical to a build that quietly did nothing.
+    expect(await screen.findByText(/Failed to fetch/)).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText('Working…')).toBeNull());
+    expect((screen.getByRole('button', { name: 'Build cart' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  test('a build RPC that never settles times out instead of hanging forever', async () => {
+    seam.client = makeClient({
+      admin_prepared_carts: EMPTY_LIST,
+      // The production shape: supabase-js awaits auth.getSession() before it
+      // ever reaches fetch, and fetch itself has no timeout — so the promise
+      // can simply never settle. No amount of error handling catches this.
+      admin_create_prepared_cart: () => new Promise<RpcResult>(() => {}),
+    });
+
+    // Faked from before the click, because the guard's timer is armed inside
+    // the RPC call itself — installing them afterwards would never fire it.
+    vi.useFakeTimers();
+    try {
+      const flush = () => act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+      render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+      await flush();
+      pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+      fireEvent.click(screen.getByRole('button', { name: /build cart/i }));
+      await flush();
+
+      expect(screen.getByText('Working…')).toBeTruthy();
+
+      // Nothing will ever settle this call. Fourteen seconds in, the admin is
+      // still (correctly) waiting.
+      await act(async () => { await vi.advanceTimersByTimeAsync(14_000); });
+      expect(screen.getByText('Working…')).toBeTruthy();
+
+      await act(async () => { await vi.advanceTimersByTimeAsync(1_000); });
+      expect(screen.getByText(/did not respond within 15s/i)).toBeTruthy();
+      expect(screen.queryByText('Working…')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test('a resolved RPC error surfaces its message and logs the raw object', async () => {
+    const raw = { code: '42501', message: 'Unauthorized: admin role required' };
+    seam.client = makeClient({
+      admin_prepared_carts: EMPTY_LIST,
+      admin_create_prepared_cart: () => ({ data: null, error: raw }),
+    });
+
+    await startBuild();
+
+    expect(await screen.findByText(/admin role required/i)).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText('Working…')).toBeNull());
+    // The raw object, not the friendly string — the next person debugging in
+    // production needs the code and the hint, not a sentence.
+    expect(consoleError.mock.calls.some(([, arg]) => arg === raw)).toBe(true);
+  });
+
+  test('a rejecting revoke RPC surfaces the reason and re-enables the row', async () => {
+    const gate = deferred();
+    seam.client = makeClient({
+      admin_prepared_carts: () => ({
+        data: {
+          rows: [{
+            id: 'cart-9', created_at: '2026-07-30T00:00:00Z', expires_at: '2026-08-13T00:00:00Z',
+            claimed_at: null, revoked_at: null, coupon_code: null, note: null, status: 'live',
+            lines: [{ sku: 'VSR-RS-BPC', dose: '5mg', quantity: 1 }],
+          }],
+        },
+        error: null,
+      }),
+      admin_revoke_prepared_cart: () => gate.promise,
+    });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    fireEvent.click(await screen.findByRole('button', { name: /revoke/i }));
+    await waitFor(() => expect(yes).toHaveBeenCalled());
+
+    gate.reject(new Error('network unreachable'));
+
+    expect(await screen.findByText(/network unreachable/)).toBeTruthy();
+    await waitFor(() =>
+      expect((screen.getByRole('button', { name: /revoke/i }) as HTMLButtonElement).disabled).toBe(false));
+  });
+
+  test('a stale schema cache is not swallowed into a silent "not migrated" placeholder', async () => {
+    // 081 WAS applied; PostgREST's cache has simply not reloaded yet. That is
+    // indistinguishable from a missing migration by error code, so the calm
+    // placeholder stays — but it must not be the whole story.
+    const raw = {
+      code: 'PGRST202',
+      message: 'Could not find the function public.admin_prepared_carts(p_limit, p_user_id) in the schema cache',
+    };
+    seam.client = makeClient({ admin_prepared_carts: () => ({ data: null, error: raw }) });
+
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+
+    expect(await screen.findByText(/migration 081/i)).toBeTruthy();
+    // The owner is told WHICH of the two it is, instead of seeing neither an
+    // error nor a result.
+    expect(screen.getByText(/schema cache is still stale/i)).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toMatch(/in the schema cache/i);
+    expect(consoleError.mock.calls.some(([, arg]) => arg === raw)).toBe(true);
   });
 });
