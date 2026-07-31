@@ -1046,6 +1046,27 @@ export type Database = {
           },
         ]
       }
+      product_flags: {
+        Row: {
+          early_access: boolean
+          sku: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          early_access?: boolean
+          sku: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          early_access?: boolean
+          sku?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       product_stock: {
         Row: {
           deleted_at: string | null
@@ -1473,6 +1494,21 @@ export type Database = {
           },
         ]
       }
+      public_product_flags: {
+        Row: {
+          early_access: boolean | null
+          sku: string | null
+        }
+        Insert: {
+          early_access?: boolean | null
+          sku?: string | null
+        }
+        Update: {
+          early_access?: boolean | null
+          sku?: string | null
+        }
+        Relationships: []
+      }
       public_product_overrides: {
         Row: {
           deleted_at: string | null
@@ -1650,6 +1686,10 @@ export type Database = {
           p_scope: string
           p_user_id: string
         }
+        Returns: Json
+      }
+      admin_set_product_flag: {
+        Args: { p_early_access: boolean; p_sku: string }
         Returns: Json
       }
       admin_set_profile_flags: {

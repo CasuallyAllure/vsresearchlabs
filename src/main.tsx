@@ -39,6 +39,10 @@ const scheduleBootLoads = () => {
   // Promo governance (055) — drives the limited-time B2G1 messaging on
   // catalog shipping chips. Server stays authoritative for the discount.
   import('./lib/promoSettings').then((m) => m.usePromoSettings.getState().load());
+  // Early-access admin flags (077) — drives the earlyAccess.ts catalog gate
+  // alongside the legacy tag. Empty cache (no rows yet, or load still in
+  // flight) means the tag alone decides — identical to today's behavior.
+  import('./lib/earlyAccess').then((m) => m.useEarlyAccessFlags.getState().load());
 };
 if ('requestIdleCallback' in window) {
   requestIdleCallback(scheduleBootLoads, { timeout: 2000 });
