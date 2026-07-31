@@ -1046,6 +1046,80 @@ export type Database = {
           },
         ]
       }
+      prepared_cart_lines: {
+        Row: {
+          cart_id: string
+          dose: string
+          id: string
+          position: number
+          quantity: number
+          sku: string
+        }
+        Insert: {
+          cart_id: string
+          dose?: string
+          id?: string
+          position?: number
+          quantity: number
+          sku: string
+        }
+        Update: {
+          cart_id?: string
+          dose?: string
+          id?: string
+          position?: number
+          quantity?: number
+          sku?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prepared_cart_lines_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "prepared_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prepared_carts: {
+        Row: {
+          claimed_at: string | null
+          coupon_code: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          note: string | null
+          revoked_at: string | null
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_flags: {
         Row: {
           early_access: boolean
@@ -1639,6 +1713,15 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_create_prepared_cart: {
+        Args: {
+          p_coupon_code?: string
+          p_lines: Json
+          p_note?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       admin_deactivate_customer_discount: {
         Args: { p_id: string }
         Returns: undefined
@@ -1678,10 +1761,15 @@ export type Database = {
         Args: { p_limit?: number; p_offset?: number; p_status?: string }
         Returns: Json
       }
+      admin_prepared_carts: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: Json
+      }
       admin_remove_coupon: {
         Args: { p_code: string; p_order_id: string }
         Returns: Json
       }
+      admin_revoke_prepared_cart: { Args: { p_id: string }; Returns: Json }
       admin_set_automation_kind: {
         Args: { p_enabled: boolean; p_kind: string }
         Returns: Json

@@ -66,6 +66,14 @@ const AUTHENTICATED_ONLY = [
   'admin_clear_coupon',
   'admin_clear_coupons',
   'admin_create_order',
+  // 081 prepared carts. All three are `if not is_admin() then raise` bodies.
+  // admin_create_prepared_cart mints a link token and returns the plaintext
+  // ONCE; admin_prepared_carts is the ONLY read path to prepared_carts (the
+  // tables carry no grants at all) and structurally omits token_hash. None of
+  // the three may ever move to ANON_CALLABLE — the token is emailed to a
+  // member's inbox, so an anonymous caller must not be able to mint, list or
+  // kill one.
+  'admin_create_prepared_cart',
   'admin_deactivate_customer_discount',
   'admin_email_log',
   'admin_invitable_guests',
@@ -78,7 +86,9 @@ const AUTHENTICATED_ONLY = [
   'admin_member_spend_distribution',
   'admin_member_stats',
   'admin_member_vouchers',
+  'admin_prepared_carts',
   'admin_remove_coupon',
+  'admin_revoke_prepared_cart',
   'admin_set_automation_kind',
   'admin_set_customer_discount',
   'admin_set_profile_flags',
