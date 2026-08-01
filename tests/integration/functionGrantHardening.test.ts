@@ -133,6 +133,7 @@ const AUTHENTICATED_ONLY = [
   'save_order_lines',
   'seed_stock_row',
   'set_b2g1_promo',
+  'set_bogo_promo',
   'set_customer_notes',
   'set_customer_status',
   'set_order_shipping',

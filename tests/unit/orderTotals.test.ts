@@ -56,6 +56,8 @@ describe('computeOrderTotals — no discounts', () => {
       bundleReduction: 0,
       b2g1Reduction: 0,
       b2g1FreeUnits: 0,
+      bogoReduction: 0,
+      bogoFreeUnits: 0,
       rewardReduction: 0,
       rewardRemainder: 0,
       accountCents: 0,
@@ -441,6 +443,8 @@ describe('computeOrderTotals — full stack integration', () => {
       bundleReduction: 3_000,
       b2g1Reduction: 2_000,
       b2g1FreeUnits: 2,
+      bogoReduction: 0,
+      bogoFreeUnits: 0,
       rewardReduction: 2_400,
       rewardRemainder: 3_600,
       accountCents: 7_400,
@@ -822,5 +826,116 @@ describe('normalizeCouponCodes', () => {
 
   test('preserves input order', () => {
     expect(normalizeCouponCodes(['B', 'A', 'C'])).toEqual(['B', 'A', 'C']);
+  });
+});
+
+describe('computeOrderTotals — LAUNCH DAY BOGO', () => {
+  test('BOGO applies as a FLAT reduction before percents', () => {
+    // Arrange — $100 gross, one free unit worth $30, plus a 15% account rate.
+    // Flat first: base becomes 7,000; 15% of that is 1,050 (NOT 15% of 10,000).
+    const result = computeOrderTotals(input({
+      bogoFreePlan: [{ freeUnits: 1, unit: 3_000 }],
+      accountPercent: 15,
+    }));
+
+    // Assert
+    expect(result.bogoReduction).toBe(3_000);
+    expect(result.bogoFreeUnits).toBe(1);
+    expect(result.accountCents).toBe(1_050);
+    expect(result.discountCents).toBe(4_050);
+    expect(result.totalCents).toBe(5_950);
+  });
+
+  test('multiple BOGO lines accumulate freeUnits and value', () => {
+    const result = computeOrderTotals(input({
+      grossSubtotalCents: 50_000,
+      bogoFreePlan: [
+        { freeUnits: 2, unit: 6_000 },
+        { freeUnits: 1, unit: 3_333 },
+      ],
+    }));
+
+    expect(result.bogoFreeUnits).toBe(3);
+    expect(result.bogoReduction).toBe(15_333);
+    expect(result.totalCents).toBe(34_667);
+  });
+
+  test('BOGO is capped at the remaining subtotal — never negative, never over-refunds', () => {
+    const result = computeOrderTotals(input({
+      grossSubtotalCents: 5_000,
+      bogoFreePlan: [{ freeUnits: 4, unit: 9_999 }],
+    }));
+
+    expect(result.bogoReduction).toBe(5_000);
+    expect(result.discountCents).toBe(5_000);
+    expect(result.totalCents).toBe(0);
+  });
+
+  test('BOGO sits AFTER B2G1 in the flat pass and shares its cap', () => {
+    // Both plans present is unreachable in production (promoPlan arbitrates to
+    // at most one) but the engine must still be total-order-safe.
+    const result = computeOrderTotals(input({
+      grossSubtotalCents: 4_000,
+      b2g1FreePlan: [{ freeUnits: 1, unit: 3_000 }],
+      bogoFreePlan: [{ freeUnits: 1, unit: 3_000 }],
+    }));
+
+    expect(result.b2g1Reduction).toBe(3_000);
+    expect(result.bogoReduction).toBe(1_000); // capped by what B2G1 left
+    expect(result.discountCents).toBe(4_000);
+  });
+
+  test('shipping still rides on top of a BOGO-discounted subtotal', () => {
+    const result = computeOrderTotals(input({
+      shippingCents: 999,
+      bogoFreePlan: [{ freeUnits: 1, unit: 4_000 }],
+    }));
+
+    expect(result.totalCents).toBe(10_000 - 4_000 + 999);
+  });
+
+  test('an omitted bogoFreePlan behaves exactly like an empty one', () => {
+    const withOmitted = computeOrderTotals(input({}));
+    const withEmpty = computeOrderTotals(input({ bogoFreePlan: [] }));
+
+    expect(withOmitted).toEqual(withEmpty);
+    expect(withOmitted.bogoReduction).toBe(0);
+  });
+});
+
+describe('buildAppliedCouponLabel — BOGO', () => {
+  const parts = (over: Partial<CouponLabelParts> = {}): CouponLabelParts => ({
+    accountCode: null,
+    rewardApplied: false,
+    wholesaleApplied: false,
+    bundleApplied: false,
+    b2g1Applied: false,
+    codes: [],
+    rewardCode: 'REWARD',
+    wholesaleCode: 'WHOLESALE',
+    bundleCode: 'BUNDLE',
+    b2g1Code: 'B2G1',
+    ...over,
+  });
+
+  test('BOGO appears in the label when applied', () => {
+    expect(buildAppliedCouponLabel(parts({ bogoApplied: true, bogoCode: 'BOGO' })))
+      .toBe('BOGO');
+  });
+
+  test('BOGO follows the other synthetic promo codes and precedes user codes', () => {
+    expect(buildAppliedCouponLabel(parts({
+      bundleApplied: true,
+      bogoApplied: true, bogoCode: 'BOGO',
+      codes: ['SAVE10'],
+    }))).toBe('BUNDLE, BOGO, SAVE10');
+  });
+
+  test('an applied flag with no code emits nothing (never a bare "undefined")', () => {
+    expect(buildAppliedCouponLabel(parts({ bogoApplied: true }))).toBeNull();
+  });
+
+  test('omitting the BOGO fields entirely leaves the legacy label untouched', () => {
+    expect(buildAppliedCouponLabel(parts({ b2g1Applied: true }))).toBe('B2G1');
   });
 });

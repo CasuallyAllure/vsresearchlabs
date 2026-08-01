@@ -88,8 +88,13 @@ describe('usePromoSettings.reload', () => {
     expect(s.b2g1ExcludedSkus).toEqual(['reta-10', 'ghk-cu']);
     expect(s.loaded).toBe(true);
     expect(s.loading).toBe(false);
-    expect(from).toHaveBeenCalledWith('promo_settings');
-    expect(select).toHaveBeenCalledWith('b2g1_enabled, b2g1_ends_at, b2g1_excluded_skus');
+    // Reads the VIEW first — it carries the server's own clock (server_now)
+    // and liveness verdict, so a device clock can never decide a promo window.
+    // The base table remains the fallback for environments predating 084.
+    expect(from).toHaveBeenCalledWith('public_promo_settings');
+    // select('*'), never a column list: naming bogo_* explicitly would 400 on
+    // a pre-084 database and take the LIVE B2G1 promo down with it.
+    expect(select).toHaveBeenCalledWith('*');
     expect(eq).toHaveBeenCalledWith('id', 1);
   });
 

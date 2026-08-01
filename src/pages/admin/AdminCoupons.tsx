@@ -90,7 +90,7 @@ const TABS: Array<{ value: TabKey; label: string }> = [
   { value: 'codes', label: 'Codes' },
   { value: 'affiliates', label: 'Affiliates' },
   { value: 'commissions', label: 'Commissions' },
-  { value: 'promo', label: 'B2G1 Promo' },
+  { value: 'promo', label: 'Promos' },
 ];
 
 // ── Formatting helpers ───────────────────────────────────────────────────────
