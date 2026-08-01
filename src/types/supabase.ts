@@ -1085,6 +1085,8 @@ export type Database = {
         Row: {
           claim_count: number
           claimed_at: string | null
+          converted_at: string | null
+          converted_order_id: string | null
           coupon_code: string | null
           created_at: string
           created_by: string | null
@@ -1099,6 +1101,8 @@ export type Database = {
         Insert: {
           claim_count?: number
           claimed_at?: string | null
+          converted_at?: string | null
+          converted_order_id?: string | null
           coupon_code?: string | null
           created_at?: string
           created_by?: string | null
@@ -1113,6 +1117,8 @@ export type Database = {
         Update: {
           claim_count?: number
           claimed_at?: string | null
+          converted_at?: string | null
+          converted_order_id?: string | null
           coupon_code?: string | null
           created_at?: string
           created_by?: string | null
@@ -1124,7 +1130,15 @@ export type Database = {
           token_hash?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prepared_carts_converted_order_id_fkey"
+            columns: ["converted_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_flags: {
         Row: {
@@ -1709,13 +1723,27 @@ export type Database = {
       }
       admin_clear_coupon: { Args: { p_order_id: string }; Returns: Json }
       admin_clear_coupons: { Args: { p_order_id: string }; Returns: Json }
+      admin_convert_prepared_cart: {
+        Args: {
+          p_buyer_contact: string
+          p_buyer_name: string
+          p_buyer_organization?: string
+          p_cart_id: string
+          p_discount?: Json
+          p_lines?: Json
+          p_notes?: string
+        }
+        Returns: Json
+      }
       admin_create_order: {
         Args: {
           p_buyer_contact: string
           p_buyer_name: string
           p_buyer_organization?: string
+          p_discount?: Json
           p_lines?: Json
           p_notes?: string
+          p_user_id?: string
         }
         Returns: Json
       }

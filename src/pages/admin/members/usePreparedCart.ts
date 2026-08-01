@@ -56,8 +56,13 @@ const CATALOG = [...productsData, ...generatedCompounds] as unknown as Product[]
  * device-local, so phone-then-laptop has to work). An owner reading "claimed"
  * would reasonably conclude the link was spent and rebuild one the member could
  * already open. How often it has been opened is `claimCount`, below.
+ *
+ * 083 adds one genuinely terminal state: 'converted'. It is not a failure and
+ * not merely "revoked" — the cart became a real order, and the panel owes the
+ * owner that order's number rather than a dead link. The server checks it
+ * BEFORE 'revoked' because converting also revokes.
  */
-export type PreparedCartStatus = 'live' | 'expired' | 'revoked';
+export type PreparedCartStatus = 'live' | 'expired' | 'revoked' | 'converted';
 
 export interface PreparedCartSummary {
   id: string;
@@ -69,6 +74,11 @@ export interface PreparedCartSummary {
   /** How many times the member has opened the link. Display only. */
   claim_count: number;
   revoked_at: string | null;
+  /** Set once the cart was pushed through into a real order (083). */
+  converted_at: string | null;
+  converted_order_id: string | null;
+  /** Human-readable order number, for the "converted → ORDER-…" link. */
+  converted_order_number: string | null;
   coupon_code: string | null;
   note: string | null;
   status: PreparedCartStatus;

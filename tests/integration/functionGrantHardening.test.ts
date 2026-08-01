@@ -74,6 +74,12 @@ const AUTHENTICATED_ONLY = [
   // member's inbox, so an anonymous caller must not be able to mint, list or
   // kill one.
   'admin_create_prepared_cart',
+  // 083 conversion. Writes a REAL ORDER against money already collected
+  // off-site, stamps the cart converted and revokes its link in one
+  // transaction. is_admin()-gated body; `authenticated` is as narrow as the ACL
+  // gets. It must NEVER move to ANON_CALLABLE — an anonymous caller able to
+  // reach it could mint orders and spend other members' prepared carts.
+  'admin_convert_prepared_cart',
   'admin_deactivate_customer_discount',
   'admin_email_log',
   'admin_invitable_guests',
