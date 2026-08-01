@@ -352,6 +352,10 @@ describe('business notification + telemetry endgame', () => {
       'contactIsEmail',
       'createdAt',
       'invoiceEmailSent',
+      // Plain-language explanations for anything the server decided
+      // differently from the cart (e.g. a code superseded by BOGO, or the
+      // BOGO window closing while the cart sat open). Always present.
+      'notices',
       'orderNumber',
       'referenceId',
       'success',

@@ -9,6 +9,7 @@ import { BundleOfferTile } from '../components/catalog/BundleOfferTile';
 import { NewlyCatalogedSpotlight } from '../components/catalog/NewlyCatalogedSpotlight';
 import { ProductSpotlightSlide } from '../components/catalog/ProductSpotlightSlide';
 import { FeaturedSupplyCarousel } from '../components/catalog/FeaturedSupplyCarousel';
+import { BogoBanner } from '../components/promo/BogoBanner';
 import { useProducts } from '../hooks/useProducts';
 import {
   CLASSIFICATION_LABELS,
@@ -208,6 +209,10 @@ export function BiopeptideResearchSupplies() {
         />
         <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
       </FeaturedSupplyCarousel>
+
+      {/* LAUNCH DAY BOGO — renders nothing unless the promo is live by the
+          server's clock, so this line goes inert on its own once it ends. */}
+      <BogoBanner />
 
       <div className="relative isolate mb-[var(--space-3)]">
         <div aria-hidden="true" className="bio-mercury-bg pointer-events-none absolute inset-0 -z-10" />

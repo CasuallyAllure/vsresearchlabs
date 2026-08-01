@@ -8,11 +8,14 @@
  * and so does this module:
  *
  *   1. WHOLESALE wins anywhere in the cart → final price order-wide. It
- *      suppresses the bundle, B2G1 and the member percentage on every line.
- *   2. BUNDLE (Reta + GHK-Cu) → final price. Suppresses B2G1 and the member
- *      percentage.
- *   3. Otherwise B2G1 vs the member percentage — the LARGER bills, tie → B2G1
- *      (owner policy 2026-07-22). They never stack.
+ *      suppresses the bundle, BOGO, B2G1 and the member percentage on every line.
+ *   2. BUNDLE (Reta + GHK-Cu) → final price. Suppresses BOGO, B2G1 and the
+ *      member percentage.
+ *   3. Otherwise the LARGER of {BOGO, B2G1} — they are mutually exclusive by
+ *      construction (BOGO pairs 24-hour lines, B2G1 frees sourced ones) and the
+ *      caller hands in at most one non-zero.
+ *   4. That winner vs the member percentage — the LARGER bills, tie → the promo
+ *      (owner policy 2026-07-22, extended to BOGO). They never stack.
  *
  * Free shipping sits outside that ladder: it is a membership perk, not a
  * discount, so it applies alongside whichever of the above wins.
@@ -50,6 +53,11 @@ export interface CartIncentiveInput {
   memberPercent: number;
   /** B2G1 value for this cart, already gated by promo liveness + ship speed. */
   b2g1Cents: number;
+  /** LAUNCH DAY BOGO value, already gated by promo liveness + membership +
+   *  24-hour supply. Mutually exclusive with b2g1Cents — the caller has already
+   *  stood the loser down, so at most one of the two is non-zero. Absent on
+   *  callers predating the promo, which reads as 0. */
+  bogoCents?: number;
   /** A wholesale pack line won somewhere → final price order-wide. */
   wholesaleApplies: boolean;
   /** Bundle discount value; 0 when no complete pair is in the cart. */
@@ -82,7 +90,7 @@ function memberValueCents(subtotalCents: number, percent: number): number {
  * re-deriving the rules.
  */
 export function winningDiscount(input: CartIncentiveInput): {
-  kind: 'wholesale' | 'bundle' | 'b2g1' | 'member' | 'none';
+  kind: 'wholesale' | 'bundle' | 'bogo' | 'b2g1' | 'member' | 'none';
   valueCents: number;
 } {
   if (input.wholesaleApplies) return { kind: 'wholesale', valueCents: 0 };
@@ -92,7 +100,12 @@ export function winningDiscount(input: CartIncentiveInput): {
     ? memberValueCents(input.subtotalCents, input.memberPercent)
     : 0;
 
-  // Owner policy: larger wins, tie → B2G1.
+  // Owner policy: larger wins, tie → the automatic promo. BOGO is checked
+  // first only for determinism — it and B2G1 are never both non-zero.
+  const bogoCents = input.bogoCents ?? 0;
+  if (bogoCents > 0 && bogoCents >= memberCents) {
+    return { kind: 'bogo', valueCents: bogoCents };
+  }
   if (input.b2g1Cents > 0 && input.b2g1Cents >= memberCents) {
     return { kind: 'b2g1', valueCents: input.b2g1Cents };
   }
@@ -141,6 +154,17 @@ function appliedRows(input: CartIncentiveInput): IncentiveRow[] {
       detail:
         'Your complete pair prices as a bundle — a final price, so it replaces the member percentage ' +
         'and the buy-2-get-1 term rather than adding to them.',
+      valueCents: win.valueCents,
+    });
+  } else if (win.kind === 'bogo') {
+    rows.push({
+      id: 'bogo',
+      kind: 'applied',
+      label: 'Launch Day BOGO — buy one, get one free',
+      detail:
+        'Eligible 24-Hour Shipping items pair two at a time and the cheaper item of each pair comes ' +
+        'off the order. Promotions never combine — this is worth at least as much as your member ' +
+        'percentage on this cart, so it is the one that bills.',
       valueCents: win.valueCents,
     });
   } else if (win.kind === 'b2g1') {

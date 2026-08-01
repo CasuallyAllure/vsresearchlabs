@@ -61,9 +61,10 @@ import {
   type UnverifiedLine,
 } from "./priceCheck.ts";
 import {
-  B2G1_GROUP,
   buildPromoPlans,
+  freePlanValue,
   type B2G1PlanEntry,
+  type BogoPlanEntry,
   type WholesalePlanEntry,
 } from "./promoPlan.ts";
 import { buildBundlePlan, bundleLineKey } from "./bundlePlan.ts";
@@ -705,6 +706,11 @@ const handleOrder = async (req: Request): Promise<Response> => {
     : (payload.coupon_code ? [payload.coupon_code] : []);
   const couponCodes = normalizeCouponCodes(rawCodes);
 
+  // What the cart preview told the buyer BOGO was worth. Advisory only — it
+  // never enters the price. Sanitized into non-negative integer cents so a
+  // hostile payload can at worst produce a wrong NOTICE, never a wrong total.
+  const expectedBogoCents = sanitizeFixedDiscountCents(payload.expected_bogo_cents);
+
   // Per-code ledger — drives redemption + per-code rollback below. `fullDiscount`
   // holds a percent code's discount off the FULL subtotal; pass 2 re-scales it
   // onto the post-flat base so percents apply AFTER free_item/fixed reductions.
@@ -744,21 +750,37 @@ const handleOrder = async (req: Request): Promise<Response> => {
   // consuming these plans. idx points into `items` — free_item appends happen
   // later at the tail, so captured indices stay valid.
   let b2g1FreePlan: B2G1PlanEntry[] = [];
+  let bogoFreePlan: BogoPlanEntry[] = [];
   let wholesalePlan: WholesalePlanEntry[] = [];
   {
     const { data: promo } = await supabase
       .from("promo_settings")
-      .select("b2g1_enabled, b2g1_ends_at, b2g1_excluded_skus")
+      // select("*") on purpose — an explicit list naming bogo_* would 400 on
+      // any environment where migration 084 hasn't been pushed, and the
+      // fail-closed fallback would then drop the LIVE B2G1 promo too. With "*"
+      // the bogo_* fields simply read undefined → promo off. Frontend deploys
+      // on push; `supabase db push` is manual.
+      .select("*")
       .eq("id", 1)
       .maybeSingle();
     const promoLive = !!promo?.b2g1_enabled &&
       (promo?.b2g1_ends_at == null || Date.parse(promo.b2g1_ends_at) > Date.now());
     const excludedSkus = new Set<string>((promo?.b2g1_excluded_skus ?? []) as string[]);
-    // Any line that could reach either promo's floor (B2G1's group of 3 is the
-    // lower of the two) needs its catalog row.
+    // BOGO liveness, read defensively: on an environment where migration 084
+    // hasn't been pushed these fields are simply absent → undefined → promo
+    // off. Never throws, never takes B2G1 down with it.
+    const bogoLive = !!promo?.bogo_enabled &&
+      (promo?.bogo_ends_at == null || Date.parse(promo.bogo_ends_at) > Date.now());
+    const bogoExcludedSkus = new Set<string>((promo?.bogo_excluded_skus ?? []) as string[]);
+    // EVERY line with stock needs its catalog row now. This floor used to be
+    // B2G1's group of 3 (the lower of the two older promos' floors), but BOGO
+    // pairs ACROSS lines: a qty-1 line is a real candidate because it pairs
+    // with a qty-1 line elsewhere in the cart. Fetching more rows changes no
+    // wholesale/B2G1 outcome — both still enforce their own floors inside
+    // buildPromoPlans — it only stops BOGO silently under-counting.
     const skus = [...new Set(
       items
-        .filter((i) => clampQty(i.quantity) >= B2G1_GROUP)
+        .filter((i) => clampQty(i.quantity) >= 1)
         .map((i) => i.product.sku)
         .filter(isQueryableSku),
     )];
@@ -783,10 +805,13 @@ const handleOrder = async (req: Request): Promise<Response> => {
         variantRows: availRows ?? [],
         promoLive,
         excludedSkus,
+        bogoLive,
+        bogoExcludedSkus,
         isMember: !!stampedUserId,
       });
       wholesalePlan = plans.wholesalePlan;
       b2g1FreePlan = plans.b2g1FreePlan;
+      bogoFreePlan = plans.bogoFreePlan;
     }
   }
   // Bundle promo — 20% off every complete Retatrutide + GHK-Cu pair (any dose
@@ -835,16 +860,34 @@ const handleOrder = async (req: Request): Promise<Response> => {
     accountDiscount = null;
     rewardVoucher = null;
     b2g1FreePlan.length = 0;
+    // BOGO too. buildPromoPlans already arbitrated the two on total value and
+    // only left wholesale standing because it won; this kills BOGO on any
+    // OTHER line of a wholesale order, exactly as it does for B2G1.
+    bogoFreePlan.length = 0;
     // Wholesale outranks the bundle: it's the deeper standing offer (40% a
     // case) and its "nothing else applies" rule is absolute.
     bundlePlan.pairs = 0;
     bundlePlan.value = 0;
   }
 
+  // BOGO vs the bundle — both are flat, both are "final", so the owner's
+  // no-stack rule decides on VALUE before the finality gate below runs: the
+  // larger discount survives and the loser is zeroed. Tie → the bundle,
+  // preserving the shipped precedence (it is the older standing offer, and a
+  // tie costs the buyer nothing either way).
+  if (bundlePlan.pairs > 0 && bogoFreePlan.length > 0) {
+    if (freePlanValue(bogoFreePlan) > bundlePlan.value) {
+      bundlePlan.pairs = 0;
+      bundlePlan.value = 0;
+    } else {
+      bogoFreePlan.length = 0;
+    }
+  }
+
   // The bundle is likewise a FINAL price (owner-confirmed): when it applies,
   // nothing else may discount the order — reject user-entered codes and
-  // suppress the automatic account discount, reward voucher, and B2G1. Same
-  // shape as the wholesale gate above, and unreachable when wholesale won.
+  // suppress the automatic account discount, reward voucher, B2G1 and BOGO.
+  // Same shape as the wholesale gate above, and unreachable when wholesale won.
   const hasBundle = bundlePlan.pairs > 0;
   if (hasBundle) {
     if (couponCodes.length > 0) {
@@ -856,10 +899,98 @@ const handleOrder = async (req: Request): Promise<Response> => {
     accountDiscount = null;
     rewardVoucher = null;
     b2g1FreePlan.length = 0;
+    bogoFreePlan.length = 0;
+  }
+
+  // ── BOGO vs COUPON CODES — larger wins, never additive ──────────────────
+  // Owner rule (launch day): BOGO does not stack with ANYTHING, coupon and
+  // affiliate codes included. Two things this must not break: a member has to
+  // be able to TYPE a code and be told plainly what happened, and this must
+  // never become a second combinability rule that could disagree with
+  // validate_coupon (a disagreement between two money rules is exactly the
+  // class of bug this whole change is guarding against).
+  //
+  // Both are satisfied by arbitrating BEFORE any code is admitted, on a
+  // DRY-RUN valuation, rather than unwinding an admitted code afterwards.
+  // Unwinding is not safely reversible: a free_item code has by then already
+  // appended a $0 line to `items` and moved grossSubtotalCents. Deciding first
+  // means exactly one of {BOGO, codes} ever reaches Pass 1, so:
+  //   • validate_coupon stays the SINGLE authority on combinability — it is
+  //     called below with p_has_promo reflecting the WINNER, so a state where
+  //     BOGO and a code coexist is unrepresentable rather than merely unlikely.
+  //   • the loser is never billed, never labeled, never written to
+  //     order_coupons, and needs no rollback.
+  //
+  // The dry run passes p_has_promo:false deliberately — we are asking "what is
+  // this code WORTH", not "may it combine". The real, authoritative call with
+  // the true combinability context still happens in Pass 1 for the winner.
+  const promoNotices: string[] = [];
+  if (bogoFreePlan.length > 0 && couponCodes.length > 0) {
+    let codesValue = 0;
+    // Codes the dry run found INVALID. Without BOGO these are a hard 400 that
+    // names the reason; with BOGO live the order proceeds (not blocking is the
+    // right call on launch day), so they would otherwise vanish in total
+    // silence — a member who typos a code would be given a correct order and
+    // no explanation at all. The owner's rule is explicit that a code is never
+    // silently ignored, so each one is named in the notices instead.
+    const rejectedCodes: string[] = [];
+    for (const code of couponCodes) {
+      const { data: dryData, error: dryErr } = await supabase.rpc("validate_coupon", {
+        p_code: code,
+        p_subtotal_cents: grossSubtotalCents,
+        p_contact: contact,
+        p_applied_codes: [],
+        p_has_reward: !!rewardVoucher,
+        p_has_promo: false,
+        p_has_account: !!accountDiscount,
+      });
+      if (dryErr) {
+        console.error("validate_coupon (BOGO arbitration dry run) failed:", dryErr);
+        return jsonResponse({ error: "Could not verify the promo code. Please try again." }, 502);
+      }
+      const dry = dryData as CouponCheck | null;
+      if (dry?.valid) {
+        codesValue += Math.max(Math.floor(Number(dry.discount_cents ?? 0)), 0);
+      } else {
+        rejectedCodes.push(code);
+      }
+    }
+    const bogoValue = freePlanValue(bogoFreePlan);
+    // Tie → BOGO, matching the 2026-07-22 "larger wins, tie → B2G1" precedent
+    // this rule is modelled on. The buyer is indifferent on a tie; keeping the
+    // automatic promo means they need no code at all.
+    if (bogoValue >= codesValue) {
+      if (codesValue > 0) {
+        const beaten = couponCodes.filter((c) => !rejectedCodes.includes(c));
+        promoNotices.push(
+          `The Launch Day BOGO discount (${usd(bogoValue)}) is larger than ` +
+          `${beaten.length === 1 ? `code ${beaten[0]}` : "the codes you entered"}, ` +
+          `so it was applied instead. Promotions don't combine — you were given the better one.`,
+        );
+      }
+      // Named, never silently dropped — even though the order still succeeds.
+      for (const code of rejectedCodes) {
+        promoNotices.push(
+          `Code ${code} isn't valid, so it wasn't applied. Your Launch Day BOGO ` +
+          `discount was applied instead and your order went through normally.`,
+        );
+      }
+      couponCodes.length = 0;
+    } else {
+      // The code is worth more: BOGO stands down and the code bills normally.
+      bogoFreePlan.length = 0;
+      const winners = couponCodes.filter((c) => !rejectedCodes.includes(c));
+      promoNotices.push(
+        `${winners.length === 1 ? `Code ${winners[0]}` : "The codes you entered"} ` +
+        `(${usd(codesValue)}) is worth more than the Launch Day BOGO discount ` +
+        `(${usd(bogoValue)}), so it was applied instead. Promotions don't combine — ` +
+        `you were given the better one.`,
+      );
+    }
   }
 
   // Combinability context — fixed BEFORE any code is admitted (order-independent).
-  const willB2G1Apply = b2g1FreePlan.length > 0;
+  const willB2G1Apply = b2g1FreePlan.length > 0 || bogoFreePlan.length > 0;
   const willWholesaleApply = wholesalePlan.length > 0;
   const hasReward = !!rewardVoucher;
   const hasAccount = !!accountDiscount;
@@ -967,7 +1098,12 @@ const handleOrder = async (req: Request): Promise<Response> => {
   // fixed. Zero the loser exactly like the wholesale/bundle gates do, so every
   // downstream consumer (totals below, order_coupons, invoice, emails)
   // follows automatically.
-  if (b2g1FreePlan.length > 0 && accountDiscount) {
+  //
+  // BOGO joins this gate on identical terms (owner, launch day): it is the same
+  // kind of flat automatic promo as B2G1, and promoPlan has already reduced the
+  // two to at most one, so `freePromo` below is whichever survived.
+  const freePromo = b2g1FreePlan.length > 0 ? b2g1FreePlan : bogoFreePlan;
+  if (freePromo.length > 0 && accountDiscount) {
     const sharedTotalsInput = {
       grossSubtotalCents,
       shippingCents,
@@ -979,13 +1115,18 @@ const handleOrder = async (req: Request): Promise<Response> => {
       accountPercent: accountDiscount.percent,
       percentEntries: appliedList.filter((a) => a.kind === "percent"),
     };
-    const withB2G1 = computeOrderTotals({ ...sharedTotalsInput, b2g1FreePlan });
-    const withoutB2G1 = computeOrderTotals({ ...sharedTotalsInput, b2g1FreePlan: [] });
-    const b2g1Value = withB2G1.b2g1Reduction;
-    const accountValue = withoutB2G1.accountCents;
-    if (b2g1Value > 0 && accountValue > 0) {
-      if (accountValue > b2g1Value) {
+    const withPromo = computeOrderTotals({
+      ...sharedTotalsInput, b2g1FreePlan, bogoFreePlan,
+    });
+    const withoutPromo = computeOrderTotals({
+      ...sharedTotalsInput, b2g1FreePlan: [], bogoFreePlan: [],
+    });
+    const promoValue = withPromo.b2g1Reduction + withPromo.bogoReduction;
+    const accountValue = withoutPromo.accountCents;
+    if (promoValue > 0 && accountValue > 0) {
+      if (accountValue > promoValue) {
         b2g1FreePlan.length = 0;
+        bogoFreePlan.length = 0;
       } else {
         accountDiscount = null;
       }
@@ -1005,6 +1146,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
     wholesalePlan,
     bundleValue: bundlePlan.value,
     b2g1FreePlan,
+    bogoFreePlan,
     rewardPercent: rewardVoucher ? rewardVoucher.percent : null,
     accountPercent: accountDiscount ? accountDiscount.percent : null,
     percentEntries: appliedList.filter((a) => a.kind === "percent"),
@@ -1013,6 +1155,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
     wholesaleReduction, wholesaleUnits,
     bundleReduction,
     b2g1Reduction, b2g1FreeUnits,
+    bogoReduction, bogoFreeUnits,
     accountCents,
   } = totals;
   let rewardReduction = totals.rewardReduction;
@@ -1023,9 +1166,29 @@ const handleOrder = async (req: Request): Promise<Response> => {
       a.contribution = totals.percentContributions[pctIdx++];
     }
   }
+  // The buyer was quoted a BOGO discount the server did not grant. Overwhelmingly
+  // this is the promo window closing while the cart sat open: someone with BOGO
+  // in their cart at 23:59 who checks out at 00:01. The order is still perfectly
+  // valid — BOGO is a discount, not a line price, so nothing here can 409 — but
+  // billing more than the cart quoted without a word is exactly the silent
+  // overcharge this codebase treats as a defect. Say it plainly.
+  if (expectedBogoCents > 0 && bogoReduction === 0) {
+    promoNotices.push(
+      "The Launch Day BOGO offer ended before this order was submitted, so it " +
+      "wasn't applied. Your cart may have shown it while the offer was still " +
+      "running. Nothing else about your order changed.",
+    );
+  } else if (expectedBogoCents > 0 && bogoReduction !== expectedBogoCents) {
+    promoNotices.push(
+      `The Launch Day BOGO discount was recalculated at checkout and applied as ` +
+      `${usd(bogoReduction)}. Your cart showed ${usd(expectedBogoCents)}.`,
+    );
+  }
+
   let discountCents = totals.discountCents;
   const REWARD_CODE = "REWARD";
   const B2G1_CODE = "B2G1";
+  const BOGO_CODE = "BOGO";
   const WHOLESALE_CODE = "WHOLESALE";
   const BUNDLE_CODE = BUNDLE_PROMO.code;
   // Comma-joined label for the order row, invoice, and emails (all read this).
@@ -1036,11 +1199,13 @@ const handleOrder = async (req: Request): Promise<Response> => {
     wholesaleApplied: wholesaleReduction > 0,
     bundleApplied: bundleReduction > 0,
     b2g1Applied: b2g1Reduction > 0,
+    bogoApplied: bogoReduction > 0,
     codes: appliedList.map((a) => a.code),
     rewardCode: REWARD_CODE,
     wholesaleCode: WHOLESALE_CODE,
     bundleCode: BUNDLE_CODE,
     b2g1Code: B2G1_CODE,
+    bogoCode: BOGO_CODE,
   });
   let totalCents = totals.totalCents;
 
@@ -1366,6 +1531,22 @@ const handleOrder = async (req: Request): Promise<Response> => {
     if (b2g1RowErr) console.error("B2G1 order_coupons insert failed:", b2g1RowErr);
   }
 
+  // Same for the LAUNCH DAY BOGO promo — a synthetic 'fixed' order_coupons row
+  // so recompute_order_totals keeps admin edits consistent. Mutually exclusive
+  // with the B2G1 row above by upstream arbitration.
+  if (bogoReduction > 0) {
+    const { error: bogoRowErr } = await supabase.from("order_coupons").insert({
+      order_id: orderRow.id,
+      code: BOGO_CODE,
+      kind: "fixed",
+      amount_cents: bogoReduction,
+      free_label: `Launch Day BOGO — ${bogoFreeUnits} unit${bogoFreeUnits === 1 ? "" : "s"} free`,
+      discount_cents: bogoReduction,
+      source: "promo",
+    });
+    if (bogoRowErr) console.error("BOGO order_coupons insert failed:", bogoRowErr);
+  }
+
   // Record the redemption + commission ledger row (service-role-only RPC;
   // atomically re-checks limits and bumps used_count). If it fails — e.g. two
   // concurrent checkouts raced for the last use of a capped code — ROLL THE
@@ -1420,11 +1601,13 @@ const handleOrder = async (req: Request): Promise<Response> => {
         wholesaleApplied: wholesaleReduction > 0,
         bundleApplied: bundleReduction > 0,
         b2g1Applied: b2g1Reduction > 0,
+        bogoApplied: bogoReduction > 0,
         codes: survivors.map((a) => a.code),
         rewardCode: REWARD_CODE,
         wholesaleCode: WHOLESALE_CODE,
         bundleCode: BUNDLE_CODE,
         b2g1Code: B2G1_CODE,
+        bogoCode: BOGO_CODE,
       });
       const { error: rollbackErr } = await supabase.from("orders")
         .update({ discount_cents: discountCents, coupon_code: appliedCoupon, invoice_amount_cents: totalCents })
@@ -1539,6 +1722,14 @@ const handleOrder = async (req: Request): Promise<Response> => {
             amount_cents: b2g1Reduction,
             discount_cents: b2g1Reduction,
           }] : []),
+          ...(bogoReduction > 0 ? [{
+            code: BOGO_CODE,
+            kind: "fixed",
+            free_label: `Launch Day BOGO — ${bogoFreeUnits} unit${bogoFreeUnits === 1 ? "" : "s"} free`,
+            percent: null,
+            amount_cents: bogoReduction,
+            discount_cents: bogoReduction,
+          }] : []),
           ...redeemedList.map((a) => ({
             code: a.code,
             kind: a.kind,
@@ -1650,6 +1841,10 @@ const handleOrder = async (req: Request): Promise<Response> => {
     amountCents: totalCents,
     invoiceEmailSent,
     contactIsEmail,
+    // Plain-language explanations for anything the server decided differently
+    // from what the buyer may have expected (e.g. a code superseded by BOGO).
+    // Additive and always present — older clients simply ignore it.
+    notices: promoNotices,
   });
 };
 

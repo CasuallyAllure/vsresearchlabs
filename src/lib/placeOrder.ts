@@ -27,6 +27,10 @@ export interface PlaceOrderResponse {
   /** true when this response is a replay of an order the server already
    *  created for the same idempotency key (retry after a timeout). */
   duplicate?: boolean;
+  /** Plain-language explanations for anything the server decided differently
+   *  from what the cart quoted — e.g. a promo window that closed while the
+   *  cart sat open. Additive: absent from older deploys, so treat as []. */
+  notices?: string[];
   error?: string;
 }
 

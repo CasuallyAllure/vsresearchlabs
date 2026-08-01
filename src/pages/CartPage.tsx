@@ -54,6 +54,8 @@ import { cartIncentives } from '../lib/cartIncentives';
 import { memberPercentFor } from '../lib/promoOffers';
 import { CartIncentives } from '../components/cart/CartIncentives';
 import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
+import { computeBogoPreview, bogoBeatsAccount } from '../lib/bogoPreview';
+import { useBogoLive } from '../lib/useBogoLive';
 import { siteConfig } from '../config';
 
 interface OrderResult {
@@ -61,6 +63,9 @@ interface OrderResult {
   amountCents: number;
   invoiceEmailSent: boolean;
   contact: string;
+  /** Plain-language explanations the server attached to this order — e.g. a
+   *  promo window that closed while the cart sat open. Usually empty. */
+  notices: string[];
 }
 
 type SubmitState =
@@ -109,7 +114,26 @@ export function CartPage() {
     ? computeB2G1Preview(items, isMember)
     : { lines: [], totalCents: 0, suppressedByWholesale: false };
   const b2g1Applies = bundle.pairs === 0 && !b2g1Preview.suppressedByWholesale;
-  const rawB2G1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
+
+  // LAUNCH DAY BOGO — PREVIEW only; mirrors place-order's promoPlan (see
+  // src/lib/bogoPreview.ts), which holds wholesale-winning lines out of the
+  // pairing and arbitrates the rest order-wide. Liveness comes from a
+  // SUBSCRIPTION on the SERVER's clock and fails closed while settings load.
+  // The bundle is treated as a final price here exactly as it is for B2G1;
+  // the server arbitrates those two on value, so this preview can only ever
+  // under-promise the bundle case, never over-promise it.
+  const { live: bogoLive, excludedSkus: bogoExcludedSkus } = useBogoLive();
+  const bogoPreview = bundle.pairs === 0
+    ? computeBogoPreview(items, isMember, bogoLive, bogoExcludedSkus)
+    : { lines: [], totalCents: 0 };
+  const rawBogoCents = bogoPreview.totalCents;
+  const bogoFreeUnits = bogoPreview.lines.reduce((s, l) => s + l.freeUnits, 0);
+
+  // BOGO and B2G1 are ONE winner, never two rows. A non-empty BOGO plan means
+  // computeBogoPreview already found B2G1 worth no more (tie → BOGO), so
+  // B2G1's row must not render — matching promoPlan, which hands the server a
+  // single non-empty plan.
+  const rawB2G1Cents = b2g1Applies && rawBogoCents === 0 ? b2g1Preview.totalCents : 0;
 
   // Signed-in account discount (lifetime/business) — PREVIEW only; place-order
   // re-resolves and applies it authoritatively server-side. Guests → null.
@@ -133,6 +157,11 @@ export function CartPage() {
     : 0;
   const b2g1Wins = b2g1BeatsAccount(rawB2G1Cents, accountCandidateCents);
   const b2g1Cents = b2g1Wins ? rawB2G1Cents : 0;
+  // Same no-stack rule for BOGO. Guarded on a non-empty plan because the
+  // comparison is vacuously true when both sides are 0 — without the guard an
+  // absent BOGO would "win" and hide a legitimate account-discount row.
+  const bogoWins = rawBogoCents > 0 && bogoBeatsAccount(rawBogoCents, accountCandidateCents);
+  const bogoCents = bogoWins ? rawBogoCents : 0;
 
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
@@ -217,6 +246,12 @@ export function CartPage() {
       // Only the CODES travel — the server re-validates and prices each,
       // stacks them (additive, capped at subtotal), and adds any free items.
       coupon_codes: submittableCouponCodes(subtotalCents),
+      // What this cart QUOTED for the Launch Day BOGO, in integer cents.
+      // ADVISORY ONLY — place-order never prices from it; it uses it to say in
+      // plain language when the promo window closed while the cart sat open.
+      // The arbitrated figure (0 when the account discount won), because that
+      // is what the buyer was actually shown.
+      expected_bogo_cents: bogoCents,
       items: items.map((i) => ({
         product: {
           id:       i.product.id,
@@ -284,6 +319,7 @@ export function CartPage() {
       amountCents:      serverResp.amountCents ?? 0,
       invoiceEmailSent: serverResp.invoiceEmailSent ?? false,
       contact:          contactTrim,
+      notices:          serverResp.notices ?? [],
     });
     setSubmit({ kind: 'success' });
   }
@@ -341,6 +377,28 @@ export function CartPage() {
             </p>
           )}
         </header>
+
+        {/* Server notices — plain-language explanations of anything the server
+            decided differently from what this cart quoted (e.g. the Launch Day
+            BOGO window closing while the cart sat open). Almost always empty;
+            when it isn't, the buyer reads it before the amount they owe. */}
+        {order && order.notices.length > 0 && (
+          <div className="mb-[var(--space-8)] rounded-[14px] border border-ink/[0.08] bg-ink/[0.02] p-[var(--space-5)] print:border-black/15 print:bg-white">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-ink/30 print:text-black/50">
+              About this order
+            </p>
+            <ul className="mt-[var(--space-3)] space-y-[var(--space-2)]">
+              {order.notices.map((notice) => (
+                <li
+                  key={notice}
+                  className="text-[12px] leading-relaxed text-ink/70 print:text-black/70 max-w-[72ch]"
+                >
+                  {notice}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Payment instructions — the key call to action */}
         {order && (
@@ -751,7 +809,12 @@ export function CartPage() {
                       accountDiscount?.percent ??
                       memberPercentFor({ isMember, tier: profile?.tier ?? null }),
                     b2g1Cents: rawB2G1Cents,
-                    wholesaleApplies: b2g1Preview.suppressedByWholesale,
+                    bogoCents: rawBogoCents,
+                    // A surviving BOGO plan has already out-valued wholesale
+                    // order-wide (computeBogoPreview requires it to be
+                    // STRICTLY larger), so the panel must not label the order
+                    // "wholesale — final price" and contradict the row below.
+                    wholesaleApplies: b2g1Preview.suppressedByWholesale && rawBogoCents === 0,
                     bundleCents: bundle.pairs > 0 ? bundle.discountCents : 0,
                   })}
                   onCreateAccount={() => navigate('/account?mode=signup')}
@@ -800,6 +863,34 @@ export function CartPage() {
                   </div>
                 );
               })()}
+              {/* LAUNCH DAY BOGO — automatic, members only, 24-hour-shipping
+                  items only. Mutually exclusive with the B2G1 row below (a
+                  live BOGO plan zeroes rawB2G1Cents) and with the account
+                  discount (bogoCents is already 0 when the account % won). */}
+              {bogoCents > 0 && (() => {
+                const subtotalCents = cartSubtotalCents(items);
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Launch Day BOGO — {bogoFreeUnits} unit
+                        {bogoFreeUnits === 1 ? '' : 's'} free
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(bogoCents)}
+                      </span>
+                    </div>
+                    <div className="mt-[var(--space-2)] flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/45">
+                        Total after discounts
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        {formatUsd(Math.max(subtotalCents - bogoCents, 0))}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
               {/* B2G1 (buy-2-get-1-free) — automatic, standard-shipping only.
                   A final price above it (bundle/wholesale) always wins; see
                   b2g1Applies. b2g1Cents is already 0 when the account
@@ -831,10 +922,11 @@ export function CartPage() {
               {/* Account discount (signed-in perk) — same pass-2a math the
                   server bills, computed on the POST-B2G1 base (server order:
                   wholesale → bundle → B2G1 → reward → account). Suppressed
-                  under the bundle, a wholesale win, AND now a B2G1 win
-                  (owner policy 2026-07-22: the two never stack — b2g1Wins
-                  means B2G1's row above already won this order). */}
-              {!b2g1Wins && accountDiscount && b2g1Applies && (() => {
+                  under the bundle, a wholesale win, a B2G1 win AND a BOGO win
+                  (owner policy 2026-07-22, extended to BOGO: neither promo
+                  stacks with the percentage — b2g1Wins/bogoWins mean a row
+                  above already won this order). */}
+              {!b2g1Wins && !bogoWins && accountDiscount && b2g1Applies && (() => {
                 const subtotalCents = Math.max(cartSubtotalCents(items) - b2g1Cents, 0);
                 const breakdown = couponBreakdown(coupons, subtotalCents, items, accountDiscount);
                 if (breakdown.accountCents <= 0) return null;

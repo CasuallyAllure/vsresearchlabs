@@ -50,6 +50,8 @@ import { cartIncentives } from '../lib/cartIncentives';
 import { memberPercentFor } from '../lib/promoOffers';
 import { CartIncentives } from '../components/cart/CartIncentives';
 import { computeB2G1Preview, b2g1NudgeCaption, b2g1BeatsAccount } from '../lib/b2g1Preview';
+import { computeBogoPreview, bogoBeatsAccount } from '../lib/bogoPreview';
+import { useBogoLive } from '../lib/useBogoLive';
 import { FIELD_DEFAULT } from '../components/ui/Field';
 import { siteConfig } from '../config';
 
@@ -74,7 +76,7 @@ type View = 'list' | 'form';
 type SubmitState =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'success'; email: string; reference?: string }
+  | { kind: 'success'; email: string; reference?: string; notices: string[] }
   | { kind: 'error'; message: string };
 
 interface CartDrawerProps {
@@ -164,6 +166,33 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     };
   }, [open]);
 
+  // LAUNCH DAY BOGO — PREVIEW only; mirrors place-order's promoPlan (see
+  // src/lib/bogoPreview.ts), which holds wholesale-winning lines out of the
+  // pairing and arbitrates the rest order-wide. Liveness comes from a
+  // SUBSCRIPTION on the SERVER's clock and fails closed while settings load.
+  // The bundle is treated as a final price here exactly as it is for B2G1;
+  // the server arbitrates those two on value, so this preview can only ever
+  // under-promise the bundle case, never over-promise it.
+  const { live: bogoLive, excludedSkus: bogoExcludedSkus } = useBogoLive();
+  const bogoPreview = bundle.pairs === 0
+    ? computeBogoPreview(items, isMember, bogoLive, bogoExcludedSkus)
+    : { lines: [], totalCents: 0 };
+  const rawBogoCents = bogoPreview.totalCents;
+  const bogoFreeUnits = bogoPreview.lines.reduce((s, l) => s + l.freeUnits, 0);
+  // What the automatic account percentage would be worth if no promo fired —
+  // the comparison base for BOTH no-stack gates below. Hoisted out of the
+  // footer (where the B2G1 pair lives) because handleSubmit sends the quoted
+  // BOGO figure to place-order as expected_bogo_cents.
+  const accountCandidateCents = accountDiscount && b2g1Applies
+    ? couponBreakdown(coupons, cartSubtotalCents(items), items, accountDiscount).accountCents
+    : 0;
+  // Owner policy, extended to BOGO: the promo and the account percentage never
+  // stack — larger wins, tie → promo. Guarded on a non-empty plan because the
+  // comparison is vacuously true when both sides are 0, and an absent BOGO
+  // must never hide a legitimate account-discount row.
+  const bogoWins = rawBogoCents > 0 && bogoBeatsAccount(rawBogoCents, accountCandidateCents);
+  const bogoCents = bogoWins ? rawBogoCents : 0;
+
   // Reset to the list step shortly after the drawer closes.
   useEffect(() => {
     if (open) return;
@@ -217,6 +246,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       // Only the CODES travel — the server re-validates and prices each,
       // stacks them (additive, capped at subtotal), and adds any free items.
       coupon_codes: submittableCouponCodes(subtotalCents),
+      // What this cart QUOTED for the Launch Day BOGO, in integer cents.
+      // ADVISORY ONLY — place-order never prices from it; it uses it to say in
+      // plain language when the promo window closed while the cart sat open.
+      // The arbitrated figure (0 when the account discount won), because that
+      // is what the buyer was actually shown.
+      expected_bogo_cents: bogoCents,
       items: items.map((i) => ({
         product: {
           id: i.product.id,
@@ -252,7 +287,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     setZip('');
     setHuman(false);
     setTsToken(null);
-    setSubmit({ kind: 'success', email: sentEmail, reference });
+    setSubmit({
+      kind: 'success',
+      email: sentEmail,
+      reference,
+      notices: outcome.data.notices ?? [],
+    });
   }
 
   return createPortal(
@@ -350,6 +390,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink/40 tabular-nums">
                 Ref · {submit.reference}
               </p>
+            )}
+            {/* Server notices — anything the server decided differently from
+                what the cart quoted (e.g. the Launch Day BOGO window closing
+                while this cart sat open). Usually empty. */}
+            {submit.notices.length > 0 && (
+              <ul className="mt-5 max-w-[36ch] space-y-2 rounded-[12px] border border-ink/[0.08] bg-ink/[0.02] px-4 py-3 text-left">
+                {submit.notices.map((notice) => (
+                  <li key={notice} className="text-[11.5px] leading-relaxed text-ink/65">
+                    {notice}
+                  </li>
+                ))}
+              </ul>
             )}
             <button
               type="button"
@@ -679,26 +731,30 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 // it). bundle/b2g1Preview/b2g1Applies are hoisted to the
                 // component body (see above) so the per-line nudge caption
                 // can read them too.
-                const rawB2G1Cents = b2g1Applies ? b2g1Preview.totalCents : 0;
+                // BOGO and B2G1 are ONE winner, never two rows: a non-empty
+                // BOGO plan means computeBogoPreview already found B2G1 worth
+                // no more (tie → BOGO), so B2G1's row must not render.
+                const rawB2G1Cents = b2g1Applies && rawBogoCents === 0
+                  ? b2g1Preview.totalCents
+                  : 0;
                 const b2g1FreeUnits = b2g1Preview.lines.reduce((s, l) => s + l.freeUnits, 0);
                 // Owner policy (2026-07-22): B2G1 and the account discount
                 // never stack — compare each candidate's value on the base as
                 // if the OTHER hadn't fired (bigger wins, tie → B2G1) and show
                 // only the winner's row, mirroring place-order's handler.ts
-                // exclusivity gate.
-                const accountCandidateCents = accountDiscount && b2g1Applies
-                  ? couponBreakdown(coupons, subtotalCents, items, accountDiscount).accountCents
-                  : 0;
+                // exclusivity gate. accountCandidateCents / bogoWins / bogoCents
+                // are hoisted to the component body (handleSubmit reads them).
                 const b2g1Wins = b2g1BeatsAccount(rawB2G1Cents, accountCandidateCents);
                 const b2g1Cents = b2g1Wins ? rawB2G1Cents : 0;
-                // Account discount rides on the POST-B2G1 base, matching the
-                // server's reduction order (wholesale → bundle → B2G1 →
+                // Account discount rides on the POST-PROMO base, matching the
+                // server's reduction order (wholesale → bundle → B2G1/BOGO →
                 // reward → account). Suppressed under the bundle, a wholesale
-                // win, AND now a B2G1 win (b2g1Wins), exactly as place-order
-                // does.
-                const postB2G1Subtotal = Math.max(subtotalCents - b2g1Cents, 0);
-                const breakdown = !b2g1Wins && accountDiscount && b2g1Applies
-                  ? couponBreakdown(coupons, postB2G1Subtotal, items, accountDiscount)
+                // win, a B2G1 win AND a BOGO win, exactly as place-order does.
+                // b2g1Cents and bogoCents are mutually exclusive, so at most
+                // one of them is non-zero here.
+                const postPromoSubtotal = Math.max(subtotalCents - b2g1Cents - bogoCents, 0);
+                const breakdown = !b2g1Wins && !bogoWins && accountDiscount && b2g1Applies
+                  ? couponBreakdown(coupons, postPromoSubtotal, items, accountDiscount)
                   : null;
                 const hasAccountDisc = !!breakdown && breakdown.accountCents > 0;
                 // Shipping rides on top of the discounted subtotal — mirrors
@@ -707,8 +763,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 const discountedSubtotal = bundle.pairs > 0
                   ? Math.max(subtotalCents - bundle.discountCents, 0)
                   : hasAccountDisc
-                    ? Math.max(postB2G1Subtotal - breakdown!.total, 0)
-                    : postB2G1Subtotal;
+                    ? Math.max(postPromoSubtotal - breakdown!.total, 0)
+                    : postPromoSubtotal;
                 const totalCents = discountedSubtotal + shippingCents;
                 // Offers panel — fed the PRE-arbitration B2G1 value, because
                 // cartIncentives runs the same precedence ladder itself (see
@@ -720,7 +776,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     accountDiscount?.percent ??
                     memberPercentFor({ isMember, tier: profile?.tier ?? null }),
                   b2g1Cents: rawB2G1Cents,
-                  wholesaleApplies: b2g1Preview.suppressedByWholesale,
+                  bogoCents: rawBogoCents,
+                  // A surviving BOGO plan has already out-valued wholesale
+                  // order-wide (computeBogoPreview requires it to be STRICTLY
+                  // larger), so the panel must not label the order "wholesale
+                  // — final price" and contradict the row below.
+                  wholesaleApplies: b2g1Preview.suppressedByWholesale && rawBogoCents === 0,
                   bundleCents: bundle.pairs > 0 ? bundle.discountCents : 0,
                 });
                 return (
@@ -760,6 +821,20 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           </p>
                         )}
                       </>
+                    )}
+                    {/* Launch Day BOGO — members only, 24-hour items only.
+                        Never renders alongside the B2G1 row (rawB2G1Cents is
+                        zeroed above) or the account row (gated on bogoWins). */}
+                    {bogoCents > 0 && (
+                      <div className="mb-3 flex items-baseline justify-between gap-2">
+                        <span className="min-w-0 text-[11px] uppercase tracking-[0.2em] text-ink/45">
+                          Launch Day BOGO — {bogoFreeUnits} unit
+                          {bogoFreeUnits === 1 ? '' : 's'} free
+                        </span>
+                        <span className="shrink-0 font-mono text-[13px] tabular-nums text-[color:var(--color-status-success)]">
+                          −{formatUsd(bogoCents)}
+                        </span>
+                      </div>
                     )}
                     {b2g1Cents > 0 && (
                       <div className="mb-3 flex items-baseline justify-between gap-2">

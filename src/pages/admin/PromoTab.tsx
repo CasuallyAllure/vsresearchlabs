@@ -1,10 +1,17 @@
 /**
- * PromoTab — Buy-2-Get-1-Free (B2G1) promo governance.
+ * PromoTab — promo governance for the two automatic promos, both stored on
+ * `promo_settings` (id=1) and both written ONLY through their admin-gated RPC:
  *
- * Reads/writes `promo_settings` (id=1) via the admin-gated
- * `set_b2g1_promo` RPC (migration 055). This panel ONLY controls the admin
- * toggle/end-date/exclusion list — pricing, checkout, and the storefront
- * tooltip logic all live elsewhere and are untouched here.
+ *   Launch Day BOGO — `set_bogo_promo` (migration 084), in BogoPromoSection
+ *                     below. Rendered FIRST: it is the time-boxed launch promo
+ *                     and its kill switch is what the owner needs to reach
+ *                     fastest.
+ *   Buy 2, Get 1     — `set_b2g1_promo` (migration 055), the standing term,
+ *                     controlled by the rest of this file.
+ *
+ * This panel ONLY controls the admin toggle/end-date/exclusion list — pricing,
+ * checkout, and the storefront tooltip logic all live elsewhere and are
+ * untouched here.
  *
  * On successful save, `usePromoSettings.getState().reload()` is called so
  * the live storefront messaging (LTO line, chip tooltips) picks up the new
@@ -18,6 +25,7 @@ import productsData from '../../data/products.json';
 import type { Product } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { FIELD_SURFACE, FIELD_DEFAULT } from '../../components/ui/Field';
+import { BogoPromoSection } from './BogoPromoSection';
 
 const products = (productsData as unknown as Product[])
   .filter((p) => !!p.sku)
@@ -210,6 +218,13 @@ export function PromoTab({ confirm }: PromoTabProps) {
 
   return (
     <div className="flex flex-col gap-[var(--space-5)]">
+      <BogoPromoSection confirm={confirm} />
+
+      <div className="flex items-center gap-[var(--space-3)] pt-[var(--space-2)]">
+        <p className="text-[11px] uppercase tracking-[0.22em] text-ink/40">Standing promo</p>
+        <span aria-hidden="true" className="h-px flex-1 bg-ink/[0.08]" />
+      </div>
+
       <div className="research-surface-solid flex flex-col gap-[var(--space-3)] p-[var(--space-5)] sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[13px] text-ink mb-1">Buy 2, Get 1 Free</p>
