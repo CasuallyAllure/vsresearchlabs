@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 /**
- * PreparedCartPanel — the "Build cart" composer inside the expanded roster row.
+ * PreparedCartPanel — a member's prepared carts inside the expanded roster row:
+ * the list, each cart's opened detail, and the composer that builds a new one.
  *
  * The supabase seam is mocked (a unit test never touches the live client); the
  * real RPC behaviour — the is_admin() gate, token hashing, the price-key
@@ -23,6 +24,7 @@
  *     picking blind can build a cart that does not behave as the admin expects.
  */
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const seam = vi.hoisted(() => ({ client: null as unknown }));
@@ -88,12 +90,33 @@ const SENT: InvokeHandler = () => ({
   error: null,
 });
 
-function makeClient(handlers: Record<string, RpcHandler>, invoke: InvokeHandler = SENT) {
+/** The `email_log` read behind "did the email actually go out?". PostgREST's
+ *  builder is CHAINABLE and only resolves when awaited, so the stub has to be
+ *  too — a bare promise would break at the first `.eq()`. */
+type LogResult = { data: unknown; error: unknown };
+const NO_LOG: LogResult = { data: [], error: null };
+
+function makeClient(
+  handlers: Record<string, RpcHandler>,
+  invoke: InvokeHandler = SENT,
+  emailLog: LogResult = NO_LOG,
+) {
   const rpc = vi.fn(async (name: string, args: unknown) =>
     handlers[name] ? handlers[name](args) : { data: null, error: null });
+  const from = vi.fn((table: string) => {
+    const result = table === 'email_log' ? emailLog : NO_LOG;
+    const chain = {
+      select: vi.fn(() => chain),
+      eq: vi.fn(() => chain),
+      in: vi.fn(() => chain),
+      then: (ok: (r: LogResult) => unknown, fail?: (e: unknown) => unknown) =>
+        Promise.resolve(result).then(ok, fail),
+    };
+    return chain;
+  });
   return {
     rpc,
-    from: vi.fn(() => ({ select: vi.fn(async () => ({ data: [], error: null })) })),
+    from,
     functions: { invoke: vi.fn(async (_fn: string, opts: { body: unknown }) => invoke(opts?.body)) },
   };
 }
@@ -136,7 +159,7 @@ afterEach(() => {
 describe('PreparedCartPanel — the line editor', () => {
   test('offers a compound dropdown and a dose dropdown, and never a SKU text field', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     const [compoundSelect, doseSelect] = selects();
     expect([...compoundSelect.options].map((o) => o.value)).toEqual(['', 'BPC-157', 'Retatrutide']);
@@ -153,7 +176,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the dose list repopulates when the compound changes', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     const [compoundSelect] = selects();
     fireEvent.change(compoundSelect, { target: { value: 'BPC-157' } });
@@ -169,7 +192,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('every dose option names its own shipping tier', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     fireEvent.change(selects()[0], { target: { value: 'BPC-157' } });
     const labels = [...selects()[1].options].map((o) => o.text);
@@ -186,7 +209,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the compound dropdown says "all" only when the doses really agree', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     const labels = [...selects()[0].options].map((o) => o.text);
 
@@ -198,7 +221,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the picked tier stays visible on the line row after selection', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     expect(screen.getByText('24 Hour')).toBeTruthy();
@@ -212,14 +235,14 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('states that B2G1 cannot reach a 24 Hour line', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     expect(screen.getByText(/a 24 Hour line never earns a free third unit/i)).toBeTruthy();
   });
 
   test("shows THIS member's price, not list price", async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|10mg');
 
@@ -243,7 +266,7 @@ describe('PreparedCartPanel — sending', () => {
     seam.client = client;
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|10mg');
     fireEvent.change(screen.getByPlaceholderText('e.g. SPRING20'), { target: { value: 'spring20' } });
@@ -267,7 +290,7 @@ describe('PreparedCartPanel — sending', () => {
     seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST, admin_create_prepared_cart: create });
 
     render(<PreparedCartPanel member={MEMBER} confirm={no} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
@@ -286,7 +309,7 @@ describe('PreparedCartPanel — sending', () => {
     });
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
@@ -298,7 +321,7 @@ describe('PreparedCartPanel — sending', () => {
 
   test('the build button stays disabled until a dose is actually picked', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
 
     const button = screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
@@ -342,7 +365,7 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
 
   async function startBuild() {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
   }
@@ -435,14 +458,14 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
     });
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    fireEvent.click(await screen.findByRole('button', { name: /revoke/i }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Revoke' }));
     await waitFor(() => expect(yes).toHaveBeenCalled());
 
     gate.reject(new Error('network unreachable'));
 
     expect(await screen.findByText(/network unreachable/)).toBeTruthy();
     await waitFor(() =>
-      expect((screen.getByRole('button', { name: /revoke/i }) as HTMLButtonElement).disabled).toBe(false));
+      expect((screen.getByRole('button', { name: 'Revoke' }) as HTMLButtonElement).disabled).toBe(false));
   });
 
   test('a stale schema cache is not swallowed into a silent "not migrated" placeholder', async () => {
@@ -489,7 +512,7 @@ describe('PreparedCartPanel — what the owner is told about the email', () => {
       invoke,
     );
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByText('Built carts')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
   }
@@ -614,7 +637,7 @@ describe('PreparedCartPanel — the built-carts list', () => {
     });
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    expect(await screen.findByRole('button', { name: /revoke/i })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Revoke' })).toBeTruthy();
   });
 
   test.each([
@@ -626,6 +649,328 @@ describe('PreparedCartPanel — the built-carts list', () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
 
     await screen.findByText(status);
-    expect(screen.queryByRole('button', { name: /revoke/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Revoke' })).toBeNull();
+  });
+});
+
+/**
+ * THE OPENED CART.
+ *
+ * The owner, verbatim: "To access the stuff that I built a cart, I have to
+ * press Build a cart, which then I see a list of the ones I see. But I can't
+ * open it up and see the detail of when I sent it and what's inside it. Kinda
+ * defeats the purpose."
+ *
+ * So two properties, and each one is a separate failure if it breaks:
+ *   • the carts are READABLE WITHOUT the composer — building a new cart is an
+ *     action, not the way in;
+ *   • a cart OPENS, and what it opens to is enough to answer a member on the
+ *     phone: the lines with their doses and prices, the total at that member's
+ *     own rate, when it was built, whether the email went out, when it expires,
+ *     how often it was opened, the coupon, the note, and the order it became.
+ *
+ * And one thing that must never appear anywhere in it: `token_hash`. The read
+ * RPC's explicit column list is what keeps the link digest off every client
+ * surface, and the fixtures below smuggle one in to prove nothing renders it.
+ */
+describe('PreparedCartPanel — an opened cart', () => {
+  /** A stored cart as admin_prepared_carts returns it — plus a `token_hash` the
+   *  real RPC never sends, so "nothing renders it" is a proof and not a hope. */
+  const SMUGGLED_HASH = 'deadbeefcafe0000deadbeefcafe0000deadbeefcafe0000deadbeefcafe0000';
+
+  const cart = (over: Record<string, unknown> = {}) => ({
+    id: 'cart-1',
+    created_at: '2026-07-30T12:00:00Z',
+    expires_at: '2026-08-13T12:00:00Z',
+    claimed_at: null,
+    last_claimed_at: null,
+    claim_count: 0,
+    revoked_at: null,
+    converted_at: null,
+    converted_order_id: null,
+    converted_order_number: null,
+    coupon_code: null,
+    note: null,
+    status: 'live',
+    token_hash: SMUGGLED_HASH,
+    // Both tiers, from ONE compound: 5mg is on-hand (24 Hour), 10mg is
+    // drop-shipped (Sourced). A single-tier fixture would pass a detail that
+    // labelled every line the same.
+    lines: [
+      { sku: 'VSR-RS-BPC', dose: '5mg', quantity: 2 },
+      { sku: 'VSR-RS-BPC', dose: '10mg', quantity: 1 },
+    ],
+    ...over,
+  });
+
+  function listing(rows: unknown[]): RpcHandler {
+    return () => ({ data: { rows }, error: null });
+  }
+
+  /** A converted cart renders a react-router <Link> to the order it became, so
+   *  the panel is mounted inside a router here — the real one always is. */
+  function mount(rows: unknown[], emailLog: LogResult = NO_LOG) {
+    seam.client = makeClient({ admin_prepared_carts: listing(rows) }, SENT, emailLog);
+    return render(
+      <MemoryRouter>
+        <PreparedCartPanel member={MEMBER} confirm={yes} />
+      </MemoryRouter>,
+    );
+  }
+
+  /** Open the one listed cart. The row toggle is the button carrying the
+   *  status chip; RowAction buttons are the named ones beside it. */
+  async function openCart() {
+    const row = await screen.findByRole('button', { expanded: false });
+    fireEvent.click(row);
+  }
+
+  /** The value of a `<dt>label</dt><dd>…</dd>` money row. */
+  function amountFor(label: string): string {
+    const dd = screen.getByText(label).parentElement?.querySelector('dd');
+    return dd?.textContent ?? '';
+  }
+
+  test('the carts are listed WITHOUT opening the builder', async () => {
+    mount([cart()]);
+
+    // The cart is on screen…
+    expect(await screen.findByText('live')).toBeTruthy();
+    // …and the composer is not. Building is an action from here, not the door.
+    expect(screen.queryByRole('button', { name: 'Build & send cart' })).toBeNull();
+    expect(screen.getByRole('button', { name: '+ Build a new cart' })).toBeTruthy();
+  });
+
+  test('the build action is one press away and still obvious', async () => {
+    mount([cart()]);
+
+    fireEvent.click(await screen.findByRole('button', { name: '+ Build a new cart' }));
+    expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy();
+  });
+
+  test('a member with no carts is told so plainly and handed the builder', async () => {
+    mount([]);
+
+    expect(await screen.findByText(/Nothing built for Ada yet/i)).toBeTruthy();
+    // Nothing to read means the empty state IS the form — no extra press.
+    expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy();
+  });
+
+  test('an expanded cart renders every line with its dose, its tier and its price', async () => {
+    mount([cart()]);
+    await openCart();
+
+    // Compound AND dose, in the catalog's own label format.
+    expect(screen.getByText('BPC-157 — 5mg')).toBeTruthy();
+    expect(screen.getByText('BPC-157 — 10mg')).toBeTruthy();
+
+    // The composer's tier vocabulary, verbatim — not a second wording.
+    expect(screen.getByText('24 Hour Shipping')).toBeTruthy();
+    expect(screen.getByText('Standard Shipping · 7–10 business days')).toBeTruthy();
+
+    // Quantity × THIS member's unit price, and the line total. $60 and $100
+    // list at 15% → $51 and $85.
+    expect(screen.getByText('2 × $51')).toBeTruthy();
+    expect(screen.getByText('$102')).toBeTruthy();
+    expect(screen.getByText('1 × $85')).toBeTruthy();
+    expect(screen.getByText('$85')).toBeTruthy();
+  });
+
+  test('the total on an opened cart is the number the composer quotes for the same lines', async () => {
+    // The composer's answer for BPC 5mg ×2 + BPC 10mg ×1.
+    seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST });
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+    fireEvent.change(screen.getAllByRole('spinbutton')[0], { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: '+ Add line' }));
+    const [, , compound2, dose2] = selects();
+    fireEvent.change(compound2, { target: { value: 'BPC-157' } });
+    fireEvent.change(dose2, { target: { value: 'VSR-RS-BPC|10mg' } });
+
+    const quotedList = amountFor('List');
+    const quotedTotal = amountFor('Ada pays');
+    expect(quotedTotal).toBe('$187');
+
+    cleanup();
+
+    // The same lines, read back off a stored cart. One `priceLines` call in
+    // both places is the only reason these can agree — a second opinion here is
+    // how a member gets quoted one figure and invoiced another.
+    mount([cart()]);
+    await openCart();
+    expect(amountFor('Ada pays')).toBe(quotedTotal);
+    expect(amountFor('List')).toBe(quotedList);
+    expect(amountFor('Account-holder 15%')).toBe('−$33');
+  });
+
+  test('a converted cart names the order it became and links to it', async () => {
+    mount([cart({
+      status: 'converted',
+      converted_at: '2026-08-02T12:00:00Z',
+      converted_order_id: 'order-77',
+      converted_order_number: 'ORDER-1042',
+    })]);
+    await openCart();
+
+    const links = screen.getAllByRole('link', { name: /ORDER-1042/ });
+    expect(links.length).toBeGreaterThan(0);
+    expect(links[0].getAttribute('href')).toBe('/admin/orders/order-77');
+    // A cart that became an order cannot be revoked or converted again.
+    expect(screen.queryByRole('button', { name: 'Revoke' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Convert to order' })).toBeNull();
+  });
+
+  test('an expired cart says the window has closed, not merely when it was', async () => {
+    mount([cart({ status: 'expired', expires_at: '2026-01-05T12:00:00Z' })]);
+    await openCart();
+
+    expect(screen.getByText('expired')).toBeTruthy();
+    expect(screen.getByText(/^Expired Jan 5, 2026, /)).toBeTruthy();
+    // Converting a lapsed cart is exactly the off-site-payment case, so it stays.
+    expect(screen.getByRole('button', { name: 'Convert to order' })).toBeTruthy();
+  });
+
+  test('a still-live cart says when it expires, without calling it expired', async () => {
+    mount([cart({ expires_at: '2099-01-05T12:00:00Z' })]);
+    await openCart();
+
+    expect(screen.getByText(/^Expires Jan 5, 2099, /)).toBeTruthy();
+    expect(screen.queryByText(/^Expired /)).toBeNull();
+  });
+
+  test('open count and last-opened render when the member has opened it', async () => {
+    mount([cart({ claim_count: 3, last_claimed_at: '2026-08-01T12:00:00Z' })]);
+    await openCart();
+
+    expect(screen.getAllByText(/opened 3× · last Aug 1, 2026, /).length).toBeGreaterThan(0);
+  });
+
+  test('a never-opened cart says "never opened" — never "0×"', async () => {
+    mount([cart()]);
+    await openCart();
+
+    expect(screen.getByText('never opened')).toBeTruthy();
+    expect(screen.queryByText(/0×/)).toBeNull();
+    expect(screen.queryByText(/opened 0/)).toBeNull();
+  });
+
+  test('when it was built is a real date and time, not "Invalid Date"', async () => {
+    // created_at is a timestamptz; members/format.ts::shortDate renders one as
+    // the literal string "Invalid Date". This is the field the owner asked for.
+    const { container } = mount([cart()]);
+    await openCart();
+
+    expect(container.textContent).not.toMatch(/Invalid Date/);
+    expect(screen.getAllByText(/Jul 30, 2026, /).length).toBeGreaterThan(0);
+  });
+
+  test('the coupon and the note to the member are both readable', async () => {
+    mount([cart({ coupon_code: 'SPRING20', note: 'Repeat of the June order, minus the GHK.' })]);
+    await openCart();
+
+    expect(screen.getByText('SPRING20')).toBeTruthy();
+    expect(screen.getByText('Repeat of the June order, minus the GHK.')).toBeTruthy();
+  });
+
+  test('an old cart has no copyable link, and says why instead of pretending', async () => {
+    // The token is minted once and stored only as a digest — a cart from a
+    // previous session genuinely has no link, and a dead "copy" affordance
+    // would be worse than the sentence.
+    mount([cart()]);
+    await openCart();
+
+    expect(screen.getByText(/cannot be read back/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /copy link/i })).toBeNull();
+  });
+
+  test('token_hash never reaches the screen, opened or closed', async () => {
+    const { container } = mount([cart({ coupon_code: 'SPRING20', claim_count: 2 })]);
+    await screen.findByText('live');
+    expect(container.innerHTML).not.toContain(SMUGGLED_HASH);
+    expect(container.innerHTML).not.toContain('token_hash');
+
+    await openCart();
+    expect(container.innerHTML).not.toContain(SMUGGLED_HASH);
+    expect(container.innerHTML).not.toContain('token_hash');
+  });
+
+  test('Convert to order and Revoke are both reachable from the open row', async () => {
+    mount([cart()]);
+    await openCart();
+
+    expect(screen.getByRole('button', { name: 'Convert to order' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Revoke' })).toBeTruthy();
+  });
+});
+
+/**
+ * DID IT ACTUALLY GO OUT?
+ *
+ * `email_log` (075) is the only durable record that a prepared-cart email was
+ * sent: the edge function claims a row keyed `pc-<cart id>` BEFORE mailing, and
+ * DELETES it again when Resend rejects the send. So the ledger answers "did it
+ * go out?" and cannot answer "why not?" — and the panel has to say exactly
+ * that, in both directions. A false "emailed" leaves a client waiting for a mail
+ * that never came, which is how this whole workstream started.
+ */
+describe('PreparedCartPanel — whether the email went out', () => {
+  const cart = {
+    id: 'cart-1',
+    created_at: '2026-07-30T12:00:00Z',
+    expires_at: '2026-08-13T12:00:00Z',
+    claimed_at: null, last_claimed_at: null, claim_count: 0,
+    revoked_at: null, converted_at: null, converted_order_id: null, converted_order_number: null,
+    coupon_code: null, note: null, status: 'live',
+    lines: [{ sku: 'VSR-RS-BPC', dose: '5mg', quantity: 1 }],
+  };
+
+  async function mountWithLog(emailLog: LogResult) {
+    seam.client = makeClient(
+      { admin_prepared_carts: () => ({ data: { rows: [cart] }, error: null }) },
+      SENT,
+      emailLog,
+    );
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    fireEvent.click(await screen.findByRole('button', { expanded: false }));
+  }
+
+  test('a logged send reports when it went and to whom', async () => {
+    await mountWithLog({
+      data: [{ period_key: 'pc-cart-1', sent_at: '2026-07-30T13:00:00Z', recipient: 'ada@example.com' }],
+      error: null,
+    });
+
+    expect(screen.getByText(/Jul 30, 2026, .* · ada@example\.com/)).toBeTruthy();
+    expect(screen.queryByText('not on record')).toBeNull();
+  });
+
+  test('the read is filtered to THIS cart, by the key the edge function writes', async () => {
+    await mountWithLog(NO_LOG);
+
+    const client = seam.client as { from: ReturnType<typeof vi.fn> };
+    expect(client.from).toHaveBeenCalledWith('email_log');
+    const chain = client.from.mock.results.find((r) => r.type === 'return')?.value as {
+      eq: ReturnType<typeof vi.fn>; in: ReturnType<typeof vi.fn>;
+    };
+    expect(chain.eq).toHaveBeenCalledWith('kind', 'prepared_cart');
+    expect(chain.in).toHaveBeenCalledWith('period_key', ['pc-cart-1']);
+  });
+
+  test('no logged send says "not on record" and names BOTH ways that happens', async () => {
+    await mountWithLog(NO_LOG);
+
+    expect(screen.getByText('not on record')).toBeTruthy();
+    // Opted out and delivery-failed are not stored apart, so neither is claimed.
+    expect(screen.getByText(/opted-out member and a failed delivery both look like/i)).toBeTruthy();
+  });
+
+  test('an unreadable ledger is "not known" — never downgraded to "not emailed"', async () => {
+    await mountWithLog({ data: null, error: { code: '42P01', message: 'relation "email_log" does not exist' } });
+
+    expect(screen.getByText('not known')).toBeTruthy();
+    expect(screen.queryByText('not on record')).toBeNull();
+    // The carts themselves survive a failed side read.
+    expect(screen.getByText('live')).toBeTruthy();
   });
 });

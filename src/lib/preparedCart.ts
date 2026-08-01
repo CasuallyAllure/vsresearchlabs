@@ -193,6 +193,10 @@ export function memberUnitPriceCents(baseCents: number | null, percent: number):
 export interface PricedPreparedLine extends PreparedCartLine {
   /** Catalog label, for the composer's summary row. */
   name: string;
+  /** The line's own shipping tier, carried through from the index so a stored
+   *  cart can be reopened and read back with the SAME tier vocabulary the
+   *  composer showed when it was built (`doseTierLabel` / `doseTierShort`). */
+  tier: DoseTier;
   listUnitCents: number;
   memberUnitCents: number;
   listLineCents: number;
@@ -239,6 +243,7 @@ export function priceLines(
     priced.push({
       ...line,
       name: option.name,
+      tier: option.tier,
       listUnitCents: option.priceCents,
       memberUnitCents,
       listLineCents: option.priceCents * line.quantity,
