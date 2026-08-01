@@ -43,6 +43,10 @@ import productsData from '../../../data/products.json';
 import generatedCompounds from '../../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../../types';
 import { buildVariantIndex, type PreparedCartLine, type VariantIndex } from '../../../lib/preparedCart';
+import {
+  deliveryByCart, preparedCartPeriodKey,
+  type PreparedCartDelivery, type PreparedCartEmailLogRow,
+} from '../../../lib/preparedCartDetail';
 import { useProductOverrides } from '../../../lib/productOverrides';
 import { getErrorMessage, isMissingBackend } from './backend';
 
@@ -83,6 +87,10 @@ export interface PreparedCartSummary {
   note: string | null;
   status: PreparedCartStatus;
   lines: PreparedCartLine[];
+  /** Did the email actually go out? Merged in from `email_log` — see
+   *  `loadDelivery` below and src/lib/preparedCartDetail.ts for why this is a
+   *  three-state and not a boolean. */
+  delivery: PreparedCartDelivery;
 }
 
 /** What admin_create_prepared_cart returns. `token` is the plaintext, visible
@@ -130,6 +138,54 @@ const timeoutMessage = (verb: string) =>
 function reportRpcFailure(fn: string, raw: unknown, setError: (m: string) => void): void {
   console.error(`[preparedCart] ${fn} failed`, raw);
   setError(getErrorMessage(raw));
+}
+
+/** The Supabase client as this module uses it — narrowed to the two verbs it
+ *  calls, so the delivery read can be driven by a stub in tests. */
+type CartClient = NonNullable<typeof supabase>;
+
+/**
+ * Did the email go out? Read straight from `email_log` (075), which is the only
+ * place that fact is durably recorded — the send-prepared-cart edge function
+ * claims a row there BEFORE mailing, keyed `pc-<cart id>`.
+ *
+ * `email_log` is already reachable for exactly this reader and no other:
+ * `grant select … to authenticated` narrowed by an `is_admin()` RLS policy
+ * (075:66-70). No migration is needed to see it, and `admin_email_log` is the
+ * wrong instrument — it pages the WHOLE table newest-first with no filter, so a
+ * cart built a month ago would fall off the end.
+ *
+ * A FAILURE HERE IS NOT A "NO". Every path that cannot produce rows returns
+ * `unknown` rather than `not_emailed`: telling the owner a client was never
+ * contacted, on the strength of a query that did not run, is the same lie in
+ * the other direction as claiming one was.
+ */
+async function loadDelivery(
+  client: CartClient,
+  cartIds: string[],
+): Promise<Map<string, PreparedCartDelivery>> {
+  if (cartIds.length === 0) return new Map();
+  try {
+    const { data, error } = await withTimeout(
+      client
+        .from('email_log')
+        .select('period_key, sent_at, recipient')
+        .eq('kind', 'prepared_cart')
+        .in('period_key', cartIds.map(preparedCartPeriodKey)),
+      timeoutMessage('Reading the send history'),
+    );
+    if (error) {
+      console.error('[preparedCart] email_log read failed', error);
+      return deliveryByCart(cartIds, null);
+    }
+    return deliveryByCart(cartIds, (data ?? []) as PreparedCartEmailLogRow[]);
+  } catch (err) {
+    // Non-fatal by design: the carts themselves loaded, and a panel that threw
+    // away a member's whole cart history because a side read timed out would be
+    // a worse outcome than an honest "not on record".
+    console.error('[preparedCart] email_log read threw', err);
+    return deliveryByCart(cartIds, null);
+  }
 }
 
 interface UsePreparedCartResult {
@@ -195,7 +251,12 @@ export function usePreparedCart(userId: string): UsePreparedCartResult {
           if (isMissingBackend(rpcError)) setUnmigrated(true);
           return;
         }
-        setCarts((data as { rows?: PreparedCartSummary[] } | null)?.rows ?? []);
+        const rows = (data as { rows?: PreparedCartSummary[] } | null)?.rows ?? [];
+        // Second read, not a second opinion: admin_prepared_carts owns the cart
+        // and email_log owns the send. Neither knows the other's half.
+        const delivery = await loadDelivery(supabase, rows.map((r) => r.id));
+        if (cancelled) return;
+        setCarts(rows.map((r) => ({ ...r, delivery: delivery.get(r.id) ?? { state: 'unknown' } })));
       } catch (err) {
         if (cancelled) return;
         reportRpcFailure('admin_prepared_carts', err, setError);

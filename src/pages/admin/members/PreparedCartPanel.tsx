@@ -1,5 +1,19 @@
 /**
- * PreparedCartPanel — "Build cart" inside the expanded roster row.
+ * PreparedCartPanel — a member's prepared carts, inside the expanded roster row.
+ *
+ * WHAT YOU HAVE ALREADY SENT COMES FIRST. This panel used to be a composer with
+ * a list nailed to the bottom of it, reachable only by opening a form headed
+ * "build a new cart" — so the owner had to start building one to find out what
+ * he had already sent. His words: "To access the stuff that I built a cart, I
+ * have to press Build a cart, which then I see a list of the ones I see."
+ * The carts are now the panel; the composer is one explicit action below them,
+ * open by default only when there is nothing else to show.
+ *
+ * AND EACH ONE OPENS. A row that can say a cart exists but not what is in it or
+ * when it went out is no use at the only moment it is read — a member on the
+ * phone about an order. Tapping a row expands PreparedCartDetail in place:
+ * lines, the total at this member's rate, delivery, expiry, opens, coupon, note
+ * and the order it became.
  *
  * The owner picks compounds and doses the same way the `+ New order` screen
  * does — TWO DEPENDENT DROPDOWNS, compound then dose, never a typed SKU — adds
@@ -42,7 +56,8 @@
  * confirmed admin action look like it did nothing.
  *
  * The roster layout is otherwise untouched: this is a Panel rendered inside the
- * already-expanded row, behind a RowAction toggle. No new page, no nav entry.
+ * already-expanded row, from the same atoms every other Members sub-view uses.
+ * No new page, no nav entry.
  */
 
 import { useMemo, useState } from 'react';
@@ -55,10 +70,11 @@ import {
   compoundTierLabel, doseTierLabel, doseTierShort, findVariantOption, priceLines, variantOptionKey,
   type PreparedCartLine, type VariantIndex,
 } from '../../../lib/preparedCart';
+import { opensNote, stampLabel } from '../../../lib/preparedCartDetail';
 import type { MemberRow } from '../membersView';
 import { Chip, Panel, RowAction } from './ui';
 import { ConvertToOrderForm } from './ConvertToOrderForm';
-import { shortDate } from './format';
+import { PreparedCartDetail } from './PreparedCartDetail';
 import {
   preparedCartClaimUrl, usePreparedCart, useVariantIndex,
   type CreatedPreparedCart, type PreparedCartStatus, type PreparedCartSummary, type SendResult,
@@ -79,13 +95,6 @@ const STATUS_TONE: Record<PreparedCartStatus, 'good' | 'warn' | 'neutral' | 'inf
   revoked: 'warn',
   converted: 'info',
 };
-
-/** "opened 3× · last 12 Aug" — the owner's evidence the link actually landed. */
-function opensLabel(cart: PreparedCartSummary): string | null {
-  if (!cart.claim_count) return null;
-  const last = cart.last_claimed_at ?? cart.claimed_at;
-  return `opened ${cart.claim_count}×${last ? ` · last ${shortDate(last)}` : ''}`;
-}
 
 /** A composer row. `compound` drives the dose list; `optionKey` is the picked
  *  dose's "<sku>|<dose>" identity — the SKU is never typed or parsed. */
@@ -167,12 +176,31 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
   // composers over one payment is exactly the confusion this feature exists to
   // end.
   const [convertingId, setConvertingId] = useState<string | null>(null);
+  // The cart whose detail is expanded. One at a time, like the roster row this
+  // panel lives inside — two open carts on a 375px screen is a scroll, not a
+  // comparison.
+  const [openCartId, setOpenCartId] = useState<string | null>(null);
   // null while the send is in flight — rendered as "Sending…", never as a
   // silent gap that could be mistaken for "done".
   const [delivery, setDelivery] = useState<SendResult | null>(null);
+  // `null` = the owner has not said either way, so the data decides: a member
+  // with no carts has nothing to read and the empty state IS the build form,
+  // while a member who has carts gets to see them first. Once he touches the
+  // toggle his choice sticks.
+  const [composerOpen, setComposerOpen] = useState<boolean | null>(null);
+  // Gated on `loading` so the composer never flashes open and then collapses
+  // under a member who does have carts.
+  const showComposer = composerOpen ?? (!loading && carts.length === 0);
 
   const lines = useMemo(() => draftLines(rows, index), [rows, index]);
   const pricing = useMemo(() => priceLines(lines, index, member.effectivePercent), [lines, index, member.effectivePercent]);
+  // Every listed cart's total, at THIS member's rate, from the same `priceLines`
+  // the composer quotes with — so a cart summarised in the list, opened in the
+  // detail and re-quoted in the composer can only ever show one number.
+  const cartTotals = useMemo(
+    () => new Map(carts.map((c) => [c.id, priceLines(c.lines, index, member.effectivePercent).memberTotalCents])),
+    [carts, index, member.effectivePercent],
+  );
 
   function update(key: string, patch: Partial<DraftRow>) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -203,6 +231,10 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
     setBuilt(result);
     setCopied(false);
     setDelivery(null);
+    // Pin the composer open: the reload that follows makes `carts` non-empty,
+    // and a derived-open composer would collapse — taking the once-shown link
+    // and the delivery report down with it at the exact moment they matter.
+    setComposerOpen(true);
     setRows([emptyRow(`r${Date.now()}`)]);
     setCouponCode('');
     setNote('');
@@ -216,7 +248,7 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
 
   async function killCart(cart: PreparedCartSummary) {
     const ok = await confirm(
-      `Revoke this prepared cart? The link stops working immediately. Built ${shortDate(cart.created_at)}.`,
+      `Revoke this prepared cart? The link stops working immediately. Built ${stampLabel(cart.created_at)}.`,
       { confirmLabel: 'Revoke' },
     );
     if (ok) await revoke(cart.id);
@@ -242,8 +274,137 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
     <Panel caption="Prepared cart">
       {error && <p role="alert" className="mb-[var(--space-3)] text-[12px] text-red-400">{error}</p>}
 
+      {/* ── What he has already sent. FIRST, and each one opens ───────────── */}
+      <p className="mb-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-ink/40">Built carts</p>
+      {loading ? (
+        <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>
+      ) : carts.length === 0 ? (
+        <p className="text-[12px] text-ink/40">
+          Nothing built for {member.name.split(' ')[0]} yet — put one together below.
+        </p>
+      ) : (
+        <ul className="divide-y divide-ink/[0.04]">
+          {carts.map((cart) => {
+            const open = openCartId === cart.id;
+            const opens = opensNote(cart);
+            return (
+              <li key={cart.id} className="py-[var(--space-2)]">
+                <div className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-[var(--space-2)]">
+                  {/* basis-full below `sm`: on a phone the summary owns its own
+                      line and the actions wrap underneath at full tap size,
+                      instead of being squeezed into a 60px column. */}
+                  <button
+                    type="button"
+                    onClick={() => setOpenCartId(open ? null : cart.id)}
+                    aria-expanded={open}
+                    className="flex min-w-0 basis-full items-center gap-[var(--space-2)] text-left transition-colors hover:text-ink sm:flex-1 sm:basis-auto"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink/75">
+                        <Chip tone={STATUS_TONE[cart.status]}>{cart.status}</Chip>
+                        <span>{cart.lines.length} line{cart.lines.length === 1 ? '' : 's'}</span>
+                        <span className="font-mono tabular-nums text-holo">
+                          {formatPriceExact(cartTotals.get(cart.id) ?? 0)}
+                        </span>
+                        {opens && <span className="text-[10.5px] text-ink/45">{opens}</span>}
+                      </span>
+                      <span className="block truncate font-mono text-[10px] text-ink/40">
+                        {cart.lines.map((l) => `${l.sku}${l.dose ? ` ${l.dose}` : ''} ×${l.quantity}`).join(' · ')}
+                      </span>
+                      {/* stampLabel, not shortDate: created_at is a timestamptz
+                          and shortDate renders one as the literal "Invalid
+                          Date" — the one field the owner asked for by name. */}
+                      <span className="block font-mono text-[10px] tabular-nums text-ink/35">
+                        Built {stampLabel(cart.created_at)}
+                      </span>
+                    </span>
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+                      className={`shrink-0 text-ink/30 transition-transform ${open ? 'rotate-90' : ''}`}
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+
+                  {/* The order it became, named and linked. A converted cart
+                      whose order the owner cannot reach is the same lost order
+                      this feature exists to prevent. Outside the toggle button:
+                      a link nested in a button is not operable either way. */}
+                  {cart.converted_order_number && (
+                    <Link
+                      to={`/admin/orders/${cart.converted_order_id}`}
+                      className="shrink-0 font-mono text-[10.5px] text-holo underline underline-offset-2"
+                    >
+                      → {cart.converted_order_number}
+                    </Link>
+                  )}
+                  {/* Offered for every cart that is not already an order —
+                      INCLUDING expired and revoked ones. The member paying
+                      off-site is precisely why the link went unused, and
+                      refusing to convert a lapsed cart would leave the owner
+                      retyping the order he already built. */}
+                  {cart.status !== 'converted' ? (
+                    <RowAction
+                      disabled={busy}
+                      onClick={() => setConvertingId((id) => (id === cart.id ? null : cart.id))}
+                    >
+                      {convertingId === cart.id ? 'Close' : 'Convert to order'}
+                    </RowAction>
+                  ) : null}
+                  {cart.status === 'live' ? (
+                    <RowAction danger disabled={busy} onClick={() => killCart(cart)}>Revoke</RowAction>
+                  ) : null}
+                </div>
+
+                {open && (
+                  <PreparedCartDetail
+                    cart={cart}
+                    member={member}
+                    index={index}
+                    // Only the cart built in THIS session has a readable token
+                    // — every other one stores nothing but its digest.
+                    claimUrl={
+                      built && built.cart_id === cart.id
+                        ? preparedCartClaimUrl(built.token, window.location.origin)
+                        : null
+                    }
+                    copied={copied}
+                    onCopyLink={() => {
+                      if (!built) return;
+                      void navigator.clipboard?.writeText(preparedCartClaimUrl(built.token, window.location.origin));
+                      setCopied(true);
+                    }}
+                  />
+                )}
+
+                {convertingId === cart.id && (
+                  <ConvertToOrderForm
+                    cart={cart}
+                    member={member}
+                    index={index}
+                    confirm={confirm}
+                    onConverted={reload}
+                    onCancel={() => setConvertingId(null)}
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* ── Building a new one is an ACTION, not the way in ───────────────── */}
+      <div className="mt-[var(--space-4)] border-t border-ink/[0.06] pt-[var(--space-3)]">
+        <RowAction onClick={() => setComposerOpen(!showComposer)}>
+          {showComposer ? 'Close builder' : '+ Build a new cart'}
+        </RowAction>
+      </div>
+
+      {showComposer && (
+      <>
       {/* ── Line editor: compound → dose → qty ─────────────────────────────── */}
-      <div className="space-y-[var(--space-2)]">
+      <div className="mt-[var(--space-3)] space-y-[var(--space-2)]">
         {rows.map((row) => {
           const doseOptions = index.byCompound.get(row.compound) ?? [];
           const picked = findVariantOption(index, row.optionKey);
@@ -427,83 +588,14 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
             >
               {copied ? 'Copied' : 'Copy link'}
             </RowAction>
-            <span className="text-[10.5px] text-ink/40">Expires {shortDate(built.expires_at)}.</span>
+            <span className="text-[10.5px] text-ink/40">Expires {stampLabel(built.expires_at)}.</span>
           </div>
           <DeliveryNote delivery={delivery} member={member.name} />
         </div>
       )}
 
-      {/* ── Previously built carts ─────────────────────────────────────────── */}
-      <div className="mt-[var(--space-4)] border-t border-ink/[0.06] pt-[var(--space-3)]">
-        <p className="mb-[var(--space-2)] text-[10px] uppercase tracking-[0.22em] text-ink/40">Built carts</p>
-        {loading ? (
-          <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>
-        ) : carts.length === 0 ? (
-          <p className="text-[12px] text-ink/40">None yet.</p>
-        ) : (
-          <ul className="divide-y divide-ink/[0.04]">
-            {carts.map((cart) => (
-              <li key={cart.id} className="py-[var(--space-2)]">
-                <div className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1">
-                  <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink/75">
-                      <Chip tone={STATUS_TONE[cart.status]}>{cart.status}</Chip>
-                      <span>{cart.lines.length} line{cart.lines.length === 1 ? '' : 's'}</span>
-                      {/* The order it became, named and linked. A converted cart
-                          whose order the owner cannot reach is the same lost
-                          order this feature exists to prevent. */}
-                      {cart.converted_order_number && (
-                        <Link
-                          to={`/admin/orders/${cart.converted_order_id}`}
-                          className="font-mono text-[10.5px] text-holo underline underline-offset-2"
-                        >
-                          → {cart.converted_order_number}
-                        </Link>
-                      )}
-                      {opensLabel(cart) && (
-                        <span className="text-[10.5px] text-ink/45">{opensLabel(cart)}</span>
-                      )}
-                      {cart.coupon_code && <span className="font-mono text-[10.5px] text-ink/50">{cart.coupon_code}</span>}
-                    </span>
-                    <span className="block truncate font-mono text-[10px] text-ink/40">
-                      {cart.lines.map((l) => `${l.sku}${l.dose ? ` ${l.dose}` : ''} ×${l.quantity}`).join(' · ')}
-                    </span>
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink/35">
-                    {shortDate(cart.created_at)} → {shortDate(cart.expires_at)}
-                  </span>
-                  {/* Offered for every cart that is not already an order —
-                      INCLUDING expired and revoked ones. The member paying
-                      off-site is precisely why the link went unused, and
-                      refusing to convert a lapsed cart would leave the owner
-                      retyping the order he already built. */}
-                  {cart.status !== 'converted' ? (
-                    <RowAction
-                      disabled={busy}
-                      onClick={() => setConvertingId((id) => (id === cart.id ? null : cart.id))}
-                    >
-                      {convertingId === cart.id ? 'Close' : 'Convert to order'}
-                    </RowAction>
-                  ) : null}
-                  {cart.status === 'live' ? (
-                    <RowAction danger disabled={busy} onClick={() => killCart(cart)}>Revoke</RowAction>
-                  ) : null}
-                </div>
-                {convertingId === cart.id && (
-                  <ConvertToOrderForm
-                    cart={cart}
-                    member={member}
-                    index={index}
-                    confirm={confirm}
-                    onConverted={reload}
-                    onCancel={() => setConvertingId(null)}
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      </>
+      )}
     </Panel>
   );
 }

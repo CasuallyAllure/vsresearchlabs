@@ -327,10 +327,6 @@ export function AdminMembers() {
 function MemberExpand({ member: m, detail }: { member: MemberRow; detail: MemberDetail | null }) {
   const { confirm, modal } = useConfirm();
   const { state, profile, reload } = useLinkedProfile({ by: 'user_id', value: m.userId });
-  // The composer is heavy (full catalog enumeration) and rarely the reason a
-  // row is opened, so it stays behind a toggle. Closed, the row renders exactly
-  // as it did before — the roster layout is unchanged.
-  const [buildingCart, setBuildingCart] = useState(false);
 
   return (
     <div className="border-t border-ink/[0.04] bg-ink/[0.012] px-[var(--space-5)] pb-[var(--space-5)] pt-[var(--space-4)]">
@@ -365,9 +361,6 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
           <TimelineView detail={detail} />
         </div>
         <div className="flex flex-wrap items-end justify-start gap-[var(--space-3)] lg:justify-end">
-          <RowAction onClick={() => setBuildingCart((v) => !v)}>
-            {buildingCart ? 'Close cart builder' : 'Build cart'}
-          </RowAction>
           {m.id ? (
             <Link
               to={`/admin/customers/${m.id}`}
@@ -384,11 +377,13 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
         </div>
       </div>
 
-      {buildingCart && (
-        <div className="mt-[var(--space-4)]">
-          <PreparedCartPanel member={m} confirm={confirm} />
-        </div>
-      )}
+      {/* Always rendered. It used to sit behind a "Build cart" toggle, which
+          made the carts already sent to this member reachable only by opening a
+          form headed "build a new one" — the owner's complaint. The panel now
+          leads with the carts and keeps building behind its own action. */}
+      <div className="mt-[var(--space-4)]">
+        <PreparedCartPanel member={m} confirm={confirm} />
+      </div>
 
       {modal}
     </div>
