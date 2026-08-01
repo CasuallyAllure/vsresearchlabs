@@ -27,6 +27,16 @@
  * screen, because "the client was emailed" is the one thing this panel must
  * never claim falsely.
  *
+ * CONVERTING IS THE OTHER HALF, and it inverts the price rule above. A prepared
+ * cart only becomes an order if the MEMBER checks out; when they pay the owner
+ * directly instead and never do, no order exists at all — the bug this panel
+ * shipped with, found after a real client had already paid. "Convert to order"
+ * (ConvertToOrderForm) creates that order from the cart, through
+ * admin_create_order rather than place-order, which is why prices ARE editable
+ * there: that RPC has always recorded a hand-typed price, and the money has
+ * already been collected off-site. Converting revokes the link in the same
+ * transaction, so a cart cannot become an order and then also be claimed.
+ *
  * Confirmation uses ConfirmModal, never window.confirm — iOS silently
  * suppresses native dialogs once "Block Alerts" is tapped, which makes a
  * confirmed admin action look like it did nothing.
@@ -36,6 +46,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { ConfirmFn } from '../../../components/admin/accountPanels';
 import { Button } from '../../../components/ui/Button';
 import { FIELD_DEFAULT, FIELD_LABEL_DENSE, FIELD_SURFACE_DENSE } from '../../../components/ui/Field';
@@ -46,6 +57,7 @@ import {
 } from '../../../lib/preparedCart';
 import type { MemberRow } from '../membersView';
 import { Chip, Panel, RowAction } from './ui';
+import { ConvertToOrderForm } from './ConvertToOrderForm';
 import { shortDate } from './format';
 import {
   preparedCartClaimUrl, usePreparedCart, useVariantIndex,
@@ -59,10 +71,13 @@ const fieldCls = `${FIELD_SURFACE_DENSE} ${FIELD_DEFAULT}`;
 // (the member's cart is device-local, so opening on a phone and buying on a
 // laptop must both work), and a chip reading "claimed" would tell the owner a
 // live link was spent. Opens are a COUNT, rendered beside the chip.
+// 'converted' is the fourth: not a failure and not merely revoked — the cart
+// became a real order, which is the one outcome the owner most needs to see.
 const STATUS_TONE: Record<PreparedCartStatus, 'good' | 'warn' | 'neutral' | 'info'> = {
   live: 'good',
   expired: 'neutral',
   revoked: 'warn',
+  converted: 'info',
 };
 
 /** "opened 3× · last 12 Aug" — the owner's evidence the link actually landed. */
@@ -141,13 +156,17 @@ function DeliveryNote({ delivery, member }: { delivery: SendResult | null; membe
 
 export function PreparedCartPanel({ member, confirm }: { member: MemberRow; confirm: ConfirmFn }) {
   const index = useVariantIndex();
-  const { carts, loading, busy, error, unmigrated, create, revoke, send } = usePreparedCart(member.userId);
+  const { carts, loading, busy, error, unmigrated, create, revoke, send, reload } = usePreparedCart(member.userId);
 
   const [rows, setRows] = useState<DraftRow[]>([emptyRow('r0')]);
   const [couponCode, setCouponCode] = useState('');
   const [note, setNote] = useState('');
   const [built, setBuilt] = useState<CreatedPreparedCart | null>(null);
   const [copied, setCopied] = useState(false);
+  // The cart whose "Convert to order" composer is open. One at a time — two open
+  // composers over one payment is exactly the confusion this feature exists to
+  // end.
+  const [convertingId, setConvertingId] = useState<string | null>(null);
   // null while the send is in flight — rendered as "Sending…", never as a
   // silent gap that could be mistaken for "done".
   const [delivery, setDelivery] = useState<SendResult | null>(null);
@@ -424,26 +443,62 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
         ) : (
           <ul className="divide-y divide-ink/[0.04]">
             {carts.map((cart) => (
-              <li key={cart.id} className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1 py-[var(--space-2)]">
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink/75">
-                    <Chip tone={STATUS_TONE[cart.status]}>{cart.status}</Chip>
-                    <span>{cart.lines.length} line{cart.lines.length === 1 ? '' : 's'}</span>
-                    {opensLabel(cart) && (
-                      <span className="text-[10.5px] text-ink/45">{opensLabel(cart)}</span>
-                    )}
-                    {cart.coupon_code && <span className="font-mono text-[10.5px] text-ink/50">{cart.coupon_code}</span>}
+              <li key={cart.id} className="py-[var(--space-2)]">
+                <div className="flex flex-wrap items-center gap-x-[var(--space-3)] gap-y-1">
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-ink/75">
+                      <Chip tone={STATUS_TONE[cart.status]}>{cart.status}</Chip>
+                      <span>{cart.lines.length} line{cart.lines.length === 1 ? '' : 's'}</span>
+                      {/* The order it became, named and linked. A converted cart
+                          whose order the owner cannot reach is the same lost
+                          order this feature exists to prevent. */}
+                      {cart.converted_order_number && (
+                        <Link
+                          to={`/admin/orders/${cart.converted_order_id}`}
+                          className="font-mono text-[10.5px] text-holo underline underline-offset-2"
+                        >
+                          → {cart.converted_order_number}
+                        </Link>
+                      )}
+                      {opensLabel(cart) && (
+                        <span className="text-[10.5px] text-ink/45">{opensLabel(cart)}</span>
+                      )}
+                      {cart.coupon_code && <span className="font-mono text-[10.5px] text-ink/50">{cart.coupon_code}</span>}
+                    </span>
+                    <span className="block truncate font-mono text-[10px] text-ink/40">
+                      {cart.lines.map((l) => `${l.sku}${l.dose ? ` ${l.dose}` : ''} ×${l.quantity}`).join(' · ')}
+                    </span>
                   </span>
-                  <span className="block truncate font-mono text-[10px] text-ink/40">
-                    {cart.lines.map((l) => `${l.sku}${l.dose ? ` ${l.dose}` : ''} ×${l.quantity}`).join(' · ')}
+                  <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink/35">
+                    {shortDate(cart.created_at)} → {shortDate(cart.expires_at)}
                   </span>
-                </span>
-                <span className="shrink-0 font-mono text-[10px] tabular-nums text-ink/35">
-                  {shortDate(cart.created_at)} → {shortDate(cart.expires_at)}
-                </span>
-                {cart.status === 'live' ? (
-                  <RowAction danger disabled={busy} onClick={() => killCart(cart)}>Revoke</RowAction>
-                ) : null}
+                  {/* Offered for every cart that is not already an order —
+                      INCLUDING expired and revoked ones. The member paying
+                      off-site is precisely why the link went unused, and
+                      refusing to convert a lapsed cart would leave the owner
+                      retyping the order he already built. */}
+                  {cart.status !== 'converted' ? (
+                    <RowAction
+                      disabled={busy}
+                      onClick={() => setConvertingId((id) => (id === cart.id ? null : cart.id))}
+                    >
+                      {convertingId === cart.id ? 'Close' : 'Convert to order'}
+                    </RowAction>
+                  ) : null}
+                  {cart.status === 'live' ? (
+                    <RowAction danger disabled={busy} onClick={() => killCart(cart)}>Revoke</RowAction>
+                  ) : null}
+                </div>
+                {convertingId === cart.id && (
+                  <ConvertToOrderForm
+                    cart={cart}
+                    member={member}
+                    index={index}
+                    confirm={confirm}
+                    onConverted={reload}
+                    onCancel={() => setConvertingId(null)}
+                  />
+                )}
               </li>
             ))}
           </ul>
