@@ -38,6 +38,14 @@ export interface OrderPayload {
    *  `coupon_code`; each is validated + priced SERVER-SIDE and stacked
    *  (additive off the original subtotal, capped so the order never < $0). */
   coupon_codes?: string[];
+  /** What the cart preview showed as the LAUNCH DAY BOGO discount, in cents.
+   *  ADVISORY ONLY — it never influences the price. The server recomputes BOGO
+   *  from its own catalog and its own clock; this field exists solely so that
+   *  when the server grants nothing and the buyer was shown something (the
+   *  classic case: the promo window closed while the cart sat open), the
+   *  response can say so in plain language instead of the buyer silently
+   *  paying more than the cart quoted. Flag, never block. */
+  expected_bogo_cents?: number;
   /** Client-generated UUID, stable across retries of the SAME checkout —
    *  a seen key returns the existing order instead of creating a duplicate. */
   idempotency_key?: string;

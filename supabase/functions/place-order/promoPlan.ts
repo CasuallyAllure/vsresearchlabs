@@ -33,6 +33,9 @@ export const WHOLESALE_HALF = { size: 5, percent: 27 } as const;
 /** Buy-2-get-1: one free unit per group of 3. */
 export const B2G1_GROUP = 3;
 
+/** True BOGO: units pair up 2-at-a-time and the cheaper of each pair is free. */
+export const BOGO_PAIR = 2;
+
 /** Like PriceCheckLine, carries NO `note` — see priceCheck.lineText. */
 export interface PromoLine {
   sku?: string;
@@ -69,6 +72,16 @@ export interface B2G1PlanEntry {
   unit: number;
 }
 
+/** Same shape as B2G1PlanEntry — orderTotals consumes both as flat
+ *  `freeUnits × unit` reductions. Kept a distinct type so the handler can
+ *  never accidentally pass one plan where the other is meant (they carry
+ *  different coupon codes and different order_coupons rows). */
+export interface BogoPlanEntry {
+  idx: number;
+  freeUnits: number;
+  unit: number;
+}
+
 export interface PromoPlanInput {
   lines: readonly PromoLine[];
   variantRows: readonly VariantPromoRow[];
@@ -76,6 +89,12 @@ export interface PromoPlanInput {
   promoLive: boolean;
   /** promo_settings.b2g1_excluded_skus. */
   excludedSkus: ReadonlySet<string>;
+  /** promo_settings.bogo_enabled, honouring bogo_ends_at. Optional, and
+   *  ABSENT MEANS OFF — an environment (or caller) that predates migration 084
+   *  simply doesn't run the promo rather than failing. */
+  bogoLive?: boolean;
+  /** promo_settings.bogo_excluded_skus. */
+  bogoExcludedSkus?: ReadonlySet<string>;
   /** Resolved from the verified JWT — never from the payload. */
   isMember: boolean;
 }
@@ -83,6 +102,53 @@ export interface PromoPlanInput {
 export interface PromoPlan {
   wholesalePlan: WholesalePlanEntry[];
   b2g1FreePlan: B2G1PlanEntry[];
+  bogoFreePlan: BogoPlanEntry[];
+}
+
+/** One purchasable unit, expanded out of a cart line for BOGO pairing. */
+export interface BogoUnit {
+  /** Index into the caller's line array. */
+  idx: number;
+  /** Server-priced unit cost in integer cents. */
+  unit: number;
+}
+
+/**
+ * THE BOGO KERNEL — shared, by mirror, with src/lib/bogoPreview.ts.
+ *
+ * True buy-one-get-one, cheapest-of-each-pair, ACROSS the whole cart: expand
+ * every eligible line into individual units, sort them by unit price
+ * DESCENDING, and every 2nd unit (array index 1, 3, 5 …) is free. Buying one
+ * Reta 5mg and one BPC 5mg therefore makes the cheaper of the two free — the
+ * pair spans two different lines, which is why this cannot be a per-line rule
+ * like B2G1.
+ *
+ * The comparator is (unit DESC, idx ASC). The idx tiebreak is NOT cosmetic:
+ * two units at the same price are interchangeable for the TOTAL, but not for
+ * which line gets credited the free unit, and the client preview must credit
+ * the same line or the cart shows a discount against the wrong row. A total
+ * ordering here makes the whole plan deterministic from the inputs alone.
+ *
+ * Integer cents throughout — no division, no rounding, so there is nothing for
+ * the client mirror to round differently. Odd unit counts round DOWN in the
+ * buyer's disfavour by construction (3 units → 1 free, 5 → 2 free), because a
+ * trailing unpaired unit simply never lands on an odd index.
+ */
+export function pairFreeUnits(units: readonly BogoUnit[]): BogoPlanEntry[] {
+  const sorted = [...units].sort((a, b) => (b.unit - a.unit) || (a.idx - b.idx));
+  const freeByIdx = new Map<number, BogoPlanEntry>();
+  for (let i = 1; i < sorted.length; i += BOGO_PAIR) {
+    const u = sorted[i];
+    const entry = freeByIdx.get(u.idx);
+    if (entry) entry.freeUnits += 1;
+    else freeByIdx.set(u.idx, { idx: u.idx, freeUnits: 1, unit: u.unit });
+  }
+  return [...freeByIdx.values()].sort((a, b) => a.idx - b.idx);
+}
+
+/** Total cents freed by a BOGO/B2G1-shaped plan. */
+export function freePlanValue(plan: readonly { freeUnits: number; unit: number }[]): number {
+  return plan.reduce((sum, p) => sum + p.freeUnits * p.unit, 0);
 }
 
 /** What one line is worth under each promo, once the server has resolved it. */
@@ -161,11 +227,60 @@ function offerFor(
 }
 
 /**
+ * BOGO eligibility for one line, expanded into its individual units.
+ *
+ * Deliberately NOT folded into offerFor(): that function bails at
+ * `qty < B2G1_GROUP`, and BOGO pairs ACROSS lines, so a qty-1 line is a real
+ * candidate (it pairs with a qty-1 line elsewhere in the cart).
+ *
+ * Eligible = every one of:
+ *   • members only — a guest's cart yields nothing (owner rule)
+ *   • the promo is live and the sku isn't on the admin exclusion list
+ *   • the line resolves to a real (sku, dose) variant row, by the SAME resolver
+ *     and the SAME text the price check used. Laboratory equipment prices
+ *     per-sku on product_stock and has no variant row at all, so it is excluded
+ *     structurally here — the exclusion list carries it too, belt and braces.
+ *   • that row carries an ADMIN price (never the client's `unit`)
+ *   • the row has genuine 24-HOUR supply — on-hand or inbound. This is the
+ *     owner's rationale ("he can only BOGO what he physically holds") and it is
+ *     the exact INVERSE of B2G1's isSlow gate, which makes the two promos
+ *     mutually exclusive per line by construction, not by arbitration.
+ */
+function bogoUnitsFor(
+  line: PromoLine,
+  idx: number,
+  input: PromoPlanInput,
+): BogoUnit[] {
+  if (!input.isMember || !input.bogoLive) return [];
+  const sku = line.sku;
+  const qty = line.quantity;
+  if (!sku || qty < 1) return [];
+  if (input.bogoExcludedSkus?.has(sku)) return [];
+
+  const row = resolveVariantRow(sku, lineText(line), input.variantRows);
+  if (row == null) return [];
+
+  const unit = row.price_cents;
+  if (unit == null || unit <= 0) return [];
+
+  const fast = (row.on_hand ?? 0) > 0 || (row.inbound_units ?? 0) > 0;
+  if (!fast) return [];
+
+  return Array.from({ length: qty }, () => ({ idx, unit }));
+}
+
+/**
  * Decide the automatic promos for an order.
  *
  * Wholesale is ACCOUNT-GATED (owner's rule): only a verified signed-in buyer
  * transacts at case pricing. The two promos never stack on one line — whichever
  * is worth MORE to the buyer claims it.
+ *
+ * BOGO (launch promo) is arbitrated ORDER-WIDE rather than per line, because it
+ * pairs units across lines and so has no per-line value to compare. Precedence,
+ * top down: wholesale/bundle finality (handler) → the larger of {BOGO, B2G1} →
+ * the larger of {winner, account %} (handler). Ties go to BOGO — same shape as
+ * the 2026-07-22 "larger wins, tie → B2G1" rule this extends.
  */
 export function buildPromoPlans(input: PromoPlanInput): PromoPlan {
   const wholesalePlan: WholesalePlanEntry[] = [];
@@ -194,5 +309,50 @@ export function buildPromoPlans(input: PromoPlanInput): PromoPlan {
     }
   });
 
-  return { wholesalePlan, b2g1FreePlan };
+  // ── BOGO ────────────────────────────────────────────────────────────────
+  // Paired over EVERY eligible line, including lines that also won wholesale.
+  //
+  // An earlier version held wholesale-winning lines OUT of the pairing, on the
+  // reasoning that a case is sourced whole rather than pulled off the 24-hour
+  // shelf. That was wrong, and wrong in the buyer's disfavour at a very
+  // reachable quantity: 5 units of one 24-hour dose is exactly the wholesale
+  // half-kit floor, so wholesale claimed the line at 27% (5 × unit × 0.27)
+  // while BOGO on the same 5 units is worth 2 free units = 40%. Holding the
+  // line out made its BOGO value zero, so the arbitration below had nothing to
+  // compare and wholesale won by default — costing the buyer 13% of the line.
+  //
+  // Pairing over everything and arbitrating on TOTALS is what actually
+  // implements "larger wins". The two plans are mutually exclusive order-wide,
+  // so no unit is ever discounted twice.
+  const bogoUnits: BogoUnit[] = [];
+  input.lines.forEach((line, idx) => {
+    bogoUnits.push(...bogoUnitsFor(line, idx, input));
+  });
+  let bogoFreePlan = pairFreeUnits(bogoUnits);
+
+  // Order-wide arbitration against wholesale. Wholesale is a FINAL price the
+  // handler enforces order-wide, so comparing order totals is the right grain.
+  // Tie → wholesale, preserving shipped behavior (and costing nothing either
+  // way). Dropping wholesale when BOGO wins is monotonic: the comparison is
+  // between the two order totals, so the buyer is never worse off, even when a
+  // wholesale line was not itself BOGO-eligible.
+  const bogoValue = freePlanValue(bogoFreePlan);
+  if (bogoValue > 0 && wholesalePlan.length > 0) {
+    if (bogoValue > wholesalePlan.reduce((sum, p) => sum + p.value, 0)) {
+      wholesalePlan.length = 0;
+    } else {
+      bogoFreePlan = [];
+    }
+  }
+
+  // BOGO vs B2G1 — they can never collide on ONE line (24-hour vs sourced),
+  // but a mixed cart can earn both. Owner's no-stack rule: the single larger
+  // discount applies, tie → BOGO.
+  const finalBogoValue = freePlanValue(bogoFreePlan);
+  if (finalBogoValue > 0 && b2g1FreePlan.length > 0) {
+    if (finalBogoValue >= freePlanValue(b2g1FreePlan)) b2g1FreePlan.length = 0;
+    else bogoFreePlan = [];
+  }
+
+  return { wholesalePlan, b2g1FreePlan, bogoFreePlan };
 }

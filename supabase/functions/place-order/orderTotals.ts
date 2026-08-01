@@ -13,6 +13,7 @@
  *   →       wholesale pack value (flat)
  *   →       bundle pair value (flat)
  *   →       B2G1 freed units (flat)
+ *   →       BOGO freed units (flat) — mutually exclusive with B2G1 upstream
  *   →       reward voucher: percent of the single highest unit price (flat),
  *           with the unit's remaining (100−percent)% FENCED off the percent base
  *   Pass 2a account percent on the post-flat base minus the fence
@@ -49,6 +50,11 @@ export interface OrderTotalsInput {
   wholesalePlan: readonly WholesalePlanLine[];
   bundleValue: number;
   b2g1FreePlan: readonly B2G1PlanLine[];
+  /** LAUNCH DAY BOGO freed units. Same shape as b2g1FreePlan and applied in
+   *  the same flat pass; kept a separate input because the two carry different
+   *  coupon codes and are arbitrated against each other upstream (promoPlan),
+   *  so at most one of them is ever non-empty. */
+  bogoFreePlan?: readonly B2G1PlanLine[];
   /** Reward voucher percent, or null when no active voucher applies. */
   rewardPercent: number | null;
   /** Account discount percent, or null when no entitlement applies. */
@@ -63,6 +69,8 @@ export interface OrderTotalsResult {
   bundleReduction: number;
   b2g1Reduction: number;
   b2g1FreeUnits: number;
+  bogoReduction: number;
+  bogoFreeUnits: number;
   rewardReduction: number;
   /** The reward-discounted unit's remaining value, fenced off the percent base. */
   rewardRemainder: number;
@@ -154,6 +162,19 @@ export function computeOrderTotals(input: OrderTotalsInput): OrderTotalsResult {
     flatCents += value;
   }
 
+  // LAUNCH DAY BOGO — the cheaper unit of each cross-cart pair, applied as a
+  // FLAT reduction exactly like B2G1 (before percents, so no percent code can
+  // discount the freed units). Mutually exclusive with B2G1 by upstream
+  // arbitration, so in practice only one of these two loops ever contributes.
+  let bogoReduction = 0;
+  let bogoFreeUnits = 0;
+  for (const p of input.bogoFreePlan ?? []) {
+    const value = Math.max(Math.min(p.freeUnits * p.unit, grossSubtotalCents - flatCents), 0);
+    bogoReduction += value;
+    bogoFreeUnits += p.freeUnits;
+    flatCents += value;
+  }
+
   // Reward voucher — a FLAT reduction of `percent`% of the single highest unit
   // price in the cart ("40% off one item"), applied like a fixed coupon
   // (reduces the base before percents), capped at the remaining subtotal.
@@ -212,6 +233,8 @@ export function computeOrderTotals(input: OrderTotalsInput): OrderTotalsResult {
     bundleReduction,
     b2g1Reduction,
     b2g1FreeUnits,
+    bogoReduction,
+    bogoFreeUnits,
     rewardReduction,
     rewardRemainder,
     accountCents,
@@ -228,6 +251,7 @@ export interface CouponLabelParts {
   wholesaleApplied: boolean;
   bundleApplied: boolean;
   b2g1Applied: boolean;
+  bogoApplied?: boolean;
   /** The user-entered code list (initial build: every applied code; rollback
    *  rebuild: the redemption survivors), in applied order. */
   codes: readonly string[];
@@ -235,6 +259,7 @@ export interface CouponLabelParts {
   wholesaleCode: string;
   bundleCode: string;
   b2g1Code: string;
+  bogoCode?: string;
 }
 
 /**
@@ -251,6 +276,7 @@ export function buildAppliedCouponLabel(parts: CouponLabelParts): string | null 
     ...(parts.wholesaleApplied ? [parts.wholesaleCode] : []),
     ...(parts.bundleApplied ? [parts.bundleCode] : []),
     ...(parts.b2g1Applied ? [parts.b2g1Code] : []),
+    ...(parts.bogoApplied && parts.bogoCode ? [parts.bogoCode] : []),
     ...parts.codes,
   ];
   return ordered.length ? ordered.join(", ") : null;

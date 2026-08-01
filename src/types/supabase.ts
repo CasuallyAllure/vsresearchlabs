@@ -1339,6 +1339,9 @@ export type Database = {
           b2g1_enabled: boolean
           b2g1_ends_at: string | null
           b2g1_excluded_skus: string[]
+          bogo_enabled: boolean
+          bogo_ends_at: string | null
+          bogo_excluded_skus: string[]
           id: number
           updated_at: string
         }
@@ -1346,6 +1349,9 @@ export type Database = {
           b2g1_enabled?: boolean
           b2g1_ends_at?: string | null
           b2g1_excluded_skus?: string[]
+          bogo_enabled?: boolean
+          bogo_ends_at?: string | null
+          bogo_excluded_skus?: string[]
           id?: number
           updated_at?: string
         }
@@ -1353,6 +1359,9 @@ export type Database = {
           b2g1_enabled?: boolean
           b2g1_ends_at?: string | null
           b2g1_excluded_skus?: string[]
+          bogo_enabled?: boolean
+          bogo_ends_at?: string | null
+          bogo_excluded_skus?: string[]
           id?: number
           updated_at?: string
         }
@@ -1636,6 +1645,48 @@ export type Database = {
           video_thumbnail?: string | null
           video_title?: string | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      public_promo_settings: {
+        Row: {
+          b2g1_enabled: boolean | null
+          b2g1_ends_at: string | null
+          b2g1_excluded_skus: string[] | null
+          b2g1_live: boolean | null
+          bogo_enabled: boolean | null
+          bogo_ends_at: string | null
+          bogo_excluded_skus: string[] | null
+          bogo_live: boolean | null
+          id: number | null
+          server_now: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          b2g1_enabled?: boolean | null
+          b2g1_ends_at?: string | null
+          b2g1_excluded_skus?: string[] | null
+          b2g1_live?: never
+          bogo_enabled?: boolean | null
+          bogo_ends_at?: string | null
+          bogo_excluded_skus?: string[] | null
+          bogo_live?: never
+          id?: number | null
+          server_now?: never
+          updated_at?: string | null
+        }
+        Update: {
+          b2g1_enabled?: boolean | null
+          b2g1_ends_at?: string | null
+          b2g1_excluded_skus?: string[] | null
+          b2g1_live?: never
+          bogo_enabled?: boolean | null
+          bogo_ends_at?: string | null
+          bogo_excluded_skus?: string[] | null
+          bogo_live?: never
+          id?: number | null
+          server_now?: never
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1934,27 +1985,17 @@ export type Database = {
         Returns: number
       }
       mark_order_delivered: { Args: { p_order_id: string }; Returns: undefined }
-      mark_order_invoiced:
-        | {
-            Args: {
-              p_invoice_amount_cents: number
-              p_invoice_url: string
-              p_order_id: string
-              p_payment_method?: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_invoice_amount_cents: number
-              p_invoice_url: string
-              p_order_id: string
-              p_payment_method?: string
-              p_shipping_cents?: number
-              p_subtotal_cents?: number
-            }
-            Returns: undefined
-          }
+      mark_order_invoiced: {
+        Args: {
+          p_invoice_amount_cents: number
+          p_invoice_url: string
+          p_order_id: string
+          p_payment_method?: string
+          p_shipping_cents?: number
+          p_subtotal_cents?: number
+        }
+        Returns: undefined
+      }
       mark_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       mark_payment_claimed: { Args: { p_order_id: string }; Returns: undefined }
       mark_product_deleted: { Args: { p_sku: string }; Returns: undefined }
@@ -2008,6 +2049,32 @@ export type Database = {
           b2g1_enabled: boolean
           b2g1_ends_at: string | null
           b2g1_excluded_skus: string[]
+          bogo_enabled: boolean
+          bogo_ends_at: string | null
+          bogo_excluded_skus: string[]
+          id: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "promo_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_bogo_promo: {
+        Args: {
+          p_enabled: boolean
+          p_ends_at: string
+          p_excluded_skus: string[]
+        }
+        Returns: {
+          b2g1_enabled: boolean
+          b2g1_ends_at: string | null
+          b2g1_excluded_skus: string[]
+          bogo_enabled: boolean
+          bogo_ends_at: string | null
+          bogo_excluded_skus: string[]
           id: number
           updated_at: string
         }
