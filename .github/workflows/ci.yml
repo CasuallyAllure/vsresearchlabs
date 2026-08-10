@@ -44,7 +44,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -105,7 +105,7 @@ jobs:
       VITE_SUPABASE_ANON_KEY: sb_publishable_OZqMGcP7YYh-SSdMn4iOQA_ttecPFiQ
       VITE_ZELLE_HANDLE: info@velariss.co
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -130,7 +130,7 @@ jobs:
     # fails loudly at the pull, not silently at a stingy timeout.
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20
