@@ -92,6 +92,9 @@ export const useProductStore = create<ProductStore>()(
       // v4 — product names no longer embed a fixed dose ("BPC-157 — 5mg" →
       // "BPC-157"); the dose comes from the variant/tier. Bump re-hydrates so
       // returning browsers drop the stale dose-in-name catalog.
+      // v5 — incretin compounds are catalogued by research code ("Retatrutide"
+      // → "RTT"), with the substance name moved to `chemicalName`. Bump so
+      // returning browsers stop rendering the persisted INN names.
       name: siteConfig.storage.productsKey,
       storage: createJSONStorage(() => localStorage),
       // Only persist the products array; everything else is derived.

@@ -47,7 +47,12 @@ export function selectSpecificationRows(product: Product): SpecificationRow[] {
   const formula = product.molecularFormula?.trim();
   const formulaRows = formula ? [{ label: 'Molecular Formula', value: formula }] : [];
 
-  return [...formulaRows, ...specRows];
+  // Substance name for compounds catalogued under a research code. Leads the
+  // sheet so the identity behind the code is stated before any measurement.
+  const chemical = product.chemicalName?.trim();
+  const identityRows = chemical ? [{ label: 'Chemical Identity', value: chemical }] : [];
+
+  return [...identityRows, ...formulaRows, ...specRows];
 }
 
 export function SpecificationSheet({ product }: { product: Product }) {

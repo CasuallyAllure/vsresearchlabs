@@ -130,7 +130,9 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
         )}
       </div>
       <div className="flex items-center gap-2 min-w-0">
-        <AbbreviationChip value={product.abbreviation} />
+        {/* Compounds catalogued by their own research code (name === chip)
+            would render the code twice — show it once. */}
+        {product.name !== product.abbreviation && <AbbreviationChip value={product.abbreviation} />}
         <h3 className="text-sm font-normal text-ink truncate min-w-0 flex-1 group-hover:text-gold transition-colors">
           {product.name}
         </h3>

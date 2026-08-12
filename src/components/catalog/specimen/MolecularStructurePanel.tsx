@@ -24,6 +24,9 @@ import { pubchemImageUrl } from '../../../lib/pubchem';
 
 interface MolecularStructurePanelProps {
   substance: string;
+  /** Canonical chemical name when `substance` is a house code ("RTT").
+   *  PubChem resolves substances, not our codes — look up on this. */
+  chemicalName?: string;
   abbreviation: string;
   /** Drop the panel's own cream bay background and tighten the structure
    *  padding, so it sits flush on a parent that already owns the surface
@@ -35,12 +38,12 @@ interface MolecularStructurePanelProps {
   lightbox?: boolean;
 }
 
-export function MolecularStructurePanel({ substance, abbreviation, bare = false, lightbox = false }: MolecularStructurePanelProps) {
+export function MolecularStructurePanel({ substance, chemicalName, abbreviation, bare = false, lightbox = false }: MolecularStructurePanelProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
   // Prefer a curated CID (peptides like Retatrutide 404 by name), else by name.
-  const pubchemUrl = pubchemImageUrl(substance);
+  const pubchemUrl = pubchemImageUrl(chemicalName ?? substance);
 
   return (
     <div className={`relative w-full h-full overflow-hidden ${bare ? '' : 'mol-structure-bay'} ${lightbox ? 'mol-lightbox' : ''}`}>

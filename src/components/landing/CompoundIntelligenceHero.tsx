@@ -304,7 +304,7 @@ function SlidePanel({
               on the light viewer (light compositing + dark labels) in both
               themes so it matches the vial window exactly. */}
           <div className="relative min-h-0 overflow-hidden">
-            <MolecularStructurePanel substance={ci.substance} abbreviation={ci.abbreviation} bare lightbox />
+            <MolecularStructurePanel substance={ci.substance} chemicalName={ci.chemicalName} abbreviation={ci.abbreviation} bare lightbox />
           </div>
         </div>
         <CornerMarks />

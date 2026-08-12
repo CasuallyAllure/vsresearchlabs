@@ -396,11 +396,12 @@
   {
     "id": "rs-cagrilintide",
     "slug": "cagrilintide",
-    "name": "Cagrilintide",
+    "name": "CGL",
+    "chemicalName": "Cagrilintide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Long-acting amylin receptor agonist investigated in appetite-regulation research models. Lyophilized, research grade.",
-    "laymanSummary": "Cagrilintide is a long-acting **amylin** analogue — an amylin-receptor agonist studied *alongside* GLP-1 agonists. It is investigated for **satiety signaling**, and paired with semaglutide (CagriSema) it is a widely studied *next-generation metabolic* research combination.",
-    "longDescription": "Cagrilintide — Long-acting amylin receptor agonist investigated in appetite-regulation research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "laymanSummary": "CGL (Cagrilintide) is a long-acting **amylin** analogue — an amylin-receptor agonist studied *alongside* GLP-1 agonists. It is investigated for **satiety signaling**, and paired with semaglutide (CagriSema) it is a widely studied *next-generation metabolic* research combination.",
+    "longDescription": "CGL — Long-acting amylin receptor agonist investigated in appetite-regulation research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/vials/cagrilintide.webp"
     ],
@@ -493,11 +494,12 @@
   {
     "id": "rs-cagrisema",
     "slug": "cagrisema",
-    "name": "Cagrilintide + Semaglutide",
+    "name": "CGS",
+    "chemicalName": "Cagrilintide + Semaglutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide. Lyophilized, research grade.",
     "laymanSummary": "CagriSema pairs the amylin analogue **cagrilintide** with the GLP-1 agonist **semaglutide** — engaging *two complementary appetite pathways*. It is one of the most-studied next-generation *metabolic-research* combinations.",
-    "longDescription": "Cagrilintide + Semaglutide — Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "longDescription": "CGS — Co-formulation of the amylin analogue cagrilintide with the GLP-1 agonist semaglutide.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/vials/cagrisema.webp"
     ],
@@ -2279,11 +2281,12 @@
   {
     "id": "rs-mazdutide",
     "slug": "mazdutide",
-    "name": "Mazdutide",
+    "name": "MZD",
+    "chemicalName": "Mazdutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Dual GLP-1 and glucagon receptor agonist studied in metabolic research models. Lyophilized, research grade.",
-    "laymanSummary": "Mazdutide is a **GLP-1 + glucagon** dual agonist. The glucagon component adds *energy-expenditure* signaling on top of GLP-1 activity — studied in *metabolic research* models.",
-    "longDescription": "Mazdutide — Dual GLP-1 and glucagon receptor agonist studied in metabolic research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "laymanSummary": "MZD (Mazdutide) is a **GLP-1 + glucagon** dual agonist. The glucagon component adds *energy-expenditure* signaling on top of GLP-1 activity — studied in *metabolic research* models.",
+    "longDescription": "MZD — Dual GLP-1 and glucagon receptor agonist studied in metabolic research models.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/vials/mazdutide.webp"
     ],
@@ -3401,11 +3404,12 @@
   {
     "id": "rs-survodutide",
     "slug": "survodutide",
-    "name": "Survodutide",
+    "name": "SVD",
+    "chemicalName": "Survodutide",
     "category": "biopeptide-research-supplies",
     "shortDescription": "Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research. Lyophilized, research grade.",
-    "laymanSummary": "Survodutide is a **glucagon + GLP-1** dual agonist studied in *liver (MASH) and metabolic* research — the glucagon component is investigated for effects on *hepatic lipid metabolism*.",
-    "longDescription": "Survodutide — Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+    "laymanSummary": "SVD (Survodutide) is a **glucagon + GLP-1** dual agonist studied in *liver (MASH) and metabolic* research — the glucagon component is investigated for effects on *hepatic lipid metabolism*.",
+    "longDescription": "SVD — Glucagon/GLP-1 receptor dual agonist investigated in metabolic and hepatic research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
     "images": [
       "/vials/survodutide.webp"
     ],

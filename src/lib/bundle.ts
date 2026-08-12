@@ -29,7 +29,7 @@ export interface BundlePromo {
 
 export const BUNDLE_PROMO: BundlePromo = {
   code: 'BUNDLE',
-  label: 'Retatrutide + GHK-Cu bundle',
+  label: 'RTT + GHK-Cu bundle',
   skuA: 'VSR-RS-RTT-005',
   skuB: 'VSR-RS-GHK',
   percent: 20,

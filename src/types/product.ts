@@ -110,6 +110,14 @@ export interface Product {
    */
   abbreviation: string;
   /**
+   * Canonical chemical / INN name, when the catalog `name` is a research
+   * code rather than the substance name (e.g. name "RTT", chemicalName
+   * "Retatrutide"). Kept for lab accuracy: it drives the Chemical Identity
+   * analytical row and the PubChem structure lookup, which resolves by
+   * substance name and cannot resolve a house code.
+   */
+  chemicalName?: string;
+  /**
    * Optional research-community nickname displayed as a small label above
    * the product name on cards (e.g. "Wolverine" for the BPC-157 + TB-500
    * blend, after the X-Men healing trope). Pure marketing surface — no

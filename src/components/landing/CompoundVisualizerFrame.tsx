@@ -105,7 +105,7 @@ export function CompoundVisualizerFrame({
         <span className="text-ink/45">Compound of the Month</span>
         <span aria-hidden="true" className="text-ink/25">·</span>
         <span className="font-bold tracking-[0.18em]" style={{ color: 'var(--color-accent-gold)' }}>
-          Retatrutide
+          RTT
         </span>
       </div>
 

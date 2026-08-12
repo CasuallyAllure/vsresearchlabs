@@ -286,7 +286,7 @@ describe('bundle promo (Retatrutide + GHK-Cu)', () => {
       kind: 'fixed',
       amount_cents: BUNDLE_DISCOUNT,
       discount_cents: BUNDLE_DISCOUNT,
-      free_label: 'Retatrutide + GHK-Cu bundle — 20% off 1 pair',
+      free_label: 'RTT + GHK-Cu bundle — 20% off 1 pair',
       source: 'promo',
     });
   });
@@ -312,7 +312,7 @@ describe('bundle promo (Retatrutide + GHK-Cu)', () => {
     expect(rows[0]).toMatchObject({
       code: 'BUNDLE',
       amount_cents: discount,
-      free_label: 'Retatrutide + GHK-Cu bundle — 20% off 2 pairs',
+      free_label: 'RTT + GHK-Cu bundle — 20% off 2 pairs',
     });
   });
 

@@ -152,8 +152,12 @@ export interface AnalyticalRow {
 }
 
 export interface CompoundIntelligence {
-  /** Substance name with the dose suffix stripped ("Retatrutide"). */
+  /** Catalog name with the dose suffix stripped ("RTT"). Display identity. */
   substance: string;
+  /** Canonical chemical / INN name when the catalog name is a house code
+   *  ("Retatrutide"). Undefined when `substance` already is the substance.
+   *  Structure lookups resolve on this, never on the code. */
+  chemicalName?: string;
   /** Active dose parsed from the product name ("5mg"). */
   activeDose: string;
   abbreviation: string;
@@ -320,6 +324,8 @@ function buildAnalytical(product: Product): AnalyticalRow[] {
   product.specs
     .filter((s) => keep.includes(s.label))
     .forEach((s) => rows.push({ label: s.label, value: s.value }));
+  if (product.chemicalName)
+    rows.push({ label: 'Chemical Identity', value: product.chemicalName });
   if (product.casNumber)
     rows.push({ label: 'CAS Number', value: product.casNumber });
   if (product.molecularWeight)
@@ -377,6 +383,7 @@ export function getCompoundIntelligence(
 
   return {
     substance: substanceName(product.name),
+    chemicalName: product.chemicalName,
     activeDose: deriveProductDose(product),
     abbreviation: product.abbreviation,
     sku: product.sku,
