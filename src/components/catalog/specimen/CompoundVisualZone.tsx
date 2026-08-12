@@ -27,6 +27,9 @@ import { VialRender } from './VialRender';
 
 interface CompoundVisualZoneProps {
   substance: string;
+  /** Canonical chemical name when `substance` is a house code — the
+   *  structure panel resolves PubChem on this. */
+  chemicalName?: string;
   abbreviation: string;
   sku: string;
   activeDoseLabel: string;
@@ -38,6 +41,7 @@ interface CompoundVisualZoneProps {
 
 export function CompoundVisualZone({
   substance,
+  chemicalName,
   abbreviation,
   sku,
   activeDoseLabel,
@@ -64,7 +68,7 @@ export function CompoundVisualZone({
           className="aspect-square w-full overflow-hidden"
           style={{ borderBottom: '1px solid rgba(26,23,20,0.06)' }}
         >
-          <MolecularStructurePanel substance={substance} abbreviation={abbreviation} />
+          <MolecularStructurePanel substance={substance} chemicalName={chemicalName} abbreviation={abbreviation} />
         </div>
 
         {/* Bottom: vial — 240px band, centered */}
@@ -95,7 +99,7 @@ export function CompoundVisualZone({
       style={{ borderBottom: '1px solid rgba(26,23,20,0.07)' }}
     >
       <div className="flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid rgba(26,23,20,0.06)' }}>
-        <MolecularStructurePanel substance={substance} abbreviation={abbreviation} />
+        <MolecularStructurePanel substance={substance} chemicalName={chemicalName} abbreviation={abbreviation} />
       </div>
 
       <div

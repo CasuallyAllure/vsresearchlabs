@@ -150,7 +150,7 @@ function appliedRows(input: CartIncentiveInput): IncentiveRow[] {
     rows.push({
       id: 'bundle',
       kind: 'applied',
-      label: 'Retatrutide + GHK-Cu bundle',
+      label: 'RTT + GHK-Cu bundle',
       detail:
         'Your complete pair prices as a bundle — a final price, so it replaces the member percentage ' +
         'and the buy-2-get-1 term rather than adding to them.',

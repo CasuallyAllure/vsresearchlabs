@@ -315,6 +315,7 @@ export function ProductPage() {
           {/* Desktop visual identity zone */}
           <CompoundVisualZone
             substance={ci.substance}
+            chemicalName={ci.chemicalName}
             abbreviation={ci.abbreviation}
             sku={ci.sku}
             activeDoseLabel={activeDoseLabel}

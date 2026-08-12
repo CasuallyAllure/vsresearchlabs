@@ -149,7 +149,7 @@ const DEMO_ORDERS: MyOrderRow[] = [
 /** Real catalog SKUs — the library surface renders the catalog's own specs. */
 const DEMO_ORDER_LINES: MyOrderLineRow[] = [
   { sku: 'VSR-RS-BPC-005', product_name: 'BPC-157 — 5mg', order_number: 'DEMO-1042', status: 'shipped' },
-  { sku: 'VSR-RS-RTT-005', product_name: 'Retatrutide — 5mg', order_number: 'DEMO-1042', status: 'shipped' },
+  { sku: 'VSR-RS-RTT-005', product_name: 'RTT — 5mg', order_number: 'DEMO-1042', status: 'shipped' },
   { sku: 'VSR-LE-BAL-220', product_name: 'Analytical Balance — 0.1 mg Readability', order_number: 'DEMO-1042', status: 'shipped' },
   { sku: 'VSR-RS-GHK', product_name: 'GHK-Cu — 50mg', order_number: 'DEMO-1017', status: 'processing' },
   { sku: 'VSR-RS-BPC-005', product_name: 'BPC-157 — 10mg', order_number: 'DEMO-0961', status: 'delivered' },
@@ -205,7 +205,7 @@ function demoOrder(orderNumber: string): MyOrderResult {
       ],
       lines: [
         { sku: 'VSR-RS-BPC-005', product_name: 'BPC-157 — 5mg', quantity: 4, unit_price_cents: 8_600, item_note: null },
-        { sku: 'VSR-RS-RTT-005', product_name: 'Retatrutide — 5mg', quantity: 2, unit_price_cents: 41_500, item_note: 'Demo line — not a real order' },
+        { sku: 'VSR-RS-RTT-005', product_name: 'RTT — 5mg', quantity: 2, unit_price_cents: 41_500, item_note: 'Demo line — not a real order' },
         { sku: 'VSR-LE-BAL-220', product_name: 'Analytical Balance — 0.1 mg Readability', quantity: 1, unit_price_cents: 24_600, item_note: null },
       ],
     };

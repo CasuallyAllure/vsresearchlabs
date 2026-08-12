@@ -101,7 +101,7 @@ export const TELEMETRY_FN = "place-order";
  *  keep it in sync with BUNDLE_PROMO in src/lib/bundle.ts (display mirror). */
 const BUNDLE_PROMO = {
   code: "BUNDLE",
-  label: "Retatrutide + GHK-Cu bundle",
+  label: "RTT + GHK-Cu bundle",
   skuA: "VSR-RS-RTT-005",
   skuB: "VSR-RS-GHK",
   percent: 20,
