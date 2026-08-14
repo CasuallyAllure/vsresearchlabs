@@ -905,7 +905,7 @@ export type Database = {
       }
       orders: {
         Row: {
-          buyer_contact: string
+          buyer_contact: string | null
           buyer_name: string
           buyer_organization: string | null
           cancellation_reason: string | null
@@ -949,7 +949,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          buyer_contact: string
+          buyer_contact?: string | null
           buyer_name: string
           buyer_organization?: string | null
           cancellation_reason?: string | null
@@ -993,7 +993,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          buyer_contact?: string
+          buyer_contact?: string | null
           buyer_name?: string
           buyer_organization?: string | null
           cancellation_reason?: string | null
@@ -1900,6 +1900,10 @@ export type Database = {
       cancel_order: {
         Args: { p_order_id: string; p_reason: string }
         Returns: undefined
+      }
+      claim_order_with_account: {
+        Args: { p_token: string }
+        Returns: Json
       }
       claim_prepared_cart: { Args: { p_token: string }; Returns: Json }
       clear_order_flag: { Args: { p_order_id: string }; Returns: undefined }

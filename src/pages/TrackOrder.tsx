@@ -19,6 +19,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useCustomerAuth } from '../lib/customerAuth';
+import { ClaimOrderInvite } from '../components/order/ClaimOrderInvite';
 import {
   carrierLabel,
   carrierTrackingUrl,
@@ -97,6 +99,10 @@ function canConfirmAddress(status: string): boolean {
 function InvoiceByToken({ token, justClaimed = false }: { token: string; justClaimed?: boolean }) {
   const [state, setState] = useState<InvoiceState>({ kind: 'loading' });
   const [showDoc, setShowDoc] = useState(false);
+  // Bumped after a successful claim so the invoice re-fetches and the buyer
+  // reads the total they will actually pay, not the pre-member one.
+  const [reloadKey, setReloadKey] = useState(0);
+  const { user } = useCustomerAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -110,7 +116,7 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
     }
     load();
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, reloadKey]);
 
   if (state.kind === 'loading') {
     return <p className="holo-text-caption text-[10px] uppercase tracking-[0.22em]">Loading…</p>;
@@ -151,6 +157,17 @@ function InvoiceByToken({ token, justClaimed = false }: { token: string; justCla
 
   return (
     <>
+      {/* Membership offer — only while there is still something to change:
+          an unpaid, open invoice. Never on a settled order, where joining
+          cannot alter this total and the card would be an empty promise. */}
+      {!o.paid && pres.step < 4 && (
+        <ClaimOrderInvite
+          token={token}
+          signedIn={Boolean(user)}
+          onClaimed={() => setReloadKey((k) => k + 1)}
+        />
+      )}
+
       {/* Payment-recorded confirmation — shown when the buyer arrives from the
           "I've sent payment" email link (mark-payment-claimed redirect). */}
       {justClaimed && !o.paid && (
