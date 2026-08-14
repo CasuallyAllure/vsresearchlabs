@@ -88,12 +88,15 @@ describe('laymanSummary research register', () => {
   });
 
   test('published efficacy figures are attributed to the study that reported them', () => {
-    // Percentages are allowed, but only as a reported trial finding — never
-    // as an expected result. Each summary carrying a ~NN%~ span must name the
-    // research it came from.
+    // No summary carries an efficacy figure today: the plain-language register
+    // describes mechanism, and outcome numbers were removed from the incretin
+    // summaries (they read as a promised result on a product listing, and the
+    // trials behind them tested prescription formulations, not this material).
+    // The published research is still cited in knownStudies, where a reader can
+    // see the figure in its own context. The attribution rule below stays armed
+    // for the day a figure comes back — hence no "at least one" pin here, which
+    // would only force a figure to exist.
     const withFigures = ALL_SUMMARIES.filter((row) => /~[^~]*\d+%[^~]*~/.test(row.laymanSummary!));
-
-    expect(withFigures.length).toBeGreaterThan(0);
 
     const unattributed = withFigures
       .filter((row) => !/\b(reported|published|trial|phase)\b/i.test(row.laymanSummary!))

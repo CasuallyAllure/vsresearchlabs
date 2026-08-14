@@ -72,7 +72,7 @@ export const CLASSIFICATION_DEFINITIONS: Record<ResearchClassification, string> 
  *  CLASSIFICATION_DEFINITIONS sits one swipe to the right. */
 export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
   'incretin-metabolic-agonists':
-    'The appetite & metabolism family — the GLP-1 group (the same class as Ozempic and Mounjaro). Researched for appetite, blood sugar, and how energy is metabolized.',
+    'The appetite & metabolism family — the incretin receptor group. Researched for appetite, blood sugar, and how energy is metabolized.',
   'gh-secretagogue':
     'The growth-hormone-signaling group — compounds researched for how they trigger the pituitary to release growth hormone, rather than supplying the hormone directly.',
   'growth-factor-anabolic':
@@ -101,7 +101,7 @@ export const CLASSIFICATION_LAYMAN: Record<ResearchClassification, string> = {
  *  still lives in CLASSIFICATION_DEFINITIONS / the compound overlay. */
 export const CLASSIFICATION_SECTION_BLURB: Record<ResearchClassification, string> = {
   'incretin-metabolic-agonists':
-    'The GLP-1 group (the same class as Ozempic and Mounjaro) — researched for appetite, blood sugar, and weight.',
+    'The incretin receptor group — researched for appetite, blood sugar, and energy metabolism.',
   'gh-secretagogue':
     'Compounds researched for how they signal the release of growth hormone — studied in recovery and body-composition research.',
   'growth-factor-anabolic':

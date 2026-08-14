@@ -638,7 +638,7 @@
   "category": "biopeptide-research-supplies",
   "shortDescription": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
   "longDescription": "RTT supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-  "laymanSummary": "RTT (Retatrutide) is an investigational **triple receptor agonist** that activates the **GLP-1, GIP, and glucagon** receptors together. In published *Phase 2 clinical research*, a mean body-weight reduction of approximately ~24%~ was reported over 48 weeks — among the largest reported for this class. The three receptor pathways are studied for their combined effects on *appetite signaling*, *glucose regulation*, and *energy expenditure*.",
+  "laymanSummary": "RTT is an investigational **triple receptor agonist** that activates the **GLP-1, GIP, and glucagon** receptors together. The three receptor pathways are studied for their combined effects on *appetite signaling*, *glucose regulation*, and *energy expenditure*.",
   "images": [
    "/vials/retatrutide-5mg.webp"
   ],
@@ -794,7 +794,7 @@
  },
  {
   "id": "rs-semaglutide-5mg",
-  "laymanSummary": "SEM (Semaglutide) is a **GLP-1 receptor agonist** that mimics a gut hormone released after eating. It is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. In published *Phase 3 clinical trials*, a mean body-weight reduction of approximately ~15%~ was reported. A fatty-acid chain gives it a half-life of about a week.",
+  "laymanSummary": "SEM is a **GLP-1 receptor agonist** that mimics a gut hormone released after eating. It is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. A fatty-acid chain gives it a half-life of about a week.",
   "slug": "semaglutide-5mg",
   "name": "SEM",
   "chemicalName": "Semaglutide",
@@ -863,7 +863,7 @@
   "mechanismSummary": "GLP-1 receptor agonist with high affinity for GLP-1R. Mediates glucose-dependent insulin secretion, suppresses glucagon, and delays gastric emptying. A C18 fatty di-acid attached at Lys26 via a hydrophilic γGlu-2×AEEA spacer mediates albumin binding, extending elimination half-life to approximately 1 week and enabling once-weekly dosing.",
   "receptorActivity": "Primary: GLP-1R (high affinity; reported binding affinity is reduced relative to liraglutide, and is markedly lower in the presence of albumin — the condition that matters in vivo). No meaningful activity at GIP-R, GCGR, or other incretin receptors at physiological concentrations.",
   "pathwaySummary": "GLP-1R → cAMP/PKA/CREB cascade → glucose-dependent potentiation of pancreatic β-cell insulin exocytosis. Hypothalamic arcuate nucleus satiety circuit activation via vagal afferents and central GLP-1R expression.",
-  "fdaStatus": "Approved — Ozempic (T2DM) · Wegovy (obesity) · Rybelsus (oral, T2DM)",
+  "fdaStatus": "Approved — the substance is FDA-approved in prescription formulations for type 2 diabetes and obesity, including an oral tablet. This catalog item is research material, not an approved product.",
   "humanTrialsConfirmed": true,
   "knownStudies": [
    {
@@ -912,17 +912,17 @@
   "fdaResources": [
    {
     "kind": "drugs-at-fda",
-    "label": "Drugs@FDA — Ozempic (semaglutide), NDA 209637",
+    "label": "Drugs@FDA — approval record, NDA 209637",
     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=209637"
    },
    {
     "kind": "drugs-at-fda",
-    "label": "Drugs@FDA — Wegovy (semaglutide), NDA 215256",
+    "label": "Drugs@FDA — approval record, NDA 215256",
     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215256"
    },
    {
     "kind": "dailymed",
-    "label": "DailyMed — Ozempic (semaglutide) prescribing information",
+    "label": "DailyMed — prescribing information record",
     "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=adec4fd2-6858-4c99-91d4-531f5f2a2d79"
    },
    {
@@ -931,7 +931,7 @@
     "url": "https://clinicaltrials.gov/study/NCT03548935"
    }
   ],
-  "appearance": "Semaglutide is a white to almost white hygroscopic powder (FDA prescribing information, Ozempic).",
+  "appearance": "A white to almost white hygroscopic powder (FDA prescribing information).",
   "originator": "Novo Nordisk"
  },
  {
@@ -1078,7 +1078,7 @@
  },
  {
   "id": "rs-tirzepatide-10mg",
-  "laymanSummary": "TZP (Tirzepatide) is a **dual GIP + GLP-1 receptor agonist**. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. In head-to-head *Phase 3 clinical trials*, a mean body-weight reduction of up to ~22%~ was reported, greater than semaglutide in the study population. A half-life of about a week places it in the long-acting class.",
+  "laymanSummary": "TZP is a **dual GIP + GLP-1 receptor agonist**. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. A half-life of about a week places it in the long-acting class.",
   "slug": "tirzepatide-10mg",
   "name": "TZP",
   "chemicalName": "Tirzepatide",
@@ -1166,7 +1166,7 @@
   "mechanismSummary": "Dual GIP and GLP-1 receptor agonist. The characterising study reports greater in-vitro potency at the GIP receptor than at the GLP-1 receptor. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling.",
   "receptorActivity": "Agonist at GIP-R and GLP-1R, with greater reported in-vitro potency at GIP-R; the characterising study describes GLP-1R potency as approximately 13-fold weaker than native GLP-1. Dual coagonism without significant glucagon receptor activity.",
   "pathwaySummary": "GIP-R → cAMP/PKA axis in pancreatic β-cells and adipocytes, PI3K/Akt in fat tissue. GLP-1R → cAMP/EPAC/PKA, hypothalamic satiety (arcuate nucleus), gastric motility suppression via vagal pathways.",
-  "fdaStatus": "Approved — Mounjaro (T2DM) · Zepbound (obesity)",
+  "fdaStatus": "Approved — the substance is FDA-approved in prescription formulations for type 2 diabetes and obesity. This catalog item is research material, not an approved product.",
   "humanTrialsConfirmed": true,
   "knownStudies": [
    {
@@ -1201,17 +1201,17 @@
   "fdaResources": [
    {
     "kind": "drugs-at-fda",
-    "label": "Drugs@FDA — Mounjaro (tirzepatide), NDA 215866",
+    "label": "Drugs@FDA — approval record, NDA 215866",
     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=215866"
    },
    {
     "kind": "drugs-at-fda",
-    "label": "Drugs@FDA — Zepbound (tirzepatide), NDA 217806",
+    "label": "Drugs@FDA — approval record, NDA 217806",
     "url": "https://www.accessdata.fda.gov/scripts/cder/daf/index.cfm?event=overview.process&ApplNo=217806"
    },
    {
     "kind": "dailymed",
-    "label": "DailyMed — Mounjaro (tirzepatide) prescribing information",
+    "label": "DailyMed — prescribing information record",
     "url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d2d7da5d-ad07-4228-955f-cf7e355c8cc0"
    },
    {

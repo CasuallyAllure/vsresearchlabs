@@ -159,19 +159,28 @@ describe('fdaStatus brand attributions', () => {
     expect(misattributed).toEqual([]);
   });
 
-  test('the verified brand list is actually exercised by the data', () => {
-    // Arrange — a mapping no record uses is a pin that proves nothing.
-    const statuses = allRecords()
-      .map((record) => record.fdaStatus ?? '')
-      .join(' ');
+  /**
+   * The catalog no longer names consumer drug brands anywhere in fdaStatus.
+   * A retail medicine name invites a human-use read of a research listing, so
+   * the regulatory status states what the SUBSTANCE is approved as, never the
+   * brand it is sold under. BRAND_ACTIVE_INGREDIENT is now the banned list
+   * rather than an attribution map; the test above still catches a brand that
+   * comes back on the wrong compound, and this one catches it coming back at
+   * all.
+   */
+  test('no fdaStatus names a consumer drug brand', () => {
+    // Arrange
+    const records = allRecords().filter((record) => record.fdaStatus);
 
     // Act
-    const unused = Object.keys(BRAND_ACTIVE_INGREDIENT).filter(
-      (brand) => !new RegExp(`\\b${brand}\\b`).test(statuses),
+    const named = records.flatMap((record) =>
+      Object.keys(BRAND_ACTIVE_INGREDIENT)
+        .filter((brand) => new RegExp(`\\b${brand}\\b`).test(record.fdaStatus ?? ''))
+        .map((brand) => `${record.slug}: names ${brand}`),
     );
 
     // Assert
-    expect(unused).toEqual([]);
+    expect(named).toEqual([]);
   });
 
   /**
