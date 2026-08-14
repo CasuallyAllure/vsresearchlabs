@@ -74,7 +74,7 @@
   "developmentCodes": [
    "LY3298176"
   ],
-  "originator": "Eli Lilly and Company"
+  "originator": "Pharmaceutical development program"
  },
  {
   "id": "rs-aod9604-5mg",
@@ -794,7 +794,7 @@
   "developmentCodes": [
    "LY3437943"
   ],
-  "originator": "Eli Lilly and Company"
+  "originator": "Pharmaceutical development program"
  },
  {
   "id": "rs-semaglutide-5mg",
@@ -936,7 +936,7 @@
    }
   ],
   "appearance": "A white to almost white hygroscopic powder (FDA prescribing information).",
-  "originator": "Novo Nordisk"
+  "originator": "Pharmaceutical development program"
  },
  {
   "id": "rs-semax-30mg",
@@ -1227,7 +1227,7 @@
   "developmentCodes": [
    "LY3298176"
   ],
-  "originator": "Eli Lilly and Company"
+  "originator": "Pharmaceutical development program"
  },
  {
   "id": "le-analytical-balance-0-1mg",
