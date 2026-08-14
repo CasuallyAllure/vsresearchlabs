@@ -58,7 +58,7 @@ export const vsResearchLabsConfig: SiteConfig = {
   },
 
   storage: {
-    productsKey: 'vsresearchlabs.products.v5',
+    productsKey: 'vsresearchlabs.products.v6',
     cartKey: 'vsresearchlabs.cart.v1',
     themeKey: 'vsr.theme', // must match the boot script in index.html
     // v2: acceptance is a structured JSON record (timestamp + declared
