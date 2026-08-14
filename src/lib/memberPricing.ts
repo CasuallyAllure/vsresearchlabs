@@ -55,9 +55,16 @@ export const MEMBER_DISCOUNT_PERCENT = 15;
  * rounding rule the checkout applies to the account slice. Returns null when the
  * base is null or non-positive so callers can skip the display entirely.
  */
-export function memberPriceCents(baseCents: number | null): number | null {
+export function memberPriceCents(
+  baseCents: number | null,
+  /** The product's OWN rate (087) where it has one. Omitted means the standard
+   *  entry offer — a product with a different rate must pass it, or the chip
+   *  advertises a price checkout will not honour. */
+  percent: number = MEMBER_DISCOUNT_PERCENT,
+): number | null {
   if (baseCents == null || !Number.isFinite(baseCents) || baseCents <= 0) return null;
-  const discount = Math.round((baseCents * MEMBER_DISCOUNT_PERCENT) / 100);
+  if (percent <= 0) return null;
+  const discount = Math.round((baseCents * percent) / 100);
   return Math.max(baseCents - discount, 0);
 }
 

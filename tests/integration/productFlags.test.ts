@@ -159,16 +159,26 @@ describe.skipIf(!canRun)('early-access admin control (real DB, migration 077)', 
 
   // ── public_product_flags: the narrow anon-readable catalog-gate surface ──
 
-  test('anon reads sku + early_access from public_product_flags, nothing else', async () => {
+  test('anon reads sku + early_access + member rate, nothing else', async () => {
     const sku = `public-view-${runId}`;
-    const seed = await service.from('product_flags').insert({ sku, early_access: true, updated_by: adminUserId });
+    const seed = await service
+      .from('product_flags')
+      .insert({ sku, early_access: true, member_discount_percent: 10, updated_by: adminUserId });
     expect(seed.error).toBeNull();
 
     const res = await anon.from('public_product_flags').select('*').eq('sku', sku);
     expect(res.error).toBeNull();
-    expect(res.data).toEqual([{ sku, early_access: true }]);
+    // member_discount_percent joins the projection in 087: the catalog cannot
+    // advertise a member price honestly without it, and a per-product rate is
+    // not a secret — it is printed on the tile. The exact-keys assertion below
+    // is the point of this test, so a FOURTH column can never arrive quietly.
+    expect(res.data).toEqual([{ sku, early_access: true, member_discount_percent: 10 }]);
     // No updated_by / updated_at leak through the public view.
-    expect(Object.keys((res.data ?? [])[0] ?? {}).sort()).toEqual(['early_access', 'sku']);
+    expect(Object.keys((res.data ?? [])[0] ?? {}).sort()).toEqual([
+      'early_access',
+      'member_discount_percent',
+      'sku',
+    ]);
   });
 
   test('anon cannot write public_product_flags (it is a view with no write grant)', async () => {

@@ -905,7 +905,7 @@ export type Database = {
       }
       orders: {
         Row: {
-          buyer_contact: string
+          buyer_contact: string | null
           buyer_name: string
           buyer_organization: string | null
           cancellation_reason: string | null
@@ -949,7 +949,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          buyer_contact: string
+          buyer_contact?: string | null
           buyer_name: string
           buyer_organization?: string | null
           cancellation_reason?: string | null
@@ -993,7 +993,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          buyer_contact?: string
+          buyer_contact?: string | null
           buyer_name?: string
           buyer_organization?: string | null
           cancellation_reason?: string | null
@@ -1143,18 +1143,21 @@ export type Database = {
       product_flags: {
         Row: {
           early_access: boolean
+          member_discount_percent: number | null
           sku: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           early_access?: boolean
+          member_discount_percent?: number | null
           sku: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           early_access?: boolean
+          member_discount_percent?: number | null
           sku?: string
           updated_at?: string
           updated_by?: string | null
@@ -1600,14 +1603,17 @@ export type Database = {
       public_product_flags: {
         Row: {
           early_access: boolean | null
+          member_discount_percent: number | null
           sku: string | null
         }
         Insert: {
           early_access?: boolean | null
+          member_discount_percent?: number | null
           sku?: string | null
         }
         Update: {
           early_access?: boolean | null
+          member_discount_percent?: number | null
           sku?: string | null
         }
         Relationships: []
@@ -1901,6 +1907,7 @@ export type Database = {
         Args: { p_order_id: string; p_reason: string }
         Returns: undefined
       }
+      claim_order_with_account: { Args: { p_token: string }; Returns: Json }
       claim_prepared_cart: { Args: { p_token: string }; Returns: Json }
       clear_order_flag: { Args: { p_order_id: string }; Returns: undefined }
       confirm_order_fulfilled: {

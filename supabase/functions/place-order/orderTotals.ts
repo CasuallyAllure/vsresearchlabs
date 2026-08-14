@@ -59,6 +59,11 @@ export interface OrderTotalsInput {
   rewardPercent: number | null;
   /** Account discount percent, or null when no entitlement applies. */
   accountPercent: number | null;
+  /** Per-line value and the product's OWN member rate where one is set (087).
+   *  `percent: null` means the line takes `accountPercent`, which is every
+   *  line in an ordinary cart. Omit the field entirely and the account slice is
+   *  computed exactly as it was before 087 — see the branch in pass 2a. */
+  accountRateLines?: readonly { valueCents: number; percent: number | null }[];
   /** appliedList entries with kind === "percent", in applied order. */
   percentEntries: readonly PercentCodeEntry[];
 }
@@ -204,10 +209,29 @@ export function computeOrderTotals(input: OrderTotalsInput): OrderTotalsResult {
   // running cap now starts after the account slice.
   let accountCents = 0;
   if (input.accountPercent != null) {
-    accountCents = Math.max(
-      Math.min(Math.round((percentBase * input.accountPercent) / 100), percentBase),
-      0,
-    );
+    const rateLines = input.accountRateLines ?? [];
+    const hasOwnRate = rateLines.some((l) => l.percent != null);
+
+    if (hasOwnRate && grossSubtotalCents > 0) {
+      // At least one product carries its own member rate (087). Each line's
+      // share of the post-flat base is its value scaled by
+      // (percentBase / subtotal) — the same scaling a code percent gets below —
+      // and takes its own rate, or the account's where it has none.
+      // Mirrors recompute_order_totals pass 3b cent for cent.
+      const scale = percentBase / grossSubtotalCents;
+      const summed = rateLines.reduce((acc, line) => {
+        const rate = line.percent ?? input.accountPercent!;
+        return acc + Math.round((line.valueCents * scale * rate) / 100);
+      }, 0);
+      accountCents = Math.max(Math.min(summed, percentBase), 0);
+    } else {
+      // Ordinary cart: one round() over the whole base, unchanged since 069.
+      // Uniform carts keep their old rounding by keeping their old code path.
+      accountCents = Math.max(
+        Math.min(Math.round((percentBase * input.accountPercent) / 100), percentBase),
+        0,
+      );
+    }
     percentUsed += accountCents;
   }
 
