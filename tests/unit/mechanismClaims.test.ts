@@ -160,6 +160,44 @@ describe('fdaStatus brand attributions', () => {
   });
 
   /**
+   * Originating-company names were removed from the catalog. `originator`
+   * states that a compound came out of a pharmaceutical development program
+   * without naming the firm, and no prose field names one either. The row
+   * stays — only the attribution is generic.
+   */
+  test('no field names an originating pharmaceutical company', () => {
+    // Arrange
+    const COMPANIES = [
+      'Eli Lilly',
+      'Lilly',
+      'Novo Nordisk',
+      'Boehringer Ingelheim',
+      'Innovent',
+      'Stealth BioTherapeutics',
+      'Araim',
+      'Pfizer',
+      'Sanofi',
+      'Amgen',
+      'AstraZeneca',
+      'Genentech',
+    ];
+
+    // Act — every string field on every record, not just the curated ones.
+    const named = allRecords().flatMap((record) =>
+      Object.entries(record as Record<string, unknown>).flatMap(([field, value]) =>
+        typeof value === 'string'
+          ? COMPANIES.filter((co) => new RegExp(`\\b${co}\\b`, 'i').test(value)).map(
+              (co) => `${record.slug}.${field}: names ${co}`,
+            )
+          : [],
+      ),
+    );
+
+    // Assert
+    expect(named).toEqual([]);
+  });
+
+  /**
    * The catalog no longer names consumer drug brands anywhere in fdaStatus.
    * A retail medicine name invites a human-use read of a research listing, so
    * the regulatory status states what the SUBSTANCE is approved as, never the

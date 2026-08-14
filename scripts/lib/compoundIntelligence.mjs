@@ -701,7 +701,7 @@ export const REGULATORY = {
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT03098797, elamipretide in Barth syndrome', url: 'https://clinicaltrials.gov/study/NCT03098797' },
     ],
     developmentCodes: ['MTP-131', 'SS-31'],
-    originator: 'Stealth BioTherapeutics',
+    originator: 'Pharmaceutical development program',
   },
   'oxytocin-acetate': {
     fdaResources: [
@@ -748,34 +748,34 @@ export const REGULATORY = {
     fdaResources: [
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06065540, Phase 3 with a cagrilintide monotherapy arm', url: 'https://clinicaltrials.gov/study/NCT06065540' },
     ],
-    originator: 'Novo Nordisk',
+    originator: 'Pharmaceutical development program',
   },
   cagrisema: {
     fdaResources: [
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT05567796, Phase 3 CagriSema in obesity (REDEFINE 1)', url: 'https://clinicaltrials.gov/study/NCT05567796' },
     ],
-    originator: 'Novo Nordisk',
+    originator: 'Pharmaceutical development program',
   },
   survodutide: {
     fdaResources: [
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06066515, Phase 3 survodutide in overweight or obesity', url: 'https://clinicaltrials.gov/study/NCT06066515' },
     ],
     developmentCodes: ['BI 456906'],
-    originator: 'Boehringer Ingelheim',
+    originator: 'Pharmaceutical development program',
   },
   mazdutide: {
     fdaResources: [
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT06184568, Phase 3 mazdutide versus semaglutide (DREAMS-3)', url: 'https://clinicaltrials.gov/study/NCT06184568' },
     ],
     developmentCodes: ['IBI362'],
-    originator: 'Innovent Biologics',
+    originator: 'Pharmaceutical development program',
   },
   'ara-290': {
     fdaResources: [
       { kind: 'clinical-trial', label: 'ClinicalTrials.gov — NCT02039687, ARA 290 and corneal nerve fibre density in sarcoidosis', url: 'https://clinicaltrials.gov/study/NCT02039687' },
     ],
     developmentCodes: ['ARA 290', 'pHSBP', 'cibinetide'],
-    originator: 'Araim Pharmaceuticals',
+    originator: 'Pharmaceutical development program',
   },
   'll-37': {
     fdaResources: [
