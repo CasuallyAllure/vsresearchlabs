@@ -1143,18 +1143,21 @@ export type Database = {
       product_flags: {
         Row: {
           early_access: boolean
+          member_discount_percent: number | null
           sku: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           early_access?: boolean
+          member_discount_percent?: number | null
           sku: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           early_access?: boolean
+          member_discount_percent?: number | null
           sku?: string
           updated_at?: string
           updated_by?: string | null
@@ -1600,14 +1603,17 @@ export type Database = {
       public_product_flags: {
         Row: {
           early_access: boolean | null
+          member_discount_percent: number | null
           sku: string | null
         }
         Insert: {
           early_access?: boolean | null
+          member_discount_percent?: number | null
           sku?: string | null
         }
         Update: {
           early_access?: boolean | null
+          member_discount_percent?: number | null
           sku?: string | null
         }
         Relationships: []
@@ -1986,27 +1992,17 @@ export type Database = {
         Returns: number
       }
       mark_order_delivered: { Args: { p_order_id: string }; Returns: undefined }
-      mark_order_invoiced:
-        | {
-            Args: {
-              p_invoice_amount_cents: number
-              p_invoice_url: string
-              p_order_id: string
-              p_payment_method?: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_invoice_amount_cents: number
-              p_invoice_url: string
-              p_order_id: string
-              p_payment_method?: string
-              p_shipping_cents?: number
-              p_subtotal_cents?: number
-            }
-            Returns: undefined
-          }
+      mark_order_invoiced: {
+        Args: {
+          p_invoice_amount_cents: number
+          p_invoice_url: string
+          p_order_id: string
+          p_payment_method?: string
+          p_shipping_cents?: number
+          p_subtotal_cents?: number
+        }
+        Returns: undefined
+      }
       mark_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       mark_payment_claimed: { Args: { p_order_id: string }; Returns: undefined }
       mark_product_deleted: { Args: { p_sku: string }; Returns: undefined }
