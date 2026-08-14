@@ -37,6 +37,14 @@ const KOREAN_GLUTATHIONE_IMAGE = '/vials/korean-glutathione-hero.webp';
 const KOREAN_GLUTATHIONE_DESCRIPTION =
   'Reduced-form L-glutathione, 1200 mg per vial — a research-grade antioxidant compound sourced to order for redox and oxidative-stress research models.';
 
+/** GLOW Blend spotlight slide. It held the "newly cataloged" eyebrow until
+ *  TZP Oral took that slot; only one slide can honestly be the newest. */
+const GLOW_BLEND_SLUG = 'glow-blend-cu';
+const GLOW_BLEND_DOSE = '70mg';
+const GLOW_BLEND_IMAGE = '/vials/glow-blend-pair.webp';
+const GLOW_BLEND_DESCRIPTION =
+  'A single-vial research blend of three of the most-requested peptides — BPC-157, GHK-Cu, and TB-500 — for recovery and tissue-repair research models.';
+
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
@@ -192,9 +200,10 @@ export function BiopeptideResearchSupplies() {
           the filter module renders below it, directly above the listing. */}
       <FeaturedSupplyCarousel
         label="Featured supply"
-        slideLabels={['Paired supply', 'Korean Glutathione', 'Newly cataloged']}
+        slideLabels={['Newly cataloged', 'Paired supply', 'Korean Glutathione', 'GLOW Blend']}
         className="mb-[var(--space-4)]"
       >
+        <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
         <BundleOfferTile className="w-full" />
         <ProductSpotlightSlide
           products={products}
@@ -207,7 +216,17 @@ export function BiopeptideResearchSupplies() {
           onInspect={setInspectedId}
           className="w-full"
         />
-        <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
+        <ProductSpotlightSlide
+          products={products}
+          slug={GLOW_BLEND_SLUG}
+          dose={GLOW_BLEND_DOSE}
+          heroImage={GLOW_BLEND_IMAGE}
+          eyebrow="Research blend"
+          description={GLOW_BLEND_DESCRIPTION}
+          badge="availability"
+          onInspect={setInspectedId}
+          className="w-full"
+        />
       </FeaturedSupplyCarousel>
 
       {/* LAUNCH DAY BOGO — renders nothing unless the promo is live by the
