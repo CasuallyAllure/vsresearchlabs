@@ -114,6 +114,15 @@ const AUTHENTICATED_ONLY = [
   // reaches it through service_role's default grant, the same arrangement 075
   // uses for automation_candidates — so it correctly appears in neither list.
   'claim_prepared_cart',
+  // 086. The buyer's own claim on the order behind a lookup_token: attaches it
+  // to auth.uid() and, while the invoice is open and unpaid, applies their
+  // effective_customer_discount. `authenticated` is the point — the whole
+  // function is "turn this link into an account-owned order", so a caller with
+  // no account has nothing to attach it to, and the body returns not_signed_in
+  // when auth.uid() is null. It must NEVER move to ANON_CALLABLE: the token
+  // already lets an anonymous holder READ the invoice (019), and an anon grant
+  // here would let that same holder rewrite whose order it is.
+  'claim_order_with_account',
   'clear_order_flag',
   'confirm_order_fulfilled',
   'create_order_from_inquiry',
