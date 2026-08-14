@@ -35,7 +35,11 @@
   "sku": "VSR-RS-TZO-025",
   "abbreviation": "TZO",
   "family": "GIP/GLP-1 Dual Agonist",
-  "variants": [],
+  "variants": [
+   {
+    "dose": "500mcg"
+   }
+  ],
   "priceCents": 10000,
   "stock": null,
   "tags": [
