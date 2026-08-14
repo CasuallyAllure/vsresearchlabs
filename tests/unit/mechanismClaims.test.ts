@@ -184,7 +184,7 @@ describe('fdaStatus brand attributions', () => {
 
     // Act — every string field on every record, not just the curated ones.
     const named = allRecords().flatMap((record) =>
-      Object.entries(record as Record<string, unknown>).flatMap(([field, value]) =>
+      Object.entries(record as unknown as Record<string, unknown>).flatMap(([field, value]) =>
         typeof value === 'string'
           ? COMPANIES.filter((co) => new RegExp(`\\b${co}\\b`, 'i').test(value)).map(
               (co) => `${record.slug}.${field}: names ${co}`,
