@@ -1901,10 +1901,7 @@ export type Database = {
         Args: { p_order_id: string; p_reason: string }
         Returns: undefined
       }
-      claim_order_with_account: {
-        Args: { p_token: string }
-        Returns: Json
-      }
+      claim_order_with_account: { Args: { p_token: string }; Returns: Json }
       claim_prepared_cart: { Args: { p_token: string }; Returns: Json }
       clear_order_flag: { Args: { p_order_id: string }; Returns: undefined }
       confirm_order_fulfilled: {
