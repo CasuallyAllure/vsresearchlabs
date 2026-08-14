@@ -40,6 +40,7 @@ import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { isMemberPriceEligible } from '../../lib/memberPricing';
 import { MemberPrice } from './MemberPrice';
+import { memberRateFor, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import {
   useProductOverrides,
   isSkuVisible,
@@ -141,6 +142,8 @@ export function ProductSpotlightSlide({
   useProductOverrides((s) => s.bySku);
   useProductOverrides((s) => s.variantBySku);
   const overridesLoaded = useProductOverrides((s) => s.loaded);
+  // 087: the featured product may carry its own member rate.
+  const memberRates = useEarlyAccessFlags((s) => s.rateBySku);
   const overridesError = useProductOverrides((s) => s.error);
 
   const add = useCart((s) => s.add);
@@ -259,6 +262,7 @@ export function ProductSpotlightSlide({
               <MemberPrice
                 baseCents={priceCents}
                 eligible={isMemberPriceEligible(product)}
+                percent={memberRateFor(product.sku, memberRates)}
                 size="md"
               />
             </div>

@@ -29,7 +29,7 @@ import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useSignedIn } from '../../lib/authPresence';
-import { isEarlyAccessProduct, useEarlyAccessFlags } from '../../lib/earlyAccess';
+import { isEarlyAccessProduct, memberRateFor, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import { useCart } from '../../hooks/useCart';
 import { variantProduct } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
@@ -95,6 +95,7 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
   // product page carries the sign-in line. Dark until a product is flagged
   // or tagged. Subscribed (not .getState()) so an admin toggle re-renders.
   const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
+  const memberRates = useEarlyAccessFlags((s) => s.rateBySku);
   const earlyLocked = isEarlyAccessProduct(product, earlyAccessFlags) && !signedIn;
   const [added, setAdded] = useState(false);
   const flashTimer = useRef<number | null>(null);
@@ -300,7 +301,11 @@ export function CompoundTile({ product, onInspect, only24hrDoses, detailed }: Co
             <span className="font-mono tabular-nums text-[13px] font-medium text-ink leading-none whitespace-nowrap">
               {formatPrice(priceCents)}
             </span>
-            <MemberPrice baseCents={priceCents} eligible={isMemberPriceEligible(product)} />
+            <MemberPrice
+              baseCents={priceCents}
+              eligible={isMemberPriceEligible(product)}
+              percent={memberRateFor(product.sku, memberRates)}
+            />
           </span>
 
           <button

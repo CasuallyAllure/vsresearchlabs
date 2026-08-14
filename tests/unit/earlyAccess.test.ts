@@ -106,7 +106,7 @@ describe('useEarlyAccessFlags.reload', () => {
     expect(s.loaded).toBe(true);
     expect(s.loading).toBe(false);
     expect(from).toHaveBeenCalledWith('public_product_flags');
-    expect(select).toHaveBeenCalledWith('sku, early_access');
+    expect(select).toHaveBeenCalledWith('sku, early_access, member_discount_percent');
   });
 
   test('a non-boolean truthy value reads as false, not passed through raw', async () => {

@@ -1102,6 +1102,33 @@ const handleOrder = async (req: Request): Promise<Response> => {
   // BOGO joins this gate on identical terms (owner, launch day): it is the same
   // kind of flat automatic promo as B2G1, and promoPlan has already reduced the
   // two to at most one, so `freePromo` below is whichever survived.
+  // Per-product member rates (087). A product may carry its own rate — TZP Oral
+  // is 10% in a 15% catalog — and the account slice is computed per line when
+  // any does. Read fail-closed like the price check above: an UNKNOWN rate must
+  // not silently become the account's rate, because that is the direction that
+  // overcharges nobody but undercharges us on every such line.
+  const rateSkus = [...new Set(
+    items.map((i) => i.product.sku).filter(isQueryableSku),
+  )];
+  const rateRes = rateSkus.length > 0
+    ? await supabase.from("product_flags")
+      .select("sku, member_discount_percent").in("sku", rateSkus)
+    : { data: [], error: null };
+  if (rateRes.error) {
+    return jsonResponse(
+      { error: "Pricing is temporarily unavailable. Please try again." },
+      503,
+    );
+  }
+  const rateBySku = new Map<string, number>();
+  for (const row of (rateRes.data ?? []) as { sku: string; member_discount_percent: number | null }[]) {
+    if (row.member_discount_percent != null) rateBySku.set(row.sku, row.member_discount_percent);
+  }
+  const accountRateLines = items.map((i) => ({
+    valueCents: clampCents(i.unitPriceCents) * Math.max(1, i.quantity),
+    percent: rateBySku.get(i.product.sku ?? "") ?? null,
+  }));
+
   const freePromo = b2g1FreePlan.length > 0 ? b2g1FreePlan : bogoFreePlan;
   if (freePromo.length > 0 && accountDiscount) {
     const sharedTotalsInput = {
@@ -1113,6 +1140,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
       bundleValue: bundlePlan.value,
       rewardPercent: rewardVoucher ? rewardVoucher.percent : null,
       accountPercent: accountDiscount.percent,
+      accountRateLines,
       percentEntries: appliedList.filter((a) => a.kind === "percent"),
     };
     const withPromo = computeOrderTotals({
@@ -1149,6 +1177,7 @@ const handleOrder = async (req: Request): Promise<Response> => {
     bogoFreePlan,
     rewardPercent: rewardVoucher ? rewardVoucher.percent : null,
     accountPercent: accountDiscount ? accountDiscount.percent : null,
+    accountRateLines,
     percentEntries: appliedList.filter((a) => a.kind === "percent"),
   });
   const {

@@ -37,6 +37,9 @@ interface MemberPriceProps {
   baseCents: number | null;
   /** Whether this product advertises a member price (isMemberPriceEligible). */
   eligible: boolean;
+  /** The product's own member rate (087) when it differs from the standard
+   *  offer. Omitted means the standard rate. */
+  percent?: number;
   /** Visual scale. `sm` for dense catalog tiles, `md` for spotlight/overlay. */
   size?: 'sm' | 'md';
   className?: string;
@@ -44,14 +47,20 @@ interface MemberPriceProps {
 
 const ACCENT = 'var(--color-accent)';
 
-export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }: MemberPriceProps) {
+export function MemberPrice({
+  baseCents,
+  eligible,
+  percent = MEMBER_DISCOUNT_PERCENT,
+  size = 'sm',
+  className = '',
+}: MemberPriceProps) {
   const ariaId = useId();
   // GUESTS ONLY. This chip is the join incentive ("create a profile") at the
   // base member rate — shown to a signed-in member it understates a Pro's 20%
   // and tells a profile-holder to create a profile (release audit). Members
   // see their true rate in the cart preview; presence check is zero-query.
   const signedIn = useSignedIn();
-  const member = memberPriceCents(baseCents);
+  const member = memberPriceCents(baseCents, percent);
 
   if (signedIn || !eligible || member == null) return null;
 
@@ -64,7 +73,7 @@ export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }
       maxWidth={230}
       content={
         <>
-          Automatic {MEMBER_DISCOUNT_PERCENT}% off at checkout for account holders · excludes
+          Automatic {percent}% off at checkout for account holders · excludes
           bundles &amp; wholesale.{' '}
           <span className="whitespace-nowrap font-medium" style={{ color: ACCENT }}>
             Create a profile ↗
@@ -74,7 +83,7 @@ export function MemberPrice({ baseCents, eligible, size = 'sm', className = '' }
     >
       <Link
         to="/account"
-        aria-label={`Member price ${formatPriceExact(member)} — automatic ${MEMBER_DISCOUNT_PERCENT}% off for account holders; create a profile`}
+        aria-label={`Member price ${formatPriceExact(member)} — automatic ${percent}% off for account holders; create a profile`}
         // The hairline rule is a LEFT BORDER on this column, not a separate
         // element. An empty divider span would be the first flex item and the
         // browser would take the link's baseline from it (its full stretched

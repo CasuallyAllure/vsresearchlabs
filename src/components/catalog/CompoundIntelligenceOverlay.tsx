@@ -52,7 +52,7 @@ import { isMemberPriceEligible } from '../../lib/memberPricing';
 import { MemberPrice } from './MemberPrice';
 import { useProductOverrides, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 import { useCustomerAuth } from '../../lib/customerAuth';
-import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct, useEarlyAccessFlags } from '../../lib/earlyAccess';
+import { EARLY_ACCESS_GUEST_LINE, isEarlyAccessProduct, memberRateFor, useEarlyAccessFlags } from '../../lib/earlyAccess';
 import {
   WHOLESALE_PACKS,
   wholesaleDoses,
@@ -233,6 +233,7 @@ export function CompoundIntelligenceOverlay({
   useProductOverrides((s) => s.bySku);
   // Subscribed (not .getState()) so a flag load/toggle re-renders the overlay.
   const earlyAccessFlags = useEarlyAccessFlags((s) => s.bySku);
+  const memberRates = useEarlyAccessFlags((s) => s.rateBySku);
   const activeTier = visibleTiers[selectedTierIndex] ?? null;
   const activeDoseLabel = activeTier?.dose ?? ci.activeDose;
   const priceCents = effectiveTierPriceCents(product, activeDoseLabel);
@@ -645,7 +646,12 @@ export function CompoundIntelligenceOverlay({
                     <span className="text-ink font-mono tabular-nums leading-none" style={{ fontSize: '17px' }}>
                       {formatPrice(priceCents)}
                     </span>
-                    <MemberPrice baseCents={priceCents} eligible={isMemberPriceEligible(product)} size="md" />
+                    <MemberPrice
+                      baseCents={priceCents}
+                      eligible={isMemberPriceEligible(product)}
+                      percent={memberRateFor(product.sku, memberRates)}
+                      size="md"
+                    />
                   </span>
                 </div>
                 {(() => {
