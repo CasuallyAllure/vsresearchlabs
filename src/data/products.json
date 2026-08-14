@@ -1,5 +1,78 @@
 [
  {
+  "id": "rs-tzp-oral-500mcg",
+  "slug": "tzp-oral-500mcg",
+  "name": "TZP Oral",
+  "chemicalName": "Tirzepatide",
+  "category": "biopeptide-research-supplies",
+  "shortDescription": "Oral research units. 500 mcg per unit, 25 units per canister.",
+  "longDescription": "Supplied as 25 compressed oral research units of 500 mcg each in a sealed canister with desiccant. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
+  "images": [
+   "/vials/tzp-oral-500mcg.webp"
+  ],
+  "specs": [
+   {
+    "label": "Purity (HPLC)",
+    "value": "≥ 99%"
+   },
+   {
+    "label": "Form",
+    "value": "Compressed oral research units"
+   },
+   {
+    "label": "Mass",
+    "value": "500 mcg / unit"
+   },
+   {
+    "label": "Quantity",
+    "value": "25 units / canister"
+   },
+   {
+    "label": "Storage",
+    "value": "15–25°C, dry"
+   }
+  ],
+  "sku": "VSR-RS-TZO-025",
+  "abbreviation": "TZO",
+  "family": "GIP/GLP-1 Dual Agonist",
+  "variants": [],
+  "priceCents": 10000,
+  "stock": null,
+  "tags": [
+   "peptide",
+   "gip",
+   "glp-1",
+   "research"
+  ],
+  "featured": false,
+  "createdAt": "2026-08-14T00:00:00.000Z",
+  "updatedAt": "2026-08-14T00:00:00.000Z",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
+  "storageCondition": "15–25°C, dry, light-protected",
+  "shelfLifeMonths": 24,
+  "unitOfMeasure": "canister",
+  "leadTimeDays": 7,
+  "batchReference": "TZO-BATCH-2026-018",
+  "testingStandard": "HPLC VSR-QC-001 · MS VSR-QC-002",
+  "shippingCondition": "Ambient",
+  "casNumber": "2023788-19-2",
+  "molecularWeight": "4813.47 g/mol",
+  "productType": "peptide",
+  "researchClassification": "incretin-metabolic-agonists",
+  "mechanismSummary": "Dual GIP and GLP-1 receptor agonist. The characterising study reports greater in-vitro potency at the GIP receptor than at the GLP-1 receptor. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling.",
+  "receptorActivity": "Agonist at GIP-R and GLP-1R, with greater reported in-vitro potency at GIP-R; the characterising study describes GLP-1R potency as approximately 13-fold weaker than native GLP-1. Dual coagonism without significant glucagon receptor activity.",
+  "pathwaySummary": "GIP-R → cAMP/PKA axis in pancreatic β-cells and adipocytes, PI3K/Akt in fat tissue. GLP-1R → cAMP/EPAC/PKA, hypothalamic satiety (arcuate nucleus), gastric motility suppression via vagal pathways.",
+  "fdaStatus": "Not an approved product. No oral formulation of this compound is approved in any jurisdiction.",
+  "humanTrialsConfirmed": false,
+  "knownStudies": [],
+  "fdaResources": [],
+  "developmentCodes": [
+   "LY3298176"
+  ],
+  "originator": "Eli Lilly and Company"
+ },
+ {
   "id": "rs-aod9604-5mg",
   "laymanSummary": "AOD-9604 is a **C-terminal fragment** of human growth hormone studied in *lipolysis (fat-metabolism)* research. It is investigated for effects on fat metabolism that are *proposed* to occur without activating the GH receptor or the IGF-1 growth pathway — used in research models where those axes need to be excluded as variables.",
   "slug": "aod9604-5mg",

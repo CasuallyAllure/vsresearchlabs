@@ -95,6 +95,9 @@ export const useProductStore = create<ProductStore>()(
       // v5 — incretin compounds are catalogued by research code ("Retatrutide"
       // → "RTT"), with the substance name moved to `chemicalName`. Bump so
       // returning browsers stop rendering the persisted INN names.
+      // v6 — TZP Oral added at the head of the catalog. The whole products
+      // array is persisted, so without a bump a returning browser rehydrates
+      // the v5 payload and never sees the new SKU.
       name: siteConfig.storage.productsKey,
       storage: createJSONStorage(() => localStorage),
       // Only persist the products array; everything else is derived.
