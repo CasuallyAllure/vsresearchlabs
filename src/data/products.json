@@ -1744,5 +1744,64 @@
   "mechanismSummary": "Adamantyl- and N-acetyl-modified analog of Semax (ACTH(4-7) Pro-Gly-Pro). The adamantyl group and acetylation are intended to confer resistance to enzymatic degradation and improve blood-brain-barrier penetration; these properties are not established in primary literature for this analogue. Studied for the BDNF/NGF-related neurotrophic signaling associated with the Semax scaffold.",
   "receptorActivity": "No direct binding at classical neuroreceptor subtypes reported; proposed activity is attributed to the Semax scaffold — stimulation of endogenous BDNF/NGF expression — with the adamantyl and N-acetyl modifications proposed to extend exposure. No primary literature characterising this analogue could be located; receptor-level activity is unverified.",
   "pathwaySummary": "Proposed, by analogy to the Semax scaffold: elevated BDNF/TrkB expression → Ras/MAPK/ERK → CREB → pro-survival gene transcription. Pathway activity has not been characterised for this analogue specifically."
+ },
+ {
+  "id": "rs-pen-dropper-v2",
+  "slug": "pen-dropper-v2",
+  "name": "Pen Dropper V2",
+  "category": "laboratory-equipment",
+  "equipmentClassification": "biopeptide-sciences",
+  "shortDescription": "Precision dispensing pen for research liquids. Graduated barrel, single-drop control.",
+  "longDescription": "A precision dispensing instrument for transferring research liquids drop by drop. The graduated barrel and controlled-release plunger give repeatable single-drop delivery for reconstitution, aliquoting, and bench transfer work where a pipette is more instrument than the task needs.\n\nSecond-generation body with an improved seal and a finer dispensing tip.\n\nNot for human use. For research purposes only.",
+  "images": [
+   "/specimens/pen-dropper-v2.svg"
+  ],
+  "specs": [
+   {
+    "label": "Form",
+    "value": "Precision dispensing pen"
+   },
+   {
+    "label": "Control",
+    "value": "Single-drop, graduated barrel"
+   },
+   {
+    "label": "Body",
+    "value": "Chemical-resistant polymer"
+   },
+   {
+    "label": "Unit",
+    "value": "One per pack"
+   }
+  ],
+  "sku": "VSR-RS-PDV-002",
+  "abbreviation": "PDV",
+  "family": "Liquid Handling",
+  "variants": [
+   {
+    "dose": "Each"
+   }
+  ],
+  "priceCents": 3500,
+  "stock": 1,
+  "tags": [
+   "consumable",
+   "liquid-handling",
+   "precision"
+  ],
+  "featured": false,
+  "createdAt": "2026-08-04T00:00:00.000Z",
+  "updatedAt": "2026-08-04T00:00:00.000Z",
+  "lotNumber": "LOT-2026-PDV-002",
+  "manufacturer": "Vetted global production partners",
+  "countryOfOrigin": "Global partner network",
+  "storageCondition": "Room temperature, dry",
+  "shelfLifeMonths": null,
+  "unitOfMeasure": "unit",
+  "leadTimeDays": 3,
+  "batchReference": "PDV-BATCH-2026-002",
+  "testingStandard": "Visual + function QC VSR-QC-010",
+  "shippingCondition": "Ambient",
+  "productType": "consumable"
  }
 ]
