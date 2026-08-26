@@ -806,7 +806,7 @@
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
   "mechanismSummary": "Single-receptor metabolic agonist with high receptor affinity. Mediates glucose-dependent insulin secretion and delayed gastric emptying in research models. A C18 fatty-acid chain with albumin linker extends plasma half-life to approximately 7 days.",
-  "receptorActivity": "Primary: a single metabolic receptor target (high affinity, Ki ~0.5 nM). No meaningful activity at the related receptor subtypes at physiological concentrations.",
+  "receptorActivity": "Primary: a single metabolic receptor target (high affinity). No meaningful activity at the related receptor subtypes at physiological concentrations.",
   "pathwaySummary": "Receptor activation to cAMP/PKA/CREB cascade to glucose-dependent potentiation of pancreatic beta-cell insulin exocytosis. Hypothalamic satiety circuit activation via vagal afferents and central receptor expression.",
   "fdaStatus": "Research use only — not supplied for clinical or human use",
   "humanTrialsConfirmed": true,
