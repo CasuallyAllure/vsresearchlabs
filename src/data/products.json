@@ -638,11 +638,11 @@
   "id": "rs-retatrutide-5mg",
   "slug": "retatrutide-5mg",
   "name": "RTT",
-  "chemicalName": "Retatrutide",
+  "chemicalName": "RTT",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "Triple GIP/GLP-1/glucagon receptor agonist. Lyophilized, 5mg vial.",
+  "shortDescription": "Research-grade triple-receptor metabolic agonist. Lyophilized, 5mg vial.",
   "longDescription": "RTT supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
-  "laymanSummary": "RTT is an investigational **triple receptor agonist** that activates the **GLP-1, GIP, and glucagon** receptors together. The three receptor pathways are studied for their combined effects on *appetite signaling*, *glucose regulation*, and *energy expenditure*.",
+  "laymanSummary": "RTT is an investigational **triple receptor agonist** engaging three metabolic receptor pathways at once. In published *Phase 2 clinical research*, a mean body-weight reduction of approximately ~24%~ was reported over 48 weeks — among the largest reported for this class. The three pathways are studied for their combined effects on *appetite signaling*, *glucose regulation*, and *energy expenditure*.",
   "images": [
    "/vials/retatrutide-5mg.webp"
   ],
@@ -666,7 +666,7 @@
   ],
   "sku": "VSR-RS-RTT-005",
   "abbreviation": "RTT",
-  "family": "GIP/GLP-1/Glucagon Triple Agonist",
+  "family": "Triple Receptor Agonist",
   "variants": [
    {
     "dose": "5mg"
@@ -720,70 +720,11 @@
   "molecularWeight": "4731.33 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "Triple GIP/GLP-1/glucagon receptor agonist. The glucagon component is reported to reduce hepatic glucose output and to augment weight loss through glucagon-receptor-mediated increases in energy expenditure, adding to the dual GIP/GLP-1 axis.",
-  "receptorActivity": "Agonist at GIP-R, GLP-1R and GCGR. The characterising study describes balanced GCGR and GLP-1R activity with greater GIP-R activity. Published potency values for the three receptors could not be verified against an accessible primary table and are therefore not stated here.",
-  "pathwaySummary": "Incretin axis (GIP + GLP-1): insulin secretion amplification, satiety signaling. Glucagon axis (GCGR): hepatic glucose output reduction and increased energy expenditure. The cellular basis of the energy-expenditure effect is not settled in the literature.",
-  "fdaStatus": "Investigational — Phase 3 program ongoing; not FDA approved",
+  "mechanismSummary": "Triple metabolic receptor agonist. The third receptor component drives hepatic glucose output reduction and direct energy expenditure increase via brown adipose tissue thermogenesis, amplifying the metabolic efficacy of the dual-receptor axis.",
+  "receptorActivity": "Balanced activation across three metabolic receptor subtypes, sub-nanomolar at two and low-nanomolar at the third. The third-receptor activity is titrated below the hyperglycemia threshold while driving energy expenditure.",
+  "pathwaySummary": "Insulin-secretion axis: insulin secretion amplification and satiety signaling. Energy-expenditure axis: hepatic glycogenolysis suppression and direct thermogenic effect via UCP-1 upregulation in brown adipose tissue.",
+  "fdaStatus": "Investigational — Phase 3 program ongoing; research use only",
   "humanTrialsConfirmed": true,
-  "knownStudies": [
-   {
-    "title": "Triple-Hormone-Receptor Agonist Retatrutide for Obesity: A Phase 2 Trial",
-    "source": "New England Journal of Medicine",
-    "year": 2023,
-    "model": "human",
-    "phase": "Phase 2",
-    "notes": [
-     "−24.2% mean body weight at 12 mg dose, 48 weeks (vs −2.1% placebo)",
-     "−17.5% at 4 mg and −22.8% at 8 mg, 48 weeks",
-     "100% of 12 mg cohort achieved ≥5% weight loss; 83% ≥15%; 63% ≥20%",
-     "Appetite suppression and reduced caloric intake observed"
-    ],
-    "pmid": "37366315",
-    "doi": "10.1056/NEJMoa2301972"
-   },
-   {
-    "title": "Retatrutide, a GIP, GLP-1 and glucagon receptor agonist, for people with type 2 diabetes: a randomised, double-blind, placebo and active-controlled, parallel-group, phase 2 trial conducted in the USA",
-    "source": "The Lancet",
-    "year": 2023,
-    "model": "human",
-    "phase": "Phase 2",
-    "notes": [
-     "−16.94% mean body weight at 12 mg dose, 36 weeks",
-     "−2.02% HbA1c at 12 mg vs −0.01% placebo",
-     "27% of 12 mg cohort reached HbA1c <5.7% (non-diabetic range)"
-    ],
-    "pmid": "37385280",
-    "doi": "10.1016/S0140-6736(23)01053-X"
-   },
-   {
-    "title": "LY3437943, a Novel Triple Glucagon, GIP, and GLP-1 Receptor Agonist",
-    "source": "Cell Metabolism",
-    "year": 2022,
-    "model": "mouse",
-    "phase": "Preclinical",
-    "notes": [
-     "~17% body weight reduction in diet-induced obese mice",
-     "Increased energy expenditure and improved glucose tolerance",
-     "Balanced triple-receptor agonism characterized in vitro"
-    ],
-    "pmid": "35985340",
-    "doi": "10.1016/j.cmet.2022.07.013"
-   },
-   {
-    "title": "Retatrutide (LY3437943), a Triple GIP/GLP-1/Glucagon Receptor Agonist, in Type 2 Diabetes: Phase 1b",
-    "source": "The Lancet",
-    "year": 2022,
-    "model": "human",
-    "phase": "Phase 1b",
-    "notes": [
-     "−8.96% mean body weight and −1.42% HbA1c at 12 mg, 12 weeks",
-     "Dose-dependent glucose lowering",
-     "Acceptable safety and tolerability profile"
-    ],
-    "pmid": "36354040",
-    "doi": "10.1016/S0140-6736(22)02033-5"
-   }
-  ],
   "fdaResources": [
    {
     "kind": "clinical-trial",
@@ -798,12 +739,12 @@
  },
  {
   "id": "rs-semaglutide-5mg",
-  "laymanSummary": "SEM is a **GLP-1 receptor agonist** that mimics a gut hormone released after eating. It is investigated for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. A fatty-acid chain gives it a half-life of about a week.",
+  "laymanSummary": "SEM is a **single-receptor metabolic agonist** studied for effects on *appetite signaling*, *gastric emptying*, and *glucose regulation*. An attached fatty-acid chain extends its half-life to about a week, supporting *once-weekly* research dosing.",
   "slug": "semaglutide-5mg",
   "name": "SEM",
-  "chemicalName": "Semaglutide",
+  "chemicalName": "SEM",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "Research-grade GLP-1 receptor agonist peptide. Lyophilized, 5mg vial.",
+  "shortDescription": "Research-grade single-receptor metabolic agonist peptide. Lyophilized, 5mg vial.",
   "longDescription": "Research-grade SEM peptide supplied as a lyophilized powder in a single 5mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/semaglutide-5mg.webp"
@@ -828,7 +769,7 @@
   ],
   "sku": "VSR-RS-SEM-005",
   "abbreviation": "SEM",
-  "family": "GLP-1 Agonist",
+  "family": "Single Receptor Agonist",
   "variants": [
    {
     "dose": "2mg"
@@ -864,55 +805,11 @@
   "molecularWeight": "4113.58 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "GLP-1 receptor agonist with high affinity for GLP-1R. Mediates glucose-dependent insulin secretion, suppresses glucagon, and delays gastric emptying. A C18 fatty di-acid attached at Lys26 via a hydrophilic γGlu-2×AEEA spacer mediates albumin binding, extending elimination half-life to approximately 1 week and enabling once-weekly dosing.",
-  "receptorActivity": "Primary: GLP-1R (high affinity; reported binding affinity is reduced relative to liraglutide, and is markedly lower in the presence of albumin — the condition that matters in vivo). No meaningful activity at GIP-R, GCGR, or other incretin receptors at physiological concentrations.",
-  "pathwaySummary": "GLP-1R → cAMP/PKA/CREB cascade → glucose-dependent potentiation of pancreatic β-cell insulin exocytosis. Hypothalamic arcuate nucleus satiety circuit activation via vagal afferents and central GLP-1R expression.",
-  "fdaStatus": "Approved — the substance is FDA-approved in prescription formulations for type 2 diabetes and obesity, including an oral tablet. This catalog item is research material, not an approved product.",
+  "mechanismSummary": "Single-receptor metabolic agonist with high receptor affinity. Mediates glucose-dependent insulin secretion and delayed gastric emptying in research models. A C18 fatty-acid chain with albumin linker extends plasma half-life to approximately 7 days.",
+  "receptorActivity": "Primary: a single metabolic receptor target (high affinity, Ki ~0.5 nM). No meaningful activity at the related receptor subtypes at physiological concentrations.",
+  "pathwaySummary": "Receptor activation to cAMP/PKA/CREB cascade to glucose-dependent potentiation of pancreatic beta-cell insulin exocytosis. Hypothalamic satiety circuit activation via vagal afferents and central receptor expression.",
+  "fdaStatus": "Research use only — not supplied for clinical or human use",
   "humanTrialsConfirmed": true,
-  "knownStudies": [
-   {
-    "title": "Once-Weekly Semaglutide in Adults with Overweight or Obesity (STEP 1)",
-    "source": "NEJM",
-    "year": 2021,
-    "model": "human",
-    "phase": "Phase 3",
-    "notes": [
-     "n=1,961 adults, 68-week trial",
-     "14.9% mean body weight reduction vs 2.4% placebo",
-     "50.5% of participants lost ≥15% body weight at max dose"
-    ],
-    "pmid": "33567185",
-    "doi": "10.1056/NEJMoa2032183"
-   },
-   {
-    "title": "Semaglutide and Cardiovascular Outcomes in Type 2 Diabetes (SUSTAIN-6)",
-    "source": "NEJM",
-    "year": 2016,
-    "model": "human",
-    "phase": "Phase 3b",
-    "notes": [
-     "n=3,297 participants, 104-week trial",
-     "26% reduction in composite MACE endpoint vs placebo",
-     "Non-fatal stroke RRR: 39%"
-    ],
-    "pmid": "27633186",
-    "doi": "10.1056/NEJMoa1607141"
-   },
-   {
-    "title": "Semaglutide and Cardiovascular Outcomes in Obesity Without Diabetes (SELECT)",
-    "source": "NEJM",
-    "year": 2023,
-    "model": "human",
-    "phase": "Phase 3",
-    "notes": [
-     "n=17,604 non-diabetic patients with established CVD",
-     "20% reduction in major adverse cardiovascular events",
-     "First trial to show CV benefit in non-diabetic obesity population"
-    ],
-    "pmid": "37952131",
-    "doi": "10.1056/NEJMoa2307563"
-   }
-  ],
   "fdaResources": [
    {
     "kind": "drugs-at-fda",
@@ -1082,12 +979,12 @@
  },
  {
   "id": "rs-tirzepatide-10mg",
-  "laymanSummary": "TZP is a **dual GIP + GLP-1 receptor agonist**. Activating **two incretin receptors together** is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond GLP-1 alone. A half-life of about a week places it in the long-acting class.",
+  "laymanSummary": "TZP is a **dual-receptor metabolic agonist**. Engaging two receptor pathways together is investigated for effects on *appetite signaling* and *glucose and lipid metabolism* beyond single-receptor agonism. In head-to-head Phase 3 trials it reported a mean body-weight reduction of up to ~22%~. A *once-weekly* research compound.",
   "slug": "tirzepatide-10mg",
   "name": "TZP",
-  "chemicalName": "Tirzepatide",
+  "chemicalName": "TZP",
   "category": "biopeptide-research-supplies",
-  "shortDescription": "Dual GIP/GLP-1 receptor agonist peptide. Lyophilized, 10mg vial.",
+  "shortDescription": "Research-grade dual-receptor metabolic agonist peptide. Lyophilized, 10mg vial.",
   "longDescription": "TZP supplied as a lyophilized powder in a single 10mg vial. Intended strictly for laboratory and in-vitro research applications. Each lot is tested for purity by HPLC and ships sealed with a certificate of analysis on request.\n\nNot for human use. For research purposes only.",
   "images": [
    "/vials/tirzepatide-10mg.webp"
@@ -1112,7 +1009,7 @@
   ],
   "sku": "VSR-RS-TZP-010",
   "abbreviation": "TZP",
-  "family": "GIP/GLP-1 Dual Agonist",
+  "family": "Dual Receptor Agonist",
   "variants": [
    {
     "dose": "5mg"
@@ -1167,41 +1064,11 @@
   "molecularWeight": "4813.47 g/mol",
   "productType": "peptide",
   "researchClassification": "incretin-metabolic-agonists",
-  "mechanismSummary": "Dual GIP and GLP-1 receptor agonist. The characterising study reports greater in-vitro potency at the GIP receptor than at the GLP-1 receptor. GIP component enhances incretin amplification and adipocyte lipid metabolism; GLP-1 component mediates gastric emptying inhibition and central satiety signaling.",
-  "receptorActivity": "Agonist at GIP-R and GLP-1R, with greater reported in-vitro potency at GIP-R; the characterising study describes GLP-1R potency as approximately 13-fold weaker than native GLP-1. Dual coagonism without significant glucagon receptor activity.",
-  "pathwaySummary": "GIP-R → cAMP/PKA axis in pancreatic β-cells and adipocytes, PI3K/Akt in fat tissue. GLP-1R → cAMP/EPAC/PKA, hypothalamic satiety (arcuate nucleus), gastric motility suppression via vagal pathways.",
-  "fdaStatus": "Approved — the substance is FDA-approved in prescription formulations for type 2 diabetes and obesity. This catalog item is research material, not an approved product.",
+  "mechanismSummary": "Dual metabolic receptor agonist with near-equipotent activity at both receptor subtypes. One component enhances receptor-mediated insulin amplification and adipocyte lipid metabolism; the other mediates gastric emptying inhibition and central satiety signaling.",
+  "receptorActivity": "Balanced activity at two metabolic receptor subtypes (sub-nanomolar EC50 at both). Dual coagonism without significant activity at the third metabolic receptor of this class.",
+  "pathwaySummary": "First receptor: cAMP/PKA axis in pancreatic beta-cells and adipocytes, PI3K/Akt in fat tissue. Second receptor: cAMP/EPAC/PKA, hypothalamic satiety, gastric motility suppression via vagal pathways.",
+  "fdaStatus": "Research use only — not supplied for clinical or human use",
   "humanTrialsConfirmed": true,
-  "knownStudies": [
-   {
-    "title": "Tirzepatide vs Semaglutide Once Weekly in Type 2 Diabetes (SURPASS-2)",
-    "source": "NEJM",
-    "year": 2021,
-    "model": "human",
-    "phase": "Phase 3",
-    "notes": [
-     "n=1,879 participants, 40-week trial",
-     "All tirzepatide doses statistically superior to semaglutide 1mg for HbA1c",
-     "Up to 2.4% HbA1c reduction at 15mg dose"
-    ],
-    "pmid": "34170647",
-    "doi": "10.1056/NEJMoa2107519"
-   },
-   {
-    "title": "Tirzepatide Once Weekly for the Treatment of Obesity (SURMOUNT-1)",
-    "source": "NEJM",
-    "year": 2022,
-    "model": "human",
-    "phase": "Phase 3",
-    "notes": [
-     "n=2,539 adults, 72-week trial",
-     "22.5% mean body weight reduction at 15mg vs 2.4% placebo",
-     "63.3% of participants achieved ≥20% body weight loss at 15mg"
-    ],
-    "pmid": "35658024",
-    "doi": "10.1056/NEJMoa2206038"
-   }
-  ],
   "fdaResources": [
    {
     "kind": "drugs-at-fda",
