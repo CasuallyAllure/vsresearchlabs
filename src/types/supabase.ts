@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -738,6 +743,7 @@ export type Database = {
           code: string
           coupon_id: string
           created_at: string
+          owner_contact: string | null
           user_id: string
         }
         Insert: {
@@ -745,6 +751,7 @@ export type Database = {
           code: string
           coupon_id: string
           created_at?: string
+          owner_contact?: string | null
           user_id: string
         }
         Update: {
@@ -752,6 +759,7 @@ export type Database = {
           code?: string
           coupon_id?: string
           created_at?: string
+          owner_contact?: string | null
           user_id?: string
         }
         Relationships: [
@@ -898,6 +906,56 @@ export type Database = {
             foreignKeyName: "order_lines_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_reviews: {
+        Row: {
+          buyer_contact: string | null
+          comment: string | null
+          created_at: string
+          display_name: string
+          id: string
+          moderated_at: string | null
+          moderated_by: string | null
+          order_id: string
+          service_rating: number
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          buyer_contact?: string | null
+          comment?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          order_id: string
+          service_rating: number
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          buyer_contact?: string | null
+          comment?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          moderated_at?: string | null
+          moderated_by?: string | null
+          order_id?: string
+          service_rating?: number
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1370,6 +1428,57 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_conversions: {
+        Row: {
+          bonus_code: string | null
+          bonus_coupon_id: string | null
+          created_at: string
+          id: string
+          order_id: string
+          qualified_at: string
+          referred_contact: string
+          referred_user_id: string | null
+          referrer_user_id: string
+        }
+        Insert: {
+          bonus_code?: string | null
+          bonus_coupon_id?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          qualified_at?: string
+          referred_contact: string
+          referred_user_id?: string | null
+          referrer_user_id: string
+        }
+        Update: {
+          bonus_code?: string | null
+          bonus_coupon_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          qualified_at?: string
+          referred_contact?: string
+          referred_user_id?: string | null
+          referrer_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_conversions_bonus_coupon_id_fkey"
+            columns: ["bonus_coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_conversions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_ledger: {
         Row: {
           created_at: string
@@ -1778,22 +1887,8 @@ export type Database = {
           view_name: string
         }[]
       }
-      order_review_prompt: { Args: { p_token: string }; Returns: Json }
-      public_service_reviews: { Args: { p_limit?: number }; Returns: Json }
-      submit_order_review: {
-        Args: { p_comment?: string; p_rating: number; p_token: string }
-        Returns: Json
-      }
       admin_campaign_recipients: {
         Args: { p_contact?: string; p_search?: string; p_segment?: string }
-        Returns: Json
-      }
-      admin_moderate_review: {
-        Args: { p_id: string; p_status: string }
-        Returns: Json
-      }
-      admin_review_queue: {
-        Args: { p_limit?: number; p_offset?: number; p_status?: string }
         Returns: Json
       }
       admin_clear_coupon: { Args: { p_order_id: string }; Returns: Json }
@@ -1870,12 +1965,24 @@ export type Database = {
         Args: { p_limit?: number; p_offset?: number; p_status?: string }
         Returns: Json
       }
+      admin_moderate_review: {
+        Args: { p_id: string; p_status: string }
+        Returns: Json
+      }
       admin_prepared_carts: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: Json
       }
+      admin_redeem_reward_for: {
+        Args: { p_note: string; p_user_id: string }
+        Returns: Json
+      }
       admin_remove_coupon: {
         Args: { p_code: string; p_order_id: string }
+        Returns: Json
+      }
+      admin_review_queue: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
         Returns: Json
       }
       admin_revoke_prepared_cart: { Args: { p_id: string }; Returns: Json }
@@ -2035,10 +2142,16 @@ export type Database = {
       mark_payment_claimed: { Args: { p_order_id: string }; Returns: undefined }
       mark_product_deleted: { Args: { p_sku: string }; Returns: undefined }
       mark_receipt_sent: { Args: { p_order_id: string }; Returns: undefined }
+      order_review_eligible: {
+        Args: { p_order: Database["public"]["Tables"]["orders"]["Row"] }
+        Returns: boolean
+      }
+      order_review_prompt: { Args: { p_token: string }; Returns: Json }
       prepared_cart_email_payload: {
         Args: { p_cart_id: string; p_token: string }
         Returns: Json
       }
+      public_service_reviews: { Args: { p_limit?: number }; Returns: Json }
       recompute_order_totals: { Args: { p_order_id: string }; Returns: Json }
       reconcile_reward_vouchers: { Args: { p_repair?: boolean }; Returns: Json }
       record_member_invite: {
@@ -2057,15 +2170,23 @@ export type Database = {
           p_discount_cents: number
           p_order_id: string
           p_order_net_cents: number
+          p_user_id?: string
         }
         Returns: Json
       }
       redeem_reward: { Args: never; Returns: Json }
+      referral_bonus_percent: { Args: never; Returns: number }
+      referral_code_block_reason: {
+        Args: { p_contact: string; p_coupon_id: string; p_user_id?: string }
+        Returns: string
+      }
+      referral_window_days: { Args: never; Returns: number }
       restore_product: { Args: { p_sku: string }; Returns: undefined }
       revert_order_status: {
         Args: { p_order_id: string; p_reason: string }
         Returns: string
       }
+      review_display_name: { Args: { p_name: string }; Returns: string }
       save_order_lines: {
         Args: { p_lines: Json; p_order_id: string }
         Returns: Json
@@ -2162,7 +2283,12 @@ export type Database = {
         Args: { p_dose: string; p_hidden: boolean; p_sku: string }
         Returns: undefined
       }
+      settle_referral_conversions: { Args: never; Returns: Json }
       squash_dose_text: { Args: { p_text: string }; Returns: string }
+      submit_order_review: {
+        Args: { p_comment?: string; p_rating: number; p_token: string }
+        Returns: Json
+      }
       validate_coupon: {
         Args: {
           p_applied_codes?: string[]
@@ -2348,4 +2474,3 @@ export const Constants = {
     },
   },
 } as const
-
