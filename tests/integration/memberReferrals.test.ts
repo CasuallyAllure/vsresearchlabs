@@ -4,7 +4,8 @@
  *   • get_my_referral_code() — idempotent issue-or-fetch: two calls return the
  *     same REF- code; the issuance atomically creates the affiliates row
  *     (commission 0 — payout is reward points, not cash), the coupons row
- *     (active, percent 10, exclusive, affiliate-linked, no expiry) and the
+ *     (active, percent 15, combines with the account rate only, affiliate-linked,
+ *     members-only, once per contact, no expiry — the 090 posture) and the
  *     member_referral_codes mapping. Members only: an auth user WITHOUT a
  *     customer_profiles row is rejected, and anon has no execute grant.
  *   • admin_member_referrals() — is_admin()-gated (anon AND a signed-in
@@ -114,7 +115,7 @@ describe.skipIf(!canRun)('member referrals (real DB, migration 076)', () => {
     expect(first.error).toBeNull();
     const a = first.data as ReferralResult;
     expect(a.code).toMatch(/^REF-[A-Z2-7]{6}$/);
-    expect(a.percent).toBe(10);
+    expect(a.percent).toBe(15);
     expect(a.uses).toBe(0);
 
     const second = await member.rpc('get_my_referral_code');
@@ -137,25 +138,30 @@ describe.skipIf(!canRun)('member referrals (real DB, migration 076)', () => {
     affiliateId = row.affiliate_id;
     couponId = row.coupon_id;
 
-    // Coupon terms: active percent-10, affiliate-linked, exclusive (strictest
-    // combinability), no expiry, commission override 0.
+    // Coupon terms (090): active percent-15, affiliate-linked, members-only,
+    // one use per contact, adds to the buyer's automatic account rate and
+    // stacks with nothing else, no expiry, commission override 0. It is NOT
+    // `exclusive` any more — exclusive made validate_coupon refuse the code
+    // for every account holder, i.e. for the referred member it exists for.
     const coupon = await service
       .from('coupons')
-      .select('code, kind, percent, active, affiliate_id, commission_percent, exclusive, combines_with_codes, combines_with_promos, combines_with_account, expires_at')
+      .select('code, kind, percent, active, affiliate_id, commission_percent, exclusive, requires_account, once_per_contact, combines_with_codes, combines_with_promos, combines_with_account, expires_at')
       .eq('id', row.coupon_id)
       .single();
     expect(coupon.error).toBeNull();
     expect(coupon.data).toMatchObject({
       code: issuedCode,
       kind: 'percent',
-      percent: 10,
+      percent: 15,
       active: true,
       affiliate_id: row.affiliate_id,
       commission_percent: 0,
-      exclusive: true,
+      exclusive: false,
+      requires_account: true,
+      once_per_contact: true,
       combines_with_codes: false,
       combines_with_promos: false,
-      combines_with_account: false,
+      combines_with_account: true,
       expires_at: null,
     });
 

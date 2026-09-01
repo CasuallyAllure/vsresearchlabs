@@ -1,5 +1,5 @@
 /**
- * ReferralCard — the member's referral requisition code (migration 076).
+ * ReferralCard — the member's referral requisition code (migrations 076 + 090).
  *
  * Fetches on demand only: a "Get referral code" button drives the idempotent
  * `get_my_referral_code()` RPC (issues on first call, returns the same code
@@ -21,9 +21,19 @@ type LoadState =
   /** `uses` is null when the code was surfaced by the mount-time table read
    *  (uses is RPC-computed, not stored) — the count fills in after any
    *  explicit refresh via the RPC. */
-  | { kind: 'ok'; result: { code: string; uses: number | null } };
+  | { kind: 'ok'; result: {
+      code: string;
+      uses: number | null;
+      earned?: number;
+      windowDays?: number;
+      bonuses?: Array<{ code: string; iso: string }>;
+    } };
 
 type CopyState = 'idle' | 'copied' | 'failed';
+
+/** Stated in the copy before any RPC has run. The server owns the real number
+ *  (referral_window_days(), 090); this is only the pre-fetch wording. */
+const WINDOW_DAYS_FALLBACK = 10;
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -78,7 +88,16 @@ export function ReferralCard() {
       setState({ kind: 'error' });
       return;
     }
-    setState({ kind: 'ok', result: { code: data.code, uses: data.uses } });
+    setState({
+      kind: 'ok',
+      result: {
+        code: data.code,
+        uses: data.uses,
+        earned: data.earned,
+        windowDays: data.windowDays,
+        bonuses: data.bonuses,
+      },
+    });
   }
 
   async function handleCopy(code: string) {
@@ -95,9 +114,10 @@ export function ReferralCard() {
       </div>
 
       <p className="mt-[var(--space-4)] text-[12.5px] leading-relaxed text-ink/55">
-        Share this requisition code with a colleague&rsquo;s laboratory. Orders placed with it
-        receive 10% off; referral activity is recorded to your account. The code applies on its
-        own and does not combine with other discounts.
+        Share this requisition code with a colleague&rsquo;s laboratory. When they open an account
+        and place their first order within {WINDOW_DAYS_FALLBACK} days, they take an extra 15% off
+        on top of their account rate — and a one-use 15% bonus code is issued to you. It applies to
+        their order alongside the account rate, and combines with nothing else.
       </p>
 
       {state.kind === 'ok' ? (
@@ -118,7 +138,21 @@ export function ReferralCard() {
           {state.result.uses != null && (
             <p className="mt-[var(--space-3)] font-mono text-[11px] tabular-nums text-ink/45">
               Recorded uses: {state.result.uses.toLocaleString()}
+              {state.result.earned != null && <> · qualified referrals: {state.result.earned.toLocaleString()}</>}
             </p>
+          )}
+          {state.result.bonuses && state.result.bonuses.length > 0 && (
+            <div className="mt-[var(--space-4)] border-t border-ink/[0.09] pt-[var(--space-3)]">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-ink/45">Your bonus codes</p>
+              <ul className="mt-[var(--space-2)] space-y-1">
+                {state.result.bonuses.map((b) => (
+                  <li key={b.code} className="flex items-baseline justify-between gap-[var(--space-3)]">
+                    <span className="font-mono text-[12.5px] tracking-[0.06em] text-ink">{b.code}</span>
+                    <span className="font-mono text-[10px] tabular-nums text-ink/35">issued {b.iso}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </>
       ) : state.kind === 'error' ? (

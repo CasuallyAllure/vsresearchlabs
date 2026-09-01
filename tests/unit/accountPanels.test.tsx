@@ -27,7 +27,7 @@ vi.mock('../../src/lib/supabase', () => ({
 import { ProfileFlagsPanel } from '../../src/components/admin/accountPanels/ProfileFlagsPanel';
 import { RewardsPanel } from '../../src/components/admin/accountPanels/RewardsPanel';
 import { DiscountsPanel } from '../../src/components/admin/accountPanels/DiscountsPanel';
-import type { DiscountRow, ProfileRow } from '../../src/components/admin/accountPanels/shared';
+import { rewardCampaignKey, type DiscountRow, type ProfileRow } from '../../src/components/admin/accountPanels/shared';
 
 afterEach(cleanup);
 beforeEach(() => {
@@ -40,11 +40,17 @@ function makeClient(opts: {
   rpc?: ReturnType<typeof vi.fn>;
   ledger?: unknown[];
   discounts?: unknown[];
+  vouchers?: unknown[];
+  optOut?: boolean;
+  invoke?: ReturnType<typeof vi.fn>;
 } = {}) {
   const rpc = opts.rpc ?? vi.fn(async () => ({ error: null }));
+  const invoke = opts.invoke ?? vi.fn(async () => ({ data: { status: 'sent' }, error: null }));
   const results: Record<string, { data: unknown; error: null }> = {
     reward_ledger: { data: opts.ledger ?? [], error: null },
     customer_discounts: { data: opts.discounts ?? [], error: null },
+    reward_vouchers: { data: opts.vouchers ?? [], error: null },
+    customer_profiles: { data: [{ marketing_opt_out: opts.optOut ?? false }], error: null },
   };
   function chainFor(table: string) {
     const result = results[table] ?? { data: [], error: null };
@@ -56,7 +62,7 @@ function makeClient(opts: {
     };
     return chain;
   }
-  return { from: vi.fn((t: string) => chainFor(t)), rpc };
+  return { from: vi.fn((t: string) => chainFor(t)), rpc, functions: { invoke } };
 }
 
 const approve = () => vi.fn(async () => true);
@@ -143,7 +149,7 @@ describe('RewardsPanel', () => {
     seam.client = makeClient({ rpc, ledger: [] });
     const confirm = approve();
 
-    render(<RewardsPanel userId="user-1" confirm={confirm} />);
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={confirm} />);
 
     const points = await screen.findByPlaceholderText('-25');
     fireEvent.change(points, { target: { value: '50' } });
@@ -164,7 +170,7 @@ describe('RewardsPanel', () => {
     seam.client = makeClient({ rpc });
     const confirm = approve();
 
-    render(<RewardsPanel userId="user-1" confirm={confirm} />);
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={confirm} />);
     const points = await screen.findByPlaceholderText('-25');
     fireEvent.change(points, { target: { value: '0' } });
     fireEvent.change(screen.getByPlaceholderText(/goodwill/i), { target: { value: 'x' } });
@@ -180,7 +186,7 @@ describe('RewardsPanel', () => {
     seam.client = makeClient({ rpc });
     const confirm = approve();
 
-    render(<RewardsPanel userId="user-1" confirm={confirm} />);
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={confirm} />);
     const points = await screen.findByPlaceholderText('-25');
     fireEvent.change(points, { target: { value: '25' } });
     submitFormOf(points);
@@ -188,6 +194,82 @@ describe('RewardsPanel', () => {
     await screen.findByText(/note is required/i);
     expect(confirm).not.toHaveBeenCalled();
     expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+// ── RewardsPanel → reward status + Notify member ────────────────────────────
+
+describe('rewardCampaignKey', () => {
+  test('keys every balance in the same 300-point stage identically', () => {
+    expect(rewardCampaignKey(300)).toBe('rr-1');
+    expect(rewardCampaignKey(301)).toBe('rr-1');
+    expect(rewardCampaignKey(599)).toBe('rr-1');
+    expect(rewardCampaignKey(600)).toBe('rr-2');
+  });
+});
+
+describe('RewardsPanel reward status + notify', () => {
+  const readyLedger = [{ kind: 'earn', points: 301, note: null, created_at: '2026-01-01T00:00:00Z', order_id: null }];
+
+  test('an active voucher is shown and the redeem action is hidden', async () => {
+    seam.client = makeClient({
+      ledger: readyLedger,
+      vouchers: [{ percent: 40, status: 'active', created_at: '2026-02-01T00:00:00Z' }],
+    });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+
+    await screen.findByText(/voucher active/i);
+    expect(screen.queryByRole('button', { name: /redeem for member/i })).toBeNull();
+  });
+
+  test('a balance under threshold shows progress toward the next reward', async () => {
+    seam.client = makeClient({
+      ledger: [{ kind: 'earn', points: 245, note: null, created_at: '2026-01-01T00:00:00Z', order_id: null }],
+    });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+
+    await screen.findByText(/245 \/ 300 pts toward next reward/i);
+  });
+
+  test('notifying a ready member sends through send-member-offer keyed to its stage', async () => {
+    const invoke = vi.fn(async () => ({ data: { status: 'sent' }, error: null }));
+    seam.client = makeClient({ ledger: readyLedger, invoke });
+    const confirm = approve();
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={confirm} />);
+    fireEvent.click(await screen.findByRole('button', { name: /notify member/i }));
+
+    await screen.findByText(/notification sent/i);
+    expect(invoke).toHaveBeenCalledWith('send-member-offer', expect.objectContaining({
+      body: expect.objectContaining({
+        contact: 'santos@example.com', campaign_key: 'rr-1', kind: 'reward_ready', offer: null,
+      }),
+    }));
+  });
+
+  test('a repeat notify reports already sent instead of mailing twice', async () => {
+    const invoke = vi.fn(async () => ({ data: { status: 'already_sent' }, error: null }));
+    seam.client = makeClient({ ledger: readyLedger, invoke });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+    fireEvent.click(await screen.findByRole('button', { name: /notify member/i }));
+
+    await screen.findByText(/already sent/i);
+    expect(invoke).toHaveBeenCalledOnce();
+  });
+
+  test('an opted-out member cannot trigger a notify send', async () => {
+    const invoke = vi.fn(async () => ({ data: { status: 'sent' }, error: null }));
+    seam.client = makeClient({ ledger: readyLedger, invoke, optOut: true });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+    const button = await screen.findByRole('button', { name: /notify member/i }) as HTMLButtonElement;
+    await vi.waitFor(() => expect(button.disabled).toBe(true));
+
+    fireEvent.click(button);
+    expect(invoke).not.toHaveBeenCalled();
   });
 });
 

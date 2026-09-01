@@ -32,6 +32,7 @@ vi.mock('../../../../src/pages/admin/useMembersData', () => ({
           userId: 'u1', name: 'Alice', contact: 'alice@lab', org: 'Lab A', tier: 'member' as const,
           vip: false, spendCents: 50000, paidOrders: 3, points: 100, rewardReady: false,
           effectivePercent: 12, lastOrderIso: '2026-07-15', segment: 'active' as const, id: 'c1',
+          joinedIso: '2026-03-04',
           accountType: 'individual' as const,
         },
       ],
@@ -56,6 +57,14 @@ vi.mock('../../../../src/pages/admin/useMembersData', () => ({
   useMemberDetail: vi.fn(() => ({ detail: null })),
   MEMBERS_PAGE_SIZE: 50,
   money: (cents: number) => `$${(cents / 100).toFixed(2)}`,
+  SEGMENT_OPTIONS: [
+    { value: 'all', label: 'All members' },
+    { value: 'new', label: 'New' },
+    { value: 'active', label: 'Active' },
+    { value: 'at-risk', label: 'At-Risk' },
+    { value: 'dormant', label: 'Dormant' },
+    { value: 'vip', label: 'VIP' },
+  ],
 }));
 
 vi.mock('../../../../src/pages/admin/AdminLayout', () => ({
@@ -76,6 +85,10 @@ vi.mock('../../../../src/pages/admin/members/InvitesView', () => ({
 
 vi.mock('../../../../src/pages/admin/members/AutomationsView', () => ({
   AutomationsView: () => <div>AutomationsViewMarker</div>,
+}));
+
+vi.mock('../../../../src/pages/admin/members/BroadcastView', () => ({
+  BroadcastView: () => <div>BroadcastViewMarker</div>,
 }));
 
 vi.mock('../../../../src/components/admin/accountPanels', () => ({
@@ -151,6 +164,17 @@ describe('AdminMembers — URL param handling', () => {
       renderAdminMembers('/admin/members?view=automations');
       expect(screen.getByRole('tab', { name: 'Automations' }).getAttribute('aria-selected')).toBe('true');
       expect(screen.getByText('AutomationsViewMarker')).toBeTruthy();
+    });
+
+    test('view=broadcast renders the Broadcast sub-view', () => {
+      renderAdminMembers('/admin/members?view=broadcast');
+      expect(screen.getByRole('tab', { name: 'Broadcast' }).getAttribute('aria-selected')).toBe('true');
+      expect(screen.getByText('BroadcastViewMarker')).toBeTruthy();
+    });
+
+    test('the roster row states when the member signed up', () => {
+      renderAdminMembers('/admin/members');
+      expect(screen.getByText(/Joined Mar 4, 2026/)).toBeTruthy();
     });
 
     test('segment=vip parses and drives the segment filter trigger', () => {
@@ -249,13 +273,19 @@ describe('AdminMembers — URL param handling', () => {
       expect(url).toContain('sort=recent');
     });
 
-    test('reward_ready deep-link atomically strips view and sets sort=points, leaving segment untouched', () => {
-      const { router } = renderAdminMembers('/admin/members?view=roster&segment=at-risk&sort=recent');
+    // 092: this link used to set sort=points ALONE, which re-ordered the roster
+    // without narrowing it — the list still held every member, so the owner
+    // read the button as dead. It now also selects the reward-ready segment.
+    // `search` carries the untouched-param half of the regression proof that
+    // `segment` used to carry.
+    test('reward_ready deep-link atomically strips view, selects the reward-ready segment and sorts by points, leaving search untouched', () => {
+      const { router } = renderAdminMembers('/admin/members?view=roster&segment=at-risk&sort=recent&search=al');
       fireEvent.click(screen.getByRole('button', { name: /Review/ }));
       const url = urlOf(router);
       expect(url).not.toMatch(/[?&]view=/);
+      expect(url).toContain('segment=reward-ready');
       expect(url).toContain('sort=points');
-      expect(url).toContain('segment=at-risk');
+      expect(url).toContain('search=al');
     });
 
     test('invites_stale deep-link sets view=invites', () => {

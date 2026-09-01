@@ -6,6 +6,7 @@ import { useProducts } from '../hooks/useProducts';
 import { ErrorState } from '../components/system/ErrorState';
 import { CLASSIFICATION_LABELS } from '../lib/compoundIntelligence';
 import type { ProductType } from '../types';
+import { ServiceReviews } from '../components/order/ServiceReviews';
 
 const ALL_TAB = '__all__';
 const MAX_CLASS_TABS = 8;
@@ -216,6 +217,10 @@ export function Catalog() {
           onClose={() => setInspectedId(null)}
         />
       )}
+
+      {/* Approved fulfilment feedback from completed orders (089). Renders
+          nothing until the first review is approved. */}
+      <ServiceReviews />
     </section>
   );
 }

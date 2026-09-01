@@ -50,6 +50,14 @@ const ANON_CALLABLE = [
   'get_order_by_token',
   'is_admin',
   'lookup_order',
+  // 089 completed-order reviews. The buyer has no account, so authorization is
+  // the order's own 256-bit lookup_token (019) — the same design as the three
+  // order-lookup RPCs above, and both routines re-check it themselves.
+  // public_service_reviews returns APPROVED rows only and carries no contact
+  // data: it is what the storefront renders to a signed-out visitor.
+  'order_review_prompt',
+  'public_service_reviews',
+  'submit_order_review',
   'validate_coupon',
 ];
 
@@ -63,6 +71,9 @@ const AUTHENTICATED_ONLY = [
   'adjust_stock',
   'admin_adjust_reward_points',
   'admin_apply_coupon',
+  // 088 member campaigns. is_admin()-gated body; it returns member email
+  // addresses, so it must never reach ANON_CALLABLE.
+  'admin_campaign_recipients',
   'admin_clear_coupon',
   'admin_clear_coupons',
   'admin_create_order',
@@ -92,8 +103,16 @@ const AUTHENTICATED_ONLY = [
   'admin_member_spend_distribution',
   'admin_member_stats',
   'admin_member_vouchers',
+  // 089 review moderation. Both are is_admin()-gated; the queue exposes buyer
+  // contacts, and the verb decides what the storefront publishes.
+  'admin_moderate_review',
   'admin_prepared_carts',
+  // 092. is_admin()-gated, and it SPENDS a member's points on their behalf —
+  // the admin-side twin of 050's redeem_reward. Grant is `authenticated`
+  // because every admin RPC is; is_admin() inside is the actual fence.
+  'admin_redeem_reward_for',
   'admin_remove_coupon',
+  'admin_review_queue',
   'admin_revoke_prepared_cart',
   'admin_set_automation_kind',
   'admin_set_customer_discount',

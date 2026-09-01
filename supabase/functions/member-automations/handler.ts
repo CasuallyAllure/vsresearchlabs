@@ -45,6 +45,11 @@ export interface MemberAutomationsConfig {
 /** Runtime seams (`fetch` deliberately shadows the global in the factory). */
 export interface MemberAutomationsDeps {
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
+  /** settle_referral_conversions() (090) — banks qualifying referral orders and
+   *  mints each referrer's bonus code. Runs BEFORE the kinds are evaluated so
+   *  the referral_bonus notice finds the codes minted this run. Optional: a
+   *  project without 090 applied simply skips it. */
+  settleReferrals?: () => Promise<number>;
   logEvent: (
     severity: "info" | "warn" | "error" | "fatal",
     fn: string,
@@ -116,7 +121,9 @@ export function createMemberAutomationsHandler(
     kind: AutomationKind,
     c: AutomationCandidate,
   ): Promise<"claimed" | "conflict"> {
-    const { userId, recipient, periodKey, ...metadata } = c;
+    // `token` is a bearer secret (the review link's order lookup_token). It
+    // goes in the EMAIL, never into email_log.metadata.
+    const { userId, recipient, periodKey, token: _token, ...metadata } = c;
     const res = await fetch(`${cfg.supabaseUrl}/rest/v1/email_log`, {
       method: "POST",
       headers: { ...serviceHeaders, Prefer: "return=minimal" },
@@ -225,6 +232,19 @@ export function createMemberAutomationsHandler(
       return json({ ok: false, error: "settings unavailable" }, 502);
     }
 
+    // Settle referrals first: a conversion that qualifies this run should get
+    // its notice this run, not next one. A settlement failure is logged and
+    // never blocks the sends — the next run retries it (the verb is idempotent).
+    let referralsGranted = 0;
+    if (!dryRun && deps.settleReferrals) {
+      try {
+        referralsGranted = await deps.settleReferrals();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        logEvent("error", FN, "referral settlement failed", { message });
+      }
+    }
+
     const enabledByKind = new Map(settings.map((s) => [s.kind, s.enabled]));
     const kinds: Record<string, KindReport> = {};
     for (const kind of AUTOMATION_KINDS) {
@@ -235,8 +255,8 @@ export function createMemberAutomationsHandler(
       (acc, r) => ({ sent: acc.sent + r.sent, candidates: acc.candidates + r.candidates }),
       { sent: 0, candidates: 0 },
     );
-    logEvent("info", FN, `run complete${dryRun ? " (dry run)" : ""}`, { ...totals, kinds });
+    logEvent("info", FN, `run complete${dryRun ? " (dry run)" : ""}`, { ...totals, kinds, referralsGranted });
 
-    return json({ ok: true, dryRun, kinds, ts: new Date().toISOString() });
+    return json({ ok: true, dryRun, referralsGranted, kinds, ts: new Date().toISOString() });
   };
 }

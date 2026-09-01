@@ -43,7 +43,7 @@ export function LinkedAccountPanels({ lookup, contact }: LinkedAccountPanelsProp
       {state === 'ready' && profile && (
         <div className="flex flex-col gap-[var(--space-5)]">
           <ProfileFlagsPanel profile={profile} contact={contact} confirm={confirm} onSaved={reload} />
-          <RewardsPanel userId={profile.user_id} confirm={confirm} />
+          <RewardsPanel userId={profile.user_id} contact={contact} confirm={confirm} />
           <DiscountsPanel userId={profile.user_id} accountType={profile.account_type} tier={profile.tier} confirm={confirm} />
         </div>
       )}

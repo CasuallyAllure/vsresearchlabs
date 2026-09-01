@@ -20,7 +20,9 @@ export type AutomationKind =
   | "invite_followup"
   | "winback"
   | "discount_expiry"
-  | "welcome";
+  | "welcome"
+  | "review_request"
+  | "referral_bonus";
 
 /** Evaluation order is fixed so run reports are stable and diffable. */
 export const AUTOMATION_KINDS: AutomationKind[] = [
@@ -29,6 +31,8 @@ export const AUTOMATION_KINDS: AutomationKind[] = [
   "winback",
   "discount_expiry",
   "welcome",
+  "review_request",
+  "referral_bonus",
 ];
 
 export function isAutomationKind(value: string): value is AutomationKind {
@@ -43,8 +47,14 @@ export interface AutomationCandidate {
   points?: number;         // reward_ready
   pointsPromised?: number; // invite_followup
   label?: string;          // discount_expiry
-  percent?: number;        // discount_expiry
-  expiresOn?: string;      // discount_expiry (YYYY-MM-DD)
+  percent?: number;        // discount_expiry, referral_bonus
+  expiresOn?: string;      // discount_expiry, referral_bonus (YYYY-MM-DD)
+  orderNumber?: string;    // review_request
+  name?: string;           // review_request (display name, never the email)
+  /** review_request: the order's lookup_token. A BEARER SECRET — the runner
+   *  strips it before writing email_log.metadata. */
+  token?: string;
+  code?: string;           // referral_bonus
 }
 
 export interface AutomationEmail {
@@ -160,6 +170,40 @@ export function buildAutomationEmail(kind: AutomationKind, c: AutomationCandidat
         ],
         "View your account",
         ACCOUNT_URL,
+      );
+    }
+    case "review_request": {
+      // SERVICE feedback only. The copy names what is being asked about, and
+      // deliberately does not invite anything about use of the material —
+      // published third-party text describing an effect would be an
+      // intended-use claim on a research-supply catalog.
+      const orderNumber = c.orderNumber ?? "";
+      const greeting = c.name ? `${c.name},` : "Hello,";
+      return compose(
+        orderNumber ? `How did order ${orderNumber} arrive?` : "How did your order arrive?",
+        [
+          greeting,
+          `Your order${orderNumber ? ` ${orderNumber}` : ""} from ${EMAIL_BRAND.name} has been delivered. If you have a moment, rate how the order itself went — packing, transit time, documentation and communication.`,
+          "The form takes about thirty seconds and asks about fulfilment only. Reviews are read before they are published.",
+          MANAGE_PREFERENCES_LINE,
+        ],
+        "Rate this order",
+        `${EMAIL_BRAND.siteUrl}/review?t=${encodeURIComponent(c.token ?? "")}`,
+      );
+    }
+    case "referral_bonus": {
+      const code = c.code ?? "";
+      const percent = c.percent ?? 0;
+      const expiresOn = c.expiresOn ?? "";
+      return compose(
+        "Your referral bonus code",
+        [
+          `Someone you referred to ${EMAIL_BRAND.name} opened an account and placed their first order — thank you.`,
+          `Your bonus code is ${code}: an extra ${percent}% off one order, on top of the rate your account already carries.${expiresOn ? ` It is good through ${expiresOn}.` : ""}`,
+          "Enter it at checkout.",
+        ],
+        "Review the catalog",
+        CATALOG_URL,
       );
     }
     case "welcome":

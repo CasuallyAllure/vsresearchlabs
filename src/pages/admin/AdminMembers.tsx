@@ -30,7 +30,7 @@ import {
 } from '../../components/admin/accountPanels';
 import type { MemberDetail, MemberRow, Segment, Tier } from './membersView';
 import {
-  MEMBERS_PAGE_SIZE, money, useMemberDetail, useMembersData,
+  MEMBERS_PAGE_SIZE, SEGMENT_OPTIONS, money, useMemberDetail, useMembersData,
   type RosterSegment, type RosterSort,
 } from './useMembersData';
 import { Chip, Panel, RowAction, SubNav, Tile, type SubNavItem } from './members/ui';
@@ -39,17 +39,9 @@ import { PreparedCartPanel } from './members/PreparedCartPanel';
 import { RedemptionsView } from './members/RedemptionsView';
 import { InvitesView } from './members/InvitesView';
 import { AutomationsView } from './members/AutomationsView';
+import { BroadcastView } from './members/BroadcastView';
 
 /* ── Filters ──────────────────────────────────────────────────────────────── */
-
-const SEGMENT_OPTIONS: Array<{ value: RosterSegment; label: string }> = [
-  { value: 'all', label: 'All members' },
-  { value: 'new', label: 'New' },
-  { value: 'active', label: 'Active' },
-  { value: 'at-risk', label: 'At-Risk' },
-  { value: 'dormant', label: 'Dormant' },
-  { value: 'vip', label: 'VIP' },
-];
 
 const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
   { value: 'recent', label: 'Last order' },
@@ -58,18 +50,19 @@ const SORT_OPTIONS: Array<{ value: RosterSort; label: string }> = [
   { value: 'joined', label: 'Newest ↓' },
 ];
 
-type MembersSubView = 'roster' | 'redemptions' | 'invites' | 'automations';
+type MembersSubView = 'roster' | 'redemptions' | 'invites' | 'automations' | 'broadcast';
 const VIEW_TABS: SubNavItem<MembersSubView>[] = [
   { value: 'roster', label: 'Roster' },
   { value: 'redemptions', label: 'Redemptions' },
   { value: 'invites', label: 'Invites' },
   { value: 'automations', label: 'Automations' },
+  { value: 'broadcast', label: 'Broadcast' },
 ];
 
 /* ── Validators (hoisted to module scope) ────────────────────────────────── */
 
 function isValidView(v: string): v is MembersSubView {
-  return ['roster', 'redemptions', 'invites', 'automations'].includes(v);
+  return ['roster', 'redemptions', 'invites', 'automations', 'broadcast'].includes(v);
 }
 
 function isValidSegment(s: string): s is RosterSegment {
@@ -157,6 +150,7 @@ export function AdminMembers() {
       {view === 'redemptions' && <RedemptionsView />}
       {view === 'invites' && <InvitesView />}
       {view === 'automations' && <AutomationsView />}
+      {view === 'broadcast' && <BroadcastView />}
 
       {view === 'roster' && (
         <>
@@ -206,7 +200,11 @@ export function AdminMembers() {
                           {q.action} →
                         </RowAction>
                       ) : q.kind === 'reward_ready' ? (
-                        <RowAction onClick={() => updateParams({ view: null, sort: 'points' })}>
+                        // Was sort-by-points only: the list still held every
+                        // member, so pressing it read as a dead button. 092
+                        // gives the roster a reward-ready filter, so this now
+                        // narrows the list to exactly the members it counts.
+                        <RowAction onClick={() => updateParams({ view: null, segment: 'reward-ready', sort: 'points' })}>
                           {q.action} →
                         </RowAction>
                       ) : q.kind === 'invites_stale' ? (
@@ -270,6 +268,9 @@ export function AdminMembers() {
                               {m.points.toLocaleString()} pts{m.rewardReady ? ' · ready' : ''}
                             </span>
                             <span className="text-ink/35"> · {m.effectivePercent}% · {ageLabel(m.lastOrderIso)}</span>
+                          </span>
+                          <span className="block font-mono text-[10px] tabular-nums text-ink/35">
+                            Joined {shortDate(m.joinedIso)}
                           </span>
                         </span>
                         <span className="shrink-0">
@@ -337,6 +338,11 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
         <span>{m.effectivePercent}% · {ageLabel(m.lastOrderIso)}</span>
       </div>
 
+      <div className="mb-[var(--space-4)] font-mono text-[11px] text-ink/50">
+        Member since {shortDate(m.joinedIso)}
+        <span className="text-ink/30"> · last order {m.lastOrderIso ? shortDate(m.lastOrderIso) : 'none'}</span>
+      </div>
+
       {/* The SAME shared panels the customer-detail page renders, in the
           approved 3-up grid. One write path, no duplicated logic. */}
       <div className="grid grid-cols-1 gap-[var(--space-4)] lg:grid-cols-3">
@@ -352,7 +358,7 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
             </p>
           </Panel>
         )}
-        <RewardsPanel userId={m.userId} confirm={confirm} />
+        <RewardsPanel userId={m.userId} contact={m.contact} confirm={confirm} />
         <DiscountsPanel userId={m.userId} accountType={profile?.account_type ?? m.accountType} tier={profile?.tier ?? m.tier} confirm={confirm} />
       </div>
 

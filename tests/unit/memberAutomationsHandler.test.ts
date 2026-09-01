@@ -43,6 +43,8 @@ interface Harness {
   emails: SentEmail[];
   /** Bodies POSTed to /rest/v1/email_log, in claim order. */
   claims: Record<string, unknown>[];
+  /** How many times the referral settlement seam was invoked. */
+  settleCalls: number;
 }
 
 interface HarnessOpts {
@@ -55,9 +57,14 @@ interface HarnessOpts {
   claimStatus?: number;
   /** Status for the Resend send (default 200). */
   resendStatus?: number;
+  /** settle_referral_conversions() result, or an Error it should throw. */
+  settle?: number | Error;
 }
 
-const ALL_KINDS = ['reward_ready', 'invite_followup', 'winback', 'discount_expiry', 'welcome'];
+const ALL_KINDS = [
+  'reward_ready', 'invite_followup', 'winback', 'discount_expiry', 'welcome',
+  'review_request', 'referral_bonus',
+];
 
 function makeHarness(opts: HarnessOpts = {}): Harness {
   const config: MemberAutomationsConfig = {
@@ -90,12 +97,24 @@ function makeHarness(opts: HarnessOpts = {}): Harness {
     return new Response(JSON.stringify({ id: 'email-1' }), { status: opts.resendStatus ?? 200 });
   });
 
+  const state = { settleCalls: 0 };
+  const handler = createMemberAutomationsHandler(config, {
+    fetch: fetchMock.fn,
+    logEvent,
+    settleReferrals: async () => {
+      state.settleCalls += 1;
+      if (opts.settle instanceof Error) throw opts.settle;
+      return typeof opts.settle === 'number' ? opts.settle : 0;
+    },
+  });
+
   return {
-    handler: createMemberAutomationsHandler(config, { fetch: fetchMock.fn, logEvent }),
+    handler,
     fetchMock,
     logs,
     emails,
     claims,
+    get settleCalls() { return state.settleCalls; },
   };
 }
 
@@ -415,5 +434,111 @@ describe('copy invariants', () => {
     expect(h.emails[0].subject).toBe('Your account discount expires 2026-08-05');
     expect(h.emails[0].html).toContain('2026-08-05');
     expect(h.emails[0].html).toContain('12.5');
+  });
+});
+
+describe('review_request (089/091)', () => {
+  const CANDIDATE = {
+    userId: 'u9',
+    recipient: 'ada@example.test',
+    periodKey: 'rev-o1',
+    orderNumber: 'VSR-1042',
+    name: 'Ada R.',
+    token: 'a'.repeat(64),
+  };
+
+  test('links to the review form with the order token, and names the order', async () => {
+    const h = makeHarness({ enabled: { review_request: true }, candidates: { review_request: [CANDIDATE] } });
+
+    await h.handler(autoRequest());
+
+    expect(h.emails).toHaveLength(1);
+    expect(h.emails[0].subject).toBe('How did order VSR-1042 arrive?');
+    expect(h.emails[0].html).toContain(`${EMAIL_BRAND.siteUrl}/review?t=${'a'.repeat(64)}`);
+    // Marketing consent pointer, as on every non-transactional send.
+    expect(h.emails[0].text).toContain(MANAGE_PREFERENCES_LINE);
+  });
+
+  test('asks about FULFILMENT — the copy never invites a claim about the material', async () => {
+    const h = makeHarness({ enabled: { review_request: true }, candidates: { review_request: [CANDIDATE] } });
+
+    await h.handler(autoRequest());
+
+    expect(h.emails[0].text).toMatch(/packing, transit time, documentation/i);
+    expect(h.emails[0].text).toMatch(/fulfilment only/i);
+  });
+
+  test('THE TOKEN IS A BEARER SECRET: it is in the email and NOT in the email_log claim', async () => {
+    const h = makeHarness({ enabled: { review_request: true }, candidates: { review_request: [CANDIDATE] } });
+
+    await h.handler(autoRequest());
+
+    const claim = h.claims[0] as { metadata: Record<string, unknown> };
+    expect(claim.metadata).toEqual({ orderNumber: 'VSR-1042', name: 'Ada R.' });
+    expect(JSON.stringify(claim)).not.toContain('a'.repeat(64));
+  });
+
+  test('an order with no number still sends, with a generic subject', async () => {
+    const h = makeHarness({
+      enabled: { review_request: true },
+      candidates: { review_request: [{ ...CANDIDATE, orderNumber: undefined, name: undefined }] },
+    });
+
+    await h.handler(autoRequest());
+
+    expect(h.emails[0].subject).toBe('How did your order arrive?');
+  });
+});
+
+describe('referral settlement + referral_bonus (090/091)', () => {
+  test('a live run settles referrals BEFORE evaluating kinds, and reports the count', async () => {
+    const h = makeHarness({ settle: 3 });
+
+    const res = await h.handler(autoRequest());
+
+    expect(h.settleCalls).toBe(1);
+    expect((await readJson(res)).referralsGranted).toBe(3);
+  });
+
+  test('a dry run settles NOTHING — it may not mint a coupon', async () => {
+    const h = makeHarness({ settle: 2 });
+
+    const res = await h.handler(autoRequest({ dry_run: true }));
+
+    expect(h.settleCalls).toBe(0);
+    expect((await readJson(res)).referralsGranted).toBe(0);
+  });
+
+  test('a settlement failure is logged and never blocks the sends', async () => {
+    const h = makeHarness({
+      settle: new Error('deadlock detected'),
+      enabled: { welcome: true },
+      candidates: { welcome: [{ userId: 'u1', recipient: 'new@example.test', periodKey: 'wc-once' }] },
+    });
+
+    const res = await h.handler(autoRequest());
+
+    expect(res.status).toBe(200);
+    expect(h.emails).toHaveLength(1);
+    expect(h.logs.some((l) => l.severity === 'error' && l.message.includes('referral settlement failed'))).toBe(true);
+  });
+
+  test('the bonus notice carries the code, the percent and the deadline', async () => {
+    const h = makeHarness({
+      enabled: { referral_bonus: true },
+      candidates: {
+        referral_bonus: [{
+          userId: 'u2', recipient: 'referrer@example.test', periodKey: 'rb-c1',
+          code: 'BONUS-7KQ2ZM', percent: 15, expiresOn: '2026-09-25',
+        }],
+      },
+    });
+
+    await h.handler(autoRequest());
+
+    expect(h.emails[0].subject).toBe('Your referral bonus code');
+    expect(h.emails[0].text).toContain('BONUS-7KQ2ZM');
+    expect(h.emails[0].text).toContain('extra 15% off one order');
+    expect(h.emails[0].text).toContain('2026-09-25');
   });
 });

@@ -24,15 +24,38 @@
 import { logEvent } from "../_shared/telemetry.ts";
 import { createMemberAutomationsHandler } from "./handler.ts";
 
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+/** settle_referral_conversions() (090) — service-role only, idempotent. Banks
+ *  every referral order that qualified since the last run and mints each
+ *  referrer's bonus code, so the referral_bonus notice below has something to
+ *  send. Returns how many conversions it granted. */
+async function settleReferrals(): Promise<number> {
+  const res = await fetch(`${supabaseUrl}/rest/v1/rpc/settle_referral_conversions`, {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) throw new Error(`referral settlement failed: PostgREST status ${res.status}`);
+  const data = (await res.json()) as { granted?: number } | null;
+  return Number(data?.granted ?? 0);
+}
+
 const handleMemberAutomations = createMemberAutomationsHandler(
   {
-    supabaseUrl: Deno.env.get("SUPABASE_URL") ?? "",
-    serviceKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    supabaseUrl,
+    serviceKey,
     cronSecret: Deno.env.get("AUTOMATIONS_CRON_SECRET") ?? "",
     resendApiKey: Deno.env.get("RESEND_API_KEY") ?? "",
     fromEmail: Deno.env.get("RESEND_FROM_EMAIL") ?? "VS Research Labs <inquire@vsresearchlabs.com>",
   },
-  { fetch: (input, init) => fetch(input, init), logEvent },
+  { fetch: (input, init) => fetch(input, init), logEvent, settleReferrals },
 );
 
 Deno.serve(handleMemberAutomations);

@@ -200,12 +200,18 @@ export async function redeemReward(): Promise<{ data: RedeemRewardResult | null;
   return { data: (data as RedeemRewardResult) ?? { ok: false, reason: 'Unexpected response.' }, error: null };
 }
 
-/** `get_my_referral_code()` RPC result (migration 076). */
+/** `get_my_referral_code()` RPC result (migrations 076 + 090). */
 export interface ReferralCodeResult {
   code: string;
   percent: number;
   /** Redemptions recorded against the code, excluding the member's own contact. */
   uses: number;
+  /** Referrals that QUALIFIED — joined and ordered inside the window (090). */
+  earned?: number;
+  /** How many days a referred account has to place its first order (090). */
+  windowDays?: number;
+  /** Bonus codes minted for this member by settle_referral_conversions(). */
+  bonuses?: Array<{ code: string; iso: string }>;
 }
 
 /** Issue-or-fetch the member's referral code (`get_my_referral_code()`, migration 076). Idempotent. */
