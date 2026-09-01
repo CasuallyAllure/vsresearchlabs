@@ -1592,6 +1592,10 @@ const handleOrder = async (req: Request): Promise<Response> => {
         p_contact: contact,
         p_discount_cents: a.contribution,
         p_order_net_cents: totalCents,
+        // 090: the referral guard needs the buyer's ACCOUNT, not just their
+        // typed contact — a member could otherwise redeem their own referral
+        // code by checking out under a second address.
+        p_user_id: stampedUserId,
       });
       const redeemed = redeemData as { ok?: boolean; reason?: string } | null;
       if (redeemErr || !redeemed?.ok) {

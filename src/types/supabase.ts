@@ -1778,6 +1778,24 @@ export type Database = {
           view_name: string
         }[]
       }
+      order_review_prompt: { Args: { p_token: string }; Returns: Json }
+      public_service_reviews: { Args: { p_limit?: number }; Returns: Json }
+      submit_order_review: {
+        Args: { p_comment?: string; p_rating: number; p_token: string }
+        Returns: Json
+      }
+      admin_campaign_recipients: {
+        Args: { p_contact?: string; p_search?: string; p_segment?: string }
+        Returns: Json
+      }
+      admin_moderate_review: {
+        Args: { p_id: string; p_status: string }
+        Returns: Json
+      }
+      admin_review_queue: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: Json
+      }
       admin_clear_coupon: { Args: { p_order_id: string }; Returns: Json }
       admin_clear_coupons: { Args: { p_order_id: string }; Returns: Json }
       admin_convert_prepared_cart: {

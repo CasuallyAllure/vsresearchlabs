@@ -39,6 +39,7 @@ const CompoundShare = lazyPage(() => import('./pages/CompoundShare'), 'CompoundS
 const CartPage = lazyPage(() => import('./pages/CartPage'), 'CartPage');
 const Contact = lazyPage(() => import('./pages/Contact'), 'Contact');
 const TrackOrder = lazyPage(() => import('./pages/TrackOrder'), 'TrackOrder');
+const ReviewOrder = lazyPage(() => import('./pages/ReviewOrder'), 'ReviewOrder');
 const Account = lazyPage(() => import('./pages/Account'), 'Account');
 const AccountOrders = lazyPage(() => import('./pages/account/AccountOrders'), 'AccountOrders');
 const AccountOrderDetail = lazyPage(() => import('./pages/account/AccountOrderDetail'), 'AccountOrderDetail');
@@ -82,6 +83,7 @@ const AdminMembers = lazyPage(() => import('./pages/admin/AdminMembers'), 'Admin
 const AdminSystemHealth = lazyPage(() => import('./pages/admin/AdminSystemHealth'), 'AdminSystemHealth');
 const AdminReports = lazyPage(() => import('./pages/admin/AdminReports'), 'AdminReports');
 const AdminCoupons = lazyPage(() => import('./pages/admin/AdminCoupons'), 'AdminCoupons');
+const AdminReviews = lazyPage(() => import('./pages/admin/AdminReviews'), 'AdminReviews');
 
 export default function App() {
   return (
@@ -113,6 +115,7 @@ export default function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/track" element={<TrackOrder />} />
+                <Route path="/review" element={<ReviewOrder />} />
                 {AccountPreview && (
                   <Route path="/account/__preview" element={<AccountPreview />} />
                 )}
@@ -144,6 +147,7 @@ export default function App() {
                 <Route path="/admin/customers/:id" element={<AdminGate><AdminCustomerDetail /></AdminGate>} />
                 <Route path="/admin/members" element={<AdminGate><AdminMembers /></AdminGate>} />
                 <Route path="/admin/coupons" element={<AdminGate><AdminCoupons /></AdminGate>} />
+                <Route path="/admin/reviews" element={<AdminGate><AdminReviews /></AdminGate>} />
                 <Route path="/admin/audit-log" element={<AdminGate><AdminAuditLog /></AdminGate>} />
                 <Route path="/admin/system-health" element={<AdminGate><AdminSystemHealth /></AdminGate>} />
                 <Route path="/admin/reports" element={<AdminGate><AdminReports /></AdminGate>} />

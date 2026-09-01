@@ -4,6 +4,11 @@
  * the RPC appends an audit-logged ledger row; balances are never mutated in
  * place.
  *
+ * A balance at or over the 300-point threshold also gets a REDEEM action
+ * (admin_redeem_reward_for, 092): the admin-side twin of the button the member
+ * has in their own portal. Before it existed, a member sitting on a ready
+ * balance was something the admin could see and not resolve.
+ *
  * Shared by the customer-detail page and the /admin/members rows. Pure
  * extraction from the original CustomerAccountPanels — behaviour unchanged.
  */
@@ -15,6 +20,10 @@ import {
   NOT_MIGRATED_NOTE, RECENT_REWARD_ENTRIES, fmtDateShort, fmtSignedPoints, inputCls, isMissingBackend,
   type ConfirmFn, type RewardEntry,
 } from './shared';
+
+/** 050's redemption terms, mirrored by admin_redeem_reward_for (092). */
+const REWARD_THRESHOLD = 300;
+const REWARD_PERCENT = 40;
 
 interface RewardsPanelProps {
   userId: string;
@@ -107,6 +116,45 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
     setRefreshCounter((c) => c + 1);
   }
 
+  async function handleRedeem() {
+    if (busy || !supabase) return;
+    setFormError(null);
+    setFormSuccess(null);
+
+    const note = noteDraft.trim();
+    if (note === '') {
+      setFormError('A note is required — redeeming spends the member\u2019s points for them.');
+      return;
+    }
+
+    const ok = await confirm(
+      `Spend ${REWARD_THRESHOLD} of this member\u2019s points for a ${REWARD_PERCENT}% off one item voucher? Note: "${note}"`,
+      { confirmLabel: 'Redeem for member' },
+    );
+    if (!ok) return;
+
+    setBusy(true);
+    const { data, error: rpcError } = await supabase.rpc('admin_redeem_reward_for', {
+      p_user_id: userId,
+      p_note: note,
+    });
+    setBusy(false);
+    if (rpcError) {
+      setFormError(isMissingBackend(rpcError) ? NOT_MIGRATED_NOTE : rpcError.message);
+      return;
+    }
+    // The RPC refuses in-band (already holds a voucher, balance moved under
+    // us) rather than throwing — surface its reason instead of claiming success.
+    const result = data as { ok?: boolean; reason?: string } | null;
+    if (!result?.ok) {
+      setFormError(result?.reason ?? 'Could not redeem this balance.');
+      return;
+    }
+    setNoteDraft('');
+    setFormSuccess(`Voucher issued — ${REWARD_PERCENT}% off one item.`);
+    setRefreshCounter((c) => c + 1);
+  }
+
   return (
     <div className="research-surface-solid p-[var(--space-5)]">
       <PanelCaption>Rewards</PanelCaption>
@@ -122,6 +170,21 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
           <div className="mb-[var(--space-4)]">
             <p className="text-[10px] uppercase tracking-[0.2em] text-ink/40 mb-1">Balance</p>
             <p className="font-mono text-[18px] tabular-nums text-ink">{balance} pts</p>
+            {balance >= REWARD_THRESHOLD && (
+              <div className="mt-[var(--space-2)] flex flex-wrap items-center gap-[var(--space-3)]">
+                <span className="text-[11.5px] text-holo">
+                  Ready to redeem — {REWARD_THRESHOLD} pts buys {REWARD_PERCENT}% off one item.
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRedeem}
+                  disabled={busy}
+                  className="rounded-full border border-holo/35 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-holo transition-colors hover:border-holo/60 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {busy ? 'Working…' : 'Redeem for member'}
+                </button>
+              </div>
+            )}
           </div>
 
           {recent.length === 0 ? (

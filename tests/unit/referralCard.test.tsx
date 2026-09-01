@@ -35,7 +35,7 @@ function makeClient(handlers: Record<string, RpcHandler>, existingCode: string |
 
 describe('ReferralCard', () => {
   test('first visit shows the button; pressing it calls the RPC and renders the code + copy control', async () => {
-    const referralRpc = vi.fn(() => ({ data: { code: 'REF-A2B3C4', percent: 10, uses: 3 }, error: null }));
+    const referralRpc = vi.fn(() => ({ data: { code: 'REF-A2B3C4', percent: 15, uses: 3 }, error: null }));
     const client = makeClient({ get_my_referral_code: referralRpc });
     seam.client = client;
     render(<ReferralCard />);
@@ -61,7 +61,7 @@ describe('ReferralCard', () => {
   });
 
   test('an already-issued code auto-surfaces on mount WITHOUT calling the issuing RPC', async () => {
-    const referralRpc = vi.fn(() => ({ data: { code: 'REF-ZZZZZZ', percent: 10, uses: 0 }, error: null }));
+    const referralRpc = vi.fn(() => ({ data: { code: 'REF-ZZZZZZ', percent: 15, uses: 0 }, error: null }));
     seam.client = makeClient({ get_my_referral_code: referralRpc }, 'REF-EXIST1');
     render(<ReferralCard />);
 

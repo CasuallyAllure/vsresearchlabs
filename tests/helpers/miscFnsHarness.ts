@@ -35,6 +35,11 @@ import {
   type SendPreparedCartConfig,
 } from '../../supabase/functions/send-prepared-cart/handler';
 import {
+  createSendMemberOfferHandler,
+  type CampaignRecipient,
+  type SendMemberOfferConfig,
+} from '../../supabase/functions/send-member-offer/handler';
+import {
   createResolveVideoHandler,
   type ResolveVideoHandlerConfig,
   type VideoSupabaseClient,
@@ -389,6 +394,109 @@ export function makeSendPreparedCartHarness(
     loadCart: async () => {
       if (harness.cartThrows) throw harness.cartThrows;
       return harness.cart;
+    },
+    claimSend: async (args) => {
+      harness.claims.push(args);
+      if (harness.claimThrows) throw harness.claimThrows;
+      return harness.claimResult;
+    },
+    releaseSend: async (args) => {
+      harness.releases.push(args);
+      if (harness.releaseThrows) throw harness.releaseThrows;
+    },
+  });
+  return harness;
+}
+
+// ---------------------------------------------------------------------------
+// send-member-offer
+// ---------------------------------------------------------------------------
+
+export interface SentOfferEmail {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  reply_to?: string;
+}
+
+export interface SendMemberOfferHarness {
+  handler: (req: Request) => Promise<Response>;
+  fetchMock: FetchMock;
+  /** Emails Resend was actually asked to send. */
+  emails: SentOfferEmail[];
+  gateResult: AdminGateResult;
+  gateCalls: Request[];
+  /** What admin_campaign_recipients answers. Overwrite per test. */
+  recipient: CampaignRecipient | null;
+  /** Throw instead of answering, to drive the lookup-failure branch. */
+  recipientThrows: Error | null;
+  /** email_log claim outcome: true = claimed, false = UNIQUE conflict. */
+  claimResult: boolean;
+  claimThrows: Error | null;
+  claims: RecordedClaim[];
+  /** Claims undone after a failed send — the retry-ability guarantee. */
+  releases: Array<{ recipient: string; periodKey: string }>;
+  releaseThrows: Error | null;
+  emailResponder: (email: SentOfferEmail) => { status: number; body?: unknown };
+  config: SendMemberOfferConfig;
+}
+
+/** A consenting member. Tests narrow it field by field. */
+export function campaignRecipientFixture(
+  over: Partial<CampaignRecipient> = {},
+): CampaignRecipient {
+  return {
+    userId: '11111111-1111-4111-8111-111111111111',
+    name: 'Ada Reyes',
+    contact: 'ada@example.com',
+    optOut: false,
+    ...over,
+  };
+}
+
+export function makeSendMemberOfferHarness(
+  overrides: Partial<SendMemberOfferConfig> = {},
+): SendMemberOfferHarness {
+  const config: SendMemberOfferConfig = {
+    resendApiKey: 're_test_key',
+    fromEmail: 'VSR Test <from@test.example>',
+    corsHeaders: TEST_CORS,
+    ...overrides,
+  };
+  const fetchMock = new FetchMock();
+  const harness: SendMemberOfferHarness = {
+    handler: undefined as unknown as SendMemberOfferHarness['handler'],
+    fetchMock,
+    emails: [],
+    gateResult: GATE_PASS,
+    gateCalls: [],
+    recipient: campaignRecipientFixture(),
+    recipientThrows: null,
+    claimResult: true,
+    claimThrows: null,
+    claims: [],
+    releases: [],
+    releaseThrows: null,
+    emailResponder: () => ({ status: 200, body: { id: 'email-1' } }),
+    config,
+  };
+  fetchMock.onUrl('api.resend.com/emails', (_url, init) => {
+    const email = JSON.parse(String(init?.body ?? '{}')) as SentOfferEmail;
+    harness.emails.push(email);
+    const res = harness.emailResponder(email);
+    return jsonRes(res.body ?? { id: 'email-1' }, res.status);
+  });
+  harness.handler = createSendMemberOfferHandler(config, {
+    requireAdmin: async (req) => {
+      harness.gateCalls.push(req);
+      return harness.gateResult;
+    },
+    fetch: fetchMock.fn,
+    loadRecipient: async () => {
+      if (harness.recipientThrows) throw harness.recipientThrows;
+      return harness.recipient;
     },
     claimSend: async (args) => {
       harness.claims.push(args);

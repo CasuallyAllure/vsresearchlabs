@@ -25,7 +25,21 @@ import type {
 export const MEMBERS_PAGE_SIZE = 50;
 
 export type RosterSort = 'recent' | 'spend' | 'points' | 'joined';
-export type RosterSegment = 'all' | 'new' | 'active' | 'at-risk' | 'dormant' | 'vip';
+export type RosterSegment = 'all' | 'new' | 'active' | 'at-risk' | 'dormant' | 'vip' | 'reward-ready';
+
+/** The segment filter, shared by the roster and the broadcast composer so the
+ *  two always offer (and mean) the same set. */
+export const SEGMENT_OPTIONS: Array<{ value: RosterSegment; label: string }> = [
+  { value: 'all', label: 'All members' },
+  { value: 'new', label: 'New' },
+  { value: 'active', label: 'Active' },
+  { value: 'at-risk', label: 'At-Risk' },
+  { value: 'dormant', label: 'Dormant' },
+  { value: 'vip', label: 'VIP' },
+  // Orthogonal to the lifecycle segments (092): members holding 300+ points
+  // with no voucher out. The Needs-attention queue links straight here.
+  { value: 'reward-ready', label: 'Reward ready' },
+];
 
 interface StatsResponse {
   membersTotal: number;
@@ -135,7 +149,7 @@ function toQueue(items: AttentionItem[]): MemberQueueItem[] {
         };
       case 'reward_ready':
         return {
-          kind: it.kind, tone: it.tone, action: 'View',
+          kind: it.kind, tone: it.tone, action: 'Show',
           title: `${it.count} ${plural(it.count, 'member has', 'members have')} a reward credit ready`,
           meta: 'Crossed 300 points · voucher not yet redeemed',
         };
