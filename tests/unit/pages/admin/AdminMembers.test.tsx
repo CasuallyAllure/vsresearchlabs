@@ -75,6 +75,20 @@ vi.mock('../../../../src/components/admin/ConfirmModal', () => ({
   useConfirm: () => ({ confirm: vi.fn(), modal: null }),
 }));
 
+// The reward_ready queue action SENDS (useRewardReadyNotify, tested on its own
+// in tests/unit/rewardReadyQueueNotify.test.ts); here only the wiring matters:
+// the click runs it, the URL is untouched, the result lands on the item.
+const rewardNotify = vi.hoisted(() => ({
+  run: vi.fn(async () => {}),
+  busy: false,
+  result: null as null | { sent: number; alreadySent: number; failed: number; optedOut: number; total: number },
+  error: null as string | null,
+}));
+vi.mock('../../../../src/pages/admin/members/useRewardReadyNotify', () => ({
+  useRewardReadyNotify: () => rewardNotify,
+  summarizeRewardNotify: (r: { sent: number; alreadySent: number }) => `${r.sent} sent · ${r.alreadySent} already sent`,
+}));
+
 vi.mock('../../../../src/pages/admin/members/RedemptionsView', () => ({
   RedemptionsView: () => <div>RedemptionsViewMarker</div>,
 }));
@@ -101,6 +115,8 @@ vi.mock('../../../../src/components/admin/accountPanels', () => ({
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  rewardNotify.result = null;
+  rewardNotify.error = null;
 });
 
 /**
@@ -273,19 +289,21 @@ describe('AdminMembers — URL param handling', () => {
       expect(url).toContain('sort=recent');
     });
 
-    // 092: this link used to set sort=points ALONE, which re-ordered the roster
-    // without narrowing it — the list still held every member, so the owner
-    // read the button as dead. It now also selects the reward-ready segment.
-    // `search` carries the untouched-param half of the regression proof that
-    // `segment` used to carry.
-    test('reward_ready deep-link atomically strips view, selects the reward-ready segment and sorts by points, leaving search untouched', () => {
+    // The reward_ready action used to deep-link the roster (sort=points, then
+    // 092's reward-ready segment). The owner wanted the button to SEND the
+    // reward-ready mail from the queue item instead — so it no longer
+    // navigates at all, and the send result is reported inline on the item.
+    test('reward_ready queue action sends from the item — no roster detour, result inline', () => {
       const { router } = renderAdminMembers('/admin/members?view=roster&segment=at-risk&sort=recent&search=al');
       fireEvent.click(screen.getByRole('button', { name: /Review/ }));
-      const url = urlOf(router);
-      expect(url).not.toMatch(/[?&]view=/);
-      expect(url).toContain('segment=reward-ready');
-      expect(url).toContain('sort=points');
-      expect(url).toContain('search=al');
+      expect(rewardNotify.run).toHaveBeenCalledTimes(1);
+      expect(urlOf(router)).toBe('/admin/members?view=roster&segment=at-risk&sort=recent&search=al');
+    });
+
+    test('reward_ready queue item shows the send result inline', () => {
+      rewardNotify.result = { sent: 1, alreadySent: 2, failed: 0, optedOut: 0, total: 3 };
+      renderAdminMembers('/admin/members');
+      expect(screen.getByRole('status').textContent).toBe('1 sent · 2 already sent');
     });
 
     test('invites_stale deep-link sets view=invites', () => {

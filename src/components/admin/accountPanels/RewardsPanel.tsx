@@ -25,13 +25,10 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Badge, InlineError, InlineSuccess, Label, MutedNote, PanelCaption, SubmitButton } from './atoms';
 import {
-  NOT_MIGRATED_NOTE, RECENT_REWARD_ENTRIES, fmtDateShort, fmtSignedPoints, getErrorMessage, inputCls, isMissingBackend,
-  rewardCampaignKey, type ConfirmFn, type RewardEntry,
+  NOT_MIGRATED_NOTE, RECENT_REWARD_ENTRIES, fmtDateShort, fmtSignedPoints, inputCls, isMissingBackend,
+  type ConfirmFn, type RewardEntry,
 } from './shared';
-
-/** 050's redemption terms, mirrored by admin_redeem_reward_for (092). */
-const REWARD_THRESHOLD = 300;
-const REWARD_PERCENT = 40;
+import { REWARD_PERCENT, REWARD_READY_SUBJECT, REWARD_THRESHOLD, sendRewardReadyNotice } from './rewardNotify';
 
 /** The reward_vouchers (050) columns this panel reads. */
 interface VoucherRow {
@@ -203,48 +200,21 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
     setFormError(null);
     setFormSuccess(null);
 
-    const subject = 'Your reward credit is available';
-    const body = [
-      'Hello,',
-      '',
-      `Your VS Research Labs account holds ${balance.toLocaleString()} reward points, which meets the ` +
-        `${REWARD_THRESHOLD}-point redemption threshold — enough for ${REWARD_PERCENT}% off one catalog item ` +
-        '(laboratory equipment excluded).',
-      'A reward credit can be redeemed from your account portal whenever you choose.',
-      '',
-      'Thank you,',
-      'VS Research Labs',
-    ].join('\n');
-
-    const ok = await confirm(`Send "${subject}" to this member now?`, { confirmLabel: 'Notify member' });
+    const ok = await confirm(`Send "${REWARD_READY_SUBJECT}" to this member now?`, { confirmLabel: 'Notify member' });
     if (!ok) return;
 
     setBusy(true);
-    const { data, error: fnError } = await supabase.functions.invoke('send-member-offer', {
-      body: {
-        // automation_candidates emits the raw auth.users.email (091) as the
-        // reward_ready recipient; normalizing here matches what send-member-
-        // offer itself normalizes contact to, so the two claims land on the
-        // same email_log row instead of two differently-cased ones.
-        contact: contact.trim().toLowerCase(),
-        subject,
-        body,
-        campaign_key: rewardCampaignKey(balance),
-        kind: 'reward_ready',
-        offer: null,
-      },
-    });
+    const result = await sendRewardReadyNotice(contact, balance);
     setBusy(false);
-    if (fnError) {
-      setFormError(getErrorMessage(fnError));
+    if (result.status === 'failed') {
+      setFormError(result.error ?? 'Unexpected error.');
       return;
     }
-    const result = data as { status?: string } | null;
-    if (result?.status === 'already_sent') {
+    if (result.status === 'already_sent') {
       setFormSuccess('Already sent — this points stage was notified before.');
       return;
     }
-    if (result?.status === 'opted_out') {
+    if (result.status === 'opted_out') {
       setFormError('This member has opted out of marketing email.');
       return;
     }
