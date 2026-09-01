@@ -358,7 +358,7 @@ function MemberExpand({ member: m, detail }: { member: MemberRow; detail: Member
             </p>
           </Panel>
         )}
-        <RewardsPanel userId={m.userId} confirm={confirm} />
+        <RewardsPanel userId={m.userId} contact={m.contact} confirm={confirm} />
         <DiscountsPanel userId={m.userId} accountType={profile?.account_type ?? m.accountType} tier={profile?.tier ?? m.tier} confirm={confirm} />
       </div>
 

@@ -100,3 +100,12 @@ export function isLiveDiscount(row: DiscountRow): boolean {
   if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return false;
   return true;
 }
+
+/** Mirrors automation_candidates' reward_ready periodKey ('rr-' ||
+ *  floor(balance/300), 091) so RewardsPanel's manual "Notify member" keys the
+ *  same 300-point stage the reward_ready cron would. send-member-offer claims
+ *  (recipient, kind, period_key) in email_log before sending, so a second
+ *  press on the same stage is a no-op rather than a second mail. */
+export function rewardCampaignKey(balance: number): string {
+  return `rr-${Math.floor(balance / 300)}`;
+}

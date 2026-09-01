@@ -9,32 +9,51 @@
  * has in their own portal. Before it existed, a member sitting on a ready
  * balance was something the admin could see and not resolve.
  *
+ * The panel also surfaces the member's active reward_vouchers row (050) so an
+ * admin can see whether she already holds one, and — for a balance under
+ * threshold — how close she is. A NOTIFY action sends the "you're at 300
+ * points" mail on demand through send-member-offer's single-recipient mode
+ * (rather than waiting for the reward_ready cron stage), keyed by the same
+ * 'rr-<stage>' period the automation uses (091) so a repeat press reports
+ * "already sent" instead of mailing twice.
+ *
  * Shared by the customer-detail page and the /admin/members rows. Pure
  * extraction from the original CustomerAccountPanels — behaviour unchanged.
  */
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { InlineError, InlineSuccess, Label, MutedNote, PanelCaption, SubmitButton } from './atoms';
+import { Badge, InlineError, InlineSuccess, Label, MutedNote, PanelCaption, SubmitButton } from './atoms';
 import {
-  NOT_MIGRATED_NOTE, RECENT_REWARD_ENTRIES, fmtDateShort, fmtSignedPoints, inputCls, isMissingBackend,
-  type ConfirmFn, type RewardEntry,
+  NOT_MIGRATED_NOTE, RECENT_REWARD_ENTRIES, fmtDateShort, fmtSignedPoints, getErrorMessage, inputCls, isMissingBackend,
+  rewardCampaignKey, type ConfirmFn, type RewardEntry,
 } from './shared';
 
 /** 050's redemption terms, mirrored by admin_redeem_reward_for (092). */
 const REWARD_THRESHOLD = 300;
 const REWARD_PERCENT = 40;
 
+/** The reward_vouchers (050) columns this panel reads. */
+interface VoucherRow {
+  percent: number;
+  status: string;
+  created_at: string;
+}
+
 interface RewardsPanelProps {
   userId: string;
+  /** Portal email — the send-member-offer recipient for "Notify member". */
+  contact: string;
   confirm: ConfirmFn;
 }
 
-export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
+export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
   const [entries, setEntries] = useState<RewardEntry[] | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'unmigrated' | 'error'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [voucher, setVoucher] = useState<VoucherRow | null>(null);
+  const [optedOut, setOptedOut] = useState(false);
 
   const [pointsDraft, setPointsDraft] = useState('');
   const [noteDraft, setNoteDraft] = useState('');
@@ -50,12 +69,28 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
         setLoadError('Backend not configured.');
         return;
       }
-      const { data, error } = await supabase
-        .from('reward_ledger')
-        .select('kind, points, note, created_at, order_id')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      const [ledgerRes, voucherRes, profileRes] = await Promise.all([
+        supabase
+          .from('reward_ledger')
+          .select('kind, points, note, created_at, order_id')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        // 050's RLS grants admins select on all vouchers; "active" is at most
+        // one row (reward_vouchers_one_active).
+        supabase
+          .from('reward_vouchers')
+          .select('percent, status, created_at')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .limit(1),
+        supabase
+          .from('customer_profiles')
+          .select('marketing_opt_out')
+          .eq('user_id', userId)
+          .limit(1),
+      ]);
       if (cancelled) return;
+      const { data, error } = ledgerRes;
       if (error) {
         if (isMissingBackend(error)) setLoadState('unmigrated');
         else {
@@ -66,6 +101,14 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
       }
       setEntries((data ?? []) as RewardEntry[]);
       setLoadState('ready');
+
+      // Voucher status and marketing consent are additive context — a missing
+      // migration or an unrelated RLS gap here shouldn't blank the balance the
+      // admin came here to see, so failures fall back to "unknown" quietly.
+      const voucherRow = (voucherRes.data ?? [])[0] as VoucherRow | undefined;
+      setVoucher(voucherRes.error ? null : voucherRow ?? null);
+      const profileRow = (profileRes.data ?? [])[0] as { marketing_opt_out: boolean } | undefined;
+      setOptedOut(profileRes.error ? false : profileRow?.marketing_opt_out ?? false);
     }
     load();
     return () => {
@@ -155,6 +198,48 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
     setRefreshCounter((c) => c + 1);
   }
 
+  async function handleNotify() {
+    if (busy || !supabase) return;
+    setFormError(null);
+    setFormSuccess(null);
+
+    const subject = 'Your reward credit is available';
+    const body = [
+      'Hello,',
+      '',
+      `Your VS Research Labs account holds ${balance.toLocaleString()} reward points, which meets the ` +
+        `${REWARD_THRESHOLD}-point redemption threshold — enough for ${REWARD_PERCENT}% off one catalog item ` +
+        '(laboratory equipment excluded).',
+      'A reward credit can be redeemed from your account portal whenever you choose.',
+      '',
+      'Thank you,',
+      'VS Research Labs',
+    ].join('\n');
+
+    const ok = await confirm(`Send "${subject}" to this member now?`, { confirmLabel: 'Notify member' });
+    if (!ok) return;
+
+    setBusy(true);
+    const { data, error: fnError } = await supabase.functions.invoke('send-member-offer', {
+      body: { contact, subject, body, campaign_key: rewardCampaignKey(balance), offer: null },
+    });
+    setBusy(false);
+    if (fnError) {
+      setFormError(getErrorMessage(fnError));
+      return;
+    }
+    const result = data as { status?: string } | null;
+    if (result?.status === 'already_sent') {
+      setFormSuccess('Already sent — this points stage was notified before.');
+      return;
+    }
+    if (result?.status === 'opted_out') {
+      setFormError('This member has opted out of marketing email.');
+      return;
+    }
+    setFormSuccess('Notification sent.');
+  }
+
   return (
     <div className="research-surface-solid p-[var(--space-5)]">
       <PanelCaption>Rewards</PanelCaption>
@@ -170,20 +255,52 @@ export function RewardsPanel({ userId, confirm }: RewardsPanelProps) {
           <div className="mb-[var(--space-4)]">
             <p className="text-[10px] uppercase tracking-[0.2em] text-ink/40 mb-1">Balance</p>
             <p className="font-mono text-[18px] tabular-nums text-ink">{balance} pts</p>
+
+            {voucher && (
+              <div className="mt-[var(--space-2)] flex flex-wrap items-center gap-[var(--space-2)]">
+                <Badge tone="good">voucher active</Badge>
+                <span className="text-[11.5px] text-ink/60">
+                  {voucher.percent}% off one item · issued {fmtDateShort(voucher.created_at)}
+                </span>
+              </div>
+            )}
+
+            {!voucher && balance < REWARD_THRESHOLD && (
+              <p className="mt-[var(--space-2)] font-mono text-[11.5px] tabular-nums text-ink/45">
+                {balance} / {REWARD_THRESHOLD} pts toward next reward
+              </p>
+            )}
+
             {balance >= REWARD_THRESHOLD && (
               <div className="mt-[var(--space-2)] flex flex-wrap items-center gap-[var(--space-3)]">
-                <span className="text-[11.5px] text-holo">
-                  Ready to redeem — {REWARD_THRESHOLD} pts buys {REWARD_PERCENT}% off one item.
-                </span>
+                {!voucher && (
+                  <>
+                    <span className="text-[11.5px] text-holo">
+                      Ready to redeem — {REWARD_THRESHOLD} pts buys {REWARD_PERCENT}% off one item.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRedeem}
+                      disabled={busy}
+                      className="rounded-full border border-holo/35 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-holo transition-colors hover:border-holo/60 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {busy ? 'Working…' : 'Redeem for member'}
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
-                  onClick={handleRedeem}
-                  disabled={busy}
-                  className="rounded-full border border-holo/35 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-holo transition-colors hover:border-holo/60 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={handleNotify}
+                  disabled={busy || optedOut}
+                  title={optedOut ? 'Opted out of marketing email' : undefined}
+                  className="rounded-full border border-ink/20 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-ink/40 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {busy ? 'Working…' : 'Redeem for member'}
+                  {busy ? 'Working…' : 'Notify member'}
                 </button>
               </div>
+            )}
+            {balance >= REWARD_THRESHOLD && optedOut && (
+              <MutedNote>Opted out of marketing email — cannot notify.</MutedNote>
             )}
           </div>
 
