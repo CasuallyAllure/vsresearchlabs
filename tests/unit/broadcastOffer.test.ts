@@ -54,7 +54,11 @@ describe('sendCampaign', () => {
   beforeEach(() => { seam.client = null; });
 
   test('sends no kind field — the edge function must default it to campaign', async () => {
-    const invoke = vi.fn(async () => ({ data: { status: 'sent' }, error: null }));
+    // Params are declared so `mock.calls` types as a tuple: an untyped
+    // vi.fn() gives calls the type [], and reading [1] off it fails `tsc -b`.
+    const invoke = vi.fn(async (_fn: string, _opts: { body: Record<string, unknown> }) => (
+      { data: { status: 'sent' }, error: null }
+    ));
     seam.client = { functions: { invoke } };
 
     const recipient = {
@@ -70,7 +74,9 @@ describe('sendCampaign', () => {
     );
 
     expect(invoke).toHaveBeenCalledOnce();
-    const body = invoke.mock.calls[0][1].body as Record<string, unknown>;
+    const call = invoke.mock.calls[0];
+    expect(call).toBeDefined();
+    const body = call?.[1].body ?? {};
     expect(body).not.toHaveProperty('kind');
     expect(body.campaign_key).toBe('member30-2026-08-24');
   });
