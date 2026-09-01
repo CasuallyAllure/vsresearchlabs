@@ -243,7 +243,9 @@ describe('RewardsPanel reward status + notify', () => {
 
     await screen.findByText(/notification sent/i);
     expect(invoke).toHaveBeenCalledWith('send-member-offer', expect.objectContaining({
-      body: expect.objectContaining({ contact: 'santos@example.com', campaign_key: 'rr-1', offer: null }),
+      body: expect.objectContaining({
+        contact: 'santos@example.com', campaign_key: 'rr-1', kind: 'reward_ready', offer: null,
+      }),
     }));
   });
 

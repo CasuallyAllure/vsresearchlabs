@@ -302,11 +302,13 @@ export interface SentPreparedCartEmail {
   reply_to?: string;
 }
 
-/** One recorded email_log claim attempt. */
+/** One recorded email_log claim attempt. `kind` is send-member-offer only
+ *  (prepared-cart's email_log kind is fixed and not passed through). */
 export interface RecordedClaim {
   userId: string | null;
   recipient: string;
   periodKey: string;
+  kind?: string;
   metadata: Record<string, unknown>;
 }
 
@@ -437,7 +439,7 @@ export interface SendMemberOfferHarness {
   claimThrows: Error | null;
   claims: RecordedClaim[];
   /** Claims undone after a failed send — the retry-ability guarantee. */
-  releases: Array<{ recipient: string; periodKey: string }>;
+  releases: Array<{ recipient: string; periodKey: string; kind?: string }>;
   releaseThrows: Error | null;
   emailResponder: (email: SentOfferEmail) => { status: number; body?: unknown };
   config: SendMemberOfferConfig;

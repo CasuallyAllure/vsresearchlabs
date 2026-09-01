@@ -20,12 +20,16 @@
 // happened. The gate lives in admin_campaign_recipients (088) next to the
 // column; this function reads its verdict and refuses.
 //
-// IDEMPOTENCY — insert-then-send against email_log (075), kind 'campaign',
-// period_key = the admin's campaign key. UNIQUE (recipient, kind, period_key)
-// is what stops a double-click, a re-run over the same list, or a member who
-// appears twice in a filtered list from being mailed twice. A failed send
-// RELEASES its claim (best effort) so a retry is possible — the send-prepared-
-// cart rule: a human is watching this one.
+// IDEMPOTENCY — insert-then-send against email_log (075), kind = request
+// `kind` (allowlisted, defaults 'campaign' — Broadcast never sets it, so it is
+// unchanged), period_key = the caller's key. UNIQUE (recipient, kind,
+// period_key) is what stops a double-click, a re-run over the same list, or a
+// member who appears twice in a filtered list from being mailed twice. It is
+// ALSO what lets RewardsPanel's "Notify member" (kind 'reward_ready', period
+// 'rr-<stage>') collide with the reward_ready automation cron's own claim on
+// the same stage, rather than both mailing it. A failed send RELEASES its
+// claim (best effort) so a retry is possible — the send-prepared-cart rule: a
+// human is watching this one.
 //
 // The offer itself is NOT created here. Discount codes are coupons (031/058)
 // with their own admin surface, their own expiry and their own once-per-
@@ -33,7 +37,18 @@
 
 import { EMAIL_BRAND, RESEARCH_USE_DISCLAIMER } from "../_shared/emailBrand.ts";
 
-const EMAIL_KIND = "campaign";
+/** email_log.kind values this function is allowed to write. A free-form kind
+ *  would let any caller mint a new idempotency namespace in a shared ledger —
+ *  'campaign' is Broadcast's existing kind (default, so it stays byte-for-byte
+ *  unchanged); 'reward_ready' is what RewardsPanel's manual "Notify member"
+ *  passes so its claim collides with the reward_ready cron's on the same
+ *  (recipient, kind, period_key) — see member-automations/handler.ts. */
+const EMAIL_LOG_KINDS = ["campaign", "reward_ready"] as const;
+type EmailLogKind = typeof EMAIL_LOG_KINDS[number];
+function isEmailLogKind(v: string): v is EmailLogKind {
+  return (EMAIL_LOG_KINDS as readonly string[]).includes(v);
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CAMPAIGN_KEY_REGEX = /^[a-z0-9][a-z0-9._-]{2,63}$/;
 const CODE_REGEX = /^[A-Z0-9][A-Z0-9._-]{2,39}$/;
@@ -55,6 +70,9 @@ interface SendPayload {
   subject?: unknown;
   body?: unknown;
   campaign_key?: unknown;
+  /** email_log.kind — defaults to 'campaign' below, so Broadcast (which never
+   *  sets this) is unchanged. */
+  kind?: unknown;
   offer?: OfferPayload | null;
 }
 
@@ -177,9 +195,9 @@ export interface SendMemberOfferDeps {
   /** admin_campaign_recipients(p_contact => …) (088), as the calling admin. */
   loadRecipient: (req: Request, contact: string) => Promise<CampaignRecipient | null>;
   /** Insert the email_log claim. `false` = UNIQUE conflict = already sent. */
-  claimSend: (args: { userId: string | null; recipient: string; periodKey: string; metadata: Record<string, unknown> }) => Promise<boolean>;
+  claimSend: (args: { userId: string | null; recipient: string; periodKey: string; kind: EmailLogKind; metadata: Record<string, unknown> }) => Promise<boolean>;
   /** Undo a claim whose send then failed. Best effort — never throws upward. */
-  releaseSend: (args: { recipient: string; periodKey: string }) => Promise<void>;
+  releaseSend: (args: { recipient: string; periodKey: string; kind: EmailLogKind }) => Promise<void>;
 }
 
 /** Validated request, or the message explaining why it is not one. */
@@ -244,6 +262,7 @@ export function createSendMemberOfferHandler(
     const subject     = String(payload?.subject ?? "").trim();
     const body        = String(payload?.body ?? "").trim();
     const campaignKey = String(payload?.campaign_key ?? "").trim().toLowerCase();
+    const kindRaw     = String(payload?.kind ?? "campaign").trim().toLowerCase();
 
     if (!EMAIL_REGEX.test(contact))          return jsonResponse({ error: "A valid contact email is required." }, 400);
     if (!subject)                            return jsonResponse({ error: "Subject is required." }, 400);
@@ -255,6 +274,10 @@ export function createSendMemberOfferHandler(
     if (!CAMPAIGN_KEY_REGEX.test(campaignKey)) {
       return jsonResponse({ error: "A campaign key of 3–64 characters (lowercase letters, digits, . _ -) is required." }, 400);
     }
+    // kind IS the idempotency namespace this claim writes into — an allowlist,
+    // not free text, because a typo'd kind would silently open a new one.
+    if (!isEmailLogKind(kindRaw)) return jsonResponse({ error: "Invalid kind." }, 400);
+    const kind = kindRaw;
 
     const { offer, error: offerError } = parseOffer(payload?.offer);
     if (offerError) return jsonResponse({ error: offerError }, 400);
@@ -284,7 +307,7 @@ export function createSendMemberOfferHandler(
 
     let claimed: boolean;
     try {
-      claimed = await claimSend({ userId: recipient.userId ?? null, recipient: contact, periodKey: campaignKey, metadata });
+      claimed = await claimSend({ userId: recipient.userId ?? null, recipient: contact, periodKey: campaignKey, kind, metadata });
     } catch (e) {
       console.error("Campaign email claim failed:", e);
       return jsonResponse({ error: "Could not record the send." }, 502);
@@ -301,11 +324,11 @@ export function createSendMemberOfferHandler(
 
     if (!result.ok) {
       console.error("Campaign email failed:", result);
-      try { await releaseSend({ recipient: contact, periodKey: campaignKey }); }
+      try { await releaseSend({ recipient: contact, periodKey: campaignKey, kind }); }
       catch (e) { console.error("Campaign claim release failed (non-fatal):", e); }
       return jsonResponse({ error: "Email delivery failed.", detail: result.body }, 502);
     }
 
-    return jsonResponse({ ok: true, status: "sent", recipient: contact, kind: EMAIL_KIND, campaignKey }, 200);
+    return jsonResponse({ ok: true, status: "sent", recipient: contact, kind, campaignKey }, 200);
   };
 }

@@ -67,23 +67,24 @@ const handleSendMemberOffer = createSendMemberOfferHandler(
       return (rows[0] ?? null) as CampaignRecipient | null;
     },
 
-    claimSend: async ({ userId, recipient, periodKey, metadata }) => {
+    claimSend: async ({ userId, recipient, periodKey, kind, metadata }) => {
       if (!adminDb) throw new Error("Service-role client not configured.");
       const { error } = await adminDb.from("email_log").insert({
         user_id: userId,
         recipient,
-        kind: "campaign",
+        kind,
         period_key: periodKey,
         metadata,
       });
       // A conflict means an earlier send already covered this (recipient,
-      // campaign) pair — the whole point of the campaign key.
+      // kind, period) triple — the whole point of the key, and (for kind
+      // 'reward_ready') what makes a manual notify and the cron the SAME claim.
       if (error?.code === UNIQUE_VIOLATION) return false;
       if (error) throw error;
       return true;
     },
 
-    releaseSend: async ({ recipient, periodKey }) => {
+    releaseSend: async ({ recipient, periodKey, kind }) => {
       if (!adminDb) return;
       // Only ever removes the row THIS call just inserted: same recipient, same
       // kind, same period key.
@@ -91,7 +92,7 @@ const handleSendMemberOffer = createSendMemberOfferHandler(
         .from("email_log")
         .delete()
         .eq("recipient", recipient)
-        .eq("kind", "campaign")
+        .eq("kind", kind)
         .eq("period_key", periodKey);
     },
   },

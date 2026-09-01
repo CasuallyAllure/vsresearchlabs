@@ -207,6 +207,7 @@ describe('claim, send, release', () => {
         userId: '11111111-1111-4111-8111-111111111111',
         recipient: 'ada@example.com',
         periodKey: 'member30-2026-08-24',
+        kind: 'campaign',
         metadata: {
           campaign_key: 'member30-2026-08-24',
           subject: VALID.subject,
@@ -215,6 +216,41 @@ describe('claim, send, release', () => {
         },
       },
     ]);
+  });
+
+  test('kind defaults to campaign when the caller (Broadcast) never sets it', async () => {
+    const h = makeSendMemberOfferHarness();
+    expect('kind' in VALID).toBe(false);
+    await h.handler(offerRequest(VALID));
+    expect(h.claims[0].kind).toBe('campaign');
+  });
+
+  test('kind reward_ready is accepted and claimed under its own kind', async () => {
+    const h = makeSendMemberOfferHarness();
+    const res = await h.handler(offerRequest({ ...VALID, kind: 'reward_ready', campaign_key: 'rr-1' }));
+    expect(res.status).toBe(200);
+    expect(h.claims[0]).toMatchObject({ kind: 'reward_ready', periodKey: 'rr-1' });
+    expect(await readJson(res)).toMatchObject({ kind: 'reward_ready' });
+  });
+
+  test('an unlisted kind is rejected — the allowlist is not free text', async () => {
+    const h = makeSendMemberOfferHarness();
+    const res = await h.handler(offerRequest({ ...VALID, kind: 'winback' }));
+    expect(res.status).toBe(400);
+    expect(await readJson(res)).toEqual({ error: 'Invalid kind.' });
+    expect(h.claims).toHaveLength(0);
+  });
+
+  test('a manual reward_ready notify and the reward_ready cron claim the same (recipient, kind, period) row', async () => {
+    // The cron (member-automations/handler.ts) inserts email_log directly with
+    // kind 'reward_ready' and period_key 'rr-<stage>' for the same recipient
+    // BEFORE this call — simulated here by pre-seeding a claim conflict.
+    const h = makeSendMemberOfferHarness();
+    h.claimResult = false;
+    const res = await h.handler(offerRequest({ ...VALID, kind: 'reward_ready', campaign_key: 'rr-1' }));
+    expect(res.status).toBe(200);
+    expect(await readJson(res)).toEqual({ ok: false, status: 'already_sent', recipient: 'ada@example.com' });
+    expect(h.emails).toHaveLength(0);
   });
 
   test('a member with no linked auth user still claims (userId null)', async () => {
@@ -232,7 +268,7 @@ describe('claim, send, release', () => {
 
     expect(res.status).toBe(502);
     expect(await readJson(res)).toEqual({ error: 'Email delivery failed.', detail: { message: 'rejected' } });
-    expect(h.releases).toEqual([{ recipient: 'ada@example.com', periodKey: 'member30-2026-08-24' }]);
+    expect(h.releases).toEqual([{ recipient: 'ada@example.com', periodKey: 'member30-2026-08-24', kind: 'campaign' }]);
   });
 
   test('a failing release never masks the delivery failure', async () => {

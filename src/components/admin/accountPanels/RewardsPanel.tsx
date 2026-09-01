@@ -221,7 +221,18 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
 
     setBusy(true);
     const { data, error: fnError } = await supabase.functions.invoke('send-member-offer', {
-      body: { contact, subject, body, campaign_key: rewardCampaignKey(balance), offer: null },
+      body: {
+        // automation_candidates emits the raw auth.users.email (091) as the
+        // reward_ready recipient; normalizing here matches what send-member-
+        // offer itself normalizes contact to, so the two claims land on the
+        // same email_log row instead of two differently-cased ones.
+        contact: contact.trim().toLowerCase(),
+        subject,
+        body,
+        campaign_key: rewardCampaignKey(balance),
+        kind: 'reward_ready',
+        offer: null,
+      },
     });
     setBusy(false);
     if (fnError) {

@@ -5,9 +5,17 @@
  * mail has to quote their SUM, not the code's own percent.
  */
 
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { MEMBER_DISCOUNT_PERCENT, TIER_FLOOR_PERCENTS } from '../../src/lib/memberPricing';
-import { advertisedPercent, defaultCampaignKey, tierFloorPercent } from '../../src/pages/admin/members/useBroadcast';
+
+const seam = vi.hoisted(() => ({ client: null as unknown }));
+vi.mock('../../src/lib/supabase', () => ({
+  get supabase() { return seam.client; },
+}));
+
+import {
+  advertisedPercent, defaultCampaignKey, sendCampaign, tierFloorPercent,
+} from '../../src/pages/admin/members/useBroadcast';
 
 describe('advertisedPercent', () => {
   test('a 15% code lands a standard member at 30% — the owner-facing headline', () => {
@@ -39,5 +47,31 @@ describe('defaultCampaignKey', () => {
   test('strips anything the edge function would reject as a key', () => {
     expect(defaultCampaignKey('SUMMER SALE!', new Date('2026-08-24T00:00:00Z'))).toBe('summersale-2026-08-24');
     expect(defaultCampaignKey(null, new Date('2026-08-24T00:00:00Z'))).toBe('note-2026-08-24');
+  });
+});
+
+describe('sendCampaign', () => {
+  beforeEach(() => { seam.client = null; });
+
+  test('sends no kind field — the edge function must default it to campaign', async () => {
+    const invoke = vi.fn(async () => ({ data: { status: 'sent' }, error: null }));
+    seam.client = { functions: { invoke } };
+
+    const recipient = {
+      userId: 'u1', name: 'Ada Reyes', contact: 'ada@example.com',
+      segment: 'active' as const, vip: false, tier: 'member' as const,
+      joinedIso: '2026-01-01', optOut: false,
+    };
+    await sendCampaign(
+      [recipient],
+      { subject: 'Hi', body: 'Hello', campaignKey: 'member30-2026-08-24', offer: null },
+      () => {},
+      0,
+    );
+
+    expect(invoke).toHaveBeenCalledOnce();
+    const body = invoke.mock.calls[0][1].body as Record<string, unknown>;
+    expect(body).not.toHaveProperty('kind');
+    expect(body.campaign_key).toBe('member30-2026-08-24');
   });
 });
