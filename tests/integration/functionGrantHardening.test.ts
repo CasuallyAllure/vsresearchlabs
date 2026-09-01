@@ -107,6 +107,10 @@ const AUTHENTICATED_ONLY = [
   // contacts, and the verb decides what the storefront publishes.
   'admin_moderate_review',
   'admin_prepared_carts',
+  // 092. is_admin()-gated, and it SPENDS a member's points on their behalf —
+  // the admin-side twin of 050's redeem_reward. Grant is `authenticated`
+  // because every admin RPC is; is_admin() inside is the actual fence.
+  'admin_redeem_reward_for',
   'admin_remove_coupon',
   'admin_review_queue',
   'admin_revoke_prepared_cart',
