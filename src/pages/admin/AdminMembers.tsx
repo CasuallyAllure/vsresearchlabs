@@ -40,6 +40,7 @@ import { RedemptionsView } from './members/RedemptionsView';
 import { InvitesView } from './members/InvitesView';
 import { AutomationsView } from './members/AutomationsView';
 import { BroadcastView } from './members/BroadcastView';
+import { summarizeRewardNotify, useRewardReadyNotify } from './members/useRewardReadyNotify';
 
 /* ── Filters ──────────────────────────────────────────────────────────────── */
 
@@ -101,6 +102,10 @@ export function AdminMembers() {
   );
   const { detail } = useMemberDetail(expandedRow);
 
+  // Queue-level confirm (the reward_ready bulk notify); rows carry their own.
+  const { confirm, modal } = useConfirm();
+  const rewardNotify = useRewardReadyNotify(confirm);
+
   // Helper to update URL params while preserving others (uses functional updater to avoid stale closure)
   function updateParams(updates: Partial<Record<'view' | 'segment' | 'sort' | 'search', string | null>>, options?: { replace?: boolean }) {
     setSearchParams((prev) => {
@@ -135,6 +140,7 @@ export function AdminMembers() {
 
   return (
     <AdminLayout>
+      {modal}
       <header className="mb-[var(--space-4)] flex flex-wrap items-center justify-between gap-[var(--space-3)]">
         <div className="flex items-baseline gap-[var(--space-3)]">
           <h2 className="text-[15px] font-medium tracking-[-0.01em] text-ink">Members</h2>
@@ -188,6 +194,16 @@ export function AdminMembers() {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[12.5px] text-ink">{q.title}</span>
                         <span className="block truncate font-mono text-[10.5px] text-ink/45">{q.meta}</span>
+                        {q.kind === 'reward_ready' && rewardNotify.result && (
+                          <span className="block truncate font-mono text-[10.5px] text-holo" role="status">
+                            {summarizeRewardNotify(rewardNotify.result)}
+                          </span>
+                        )}
+                        {q.kind === 'reward_ready' && rewardNotify.error && (
+                          <span className="block truncate font-mono text-[10.5px] text-red-400" role="alert">
+                            {rewardNotify.error}
+                          </span>
+                        )}
                       </span>
                       {/* Blueprint: queue items deep-link into the filtered
                           roster or relevant sub-view. discount_expiring has no
@@ -200,12 +216,12 @@ export function AdminMembers() {
                           {q.action} →
                         </RowAction>
                       ) : q.kind === 'reward_ready' ? (
-                        // Was sort-by-points only: the list still held every
-                        // member, so pressing it read as a dead button. 092
-                        // gives the roster a reward-ready filter, so this now
-                        // narrows the list to exactly the members it counts.
-                        <RowAction onClick={() => updateParams({ view: null, segment: 'reward-ready', sort: 'points' })}>
-                          {q.action} →
+                        // Sends the reward-ready mail to every member the item
+                        // counts (confirm first, opt-outs excluded, idempotent
+                        // per 'rr-<stage>' claim) — the roster filter it used to
+                        // open is still one click away via the segment chips.
+                        <RowAction onClick={() => { void rewardNotify.run(); }} disabled={rewardNotify.busy}>
+                          {rewardNotify.busy ? 'Sending…' : q.action}
                         </RowAction>
                       ) : q.kind === 'invites_stale' ? (
                         <RowAction onClick={() => updateParams({ view: 'invites' })}>

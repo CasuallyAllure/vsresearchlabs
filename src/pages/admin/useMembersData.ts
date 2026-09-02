@@ -149,7 +149,7 @@ function toQueue(items: AttentionItem[]): MemberQueueItem[] {
         };
       case 'reward_ready':
         return {
-          kind: it.kind, tone: it.tone, action: 'Show',
+          kind: it.kind, tone: it.tone, action: 'Notify',
           title: `${it.count} ${plural(it.count, 'member has', 'members have')} a reward credit ready`,
           meta: 'Crossed 300 points · voucher not yet redeemed',
         };
