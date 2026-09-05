@@ -72,8 +72,21 @@ export interface DiscountDraft {
 
 export interface ConvertTotals {
   subtotalCents: number;
+  /** The reward voucher's own cut of `discountCents`, broken out so the panel
+   *  can show it separately from the admin's own discount. */
+  rewardCents: number;
   discountCents: number;
   totalCents: number;
+}
+
+/** A member's reward voucher (40% off one unit of one line), redeemed at
+ *  conversion the same way place-order redeems it. */
+export interface RewardDraft {
+  voucherId: string;
+  /** Whole percent the voucher discounts, e.g. 40. */
+  percent: number;
+  /** Index into the `lines` array of the line it applies to. */
+  lineIndex: number;
 }
 
 /** Fallback invoice label when the cart carried no coupon code of its own. */
@@ -86,21 +99,39 @@ export const ADMIN_DISCOUNT_CODE = 'MEMBER DISCOUNT';
  * same way, and a negative total is not a refund, it is a bug that would be
  * recorded as money owed backwards.
  */
-export function convertTotals(lines: ConvertLine[], discount: DiscountDraft | null): ConvertTotals {
+export function convertTotals(
+  lines: ConvertLine[],
+  discount: DiscountDraft | null,
+  reward: RewardDraft | null = null,
+): ConvertTotals {
   const subtotalCents = lines.reduce(
     (sum, l) => sum + Math.max(0, Math.round(l.unitPriceCents)) * Math.max(0, Math.round(l.quantity)),
     0,
   );
 
-  let discountCents = 0;
+  const rewardLine = reward ? lines[reward.lineIndex] : undefined;
+  const rewardPercent = clampPercent(reward?.percent ?? 0);
+  const rewardCents = rewardLine
+    ? Math.min(Math.round((rewardLine.unitPriceCents * rewardPercent) / 100), subtotalCents)
+    : 0;
+  // 052's fence: the reward line's post-reward remainder is off-limits to a
+  // percent discount, so the same money is never discounted twice.
+  const fenceCents = rewardCents > 0
+    ? Math.round((rewardCents * (100 - rewardPercent)) / rewardPercent)
+    : 0;
+
+  let otherCents = 0;
   if (discount) {
-    const raw = discount.kind === 'percent'
-      ? Math.round((subtotalCents * clampPercent(discount.percent)) / 100)
-      : Math.max(0, Math.round(discount.amountCents));
-    discountCents = Math.min(raw, subtotalCents);
+    if (discount.kind === 'percent') {
+      const base = Math.max(subtotalCents - rewardCents - fenceCents, 0);
+      otherCents = Math.min(Math.round((base * clampPercent(discount.percent)) / 100), base);
+    } else {
+      otherCents = Math.min(Math.max(0, Math.round(discount.amountCents)), subtotalCents - rewardCents);
+    }
   }
 
-  return { subtotalCents, discountCents, totalCents: subtotalCents - discountCents };
+  const discountCents = Math.min(rewardCents + otherCents, subtotalCents);
+  return { subtotalCents, rewardCents, discountCents, totalCents: subtotalCents - discountCents };
 }
 
 function clampPercent(percent: number): number {
@@ -164,6 +195,25 @@ export function prefillDiscount(effectivePercent: number, couponCode: string | n
   };
 }
 
+/**
+ * The line the reward defaults to: the highest-priced eligible line, ties
+ * broken toward the first such line. null when every line is equipment — a
+ * reward has nothing to sit on.
+ *
+ * ponytail: dose === '' is the equipment marker (preparedCart.ts:41); the
+ * server enforces no exclusion of its own, the same as place-order.
+ */
+export function defaultRewardLineIndex(lines: ConvertLine[]): number | null {
+  let bestIndex: number | null = null;
+  let bestPriceCents = -1;
+  lines.forEach((l, i) => {
+    if (l.dose === '' || l.unitPriceCents <= bestPriceCents) return;
+    bestIndex = i;
+    bestPriceCents = l.unitPriceCents;
+  });
+  return bestIndex;
+}
+
 /** The order-line payload `admin_create_order` validates and records. */
 export function convertLinesPayload(lines: ConvertLine[]): Array<{
   sku: string;
@@ -201,6 +251,19 @@ export function convertDiscountPayload(
 
   const amountCents = Math.max(0, Math.round(discount.amountCents));
   return amountCents > 0 ? { kind: 'fixed', code, amount_cents: amountCents } : null;
+}
+
+/**
+ * The reward payload `admin_create_order` validates, or null when there is
+ * nothing to record — including a stale `lineIndex` the caller failed to keep
+ * in range as lines were added or removed.
+ */
+export function convertRewardPayload(
+  reward: RewardDraft | null,
+  lineCount: number,
+): { voucher_id: string; line_index: number } | null {
+  if (!reward || reward.lineIndex < 0 || reward.lineIndex >= lineCount) return null;
+  return { voucher_id: reward.voucherId, line_index: reward.lineIndex };
 }
 
 /* ── Input parsing ────────────────────────────────────────────────────────── */
@@ -256,13 +319,17 @@ export function convertConfirmMessage(input: {
   lines: ConvertLine[];
   totals: ConvertTotals;
   discount: DiscountDraft | null;
+  reward?: RewardDraft | null;
 }): string {
-  const { buyerName, lines, totals, discount } = input;
+  const { buyerName, lines, totals, discount, reward } = input;
   const count = lines.length;
   const applied = convertDiscountPayload(discount);
-  const discountNote = applied && totals.discountCents > 0
-    ? ` after ${applied.kind === 'percent' ? `${applied.percent}%` : formatPriceExact(totals.discountCents)} off`
+  const rewardNote = reward && totals.rewardCents > 0 && lines[reward.lineIndex]
+    ? ` incl. a ${reward.percent}% reward credit on ${lines[reward.lineIndex].name}`
     : '';
+  const discountNote = (applied && totals.discountCents > 0
+    ? ` after ${applied.kind === 'percent' ? `${applied.percent}%` : formatPriceExact(totals.discountCents)} off`
+    : '') + rewardNote;
 
   return (
     `Create a real order for ${buyerName} — ${count} line${count === 1 ? '' : 's'}, ` +

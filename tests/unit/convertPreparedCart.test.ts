@@ -34,7 +34,9 @@ import {
   convertConfirmMessage,
   convertDiscountPayload,
   convertLinesPayload,
+  convertRewardPayload,
   convertTotals,
+  defaultRewardLineIndex,
   parsePercentInput,
   parseQuantityInput,
   parseUsdToCents,
@@ -42,6 +44,7 @@ import {
   prefillDiscount,
   type ConvertLine,
   type DiscountDraft,
+  type RewardDraft,
 } from '../../src/lib/convertPreparedCart';
 import type { VariantIndex, VariantOption } from '../../src/lib/preparedCart';
 import { formatPriceExact } from '../../src/lib/pricing';
@@ -130,8 +133,97 @@ describe('convertTotals', () => {
 
   test('is zero across the board for an empty cart', () => {
     expect(convertTotals([], percentOff(15))).toEqual({
-      subtotalCents: 0, discountCents: 0, totalCents: 0,
+      subtotalCents: 0, rewardCents: 0, discountCents: 0, totalCents: 0,
     });
+  });
+});
+
+describe('convertTotals with a reward', () => {
+  const reward = (over: Partial<RewardDraft> = {}): RewardDraft => ({
+    voucherId: 'voucher-1', percent: 40, lineIndex: 1, ...over,
+  });
+
+  test('fences the reward line off from the percent discount, matching 052', () => {
+    // BPC 12,000 × 2 + RETA 24,500 × 1 — subtotal 48,500. Reward on RETA (index
+    // 1) at 40%, then a 15% account discount on top.
+    const lines = [
+      line({ sku: 'VSR-RS-BPC', name: 'BPC-157 — 10mg', unitPriceCents: 12_000, quantity: 2 }),
+      line({ sku: 'VSR-RS-RETA', name: 'Retatrutide — 15mg', unitPriceCents: 24_500, quantity: 1 }),
+    ];
+    const totals = convertTotals(lines, percentOff(15), reward());
+
+    expect(totals.subtotalCents).toBe(48_500);
+    expect(totals.rewardCents).toBe(9_800);
+    expect(totals.discountCents).toBe(13_400);
+    expect(totals.totalCents).toBe(35_100);
+  });
+
+  test('rounds the fence with the SQL formula, not unit minus reward', () => {
+    // 12,341 × 40 / 100 = 4,936.4 → 4,936. Fence = 4,936 × 60 / 40 = 7,404 —
+    // NOT 12,341 − 4,936 = 7,405, which is a different (wrong) number.
+    const totals = convertTotals(
+      [line({ unitPriceCents: 12_341, quantity: 1 })],
+      null,
+      reward({ lineIndex: 0 }),
+    );
+
+    expect(totals.rewardCents).toBe(4_936);
+    expect(totals.totalCents).toBe(12_341 - 4_936);
+  });
+
+  test('caps a fixed discount at the subtotal minus the reward, not minus the fence', () => {
+    const lines = [
+      line({ sku: 'VSR-RS-BPC', unitPriceCents: 12_000, quantity: 2 }),
+      line({ sku: 'VSR-RS-RETA', unitPriceCents: 24_500, quantity: 1 }),
+    ];
+    const totals = convertTotals(lines, fixedOff(50_000), reward());
+
+    // subtotal 48,500 − reward 9,800 = 38,700, capped there rather than at 0.
+    expect(totals.rewardCents).toBe(9_800);
+    expect(totals.discountCents).toBe(48_500);
+    expect(totals.totalCents).toBe(0);
+  });
+});
+
+describe('defaultRewardLineIndex', () => {
+  test('picks the highest-priced eligible line', () => {
+    const lines = [
+      line({ unitPriceCents: 12_000 }),
+      line({ unitPriceCents: 24_500 }),
+      line({ unitPriceCents: 18_000 }),
+    ];
+    expect(defaultRewardLineIndex(lines)).toBe(1);
+  });
+
+  test('skips lab equipment (dose === "")', () => {
+    const lines = [
+      line({ unitPriceCents: 30_000, dose: '' }),
+      line({ unitPriceCents: 12_000, dose: '10mg' }),
+    ];
+    expect(defaultRewardLineIndex(lines)).toBe(1);
+  });
+
+  test('is null when every line is equipment', () => {
+    expect(defaultRewardLineIndex([line({ dose: '' })])).toBeNull();
+  });
+
+  test('breaks a tie toward the first line', () => {
+    const lines = [line({ unitPriceCents: 12_000 }), line({ unitPriceCents: 12_000 })];
+    expect(defaultRewardLineIndex(lines)).toBe(0);
+  });
+});
+
+describe('convertRewardPayload', () => {
+  test('sends the voucher and line index', () => {
+    expect(convertRewardPayload({ voucherId: 'v1', percent: 40, lineIndex: 1 }, 2)).toEqual({
+      voucher_id: 'v1', line_index: 1,
+    });
+  });
+
+  test('sends nothing for a null reward or an out-of-range line index', () => {
+    expect(convertRewardPayload(null, 2)).toBeNull();
+    expect(convertRewardPayload({ voucherId: 'v1', percent: 40, lineIndex: 2 }, 2)).toBeNull();
+    expect(convertRewardPayload({ voucherId: 'v1', percent: 40, lineIndex: -1 }, 2)).toBeNull();
   });
 });
 
@@ -302,5 +394,19 @@ describe('convertConfirmMessage', () => {
 
     expect(message).toContain(formatPriceExact(4_250));
     expect(message).toContain(formatPriceExact(25_750));
+  });
+
+  test('mentions the reward credit when present', () => {
+    const lines = [
+      line({ unitPriceCents: 12_000 }),
+      line({ sku: 'VSR-RS-RETA', name: 'Retatrutide — 15mg', unitPriceCents: 24_500 }),
+    ];
+    const reward: RewardDraft = { voucherId: 'v1', percent: 40, lineIndex: 1 };
+    const discount = percentOff(15);
+    const totals = convertTotals(lines, discount, reward);
+
+    const message = convertConfirmMessage({ buyerName: 'Dana Reyes', lines, totals, discount, reward });
+
+    expect(message).toContain('40% reward credit on Retatrutide — 15mg');
   });
 });

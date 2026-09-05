@@ -29,21 +29,22 @@
  * make a confirmed order look like it did nothing.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ConfirmFn } from '../../../components/admin/accountPanels';
+import { REWARD_PERCENT, REWARD_THRESHOLD } from '../../../components/admin/accountPanels/rewardNotify';
 import { Button } from '../../../components/ui/Button';
 import { FIELD_DEFAULT, FIELD_LABEL_DENSE, FIELD_SURFACE_DENSE } from '../../../components/ui/Field';
 import { formatPriceExact } from '../../../lib/pricing';
-import type { VariantIndex } from '../../../lib/preparedCart';
+import { variantOptionKey, type VariantIndex } from '../../../lib/preparedCart';
 import {
-  ADMIN_DISCOUNT_CODE, convertConfirmMessage, convertTotals, parsePercentInput,
+  ADMIN_DISCOUNT_CODE, convertConfirmMessage, convertTotals, defaultRewardLineIndex, parsePercentInput,
   parseQuantityInput, parseUsdToCents, prefillConvertLines, prefillDiscount,
-  type ConvertLine, type DiscountDraft, type DiscountKind,
+  type ConvertLine, type DiscountDraft, type DiscountKind, type RewardDraft,
 } from '../../../lib/convertPreparedCart';
 import type { MemberRow } from '../membersView';
 import { RowAction } from './ui';
-import { useConvertPreparedCart, type ConvertResult } from './useConvertPreparedCart';
+import { loadActiveVoucher, redeemForMember, useConvertPreparedCart, type ConvertResult } from './useConvertPreparedCart';
 import type { PreparedCartSummary } from './usePreparedCart';
 
 const fieldCls = `${FIELD_SURFACE_DENSE} ${FIELD_DEFAULT}`;
@@ -151,12 +152,43 @@ export function ConvertToOrderForm({
     prefillDiscount(member.effectivePercent, cart.coupon_code));
   const [result, setResult] = useState<ConvertResult | null>(null);
 
+  const [voucher, setVoucher] = useState<{ id: string; percent: number } | null>(null);
+  const [voucherLoaded, setVoucherLoaded] = useState(false);
+  const [rewardChoice, setRewardChoice] = useState<'auto' | 'none' | string>('auto');
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+  const [redeeming, setRedeeming] = useState(false);
+
   const { converting, convert } = useConvertPreparedCart();
+
+  useEffect(() => {
+    let cancelled = false;
+    loadActiveVoucher(member.userId).then((v) => {
+      if (cancelled) return;
+      setVoucher(v);
+      setVoucherLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [member.userId]);
 
   const resolved = useMemo(() => drafts.map(resolveDraft), [drafts]);
   const lines = useMemo(() => resolved.filter((l): l is ConvertLine => l !== null), [resolved]);
   const invalidCount = resolved.length - lines.length;
-  const totals = useMemo(() => convertTotals(lines, discount), [lines, discount]);
+
+  const rewardIndex = rewardChoice === 'none'
+    ? null
+    : rewardChoice === 'auto'
+      ? defaultRewardLineIndex(lines)
+      : lines.findIndex((l) => variantOptionKey(l) === rewardChoice);
+  const reward: RewardDraft | null = useMemo(
+    () => (voucher && rewardIndex != null && rewardIndex >= 0
+      ? { voucherId: voucher.id, percent: voucher.percent, lineIndex: rewardIndex }
+      : null),
+    [voucher, rewardIndex],
+  );
+
+  const totals = useMemo(() => convertTotals(lines, discount, reward), [lines, discount, reward]);
 
   const nameOk = buyerName.trim().length > 0;
   const contactOk = buyerContact.trim().length > 0;
@@ -173,7 +205,7 @@ export function ConvertToOrderForm({
 
   async function submit() {
     const ok = await confirm(
-      convertConfirmMessage({ buyerName: buyerName.trim(), lines, totals, discount }),
+      convertConfirmMessage({ buyerName: buyerName.trim(), lines, totals, discount, reward }),
       { confirmLabel: 'Create order' },
     );
     if (!ok) return;
@@ -186,11 +218,36 @@ export function ConvertToOrderForm({
       notes: notes.trim() || null,
       lines,
       discount,
+      reward,
     });
     setResult(outcome);
     // Reload on any terminal answer: 'already_converted' means the panel is
     // stale, which is exactly when the owner needs it refreshed.
     if (outcome.status === 'converted' || outcome.status === 'already_converted') onConverted();
+  }
+
+  async function handleRedeem() {
+    if (redeeming) return;
+    setRedeemError(null);
+    const ok = await confirm(
+      `Spend ${REWARD_THRESHOLD} of ${member.name}'s points for a ${REWARD_PERCENT}% off one item voucher and ` +
+        'apply it to this order?',
+      { confirmLabel: 'Redeem & apply' },
+    );
+    if (!ok) return;
+
+    setRedeeming(true);
+    const outcome = await redeemForMember(
+      member.userId,
+      notes.trim() || `Redeemed at prepared-cart conversion (${cart.id})`,
+    );
+    setRedeeming(false);
+    if (outcome.ok) {
+      setVoucher(outcome.voucher);
+      setRewardChoice('auto');
+    } else {
+      setRedeemError(outcome.reason);
+    }
   }
 
   return (
@@ -326,15 +383,68 @@ export function ConvertToOrderForm({
         </p>
       </div>
 
+      {/* ── The reward voucher, if this member has or can earn one ────────── */}
+      <div className="mt-[var(--space-3)] border-t border-ink/[0.06] pt-[var(--space-3)]">
+        {voucher && (
+          <>
+            <p className={FIELD_LABEL_DENSE}>Reward credit — {voucher.percent}% off one item</p>
+            <div className="mt-[var(--space-2)] flex flex-wrap gap-x-[var(--space-4)] gap-y-1 text-[11.5px] text-ink/70">
+              {lines.map((l) => {
+                const key = variantOptionKey(l);
+                return (
+                  <label key={key} className="flex items-center gap-1.5">
+                    <input
+                      type="radio" name="reward-line" value={key}
+                      checked={rewardChoice === 'auto' ? rewardIndex === lines.indexOf(l) : rewardChoice === key}
+                      onChange={() => setRewardChoice(key)}
+                    />
+                    {l.name}{l.dose === '' ? ' (equipment)' : ''} · {formatPriceExact(l.unitPriceCents)}
+                  </label>
+                );
+              })}
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="radio" name="reward-line" value="none"
+                  checked={rewardChoice === 'none'}
+                  onChange={() => setRewardChoice('none')}
+                />
+                Not on this order
+              </label>
+            </div>
+          </>
+        )}
+        {!voucher && voucherLoaded && member.rewardReady && (
+          <>
+            <button
+              type="button"
+              onClick={handleRedeem}
+              disabled={redeeming}
+              className="rounded-full border border-holo/35 px-[var(--space-4)] py-[var(--space-2)] text-[10px] uppercase tracking-[0.2em] text-holo transition-colors hover:border-holo/60 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {redeeming ? 'Working…' : `Redeem ${REWARD_PERCENT}% credit & apply`}
+            </button>
+            {redeemError && (
+              <p role="alert" className="mt-[var(--space-2)] text-[10.5px] text-red-400">{redeemError}</p>
+            )}
+          </>
+        )}
+      </div>
+
       {/* ── The number he is reconciling against ──────────────────────────── */}
       <dl className="mt-[var(--space-3)] space-y-1 border-t border-ink/[0.06] pt-[var(--space-3)] font-mono text-[11px] tabular-nums">
         <div className="flex justify-between text-ink/45">
           <dt>Subtotal</dt>
           <dd>{formatPriceExact(totals.subtotalCents)}</dd>
         </div>
+        {totals.rewardCents > 0 && reward && lines[reward.lineIndex] && (
+          <div className="flex justify-between text-ink/45">
+            <dt>Reward credit · {reward.percent}% off {lines[reward.lineIndex].name}</dt>
+            <dd>−{formatPriceExact(totals.rewardCents)}</dd>
+          </div>
+        )}
         <div className="flex justify-between text-ink/45">
           <dt>Discount</dt>
-          <dd>−{formatPriceExact(totals.discountCents)}</dd>
+          <dd>−{formatPriceExact(totals.discountCents - totals.rewardCents)}</dd>
         </div>
         <div className="flex items-baseline justify-between pt-1">
           <dt className="text-[10px] uppercase tracking-[0.22em] text-ink/50">Order total</dt>
