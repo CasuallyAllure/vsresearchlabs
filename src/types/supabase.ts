@@ -1897,7 +1897,7 @@ export type Database = {
           p_discount?: Json
           p_lines?: Json
           p_notes?: string
-          p_reward?: Json | null
+          p_reward?: Json
         }
         Returns: Json
       }
@@ -1909,7 +1909,7 @@ export type Database = {
           p_discount?: Json
           p_lines?: Json
           p_notes?: string
-          p_reward?: Json | null
+          p_reward?: Json
           p_user_id?: string
         }
         Returns: Json
