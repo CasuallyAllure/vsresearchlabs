@@ -50,8 +50,11 @@ import {
 import { useProductOverrides } from '../../../lib/productOverrides';
 import { getErrorMessage, isMissingBackend } from './backend';
 
-/** The full catalog, exactly as the admin order composer enumerates it. */
-const CATALOG = [...productsData, ...generatedCompounds] as unknown as Product[];
+/** The full catalog, exactly as the admin order composer enumerates it.
+ *  Exported because the review step prices the cart against the SAME products
+ *  the member's claim will add (`planPreparedCart`), and a second catalog
+ *  assembled elsewhere could disagree with this one. */
+export const CATALOG = [...productsData, ...generatedCompounds] as unknown as Product[];
 
 /**
  * OPENABILITY, not history. 081 derived a fourth state, 'claimed', the moment

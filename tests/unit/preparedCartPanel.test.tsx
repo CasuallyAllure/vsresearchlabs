@@ -96,19 +96,26 @@ const SENT: InvokeHandler = () => ({
 type LogResult = { data: unknown; error: unknown };
 const NO_LOG: LogResult = { data: [], error: null };
 
+/** The member's active reward voucher (050), read by the review step through
+ *  the same `loadActiveVoucher` ConvertToOrderForm uses. Empty by default: most
+ *  of this file is about building and sending, not about the credit. */
+const NO_VOUCHER: LogResult = { data: [], error: null };
+
 function makeClient(
   handlers: Record<string, RpcHandler>,
   invoke: InvokeHandler = SENT,
   emailLog: LogResult = NO_LOG,
+  voucher: LogResult = NO_VOUCHER,
 ) {
   const rpc = vi.fn(async (name: string, args: unknown) =>
     handlers[name] ? handlers[name](args) : { data: null, error: null });
   const from = vi.fn((table: string) => {
-    const result = table === 'email_log' ? emailLog : NO_LOG;
+    const result = table === 'email_log' ? emailLog : table === 'reward_vouchers' ? voucher : NO_LOG;
     const chain = {
       select: vi.fn(() => chain),
       eq: vi.fn(() => chain),
       in: vi.fn(() => chain),
+      limit: vi.fn(() => chain),
       then: (ok: (r: LogResult) => unknown, fail?: (e: unknown) => unknown) =>
         Promise.resolve(result).then(ok, fail),
     };
@@ -131,11 +138,31 @@ function selects() {
   return screen.getAllByRole('combobox') as HTMLSelectElement[];
 }
 
+/** The value of a `<dt>label</dt><dd>…</dd>` money row. */
+function amountFor(label: string): string {
+  const dd = screen.getByText(label).parentElement?.querySelector('dd');
+  return dd?.textContent ?? '';
+}
+
 /** Add one line to the composer: pick the compound, then the dose. */
 function pickLine(compound: string, optionKey: string) {
   const [compoundSelect, doseSelect] = selects();
   fireEvent.change(compoundSelect, { target: { value: compound } });
   fireEvent.change(doseSelect, { target: { value: optionKey } });
+}
+
+/**
+ * Submit the composer. TWO presses since the review step: "Review cart" opens
+ * the summary and creates nothing at all, and only "Send to member" reaches
+ * admin_create_prepared_cart. Send waits to be enabled because it is held while
+ * the member's reward voucher is still being read — a total quoted before that
+ * answer arrives is a total that is about to move.
+ */
+async function submit() {
+  fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+  const send = await screen.findByRole('button', { name: 'Send to member' });
+  await waitFor(() => expect((send as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(send);
 }
 
 /** Every failure path is required to console.error the RAW object; capturing it
@@ -159,7 +186,7 @@ afterEach(() => {
 describe('PreparedCartPanel — the line editor', () => {
   test('offers a compound dropdown and a dose dropdown, and never a SKU text field', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     const [compoundSelect, doseSelect] = selects();
     expect([...compoundSelect.options].map((o) => o.value)).toEqual(['', 'BPC-157', 'Retatrutide']);
@@ -176,7 +203,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the dose list repopulates when the compound changes', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     const [compoundSelect] = selects();
     fireEvent.change(compoundSelect, { target: { value: 'BPC-157' } });
@@ -192,7 +219,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('every dose option names its own shipping tier', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     fireEvent.change(selects()[0], { target: { value: 'BPC-157' } });
     const labels = [...selects()[1].options].map((o) => o.text);
@@ -209,7 +236,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the compound dropdown says "all" only when the doses really agree', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     const labels = [...selects()[0].options].map((o) => o.text);
 
@@ -221,7 +248,7 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('the picked tier stays visible on the line row after selection', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     expect(screen.getByText('24 Hour')).toBeTruthy();
@@ -235,14 +262,14 @@ describe('PreparedCartPanel — the line editor', () => {
 
   test('states that B2G1 cannot reach a 24 Hour line', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     expect(screen.getByText(/a 24 Hour line never earns a free third unit/i)).toBeTruthy();
   });
 
   test("shows THIS member's price, not list price", async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|10mg');
 
@@ -266,11 +293,11 @@ describe('PreparedCartPanel — sending', () => {
     seam.client = client;
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|10mg');
     fireEvent.change(screen.getByPlaceholderText('e.g. SPRING20'), { target: { value: 'spring20' } });
-    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+    await submit();
 
     await waitFor(() => expect(create).toHaveBeenCalled());
 
@@ -290,10 +317,10 @@ describe('PreparedCartPanel — sending', () => {
     seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST, admin_create_prepared_cart: create });
 
     render(<PreparedCartPanel member={MEMBER} confirm={no} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+    await submit();
 
     await waitFor(() => expect(no).toHaveBeenCalled());
     expect(create).not.toHaveBeenCalled();
@@ -309,29 +336,29 @@ describe('PreparedCartPanel — sending', () => {
     });
 
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+    await submit();
 
     // A fragment is never sent to a server and never rides in a Referer header.
     const link = await screen.findByText(new RegExp(`/account/prepared#t=${token}`));
     expect(link).toBeTruthy();
   });
 
-  test('the build button stays disabled until a dose is actually picked', async () => {
+  test('the review button stays disabled until a dose is actually picked', async () => {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
 
-    const button = screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement;
+    const button = screen.getByRole('button', { name: 'Review cart' }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
 
     // A compound alone is not a line — the dose is what makes it orderable.
     fireEvent.change(selects()[0], { target: { value: 'BPC-157' } });
-    expect((screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'Review cart' }) as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.change(selects()[1], { target: { value: 'VSR-RS-BPC|5mg' } });
-    expect((screen.getByRole('button', { name: /build & send/i }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole('button', { name: 'Review cart' }) as HTMLButtonElement).disabled).toBe(false);
   });
 });
 
@@ -365,9 +392,9 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
 
   async function startBuild() {
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+    await submit();
   }
 
   test('a rejecting build RPC clears "Working…" and renders the reason', async () => {
@@ -386,7 +413,9 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
     // would look identical to a build that quietly did nothing.
     expect(await screen.findByText(/Failed to fetch/)).toBeTruthy();
     await waitFor(() => expect(screen.queryByText('Working…')).toBeNull());
-    expect((screen.getByRole('button', { name: 'Build & send cart' }) as HTMLButtonElement).disabled).toBe(false);
+    // Still on the review, with send usable again: a build that failed has not
+    // moved the owner on, and the cart he composed is still in front of him.
+    expect((screen.getByRole('button', { name: 'Send to member' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   test('a build RPC that never settles times out instead of hanging forever', async () => {
@@ -407,7 +436,12 @@ describe('PreparedCartPanel — a failing RPC must never latch the button', () =
       render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
       await flush();
       pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-      fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+      // Not `submit()`: its waits are timer-driven and would never resolve
+      // under fake timers. The two presses are made by hand instead, with a
+      // microtask flush between them for the voucher read.
+      fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+      await flush();
+      fireEvent.click(screen.getByRole('button', { name: 'Send to member' }));
       await flush();
 
       expect(screen.getByText('Working…')).toBeTruthy();
@@ -512,9 +546,9 @@ describe('PreparedCartPanel — what the owner is told about the email', () => {
       invoke,
     );
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
-    fireEvent.click(screen.getByRole('button', { name: /build & send/i }));
+    await submit();
   }
 
   test('the send carries the cart id and the plaintext token — the only moment it exists', async () => {
@@ -725,19 +759,13 @@ describe('PreparedCartPanel — an opened cart', () => {
     fireEvent.click(row);
   }
 
-  /** The value of a `<dt>label</dt><dd>…</dd>` money row. */
-  function amountFor(label: string): string {
-    const dd = screen.getByText(label).parentElement?.querySelector('dd');
-    return dd?.textContent ?? '';
-  }
-
   test('the carts are listed WITHOUT opening the builder', async () => {
     mount([cart()]);
 
     // The cart is on screen…
     expect(await screen.findByText('live')).toBeTruthy();
     // …and the composer is not. Building is an action from here, not the door.
-    expect(screen.queryByRole('button', { name: 'Build & send cart' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Review cart' })).toBeNull();
     expect(screen.getByRole('button', { name: '+ Build a new cart' })).toBeTruthy();
   });
 
@@ -745,7 +773,7 @@ describe('PreparedCartPanel — an opened cart', () => {
     mount([cart()]);
 
     fireEvent.click(await screen.findByRole('button', { name: '+ Build a new cart' }));
-    expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy();
   });
 
   test('a member with no carts is told so plainly and handed the builder', async () => {
@@ -753,7 +781,7 @@ describe('PreparedCartPanel — an opened cart', () => {
 
     expect(await screen.findByText(/Nothing built for Ada yet/i)).toBeTruthy();
     // Nothing to read means the empty state IS the form — no extra press.
-    expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy();
   });
 
   test('an expanded cart renders every line with its dose, its tier and its price', async () => {
@@ -780,7 +808,7 @@ describe('PreparedCartPanel — an opened cart', () => {
     // The composer's answer for BPC 5mg ×2 + BPC 10mg ×1.
     seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST });
     render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Build & send cart' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
     pickLine('BPC-157', 'VSR-RS-BPC|5mg');
     fireEvent.change(screen.getAllByRole('spinbutton')[0], { target: { value: '2' } });
     fireEvent.click(screen.getByRole('button', { name: '+ Add line' }));
@@ -950,7 +978,11 @@ describe('PreparedCartPanel — whether the email went out', () => {
 
     const client = seam.client as { from: ReturnType<typeof vi.fn> };
     expect(client.from).toHaveBeenCalledWith('email_log');
-    const chain = client.from.mock.results.find((r) => r.type === 'return')?.value as {
+    // BY TABLE, not "the first read" — the panel also reads reward_vouchers for
+    // the review step, and picking whichever call came first would assert the
+    // wrong query the moment the order of those two reads changes.
+    const at = client.from.mock.calls.findIndex(([table]) => table === 'email_log');
+    const chain = client.from.mock.results[at]?.value as {
       eq: ReturnType<typeof vi.fn>; in: ReturnType<typeof vi.fn>;
     };
     expect(chain.eq).toHaveBeenCalledWith('kind', 'prepared_cart');
@@ -972,5 +1004,156 @@ describe('PreparedCartPanel — whether the email went out', () => {
     expect(screen.queryByText('not on record')).toBeNull();
     // The carts themselves survive a failed side read.
     expect(screen.getByText('live')).toBeTruthy();
+  });
+});
+
+/**
+ * THE REVIEW STEP.
+ *
+ * The owner, verbatim: "Why don't you just add an apply/redeem coupon button at
+ * the end of my cart building? Once I press build a cart, it should show the
+ * summary first instead of build-and-send. So I could see the summary. That
+ * should activate and trigger all discounts to actually be put on."
+ *
+ * Building and sending used to be ONE press, which meant he priced a real
+ * client's cart while blind to two of the three discounts that reach it. Four
+ * properties, each a separate failure if it breaks:
+ *
+ *   • REVIEWING WRITES NOTHING. The summary is reachable without creating a
+ *     cart or mailing anyone; only "Send to member" does that.
+ *   • GOING BACK LOSES NOTHING. A composer that made him retype the cart to
+ *     change one quantity would not be used twice.
+ *   • THE CREDIT IS SHOWN WHEN IT EXISTS AND NEVER INVENTED. A reward line for
+ *     a member holding no voucher quotes money that will not be discounted.
+ *   • THE TOTAL IS THE ONE THAT WILL BE BILLED. 052 fences the reward item off
+ *     the account rate; subtracting the credit from the member total instead
+ *     quotes the cart LOW, and the owner would only find out on the invoice.
+ */
+describe('PreparedCartPanel — the review before sending', () => {
+  /** A member holding the standing 40%-off-one-item voucher (050). */
+  const VOUCHER: LogResult = { data: [{ id: 'v1', percent: 40 }], error: null };
+
+  const BUILT = {
+    data: { cart_id: 'cart-1', token: 'd'.repeat(64), expires_at: '2026-08-13T00:00:00Z' },
+    error: null,
+  };
+
+  /** BPC 5mg ×2 ($60 each) + BPC 10mg ×1 ($100) — two doses of one compound at
+   *  different unit prices, so the voucher has a line to CHOOSE rather than a
+   *  single line it cannot get wrong. */
+  function composeTwoLines() {
+    pickLine('BPC-157', 'VSR-RS-BPC|5mg');
+    fireEvent.change(screen.getAllByRole('spinbutton')[0], { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: '+ Add line' }));
+    const [, , compound2, dose2] = selects();
+    fireEvent.change(compound2, { target: { value: 'BPC-157' } });
+    fireEvent.change(dose2, { target: { value: 'VSR-RS-BPC|10mg' } });
+  }
+
+  async function openComposer(voucher: LogResult, handlers: Record<string, RpcHandler> = {}) {
+    seam.client = makeClient({ admin_prepared_carts: EMPTY_LIST, ...handlers }, SENT, NO_LOG, voucher);
+    render(<PreparedCartPanel member={MEMBER} confirm={yes} />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
+  }
+
+  test('opening the summary creates nothing — only "Send to member" builds the cart', async () => {
+    const create = vi.fn(() => BUILT);
+    await openComposer(NO_VOUCHER, { admin_create_prepared_cart: create });
+    pickLine('BPC-157', 'VSR-RS-BPC|10mg');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+    expect(await screen.findByRole('button', { name: 'Send to member' })).toBeTruthy();
+
+    // The owner is reading the summary. Nothing has been written, and he has
+    // not even been asked to confirm — the press that got him here was free.
+    expect(create).not.toHaveBeenCalled();
+    expect(yes).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Send to member' }));
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+  });
+
+  test('"Back to edit" returns to the composer with every field intact', async () => {
+    await openComposer(NO_VOUCHER);
+    composeTwoLines();
+    fireEvent.change(screen.getByPlaceholderText('e.g. SPRING20'), { target: { value: 'spring20' } });
+    fireEvent.change(screen.getByPlaceholderText('Why you put this together'), {
+      target: { value: 'Repeat of the June order.' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Back to edit' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Review cart' })).toBeTruthy());
+
+    // Both lines, both doses, the quantity, the coupon and the note. None of it
+    // ever left React state, and none of it may be quietly dropped.
+    const [compound1, dose1, compound2, dose2] = selects();
+    expect([compound1.value, dose1.value]).toEqual(['BPC-157', 'VSR-RS-BPC|5mg']);
+    expect([compound2.value, dose2.value]).toEqual(['BPC-157', 'VSR-RS-BPC|10mg']);
+    expect((screen.getAllByRole('spinbutton')[0] as HTMLInputElement).value).toBe('2');
+    expect((screen.getByPlaceholderText('e.g. SPRING20') as HTMLInputElement).value).toBe('spring20');
+    expect((screen.getByPlaceholderText('Why you put this together') as HTMLTextAreaElement).value)
+      .toBe('Repeat of the June order.');
+  });
+
+  test('the summary names the reward credit and the line it lands on', async () => {
+    await openComposer(VOUCHER);
+    composeTwoLines();
+    fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+
+    // The highest UNIT price in the cart, which is rewardCreditPreview's rule
+    // and place-order's — not the biggest LINE ($120 of 5mg).
+    expect(await screen.findByText('Reward credit · 40% off BPC-157 — 10mg')).toBeTruthy();
+    // Shown, never offered as a choice: prepared_carts (081) has no column to
+    // persist one, so a picker here would be a promise the cart cannot keep.
+    expect(screen.getByText(/cannot carry a different choice/i)).toBeTruthy();
+    expect(screen.queryByRole('radio')).toBeNull();
+  });
+
+  test('a member holding no voucher gets no reward line and no phantom credit', async () => {
+    await openComposer(NO_VOUCHER);
+    composeTwoLines();
+    fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+    await screen.findByRole('button', { name: 'Send to member' });
+
+    // The money ROW, not the caveat sentence below it, which mentions the
+    // reward credit whether or not this member holds one.
+    expect(screen.queryByText(/^Reward credit ·/)).toBeNull();
+    // The account rate reaches the whole cart, because nothing is fenced off.
+    expect(amountFor('Account-holder 15%')).toBe('−$33');
+    expect(amountFor('Ada pays')).toBe('$187');
+  });
+
+  test('the total fences the reward item off the account rate instead of discounting it twice', async () => {
+    await openComposer(VOUCHER);
+    composeTwoLines();
+    fireEvent.click(screen.getByRole('button', { name: 'Review cart' }));
+    await screen.findByText('Reward credit · 40% off BPC-157 — 10mg');
+
+    // $60 ×2 + $100 = $220 list. The voucher takes 40% of the highest unit
+    // price ($100) → $40, and 052 fences that whole unit off the account rate,
+    // which therefore reaches $220 − $100 = $120 → $18. $220 − $18 − $40.
+    expect(amountFor('List')).toBe('$220');
+    expect(amountFor('Account-holder 15%')).toBe('−$18');
+    expect(amountFor('Reward credit · 40% off BPC-157 — 10mg')).toBe('−$40');
+    expect(amountFor('Ada pays')).toBe('$162');
+    // NOT $147. Subtracting the credit from the member total ($187) discounts
+    // the fenced unit twice and would quote the cart $15 under what place-order
+    // actually bills — the exact divergence this screen exists to prevent.
+    expect(amountFor('Ada pays')).not.toBe('$147');
+  });
+
+  test('the confirmation states the same total the summary does, reward included', async () => {
+    const create = vi.fn(() => BUILT);
+    await openComposer(VOUCHER, { admin_create_prepared_cart: create });
+    composeTwoLines();
+    await submit();
+
+    await waitFor(() => expect(yes).toHaveBeenCalled());
+    const message = String(yes.mock.calls[0][0]);
+    // A dialog quoting a different figure two inches below the one he just read
+    // would be worse than no dialog at all.
+    expect(message).toContain('$162');
+    expect(message).toContain('40% reward credit on BPC-157 — 10mg');
   });
 });

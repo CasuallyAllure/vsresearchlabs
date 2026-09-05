@@ -32,10 +32,17 @@
  * order unplaceable rather than cheaper. A negotiated price travels as a coupon
  * CODE, which the server re-prices at checkout.
  *
- * BUILD AND SEND ARE ONE ACTION, because the link token exists for exactly one
- * moment: admin_create_prepared_cart returns the plaintext once and stores only
- * its digest, so a cart whose token was not mailed there and then can never be
- * mailed at all — only rebuilt. The delivery outcome is reported LITERALLY (see
+ * HE READS THE SUMMARY FIRST. Composing used to build and send in one press,
+ * which left him pricing a real client's cart blind to two of the three
+ * discounts that reach it — the one-off coupon and the member's reward voucher.
+ * Submitting the composer now opens PreparedCartReview and creates NOTHING; the
+ * cart is built only from "Send to member" there, and "Back to edit" returns
+ * here with every field intact because they never left this component's state.
+ *
+ * BUILD AND SEND ARE STILL ONE ACTION, because the link token exists for exactly
+ * one moment: admin_create_prepared_cart returns the plaintext once and stores
+ * only its digest, so a cart whose token was not mailed there and then can never
+ * be mailed at all — only rebuilt. The delivery outcome is reported LITERALLY (see
  * DeliveryNote): sent, already sent, suppressed because the member opted out of
  * marketing, or failed. A failed send says so and the copyable link stays on
  * screen, because "the client was emailed" is the one thing this panel must
@@ -60,7 +67,7 @@
  * No new page, no nav entry.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ConfirmFn } from '../../../components/admin/accountPanels';
 import { Button } from '../../../components/ui/Button';
@@ -71,12 +78,15 @@ import {
   type PreparedCartLine, type VariantIndex,
 } from '../../../lib/preparedCart';
 import { opensNote, stampLabel } from '../../../lib/preparedCartDetail';
+import { reviewPreparedCart } from '../../../lib/preparedCartReview';
 import type { MemberRow } from '../membersView';
 import { Chip, Panel, RowAction } from './ui';
 import { ConvertToOrderForm } from './ConvertToOrderForm';
 import { PreparedCartDetail } from './PreparedCartDetail';
+import { PreparedCartReview, PreparedCartTotals } from './PreparedCartReview';
+import { loadActiveVoucher } from './useConvertPreparedCart';
 import {
-  preparedCartClaimUrl, usePreparedCart, useVariantIndex,
+  CATALOG, preparedCartClaimUrl, usePreparedCart, useVariantIndex,
   type CreatedPreparedCart, type PreparedCartStatus, type PreparedCartSummary, type SendResult,
 } from './usePreparedCart';
 
@@ -188,12 +198,44 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
   // while a member who has carts gets to see them first. Once he touches the
   // toggle his choice sticks.
   const [composerOpen, setComposerOpen] = useState<boolean | null>(null);
+  // The composer's second screen. Purely local: entering it does no I/O, and
+  // leaving it keeps every field because none of them live in the review.
+  const [reviewing, setReviewing] = useState(false);
+  // The member's active voucher, from the loader ConvertToOrderForm already
+  // uses — one query shape for the whole Members surface. `loaded` is tracked
+  // separately because "no voucher" and "not read yet" must not both render as
+  // a total with no reward line in it.
+  const [voucher, setVoucher] = useState<{ id: string; percent: number } | null>(null);
+  const [voucherLoaded, setVoucherLoaded] = useState(false);
   // Gated on `loading` so the composer never flashes open and then collapses
   // under a member who does have carts.
   const showComposer = composerOpen ?? (!loading && carts.length === 0);
 
+  useEffect(() => {
+    let cancelled = false;
+    loadActiveVoucher(member.userId).then((v) => {
+      if (cancelled) return;
+      setVoucher(v);
+      setVoucherLoaded(true);
+    });
+    return () => { cancelled = true; };
+  }, [member.userId]);
+
   const lines = useMemo(() => draftLines(rows, index), [rows, index]);
-  const pricing = useMemo(() => priceLines(lines, index, member.effectivePercent), [lines, index, member.effectivePercent]);
+  // ONE call, feeding both screens: the editor's per-unit prices and the
+  // review's total come from the same `priceLines` result, so the number the
+  // owner reads while building cannot drift from the one he sends.
+  const review = useMemo(
+    () => reviewPreparedCart({
+      lines,
+      index,
+      products: CATALOG,
+      accountPercent: member.effectivePercent,
+      voucherPercent: voucher?.percent ?? null,
+    }),
+    [lines, index, member.effectivePercent, voucher],
+  );
+  const pricing = review.pricing;
   // Every listed cart's total, at THIS member's rate, from the same `priceLines`
   // the composer quotes with — so a cart summarised in the list, opened in the
   // detail and re-quoted in the composer can only ever show one number.
@@ -212,10 +254,14 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
   }
 
   async function build() {
+    // The same total the review screen states, including the reward credit —
+    // a confirmation that quoted a different figure two inches below the one
+    // he just read is worse than no confirmation at all.
     const ok = await confirm(
       `Build a prepared cart for ${member.name} and email them the link — ` +
         `${lines.length} line${lines.length === 1 ? '' : 's'}, ` +
-        `${formatPriceExact(pricing.memberTotalCents)} at their ${member.effectivePercent}% rate` +
+        `${formatPriceExact(review.totalCents)} at their ${member.effectivePercent}% rate` +
+        `${review.reward ? ` · ${voucher?.percent}% reward credit on ${review.reward.name}` : ''}` +
         `${couponCode.trim() ? ` · coupon ${couponCode.trim().toUpperCase()}` : ''}. ` +
         'The link is valid for 14 days and can be revoked at any time.',
       { confirmLabel: 'Build & send' },
@@ -235,6 +281,9 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
     // and a derived-open composer would collapse — taking the once-shown link
     // and the delivery report down with it at the exact moment they matter.
     setComposerOpen(true);
+    // Back to an empty form, with the once-shown link below it. Staying on the
+    // review of a cart that has already gone out would invite a second send.
+    setReviewing(false);
     setRows([emptyRow(`r${Date.now()}`)]);
     setCouponCode('');
     setNote('');
@@ -396,12 +445,26 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
 
       {/* ── Building a new one is an ACTION, not the way in ───────────────── */}
       <div className="mt-[var(--space-4)] border-t border-ink/[0.06] pt-[var(--space-3)]">
-        <RowAction onClick={() => setComposerOpen(!showComposer)}>
+        <RowAction onClick={() => { setComposerOpen(!showComposer); setReviewing(false); }}>
           {showComposer ? 'Close builder' : '+ Build a new cart'}
         </RowAction>
       </div>
 
       {showComposer && (
+      <>
+      {reviewing ? (
+        <PreparedCartReview
+          member={member}
+          review={review}
+          voucherPercent={voucher?.percent ?? null}
+          voucherPending={!voucherLoaded}
+          couponCode={couponCode}
+          note={note}
+          busy={busy}
+          onSend={build}
+          onBack={() => setReviewing(false)}
+        />
+      ) : (
       <>
       {/* ── Line editor: compound → dose → qty ─────────────────────────────── */}
       <div className="mt-[var(--space-3)] space-y-[var(--space-2)]">
@@ -531,21 +594,10 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
       </div>
 
       {/* ── Totals at the member's own rate ────────────────────────────────── */}
+      {/* The SAME component the review renders, so the running total he watches
+          while adding lines and the one he sends cannot be two numbers. */}
       {pricing.lines.length > 0 && (
-        <dl className="mt-[var(--space-3)] space-y-1 font-mono text-[11px] tabular-nums">
-          <div className="flex justify-between text-ink/45">
-            <dt>List</dt>
-            <dd>{formatPriceExact(pricing.listTotalCents)}</dd>
-          </div>
-          <div className="flex justify-between text-ink/45">
-            <dt>{member.discountLabel ?? `Account-holder ${member.effectivePercent}%`}</dt>
-            <dd>−{formatPriceExact(pricing.savingsCents)}</dd>
-          </div>
-          <div className="flex justify-between text-[12px] text-ink">
-            <dt>{member.name.split(' ')[0]} pays</dt>
-            <dd className="text-holo">{formatPriceExact(pricing.memberTotalCents)}</dd>
-          </div>
-        </dl>
+        <PreparedCartTotals member={member} review={review} voucherPercent={voucher?.percent ?? null} />
       )}
       <p className="mt-[var(--space-2)] text-[10.5px] leading-[1.4] text-ink/35">
         Prices resolve live when the member opens the cart and again at checkout — nothing is locked
@@ -555,12 +607,13 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
       </p>
 
       <div className="mt-[var(--space-4)] flex flex-wrap items-center gap-[var(--space-3)]">
+        {/* Creates NOTHING. The cart is built from the review screen only. */}
         <Button
           type="button" variant="primary" size="sm"
           disabled={lines.length === 0 || busy}
-          onClick={build}
+          onClick={() => setReviewing(true)}
         >
-          {busy ? 'Working…' : 'Build & send cart'}
+          Review cart
         </Button>
         {pricing.unpriced.length > 0 && (
           <span className="text-[10.5px] text-[color:var(--color-status-warning)]">
@@ -568,6 +621,8 @@ export function PreparedCartPanel({ member, confirm }: { member: MemberRow; conf
           </span>
         )}
       </div>
+      </>
+      )}
 
       {/* ── The link, shown once ───────────────────────────────────────────── */}
       {built && (
