@@ -161,6 +161,32 @@ export function lineIsFast(
   return av.state === 'in_stock' && av.fast;
 }
 
+/**
+ * Preview of the reward voucher's flat "40% off one item" credit — the line
+ * it will land on and the cents it discounts. Mirrors the server's choice in
+ * orderTotals.ts:189-191, which applies the voucher to the single highest
+ * unit-price line in the cart (ties keep the first line seen). Returns null
+ * for an empty cart or a zero/negative credit.
+ */
+export function rewardCreditPreview(
+  items: Array<{ product: Product }>,
+  percent: number,
+): { name: string; cents: number } | null {
+  if (items.length === 0) return null;
+  let best = items[0];
+  let bestUnit = lineUnitCents(best);
+  for (const item of items.slice(1)) {
+    const unit = lineUnitCents(item);
+    if (unit > bestUnit) {
+      best = item;
+      bestUnit = unit;
+    }
+  }
+  const cents = Math.round((bestUnit * percent) / 100);
+  if (cents <= 0) return null;
+  return { name: best.product.name, cents };
+}
+
 /** True when the cart contains BOTH fast-ship and standard (drop-ship) lines —
  *  the buyer should be told the order may arrive in separate shipments. */
 export function cartHasMixedShipping(

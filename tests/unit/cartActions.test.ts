@@ -38,6 +38,7 @@ import {
   lineIsWholesale,
   lineUnitCents,
   resolveSellableDose,
+  rewardCreditPreview,
   variantProduct,
 } from '../../src/lib/cartActions';
 import { tierPriceCents } from '../../src/lib/pricing';
@@ -446,6 +447,40 @@ describe('cartHasMixedShipping — separate-shipments warning', () => {
     const slow = { product: slowProduct, quantity: 1 };
 
     expect(cartHasMixedShipping([packLine, slow], true)).toBe(false);
+  });
+});
+
+describe('rewardCreditPreview — the reward voucher\'s "40% off one item" line', () => {
+  test('picks the line with the highest unit price', () => {
+    const cheap = makeProduct({ id: 'a', sku: 'VSR-A', name: 'Cheap', priceCents: 5000 });
+    const pricey = makeProduct({ id: 'b', sku: 'VSR-B', name: 'Pricey', priceCents: 9000 });
+    const items = [{ product: cheap }, { product: pricey }];
+
+    expect(rewardCreditPreview(items, 40)).toEqual({ name: 'Pricey', cents: 3600 });
+  });
+
+  test('ties keep the first line seen', () => {
+    const first = makeProduct({ id: 'a', sku: 'VSR-A', name: 'First', priceCents: 8000 });
+    const second = makeProduct({ id: 'b', sku: 'VSR-B', name: 'Second', priceCents: 8000 });
+    const items = [{ product: first }, { product: second }];
+
+    expect(rewardCreditPreview(items, 40)).toEqual({ name: 'First', cents: 3200 });
+  });
+
+  test('rounds the discount to the nearest cent', () => {
+    const product = makeProduct({ id: 'a', sku: 'VSR-A', name: 'Rounded', priceCents: 12341 });
+
+    expect(rewardCreditPreview([{ product }], 40)).toEqual({ name: 'Rounded', cents: 4936 });
+  });
+
+  test('returns null for an empty cart', () => {
+    expect(rewardCreditPreview([], 40)).toBeNull();
+  });
+
+  test('returns null when the credit rounds to zero or less', () => {
+    const product = makeProduct({ id: 'a', sku: 'VSR-A', name: 'Free', priceCents: 0 });
+
+    expect(rewardCreditPreview([{ product }], 40)).toBeNull();
   });
 });
 

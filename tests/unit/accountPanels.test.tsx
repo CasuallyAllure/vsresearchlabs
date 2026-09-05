@@ -273,6 +273,55 @@ describe('RewardsPanel reward status + notify', () => {
   });
 });
 
+// ── RewardsPanel → admin_redeem_reward_for ──────────────────────────────────
+
+describe('RewardsPanel redeem', () => {
+  const readyLedger = [{ kind: 'earn', points: 301, note: null, created_at: '2026-01-01T00:00:00Z', order_id: null }];
+
+  test('an empty note focuses the note input instead of calling the RPC', async () => {
+    const rpc = vi.fn(async () => ({ data: null, error: null }));
+    seam.client = makeClient({ rpc, ledger: readyLedger });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+    fireEvent.click(await screen.findByRole('button', { name: /redeem for member/i }));
+
+    await screen.findByText(/type a note in the box below/i);
+    expect(document.activeElement).toBe(screen.getByPlaceholderText(/goodwill credit for shipping delay/i));
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  test('a filled note confirms then calls admin_redeem_reward_for', async () => {
+    const rpc = vi.fn(async () => ({ data: { ok: true }, error: null }));
+    seam.client = makeClient({ rpc, ledger: readyLedger });
+    const confirm = approve();
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={confirm} />);
+    fireEvent.change(await screen.findByPlaceholderText(/goodwill/i), { target: { value: 'Requested by member' } });
+    fireEvent.click(screen.getByRole('button', { name: /redeem for member/i }));
+
+    await screen.findByText(/voucher issued/i);
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(rpc).toHaveBeenCalledWith('admin_redeem_reward_for', {
+      p_user_id: 'user-1',
+      p_note: 'Requested by member',
+    });
+  });
+
+  test('the RPC refusing in-band surfaces its reason', async () => {
+    const rpc = vi.fn(async () => ({
+      data: { ok: false, reason: 'This member already has an active reward voucher.' },
+      error: null,
+    }));
+    seam.client = makeClient({ rpc, ledger: readyLedger });
+
+    render(<RewardsPanel userId="user-1" contact="santos@example.com" confirm={approve()} />);
+    fireEvent.change(await screen.findByPlaceholderText(/goodwill/i), { target: { value: 'Requested by member' } });
+    fireEvent.click(screen.getByRole('button', { name: /redeem for member/i }));
+
+    await screen.findByText(/this member already has an active reward voucher/i);
+  });
+});
+
 // ── DiscountsPanel → admin_set_customer_discount / _deactivate ──────────────
 
 describe('DiscountsPanel', () => {

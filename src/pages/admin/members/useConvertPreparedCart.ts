@@ -23,8 +23,8 @@
 import { useCallback, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { RPC_TIMEOUT_SECONDS, rpcWithTimeout } from '../../../lib/rpcTimeout';
-import type { ConvertLine, DiscountDraft } from '../../../lib/convertPreparedCart';
-import { convertDiscountPayload, convertLinesPayload } from '../../../lib/convertPreparedCart';
+import type { ConvertLine, DiscountDraft, RewardDraft } from '../../../lib/convertPreparedCart';
+import { convertDiscountPayload, convertLinesPayload, convertRewardPayload } from '../../../lib/convertPreparedCart';
 import { getErrorMessage } from './backend';
 
 /**
@@ -54,6 +54,7 @@ export interface ConvertInput {
   notes: string | null;
   lines: ConvertLine[];
   discount: DiscountDraft | null;
+  reward: RewardDraft | null;
 }
 
 export function useConvertPreparedCart(): {
@@ -77,6 +78,7 @@ export function useConvertPreparedCart(): {
           p_notes: input.notes,
           p_lines: convertLinesPayload(input.lines),
           p_discount: convertDiscountPayload(input.discount),
+          p_reward: convertRewardPayload(input.reward, input.lines.length),
         },
         `Converting the cart did not respond within ${RPC_TIMEOUT_SECONDS}s. The order may still ` +
           'have been created — open All orders and check before trying again.',
@@ -117,4 +119,63 @@ export function useConvertPreparedCart(): {
   }, []);
 
   return { converting, convert };
+}
+
+/**
+ * The member's active reward_vouchers row (050), read the same shape
+ * RewardsPanel already reads it. Any failure — no backend, RLS gap, missing
+ * migration — is additive context, not a blocker for the rest of the
+ * composer, so it degrades to null rather than surfacing an error.
+ */
+export async function loadActiveVoucher(userId: string): Promise<{ id: string; percent: number } | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('reward_vouchers')
+      .select('id, percent')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .limit(1);
+    if (error) return null;
+    const row = (data ?? [])[0] as { id: string; percent: number } | undefined;
+    return row ?? null;
+  } catch {
+    return null;
+  }
+}
+
+interface RedeemResponse {
+  ok?: boolean;
+  reason?: string;
+  voucherId?: string;
+  voucher_id?: string;
+  percent?: number;
+}
+
+/** admin_redeem_reward_for (092) — the admin-side twin of a member's own
+ *  redeem button, invoked here so the voucher it issues can be applied to the
+ *  order being converted in the same breath. */
+export async function redeemForMember(
+  userId: string,
+  note: string,
+): Promise<{ ok: true; voucher: { id: string; percent: number } } | { ok: false; reason: string }> {
+  if (!supabase) return { ok: false, reason: 'Backend not configured.' };
+  try {
+    const { data, error } = await rpcWithTimeout(
+      supabase,
+      'admin_redeem_reward_for',
+      { p_user_id: userId, p_note: note },
+      `Redeeming did not respond within ${RPC_TIMEOUT_SECONDS}s. Check the member's reward balance before retrying.`,
+    );
+    if (error) return { ok: false, reason: getErrorMessage(error) };
+
+    const body = data as RedeemResponse | null;
+    const voucherId = body?.voucherId ?? body?.voucher_id;
+    if (body?.ok && voucherId && typeof body.percent === 'number') {
+      return { ok: true, voucher: { id: voucherId, percent: body.percent } };
+    }
+    return { ok: false, reason: body?.reason ?? 'Could not redeem this balance.' };
+  } catch (err) {
+    return { ok: false, reason: getErrorMessage(err) };
+  }
 }

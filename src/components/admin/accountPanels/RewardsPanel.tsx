@@ -21,7 +21,7 @@
  * extraction from the original CustomerAccountPanels — behaviour unchanged.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Badge, InlineError, InlineSuccess, Label, MutedNote, PanelCaption, SubmitButton } from './atoms';
 import {
@@ -57,6 +57,7 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,7 +164,9 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
 
     const note = noteDraft.trim();
     if (note === '') {
-      setFormError('A note is required — redeeming spends the member\u2019s points for them.');
+      setFormError('Type a note in the box below (it goes on the ledger), then press Redeem again.');
+      noteRef.current?.focus();
+      noteRef.current?.scrollIntoView?.({ block: 'center' });
       return;
     }
 
@@ -267,6 +270,7 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
                     >
                       {busy ? 'Working…' : 'Redeem for member'}
                     </button>
+                    <MutedNote>Uses the note below.</MutedNote>
                   </>
                 )}
                 <button
@@ -318,6 +322,7 @@ export function RewardsPanel({ userId, contact, confirm }: RewardsPanelProps) {
               <div>
                 <Label>Note (required)</Label>
                 <input
+                  ref={noteRef}
                   type="text"
                   value={noteDraft}
                   onChange={(e) => setNoteDraft(e.target.value)}

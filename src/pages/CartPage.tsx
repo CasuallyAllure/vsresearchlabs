@@ -37,7 +37,14 @@ import { FIELD_SURFACE, FIELD_DEFAULT, FIELD_ERROR, FIELD_LABEL } from '../compo
 import { Button } from '../components/ui/Button';
 import { generateInquiryRecord } from '../lib/inquiry';
 import type { InquiryRecord, InquiryServerData } from '../lib/inquiry';
-import { lineUnitCents, cartSubtotalCents, lineIsFast, cartHasMixedShipping } from '../lib/cartActions';
+import {
+  lineUnitCents,
+  cartSubtotalCents,
+  lineIsFast,
+  cartHasMixedShipping,
+  rewardCreditPreview,
+} from '../lib/cartActions';
+import { getMyRewardSummary } from '../lib/accountData';
 import { BUNDLE_PROMO, bundleDiscount } from '../lib/bundle';
 import { GUEST_SHIPPING_CENTS } from '../lib/shipping';
 import { useCustomerAuth } from '../lib/customerAuth';
@@ -147,6 +154,23 @@ export function CartPage() {
       cancelled = true;
     };
   }, []);
+
+  // Reward voucher (40% off one item) — PREVIEW only; place-order applies it
+  // server-side to the highest unit-price line (orderTotals.ts:189-191).
+  // Guests → null.
+  const [rewardVoucher, setRewardVoucher] = useState<{ percent: number } | null>(null);
+  const rewardUserId = user?.id ?? null;
+  useEffect(() => {
+    if (!rewardUserId) return;
+    let cancelled = false;
+    void getMyRewardSummary().then(({ data }) => {
+      if (cancelled) return;
+      setRewardVoucher(data?.active_voucher ? { percent: data.active_voucher.percent } : null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [rewardUserId]);
 
   // Owner policy (2026-07-22): B2G1 and the account discount never stack —
   // compare each candidate's value on the base as if the OTHER hadn't fired
@@ -948,6 +972,28 @@ export function CartPage() {
                         {formatUsd(Math.max(subtotalCents - breakdown.total, 0))}
                       </span>
                     </div>
+                  </div>
+                );
+              })()}
+              {/* Reward voucher (40% off one item) — display only; place-order
+                  applies it server-side to the highest unit-price line
+                  (orderTotals.ts:189-191, mirrored by rewardCreditPreview). */}
+              {user && rewardVoucher && (() => {
+                const preview = rewardCreditPreview(items, rewardVoucher.percent);
+                if (!preview) return null;
+                return (
+                  <div className="mt-[var(--space-3)]">
+                    <div className="flex items-baseline justify-between gap-[var(--space-4)]">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-ink/65">
+                        Reward credit · {rewardVoucher.percent}% off {preview.name}
+                      </span>
+                      <span className="text-sm font-mono tabular-nums text-ink">
+                        −{formatUsd(preview.cents)}
+                      </span>
+                    </div>
+                    <p className="mt-[var(--space-2)] text-[11px] leading-relaxed text-ink/65">
+                      Applied at checkout.
+                    </p>
                   </div>
                 );
               })()}
