@@ -45,6 +45,14 @@ const GLOW_BLEND_IMAGE = '/vials/glow-blend-pair.webp';
 const GLOW_BLEND_DESCRIPTION =
   'A single-vial research blend of three of the most-requested peptides — BPC-157, GHK-Cu, and TB-500 — for recovery and tissue-repair research models.';
 
+/** TZP Oral spotlight slide — it carried the "newly cataloged" eyebrow until
+ *  the Selank nasal spray took that slot, so it runs as a normal slide now. */
+const TZP_ORAL_SLUG = 'tzp-oral-500mcg';
+const TZP_ORAL_DOSE = '500mcg';
+const TZP_ORAL_IMAGE = '/vials/tzp-oral-500mcg.webp';
+const TZP_ORAL_DESCRIPTION =
+  'Oral research units — 500 mcg per unit, 25 units per sealed canister — for incretin receptor research models.';
+
 export function BiopeptideResearchSupplies() {
   const { products, loading, error } = useProducts('biopeptide-research-supplies');
   const [classFilter, setClassFilter] = useState<string>(ALL_TAB);
@@ -200,11 +208,22 @@ export function BiopeptideResearchSupplies() {
           the filter module renders below it, directly above the listing. */}
       <FeaturedSupplyCarousel
         label="Featured supply"
-        slideLabels={['Newly cataloged', 'Paired supply', 'Korean Glutathione', 'GLOW Blend']}
+        slideLabels={['Newly cataloged', 'Paired supply', 'GLOW Blend', 'Korean Glutathione', 'TZP Oral']}
         className="mb-[var(--space-4)]"
       >
         <NewlyCatalogedSpotlight products={products} onInspect={setInspectedId} className="w-full" />
         <BundleOfferTile className="w-full" />
+        <ProductSpotlightSlide
+          products={products}
+          slug={GLOW_BLEND_SLUG}
+          dose={GLOW_BLEND_DOSE}
+          heroImage={GLOW_BLEND_IMAGE}
+          eyebrow="Research blend"
+          description={GLOW_BLEND_DESCRIPTION}
+          badge="availability"
+          onInspect={setInspectedId}
+          className="w-full"
+        />
         <ProductSpotlightSlide
           products={products}
           slug={KOREAN_GLUTATHIONE_SLUG}
@@ -218,11 +237,11 @@ export function BiopeptideResearchSupplies() {
         />
         <ProductSpotlightSlide
           products={products}
-          slug={GLOW_BLEND_SLUG}
-          dose={GLOW_BLEND_DOSE}
-          heroImage={GLOW_BLEND_IMAGE}
-          eyebrow="Research blend"
-          description={GLOW_BLEND_DESCRIPTION}
+          slug={TZP_ORAL_SLUG}
+          dose={TZP_ORAL_DOSE}
+          heroImage={TZP_ORAL_IMAGE}
+          eyebrow="Oral research units"
+          description={TZP_ORAL_DESCRIPTION}
           badge="availability"
           onInspect={setInspectedId}
           className="w-full"
