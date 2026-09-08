@@ -83,13 +83,12 @@ const KLOW = makeProduct(
 );
 const KOREAN_GLUTATHIONE = makeProduct('korean-glutathione', KG_SKU, 'Korean Glutathione', KG_DOSE);
 
-// The compound NewlyCatalogedSpotlight currently features. Its dose carries no
-// "mg" magnitude, so lib/pricing's formula fallback cannot manufacture a
-// placeholder — the price has to come from product.priceCents, exactly as it
-// does in the catalog.
-const TZO_SKU = 'VSR-RS-TZO-025';
-const TZO_DOSE = '500mcg';
-const TZP_ORAL = makeProduct('tzp-oral-500mcg', TZO_SKU, 'TZP Oral', TZO_DOSE, 10_000);
+// The compound NewlyCatalogedSpotlight currently features. Like the real
+// catalog entry it carries no product.priceCents, so every price on this slide
+// has to come from the per-dose override the tests seed.
+const SLKNS_SKU = 'VSR-RS-SLKNS';
+const SLKNS_DOSE = '5mg/10mL';
+const SELANK_SPRAY = makeProduct('selank-nasal-spray', SLKNS_SKU, 'Selank Nasal Spray', SLKNS_DOSE);
 
 function makeVariant(sku: string, dose: string, patch: Partial<VariantOverride> = {}): VariantOverride {
   return {
@@ -120,40 +119,40 @@ afterEach(() => {
 describe('NewlyCatalogedSpotlight availability', () => {
   test('states 24-hour dispatch only when the override store carries on-hand supply', () => {
     // Arrange
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 6 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 6 })]);
 
     // Act
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     // Assert
     expect(screen.getByText('24 Hour Shipping')).toBeTruthy();
   });
 
   test('counts in-transit inbound units as 24-hour supply, same as the catalog', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 0, inbound_units: 4 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 0, inbound_units: 4 })]);
 
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     expect(screen.getByText('24 Hour Shipping')).toBeTruthy();
   });
 
   test('omits the 24-hour claim for a compound with no on-hand or inbound supply', () => {
     // Arrange — tracked and orderable, but nothing on the shelf.
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 0, inbound_units: 0 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 0, inbound_units: 0 })]);
 
     // Act
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     // Assert — the compound still lists, but on the honest sourced tier.
     expect(screen.queryByText('24 Hour Shipping')).toBeNull();
     expect(screen.getByText('Standard Shipping')).toBeTruthy();
-    expect(screen.getByText('TZP Oral')).toBeTruthy();
+    expect(screen.getByText('Selank Nasal Spray')).toBeTruthy();
   });
 
   test('drops the slide when the featured dose the catalog hides', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { hidden: true, on_hand: 5 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { hidden: true, on_hand: 5 })]);
 
-    const { container } = render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    const { container } = render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     expect(container.textContent).toBe('');
   });
@@ -162,19 +161,19 @@ describe('NewlyCatalogedSpotlight availability', () => {
     // Arrange — the fetch resolved, but it failed.
     useProductOverrides.setState({
       bySku: {},
-      variantBySku: { [TZO_SKU]: { [TZO_DOSE]: makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 9 }) } },
+      variantBySku: { [SLKNS_SKU]: { [SLKNS_DOSE]: makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 9 }) } },
       loaded: true,
       loading: false,
       error: 'network down',
     });
 
-    const { container } = render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    const { container } = render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     expect(container.textContent).toBe('');
   });
 
   test('renders nothing when the featured compound is not in the catalog', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 5 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 5 })]);
 
     const { container } = render(<NewlyCatalogedSpotlight products={[]} onInspect={vi.fn()} />);
 
@@ -184,11 +183,11 @@ describe('NewlyCatalogedSpotlight availability', () => {
 
 describe('NewlyCatalogedSpotlight — featured hero slide', () => {
   test('renders the featured hero and no other catalog row', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 5 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 5 })]);
 
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL, KLOW]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY, KLOW]} onInspect={vi.fn()} />);
 
-    expect(screen.getByText('TZP Oral')).toBeTruthy();
+    expect(screen.getByText('Selank Nasal Spray')).toBeTruthy();
     expect(screen.queryByText('KLOW Blend')).toBeNull();
   });
 
@@ -213,9 +212,9 @@ describe('NewlyCatalogedSpotlight — featured hero slide', () => {
   });
 
   test('shows the GLOW slide price, resolved from effectiveTierPriceCents (never hardcoded)', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 5, price_cents: 24500 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 5, price_cents: 24500 })]);
 
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     // Assert — the live per-dose override price renders, and only once (no
     // fabricated compareAt/strikethrough companion price).
@@ -230,7 +229,7 @@ describe('NewlyCatalogedSpotlight — featured hero slide', () => {
     // and no product.priceCents.
     const glowNoPrice = makeProduct(
       'glow-blend-cu',
-      TZO_SKU,
+      SLKNS_SKU,
       'GLOW Blend (BPC-157 · GHK-Cu · TB-500)',
       'sample vial',
     );
@@ -252,29 +251,29 @@ describe('NewlyCatalogedSpotlight — featured hero slide', () => {
   });
 
   test('opens the intelligence overlay when the hero image is tapped', () => {
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 5 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 5 })]);
     const onInspect = vi.fn();
 
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={onInspect} />);
-    fireEvent.click(screen.getByRole('button', { name: `Inspect ${TZP_ORAL.name}` }));
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={onInspect} />);
+    fireEvent.click(screen.getByRole('button', { name: `Inspect ${SELANK_SPRAY.name}` }));
 
-    expect(onInspect).toHaveBeenCalledWith(TZP_ORAL.id);
+    expect(onInspect).toHaveBeenCalledWith(SELANK_SPRAY.id);
   });
 
   test('clicking "Add to inquiry" adds the featured variant to the cart at a real price', () => {
     // Arrange — a genuine per-dose price, so the add is $0-safe.
-    seedOverrides([makeVariant(TZO_SKU, TZO_DOSE, { on_hand: 5, price_cents: 24500 })]);
+    seedOverrides([makeVariant(SLKNS_SKU, SLKNS_DOSE, { on_hand: 5, price_cents: 24500 })]);
 
-    render(<NewlyCatalogedSpotlight products={[TZP_ORAL]} onInspect={vi.fn()} />);
+    render(<NewlyCatalogedSpotlight products={[SELANK_SPRAY]} onInspect={vi.fn()} />);
 
     // Act
-    fireEvent.click(screen.getByRole('button', { name: 'Add TZP Oral 500mcg to inquiry' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Selank Nasal Spray 5mg/10mL to inquiry' }));
 
     // Assert — cart holds one line, priced, not $0, sku matches the feature.
     const items = useCart.getState().items;
     expect(items).toHaveLength(1);
     expect(items[0].product.priceCents).toBe(24500);
-    expect(items[0].product.sku).toBe(TZO_SKU);
+    expect(items[0].product.sku).toBe(SLKNS_SKU);
     expect(screen.getByText('✓ Added')).toBeTruthy();
   });
 
@@ -287,7 +286,7 @@ describe('NewlyCatalogedSpotlight — featured hero slide', () => {
     // an unpriced dose to exercise the guard.
     const glowNoPrice = makeProduct(
       'glow-blend-cu',
-      TZO_SKU,
+      SLKNS_SKU,
       'GLOW Blend (BPC-157 · GHK-Cu · TB-500)',
       'sample vial',
     );
