@@ -57,7 +57,7 @@ const BANNED_PATTERNS: { label: string; pattern: RegExp }[] = [
 describe('laymanSummary research register', () => {
   test('covers every generated compound and every hand-authored peptide', () => {
     expect(GENERATED).toHaveLength(50);
-    expect(HAND_AUTHORED).toHaveLength(13);
+    expect(HAND_AUTHORED).toHaveLength(14);
   });
 
   test.each(BANNED_PATTERNS)('no summary contains a $label', ({ pattern }) => {
