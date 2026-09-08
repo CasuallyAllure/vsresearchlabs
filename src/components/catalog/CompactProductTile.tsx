@@ -26,7 +26,7 @@ import { useState, useRef } from 'react';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { variantProduct } from '../../lib/cartActions';
+import { variantProduct, canQuickAdd } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic, doseAvailability } from '../../lib/productOverrides';
 
@@ -55,9 +55,9 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
   const [tierIndex, setTierIndex] = useState(0);
   const activeDose = variants[tierIndex]?.dose ?? deriveProductDose(product);
   // effectiveTierPriceCents reads (per-dose override → per-sku override →
-  // formula fallback) so the master sheet's prices flow through to the
-  // tile. Previously this used tierPriceCents (formula only), which is
-  // why AICAR rendered at $470 instead of the admin-set $60.
+  // the product's own catalog price) so the master sheet's prices flow
+  // through to the tile. It returns null rather than deriving a stand-in,
+  // so an unpriced dose renders "—" instead of a figure nobody set.
   const priceCents = effectiveTierPriceCents(product, activeDose);
 
   const add = useCart((s) => s.add);
@@ -67,6 +67,13 @@ export function CompactProductTile({ product, onInspect }: CompactProductTilePro
 
   function handleAdd(e: React.MouseEvent) {
     e.stopPropagation();
+    // No resolvable price means no sale: adding here would write an unpriced
+    // ($0) line, the incident in feedback_cart_variant_dose. Send the buyer to
+    // the overlay instead — same guard InventoryRow / InventoryTable apply.
+    if (!canQuickAdd(product, activeDose)) {
+      if (onInspect) onInspect(product.id);
+      return;
+    }
     const line = variantProduct(product, activeDose);
     const items = useCart.getState().items;
     const existing = items.find((i) => i.product.id === line.id);

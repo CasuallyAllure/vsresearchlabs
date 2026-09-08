@@ -22,7 +22,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../../types';
 import { deriveProductDose } from '../../types';
 import { useCart } from '../../hooks/useCart';
-import { variantProduct } from '../../lib/cartActions';
+import { variantProduct, canQuickAdd } from '../../lib/cartActions';
 import { effectiveTierPriceCents, formatPrice } from '../../lib/pricing';
 import { useProductOverrides, isSkuInStock, isVariantPublic } from '../../lib/productOverrides';
 import { AvailabilityBadge } from './AvailabilityBadge';
@@ -63,6 +63,13 @@ export function ProductCard({ product, onInspect, showStock, showPurchase }: Pro
   const [added, setAdded] = useState(false);
 
   function handleAdd() {
+    // No resolvable price means no sale: adding here would write an unpriced
+    // ($0) line. Open the record instead — the same guard CompactProductTile,
+    // InventoryRow and InventoryTable apply.
+    if (!canQuickAdd(product, activeDose)) {
+      if (onInspect) onInspect(product.id);
+      return;
+    }
     const line = variantProduct(product, activeDose);
     const items = useCart.getState().items;
     const existing = items.find((i) => i.product.id === line.id);

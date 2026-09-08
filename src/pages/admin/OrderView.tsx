@@ -28,7 +28,7 @@ import { CARRIERS, carrierRequiresTracking } from '../../lib/tracking';
 import productsData from '../../data/products.json';
 import generatedCompounds from '../../data/biopeptideCompounds.generated.json';
 import type { Product } from '../../types';
-import { tierPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
+import { catalogPriceCents, effectiveTierPriceCents } from '../../lib/pricing';
 import { isVariantPublic, useProductOverrides } from '../../lib/productOverrides';
 import { useConfirm } from '../../components/admin/ConfirmModal';
 import { siteConfig } from '../../config';
@@ -144,7 +144,7 @@ function unitOf(l: OrderLine): number | null {
   if (l.unit_price_cents != null) return l.unit_price_cents;
   const p = productBySku.get(l.sku);
   if (p) {
-    const c = tierPriceCents(p, l.item_note || l.product_name || '');
+    const c = catalogPriceCents(p);
     if (c != null) return c;
   }
   return null;

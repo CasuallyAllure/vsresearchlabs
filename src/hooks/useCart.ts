@@ -2,12 +2,24 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { siteConfig } from '../config';
 import type { CartItem, Product } from '../types';
+import { deriveProductDose } from '../types';
+import { variantPriceCents } from '../lib/productOverrides';
 
 const MAX_QTY = 999;
 
 function clampQty(n: number): number {
   if (!Number.isFinite(n)) return 1;
   return Math.min(MAX_QTY, Math.max(1, Math.floor(n)));
+}
+
+/**
+ * True when nothing anywhere knows this line's unit price: no admin override
+ * for its (sku, dose), and no catalog price on the product itself. Distinct
+ * from a price of 0, which is a real, deliberate figure.
+ */
+function unitPriceIsUnknown(product: Product): boolean {
+  const dose = deriveProductDose(product);
+  return variantPriceCents(product.sku, dose) == null && product.priceCents == null;
 }
 
 /** A promo code the buyer applied in the cart. Snapshot of the server's
@@ -51,6 +63,15 @@ export const useCart = create<CartStore>()(
 
       add: (product) =>
         set((state) => {
+          // Last line of defence against an unpriced cart line. A product whose
+          // price resolves NOWHERE — no per-(sku, dose) override, no catalog
+          // price — is not sellable, and adding it wrote $0 order lines in
+          // production once already. Note this rejects only an UNKNOWN price
+          // (null), never a deliberate 0 such as a coupon's free item.
+          // Callers with a UI affordance should use canQuickAdd() and route to
+          // the compound overlay so the buyer sees why nothing was added.
+          if (unitPriceIsUnknown(product)) return state;
+
           const existing = state.items.find((i) => i.product.id === product.id);
           if (existing) {
             return {

@@ -2,18 +2,18 @@
  * Unit tests for src/lib/pricing.ts — the client-side price-mirror module.
  *
  * `effectiveTierPriceCents` is the contract the public catalog MUST use (per
- * project convention): admin overrides (per-dose, then per-sku) win over the
- * placeholder formula in `tierPriceCents`. These tests pin that priority
- * order plus the formula's own edge cases (no mg magnitude, zero mg, case
- * insensitivity, decimal mg, per-product rate variation).
+ * project convention): admin overrides (per-dose, then per-sku) win, then the
+ * product's own catalog price, then NOTHING. These tests pin that priority
+ * order and — the point of the module — that an unresolved price stays null.
  *
- * The formula in tierPriceCents is deterministic (hash of product.id mod 6),
- * so exact expected cents below were computed by mirroring the same
- * algorithm offline — see the comment above EXPECTED for the derivation.
+ * pricing.ts previously derived a placeholder from the dose's mg magnitude
+ * (`perMg = 7 + hash(product.id) % 6`) whenever no override had loaded, which
+ * turned a transient Supabase failure into a confident wrong price on the
+ * storefront. The no-fabrication tests below exist so that cannot come back.
  */
 import { beforeEach, describe, expect, test } from 'vitest';
 import type { Product } from '../../src/types/product';
-import { effectiveTierPriceCents, formatPrice, tierPriceCents } from '../../src/lib/pricing';
+import { catalogPriceCents, effectiveTierPriceCents, formatPrice } from '../../src/lib/pricing';
 import { useProductOverrides } from '../../src/lib/productOverrides';
 
 function makeProduct(overrides: Partial<Product> = {}): Product {
@@ -40,99 +40,54 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
   };
 }
 
-// perMg = 7 + (hashKey(product.id) % 6); base = 20
-// price = Math.round(base + mg * perMg) * 100
-//
-// hashKey('test-product-a') % 6 === 2  → perMg = 9
-// hashKey('VSR-RS-BPC')     % 6 === 5  → perMg = 12  (different id → different rate)
 const PRODUCT_A_ID = 'test-product-a';
-const PRODUCT_B_ID = 'VSR-RS-BPC';
 
-describe('tierPriceCents — placeholder mg-based formula', () => {
-  test('returns the formula price for a whole-number mg dose', () => {
-    const product = makeProduct({ id: PRODUCT_A_ID });
-
-    const result = tierPriceCents(product, '10mg');
-
-    expect(result).toBe(11000); // 20 + 10*9 = 110 → $110.00
-  });
-
-  test('returns the formula price for a decimal mg dose', () => {
-    const product = makeProduct({ id: PRODUCT_A_ID });
-
-    const result = tierPriceCents(product, '5.5mg');
-
-    expect(result).toBe(7000); // round(20 + 5.5*9) = round(69.5) = 70 → $70.00
-  });
-
-  test('matches "mg" case-insensitively', () => {
-    const product = makeProduct({ id: PRODUCT_A_ID });
-
-    expect(tierPriceCents(product, '10MG')).toBe(tierPriceCents(product, '10mg'));
-  });
-
-  test('different product ids yield different per-mg rates for the same dose', () => {
-    const productA = makeProduct({ id: PRODUCT_A_ID });
-    const productB = makeProduct({ id: PRODUCT_B_ID });
-
-    expect(tierPriceCents(productA, '1mg')).toBe(2900); // perMg 9 → 20+9=29
-    expect(tierPriceCents(productB, '1mg')).toBe(3200); // perMg 12 → 20+12=32
-    expect(tierPriceCents(productA, '1mg')).not.toBe(tierPriceCents(productB, '1mg'));
-  });
-
-  test('is deterministic across repeated calls for the same product+dose', () => {
-    const product = makeProduct({ id: PRODUCT_A_ID });
-
-    const first = tierPriceCents(product, '10mg');
-    const second = tierPriceCents(product, '10mg');
-
-    expect(first).toBe(second);
-  });
-
-  test('falls back to the product priceCents when the dose has no mg magnitude', () => {
+describe('catalogPriceCents — the product’s own price, or nothing', () => {
+  test('returns the price a single-config product carries', () => {
     const product = makeProduct({ priceCents: 4999 });
 
-    const result = tierPriceCents(product, '30 mL');
-
-    expect(result).toBe(4999);
+    expect(catalogPriceCents(product)).toBe(4999);
   });
 
-  test('returns null when the dose has no mg magnitude and priceCents is null', () => {
+  test('returns null when the product carries no price of its own', () => {
     const product = makeProduct({ priceCents: null });
 
-    const result = tierPriceCents(product, 'Box of 100');
-
-    expect(result).toBeNull();
+    expect(catalogPriceCents(product)).toBeNull();
   });
+});
 
-  test('falls back to priceCents when the mg magnitude is zero', () => {
-    const product = makeProduct({ priceCents: 1000 });
+describe('pricing never fabricates a figure from the dose', () => {
+  // Each dose below would have produced a plausible-looking price under the
+  // old mg formula. With no override loaded and no product price, every one
+  // of them must come back null instead.
+  test.each(['10mg', '5.5mg', '10MG', '0mg', '.mg', '-5mg', '70mg', '1200mg'])(
+    'dose %s resolves to null, not a derived price',
+    (dose) => {
+      useProductOverrides.setState({
+        bySku: {},
+        variantBySku: {},
+        loaded: true,
+        loading: false,
+        error: null,
+      });
+      const product = makeProduct({ id: PRODUCT_A_ID, priceCents: null });
 
-    const result = tierPriceCents(product, '0mg');
+      expect(effectiveTierPriceCents(product, dose)).toBeNull();
+    },
+  );
 
-    expect(result).toBe(1000);
-  });
+  test('an mg dose does not outrank the product’s own catalog price', () => {
+    useProductOverrides.setState({
+      bySku: {},
+      variantBySku: {},
+      loaded: true,
+      loading: false,
+      error: null,
+    });
+    const product = makeProduct({ id: PRODUCT_A_ID, priceCents: 6500 });
 
-  test('falls back to priceCents when the mg capture is not a finite number', () => {
-    // ".mg" matches /([\d.]+)\s*mg/i (the class allows a lone dot) but
-    // parseFloat('.') is NaN — this exercises the Number.isFinite(mg) guard,
-    // not just the mg <= 0 guard.
-    const product = makeProduct({ priceCents: 2500 });
-
-    const result = tierPriceCents(product, '.mg');
-
-    expect(result).toBe(2500);
-  });
-
-  test('a leading minus sign on the dose is ignored by the mg regex (documented quirk, not a negative dose)', () => {
-    // The regex /([\d.]+)\s*mg/i has no sign-handling group, so "-5mg" still
-    // matches "5mg" and prices as a positive 5mg dose rather than falling
-    // back or rejecting the input.
-    const product = makeProduct({ id: PRODUCT_A_ID, priceCents: null });
-
-    const result = tierPriceCents(product, '-5mg');
-
-    expect(result).toBe(6500); // round(20 + 5*9) = 65 → $65.00, same as "5mg"
+    // The old formula ignored priceCents whenever the dose parsed as mg.
+    expect(effectiveTierPriceCents(product, '10mg')).toBe(6500);
   });
 });
 
@@ -147,16 +102,13 @@ describe('effectiveTierPriceCents — admin-override contract', () => {
     });
   });
 
-  test('returns the formula price when no override exists for the sku or dose', () => {
-    const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-TEST-A' });
+  test('resolves to null when no override exists and the product carries no price', () => {
+    const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-TEST-A', priceCents: null });
 
-    const result = effectiveTierPriceCents(product, '10mg');
-
-    expect(result).toBe(11000);
-    expect(result).toBe(tierPriceCents(product, '10mg'));
+    expect(effectiveTierPriceCents(product, '10mg')).toBeNull();
   });
 
-  test('a per-dose admin override wins over the formula price', () => {
+  test('a per-dose admin override wins', () => {
     const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-TEST-A' });
     useProductOverrides.setState({
       variantBySku: {
@@ -177,10 +129,9 @@ describe('effectiveTierPriceCents — admin-override contract', () => {
     const result = effectiveTierPriceCents(product, '10mg');
 
     expect(result).toBe(8888);
-    expect(result).not.toBe(tierPriceCents(product, '10mg'));
   });
 
-  test('a per-sku admin override wins over the formula price when no per-dose row exists', () => {
+  test('a per-sku admin override wins when no per-dose row exists', () => {
     const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-TEST-A' });
     useProductOverrides.setState({
       bySku: {
@@ -239,15 +190,21 @@ describe('effectiveTierPriceCents — admin-override contract', () => {
     expect(result).toBe(6666);
   });
 
-  test('works when Supabase is not configured (node test env has no VITE_SUPABASE_* env vars)', () => {
+  test('an unconfigured Supabase yields no price rather than an invented one', () => {
     // src/lib/supabase.ts exports `supabase: null` when env vars are absent;
     // productOverrides.reload() short-circuits to an empty, loaded store in
-    // that case. effectiveTierPriceCents must still resolve via the formula.
-    const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-UNCONFIGURED' });
+    // that case. An empty store is indistinguishable from a failed load, which
+    // is exactly why it must not price anything: this is the path that once
+    // rendered admin-priced compounds at fabricated figures in production.
+    const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-UNCONFIGURED', priceCents: null });
 
-    const result = effectiveTierPriceCents(product, '10mg');
+    expect(effectiveTierPriceCents(product, '10mg')).toBeNull();
+  });
 
-    expect(result).toBe(11000);
+  test('a product carrying its own catalog price still resolves without any override', () => {
+    const product = makeProduct({ id: PRODUCT_A_ID, sku: 'VSR-UNCONFIGURED', priceCents: 10_000 });
+
+    expect(effectiveTierPriceCents(product, '500mcg')).toBe(10_000);
   });
 });
 
