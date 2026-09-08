@@ -8,7 +8,7 @@
  */
 
 import type { Product } from '../types/product';
-import { tierPriceCents } from './pricing';
+import { catalogPriceCents } from './pricing';
 import type { Column } from './exporters';
 
 /** One row of the sheet (current live values pre-filled).
@@ -103,8 +103,11 @@ export function buildInventoryRows(params: BuildInventoryRowsParams): TemplateRo
       const dose = variant.dose ?? '';
       const v = dose ? variantBySku[p.sku]?.[dose] : undefined;
       const storedCents = v?.price_cents ?? (dose ? null : s?.price_cents_override ?? null);
-      const formula = dose ? tierPriceCents(p, dose) : (p.priceCents ?? null);
-      const currentPrice = storedCents != null ? storedCents / 100 : (formula != null ? formula / 100 : null);
+      // No stored price falls back to the product's own catalog price, and
+      // otherwise stays blank — the sheet reports what is set, never a guess.
+      const fallbackCents = catalogPriceCents(p);
+      const resolvedCents = storedCents ?? fallbackCents;
+      const currentPrice = resolvedCents != null ? resolvedCents / 100 : null;
       rows.push({
         sku: p.sku,
         name: p.name,

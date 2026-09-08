@@ -17,10 +17,10 @@
  *
  *   2. `memberUnitPriceCents` / `priceLines` — what THIS member actually pays,
  *      so the owner sees the real number before sending. Base price is always
- *      `effectiveTierPriceCents` (an admin per-dose override wins); the
- *      formula-only `tierPriceCents` is NEVER used directly — it is the
- *      placeholder hash (`perMg = 7 + hash % 6`) that ignores overrides and has
- *      caused two separate production price bugs.
+ *      `effectiveTierPriceCents`, so an admin per-dose override wins and an
+ *      unresolved price stays null instead of becoming a derived stand-in.
+ *      (An earlier placeholder hash, `perMg = 7 + hash % 6`, ignored overrides
+ *      and caused two separate production price bugs; it has been removed.)
  *
  *   3. `planPreparedCart` — THE CLAIM SEAM. Maps stored lines back to
  *      `(product, dose, quantity)` triples the cart can add via

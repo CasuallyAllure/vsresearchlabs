@@ -19,7 +19,7 @@ import {
 } from '../../src/lib/inventorySheet';
 import { toCsv } from '../../src/lib/exporters';
 import { parseCsvRecords } from '../../src/lib/csv';
-import { tierPriceCents } from '../../src/lib/pricing';
+import { catalogPriceCents } from '../../src/lib/pricing';
 import { makeProduct } from '../fixtures/product';
 import type { Product } from '../../src/types';
 
@@ -147,32 +147,38 @@ describe('buildInventoryRows — current_price precedence (stored cents vs formu
     expect(rows[0].current_price).toBe(123.45);
   });
 
-  test('without a stored price, a dosed row prices from tierPriceCents', () => {
+  test('without a stored price, a dosed row falls back to the product catalog price', () => {
     // Arrange
-    const product = makeProduct({ sku: 'A', variants: [{ dose: '10mg' }] });
-    const formulaCents = tierPriceCents(product, '10mg');
+    const product = makeProduct({ sku: 'A', variants: [{ dose: '10mg' }], priceCents: 4200 });
 
     // Act
     const rows = build([product]);
 
-    // Assert — the formula delegation, in dollars.
-    expect(formulaCents).not.toBeNull();
-    expect(rows[0].current_price).toBe((formulaCents as number) / 100);
+    // Assert — the product's own price, in dollars. Never a derived figure.
+    expect(catalogPriceCents(product)).toBe(4200);
+    expect(rows[0].current_price).toBe(42);
+  });
+
+  test('a dosed row with no stored price and no catalog price reports blank', () => {
+    const product = makeProduct({ sku: 'A', variants: [{ dose: '10mg' }], priceCents: null });
+
+    const rows = build([product]);
+
+    expect(rows[0].current_price).toBeNull();
   });
 
   test('a dosed row IGNORES the product-level price_cents_override', () => {
     // Arrange — the sku-level override only applies to doseless products;
     // pin it so nobody "helpfully" lets it leak onto dose rows.
-    const product = makeProduct({ sku: 'A', variants: [{ dose: '10mg' }] });
-    const formulaCents = tierPriceCents(product, '10mg');
+    const product = makeProduct({ sku: 'A', variants: [{ dose: '10mg' }], priceCents: 4200 });
 
     // Act
     const rows = build([product], {
       stockBySku: { A: makeStock({ price_cents_override: 99_900 }) },
     });
 
-    // Assert — formula, not 999.
-    expect(rows[0].current_price).toBe((formulaCents as number) / 100);
+    // Assert — the product's own catalog price, not 999.
+    expect(rows[0].current_price).toBe(42);
   });
 
   test('a doseless row uses the sku-level price_cents_override when set', () => {

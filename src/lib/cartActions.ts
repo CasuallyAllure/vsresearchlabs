@@ -26,7 +26,7 @@
 
 import type { Product } from '../types';
 import { deriveProductDose } from '../types';
-import { effectiveTierPriceCents, tierPriceCents } from './pricing';
+import { effectiveTierPriceCents } from './pricing';
 import { variantPriceCents, doseAvailability, isVariantPublic } from './productOverrides';
 import { WHOLESALE_PACKS } from './wholesale';
 
@@ -104,17 +104,19 @@ export function canQuickAdd(product: Product, dose: string): boolean {
  *   2. The price captured on the line at add-time — the admin override snapshot
  *      taken when the catalog was loaded. This is the safety net for the case
  *      where the overrides store hasn't finished loading at price-read time
- *      (e.g. a deep-link straight to /cart): without it the formula below would
- *      wrongly clobber a correct admin price.
- *   3. The placeholder formula — last resort only (should never hit in prod,
- *      where every public variant has an override).
+ *      (e.g. a deep-link straight to /cart).
+ *
+ * Neither resolving means the price is genuinely unknown, and 0 is the honest
+ * answer: the add-to-cart guards (canQuickAdd / resolveSellableDose) refuse to
+ * create an unpriced line in the first place, and place-order re-verifies every
+ * line server-side, so a 0 surfaces as a flagged order rather than a wrong
+ * charge. Deriving a stand-in figure here would instead invent one.
  */
 export function lineUnitCents(item: { product: Product }): number {
   const dose = deriveProductDose(item.product);
   const override = variantPriceCents(item.product.sku, dose);
   if (override != null) return override;
-  if (item.product.priceCents != null) return item.product.priceCents;
-  return tierPriceCents(item.product, dose) ?? 0;
+  return item.product.priceCents ?? 0;
 }
 
 /**

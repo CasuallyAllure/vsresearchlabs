@@ -41,7 +41,8 @@ import {
   rewardCreditPreview,
   variantProduct,
 } from '../../src/lib/cartActions';
-import { tierPriceCents } from '../../src/lib/pricing';
+import { useCart } from '../../src/hooks/useCart';
+import { effectiveTierPriceCents } from '../../src/lib/pricing';
 import { useProductOverrides, type VariantOverride } from '../../src/lib/productOverrides';
 import { makeProduct } from '../fixtures/product';
 
@@ -91,6 +92,7 @@ function seedVariants(sku: string, rows: Record<string, Partial<VariantOverride>
 beforeEach(() => {
   // Merge (not replace) so the store's load/reload/getOverride actions survive.
   useProductOverrides.setState(INITIAL_STATE);
+  useCart.setState({ items: [], coupons: [] });
 });
 
 describe('variantProduct — baking the selected dose into the cart line', () => {
@@ -137,30 +139,37 @@ describe('variantProduct — baking the selected dose into the cart line', () =>
     expect(line.name).toBe('BPC-157 — 10mg');
   });
 
-  test('carries the ADMIN OVERRIDE price, not the tierPriceCents formula (price-path invariant)', () => {
-    // Arrange — admin set 8888 for (sku, 10mg); the formula says 11000.
+  test('carries the ADMIN OVERRIDE price (price-path invariant)', () => {
+    // Arrange — admin set 8888 for (sku, 10mg).
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157', priceCents: null });
     seedVariants(SKU, { '10mg': { price_cents: 8888 } });
 
     // Act
     const line = variantProduct(product, '10mg');
 
-    // Assert — effectiveTierPriceCents (override) wins over the raw formula.
+    // Assert — effectiveTierPriceCents resolves the override.
     expect(line.priceCents).toBe(8888);
-    expect(line.priceCents).not.toBe(tierPriceCents(product, '10mg'));
   });
 
-  test('falls back to the formula price when no admin override exists', () => {
-    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157', priceCents: null });
+  test('falls back to the product catalog price when no admin override exists', () => {
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157', priceCents: 11_000 });
 
     const line = variantProduct(product, '10mg');
 
     expect(line.priceCents).toBe(11000);
   });
 
+  test('leaves the line price null when nothing resolves a price at all', () => {
+    // No override, no catalog price. The dose parses as mg, which used to be
+    // enough to manufacture a figure — it must not be.
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157', priceCents: null });
+
+    expect(variantProduct(product, '10mg').priceCents).toBeNull();
+  });
+
   test('does not double-append the dose when the name already carries one', () => {
     // Single-variant products are stored as "Name — 5mg" already.
-    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'Solo Peptide — 5mg', priceCents: null });
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'Solo Peptide — 5mg', priceCents: 6500 });
 
     const line = variantProduct(product, '5mg');
 
@@ -196,6 +205,7 @@ describe('resolveSellableDose — what a quick-add "+" actually adds', () => {
       priceCents: null,
       variants: [{ dose: '5mg' }, { dose: '10mg' }],
     });
+    seedVariants(SKU, { '5mg': { price_cents: 6500 }, '10mg': { price_cents: 11_000 } });
 
     expect(resolveSellableDose(product, '')).toBe('5mg');
     expect(resolveSellableDose(product)).toBe('5mg');
@@ -244,8 +254,15 @@ describe('resolveSellableDose — what a quick-add "+" actually adds', () => {
 describe('canQuickAdd — refuses to add a $0 line', () => {
   test('true when the dose resolves a real price', () => {
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, priceCents: null });
+    seedVariants(SKU, { '10mg': { price_cents: 11_000 } });
 
     expect(canQuickAdd(product, '10mg')).toBe(true);
+  });
+
+  test('false when only the dose text looks priceable but nothing set a price', () => {
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, priceCents: null });
+
+    expect(canQuickAdd(product, '10mg')).toBe(false);
   });
 
   test('true for a single-config product with its own priceCents and no variants', () => {
@@ -288,22 +305,22 @@ describe('lineUnitCents — resolution order (live override → add-time snapsho
   });
 
   test('2. falls back to the add-time snapshot price when the override store is empty', () => {
-    // The deep-link-to-/cart case: overrides not loaded → snapshot must win
-    // over the formula so a correct admin price is not clobbered.
+    // The deep-link-to-/cart case: overrides not loaded → the snapshot taken
+    // at add time is the only real price available, and it must be used.
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: 9999 });
 
     expect(lineUnitCents({ product })).toBe(9999);
-    expect(lineUnitCents({ product })).not.toBe(tierPriceCents(product, '10mg'));
   });
 
-  test('3. falls back to the placeholder formula when there is no override and no snapshot', () => {
+  test('3. resolves 0 — never a derived figure — when there is no override and no snapshot', () => {
+    // An mg dose used to be priced by the placeholder formula here, silently
+    // billing a number nobody set. Unknown must stay unknown.
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: null });
 
-    expect(lineUnitCents({ product })).toBe(11000);
+    expect(lineUnitCents({ product })).toBe(0);
   });
 
   test('4. resolves 0 as the last resort when every source is null', () => {
-    // Non-mg dose, no override, no snapshot → tierPriceCents null → 0.
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'Mixer — Benchtop', priceCents: null });
 
     expect(lineUnitCents({ product })).toBe(0);
@@ -334,15 +351,15 @@ describe('cartSubtotalCents — the single client source of truth', () => {
   });
 
   test('sums lineUnitCents × quantity across mixed lines', () => {
-    // Arrange — one overridden line, one snapshot line, one formula line.
+    // Arrange — one overridden line, one snapshot line, one catalog-priced line.
     seedVariants(SKU, { '10mg': { price_cents: 8888 } });
     const overridden = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: null });
     const snapshot = makeProduct({ id: 'snap', sku: 'VSR-SNAP', name: 'GHK-Cu — 50mg', priceCents: 12000 });
-    const formula = makeProduct({ id: FORMULA_ID, sku: 'VSR-FORM', name: 'TB-500 — 5mg', priceCents: null });
+    const catalogPriced = makeProduct({ id: FORMULA_ID, sku: 'VSR-FORM', name: 'TB-500 — 5mg', priceCents: 6500 });
     const items = [
       { product: overridden, quantity: 2 }, // 8888 × 2
       { product: snapshot, quantity: 1 }, // 12000 × 1
-      { product: formula, quantity: 3 }, // 6500 × 3
+      { product: catalogPriced, quantity: 3 }, // 6500 × 3
     ];
 
     // Act
@@ -484,12 +501,50 @@ describe('rewardCreditPreview — the reward voucher\'s "40% off one item" line'
   });
 });
 
-describe('pricing.ts — remaining branch: zero-mg dose with no own price', () => {
-  test('tierPriceCents returns null for a 0mg dose when priceCents is null', () => {
-    // The mg <= 0 guard's `product.priceCents ?? null` arm with a null
-    // priceCents — the one branch pricing.test.ts leaves uncovered.
+describe('pricing.ts — an unpriced dose stays unpriced', () => {
+  test('effectiveTierPriceCents returns null for a 0mg dose when priceCents is null', () => {
     const product = makeProduct({ id: FORMULA_ID, sku: SKU, priceCents: null });
 
-    expect(tierPriceCents(product, '0mg')).toBeNull();
+    expect(effectiveTierPriceCents(product, '0mg')).toBeNull();
+  });
+});
+
+describe('useCart.add — refuses a line whose price is unknown', () => {
+  // The store is the last funnel every add-to-cart affordance passes through,
+  // so the guard lives there rather than in each tile. Before it existed, an
+  // override store that failed to load let a tile add a line with no price at
+  // all, which reached production as a $0 order line.
+  test('an unpriced (sku, dose) with no catalog price is not added', () => {
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: null });
+
+    useCart.getState().add(product);
+
+    expect(useCart.getState().items).toHaveLength(0);
+  });
+
+  test('a per-dose override makes the same line addable', () => {
+    seedVariants(SKU, { '10mg': { price_cents: 8888 } });
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: null });
+
+    useCart.getState().add(product);
+
+    expect(useCart.getState().items).toHaveLength(1);
+  });
+
+  test('the product’s own catalog price makes it addable', () => {
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'TZP Oral — 500mcg', priceCents: 10_000 });
+
+    useCart.getState().add(product);
+
+    expect(useCart.getState().items).toHaveLength(1);
+  });
+
+  test('a deliberate zero price is still addable (a coupon free item is not unknown)', () => {
+    seedVariants(SKU, { '10mg': { price_cents: 0 } });
+    const product = makeProduct({ id: FORMULA_ID, sku: SKU, name: 'BPC-157 — 10mg', priceCents: null });
+
+    useCart.getState().add(product);
+
+    expect(useCart.getState().items).toHaveLength(1);
   });
 });
