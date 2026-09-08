@@ -16,15 +16,15 @@ import type { Product } from '../../types';
 import { ProductSpotlightSlide } from './ProductSpotlightSlide';
 
 /** The single most-recently-cataloged compound this slide features. */
-const FEATURED_SLUG = 'tzp-oral-500mcg';
-const FEATURED_DOSE = '500mcg';
+const FEATURED_SLUG = 'selank-nasal-spray';
+const FEATURED_DOSE = '5mg/10mL';
 
-/** Hero render — the canister on the same grey studio set as the vial
+/** Hero render — the spray bottle on the same grey studio set as the vial
  *  photography, so the slide matches the rest of the carousel. */
-const FEATURED_IMAGE = '/vials/tzp-oral-500mcg.webp';
+const FEATURED_IMAGE = '/vials/selank-nasal-spray.webp';
 
 const DESCRIPTION =
-  'Oral research units — 500 mcg per unit, 25 units per sealed canister — newly added to the catalog for incretin receptor research models.';
+  'A ready-to-use nasal spray — 5 mg of Selank in a 10 mL sterile solution — newly added to the catalog for anxiolytic and cognitive-modulation research models.';
 
 interface NewlyCatalogedSpotlightProps {
   products: Product[];

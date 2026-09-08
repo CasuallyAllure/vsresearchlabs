@@ -1744,5 +1744,72 @@
   "mechanismSummary": "Adamantyl- and N-acetyl-modified analog of Semax (ACTH(4-7) Pro-Gly-Pro). The adamantyl group and acetylation are intended to confer resistance to enzymatic degradation and improve blood-brain-barrier penetration; these properties are not established in primary literature for this analogue. Studied for the BDNF/NGF-related neurotrophic signaling associated with the Semax scaffold.",
   "receptorActivity": "No direct binding at classical neuroreceptor subtypes reported; proposed activity is attributed to the Semax scaffold — stimulation of endogenous BDNF/NGF expression — with the adamantyl and N-acetyl modifications proposed to extend exposure. No primary literature characterising this analogue could be located; receptor-level activity is unverified.",
   "pathwaySummary": "Proposed, by analogy to the Semax scaffold: elevated BDNF/TrkB expression → Ras/MAPK/ERK → CREB → pro-survival gene transcription. Pathway activity has not been characterised for this analogue specifically."
+ },
+ {
+  "id": "rs-selank-nasal-spray",
+  "slug": "selank-nasal-spray",
+  "name": "Selank Nasal Spray",
+  "chemicalName": "Selank",
+  "category": "biopeptide-research-supplies",
+  "shortDescription": "Synthetic tuftsin-derived heptapeptide in a ready-to-use nasal spray, studied for anxiolytic and cognitive-modulation research. Sterile solution, research grade.",
+  "laymanSummary": "Selank is a Russian **anxiolytic nootropic** peptide derived from the immune molecule tuftsin. This is the sprayable liquid form — 5mg per bottle in a 10mL nasal spray delivery — for research models needing intranasal dosing without reconstitution.",
+  "longDescription": "Selank Nasal Spray — Synthetic tuftsin-derived heptapeptide in a ready-to-use nasal spray, studied for anxiolytic and cognitive-modulation research.\n\nSupplied for laboratory and in-vitro research applications only. Each lot is tested for identity and purity and ships with documentation on request.\n\nNot for human use. For research purposes only.",
+  "images": [
+   "/vials/selank-nasal-spray.webp"
+  ],
+  "specs": [
+   {
+    "label": "Purity (HPLC)",
+    "value": "≥ 98%"
+   },
+   {
+    "label": "Form",
+    "value": "Sterile nasal spray solution"
+   },
+   {
+    "label": "Concentration",
+    "value": "5mg / 10mL"
+   },
+   {
+    "label": "Storage",
+    "value": "2–8°C, refrigerated, light-protected"
+   }
+  ],
+  "sku": "VSR-RS-SLKNS",
+  "abbreviation": "SLKNS",
+  "family": "Nootropic Peptide",
+  "variants": [
+   {
+    "dose": "5mg/10mL"
+   }
+  ],
+  "priceCents": null,
+  "stock": null,
+  "tags": [
+   "nootropic-neuroactive",
+   "peptide",
+   "research"
+  ],
+  "featured": false,
+  "createdAt": "2026-09-07T00:00:00.000Z",
+  "updatedAt": "2026-09-07T00:00:00.000Z",
+  "manufacturer": "Vetted international manufacturing partners",
+  "countryOfOrigin": "International partner network",
+  "storageCondition": "2–8°C, refrigerated, light-protected",
+  "shelfLifeMonths": 12,
+  "unitOfMeasure": "vial",
+  "leadTimeDays": 7,
+  "testingStandard": "HPLC VSR-QC-001 · USP <62>",
+  "shippingCondition": "Refrigerated",
+  "researchClassification": "nootropic-neuroactive",
+  "productType": "peptide",
+  "casNumber": "129954-34-3",
+  "molecularWeight": "751.91 g/mol",
+  "mechanismSummary": "A synthetic heptapeptide derived from the endogenous immunomodulatory peptide tuftsin, developed in Russia. It is studied as an anxiolytic/nootropic acting via modulation of monoamine and GABAergic signalling and of brain-derived neurotrophic factor (BDNF) expression.",
+  "receptorActivity": "Not a classic single-receptor ligand; reported effects include modulation of GABAergic transmission and influence on serotonin/dopamine metabolism rather than direct high-affinity agonism.",
+  "pathwaySummary": "Implicated in enkephalin-degrading-enzyme inhibition, monoamine metabolism, and BDNF/neurotrophic and immune (interleukin) signalling.",
+  "fdaStatus": "Not FDA-approved; registered as a pharmaceutical in Russia",
+  "humanTrialsConfirmed": true,
+  "molecularFormula": "C33H57N11O9"
  }
 ]
